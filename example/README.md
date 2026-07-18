@@ -24,6 +24,17 @@ figkit plot --recipe two_group_compare --data example/cytokine_pg_ml.csv \
   --x group --y concentration --ylab "IL-6 (pg/mL)"
 ```
 
+### `gene_expression.csv` — multi-group (ANOVA)
+Four groups (`wt`, `het`, `ko`, `rescue`), one continuous outcome, roughly normal
+with similar variance. The `auto` resolver picks a **one-way ANOVA** with
+**Tukey's HSD** post hoc. Only pairwise comparisons that reach significance are
+bracketed; here `wt` vs `rescue` is not significant and is left off.
+
+```bash
+figkit plot --recipe multi_group_compare --data example/gene_expression.csv \
+  --x genotype --y expression --ylab "Expression (a.u.)"
+```
+
 ## Config
 
 ### `edited_config.yaml` — render path
@@ -40,11 +51,12 @@ where a bare `y` is read as a boolean. The reader normalizes it.
 
 ## Expected results
 
-| Input                 | Test chosen                 | Significant |
-|-----------------------|-----------------------------|-------------|
-| `tumor_volume.csv`    | Student's two-sample t-test | yes         |
-| `cytokine_pg_ml.csv`  | Mann-Whitney U test         | yes         |
-| `edited_config.yaml`  | (same as tumor_volume)      | yes         |
+| Input                 | Test chosen                 | Significant            |
+|-----------------------|-----------------------------|------------------------|
+| `tumor_volume.csv`    | Student's two-sample t-test | yes                    |
+| `cytokine_pg_ml.csv`  | Mann-Whitney U test         | yes                    |
+| `gene_expression.csv` | One-way ANOVA + Tukey HSD   | 5 of 6 pairs           |
+| `edited_config.yaml`  | (same as tumor_volume)      | yes                    |
 
 ## Generated figures
 
@@ -64,3 +76,7 @@ Non-parametric (Mann-Whitney):
 Render from edited config (violin, custom palette, numeric p):
 
 ![violin](expected/two_group_compare_volume_violin/figure_volume_violin.png)
+
+Multi-group (one-way ANOVA, Tukey HSD, significant pairs only):
+
+![ANOVA](expected/multi_group_compare_expression_anova/figure_expression_anova.png)

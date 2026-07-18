@@ -1,6 +1,6 @@
 {
   "pubplot_version": "0.1.0",
-  "pubplot_git_commit": "45134a5",
+  "pubplot_git_commit": "d8ea256",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "two_group_compare",

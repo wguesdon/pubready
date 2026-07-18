@@ -28,7 +28,7 @@ Common plot options:
   --palette "#3B6DB3,#C1432B"              fill colors
   --out DIR                                output root (default pubplot_output)
 
-Recipes: two_group_compare
+Recipes: two_group_compare, multi_group_compare
 EOF
 }
 

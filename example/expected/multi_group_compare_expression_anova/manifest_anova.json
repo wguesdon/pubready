@@ -3,40 +3,45 @@
   "pubplot_git_commit": "d8ea256",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
-  "recipe": "two_group_compare",
+  "recipe": "multi_group_compare",
   "recipe_version": "1",
   "arguments": {
-    "x": "group",
-    "y": "volume",
+    "x": "genotype",
+    "y": "expression",
     "test": "auto",
     "paired": false,
     "p_adjust": "none"
   },
   "input": {
-    "file": "input_volume.csv",
-    "original_name": "tumor_volume.csv",
-    "md5": "d61ed3cc297d2fa63d25dcab55991645",
-    "sha256": "7560f561606eed71ef05c9a9b5b82b36a6f830c3bd0f3586a9a905534cc4a355",
-    "n_rows": 24
+    "file": "input_expression.csv",
+    "original_name": "gene_expression.csv",
+    "md5": "55d3ddd6425019751d19883d1fe81771",
+    "sha256": "0d5ab7e477ae444212d4b0eebf041038d659bee75d425c1cd51401dcd73d034b",
+    "n_rows": 40
   },
   "statistical_test": {
-    "name": "Student's two-sample t-test",
-    "statistic": 10.059451,
-    "p_value": 1.08e-09,
-    "adjustment": "none",
-    "effect_size": {
-      "name": "Cohen's d",
-      "value": 4.106754
+    "name": "one-way ANOVA",
+    "omnibus": {
+      "statistic": 235.832,
+      "df1": 3,
+      "df2": 36,
+      "p_value": 1.02e-23,
+      "effect_size": {
+        "name": "generalized eta-squared",
+        "value": 0.952
+      }
     },
+    "post_hoc": "Tukey's HSD",
+    "n_comparisons": 6,
+    "n_significant": 5,
     "assumptions": {
       "normality": {
         "test": "shapiro-wilk",
-        "p_group1": 0.999977,
-        "p_group2": 0.989004
+        "all_normal": true
       },
       "equal_variance": {
-        "test": "F test",
-        "p": 0.440064
+        "test": "Levene",
+        "p": 0.749824
       }
     }
   },
@@ -57,8 +62,8 @@
     }
   },
   "outputs": [
-    "figure_volume_ttest.pdf",
-    "figure_volume_ttest.png",
-    "figure_volume_ttest.svg"
+    "figure_expression_anova.pdf",
+    "figure_expression_anova.png",
+    "figure_expression_anova.svg"
   ]
 }

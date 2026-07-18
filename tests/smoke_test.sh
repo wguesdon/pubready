@@ -52,6 +52,16 @@ echo "[3] render from edited config"
 ./cli/figkit render --config example/edited_config.yaml --out "$OUT/render"
 check_bundle "$OUT/render" "edited_config"
 
+echo "[4] multi-group path (expect one-way ANOVA + Tukey)"
+./cli/figkit plot --recipe multi_group_compare --data example/gene_expression.csv \
+  --x genotype --y expression --ylab "Expression (a.u.)" --out "$OUT/anova"
+check_bundle "$OUT/anova" "gene_expression"
+if compgen -G "$OUT/anova/*/methods_*.md" > /dev/null && grep -q "one-way ANOVA" "$OUT"/anova/*/methods_*.md; then
+  echo "PASS: chose one-way ANOVA"
+else
+  echo "FAIL: expected one-way ANOVA"; fail=1
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then
   echo "ALL SMOKE TESTS PASSED"

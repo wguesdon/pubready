@@ -37,8 +37,20 @@ Done this session:
 
 Milestone status:
 - M1 (container) DONE. M2 (inspect + two_group_compare in R + bundle) DONE.
-- Next: M3 Python engine (same recipe), then M4 reference decision tree + Claude
-  Code skill, M5 Codex/opencode adapters, M6 remaining recipes.
+- Recipe library expansion (from user's test list): ANOVA family first, then
+  survival (KM + Cox + hazard-ratio forest), then heatmap (ComplexHeatmap /
+  PyComplexHeatmap, matrix input). Post-hoc default: significant pairs only.
+- multi_group_compare BUILT: one-way ANOVA / Welch / Kruskal-Wallis from the
+  assumptions, Tukey / Games-Howell / Dunn post hoc, brackets for significant
+  pairs only, omnibus test shown as a subtitle. Example gene_expression.csv +
+  reference bundle + smoke case added.
+- Refactor: recipes now return methods + build_script; write_bundle no longer
+  hard-codes two-group logic, so new recipes plug in cleanly.
+- Next in ANOVA family: factorial_anova (two-way / three-way). Open choice for
+  non-parametric factorial: aligned rank transform (ARTool) vs Scheirer-Ray-Hare.
+  Then survival family (adds survival + survminer), then heatmap (Bioconductor
+  rebuild). After recipes: M-Python engine, reference decision tree + Claude Code
+  skill, Codex/opencode adapters.
 
 How to run (from repo root, image already built):
 - ./cli/figkit inspect --data example/tumor_volume.csv

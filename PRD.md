@@ -231,22 +231,33 @@ without redoing the whole conversation. Change a color or a label, re-render, an
 a fresh bundle is written with the updated config recorded in it. The stats are
 recomputed so the figure and the numbers never drift apart.
 
-## Recipe catalog (initial target)
+## Recipe catalog
 
 Each recipe is a named function with a fixed argument surface, present in both
-engines.
+engines. Status as of 2026-07-18 in the R engine.
 
-- `two_group_compare` — t-test or Mann-Whitney, unpaired. Box or violin with
-  bracket.
-- `paired_compare` — paired t-test or Wilcoxon signed-rank. Before/after plot.
-- `multi_group_anova` — one-way ANOVA or Kruskal-Wallis plus post-hoc, brackets
-  for chosen comparisons.
-- `two_factor` — two-way ANOVA, grouped bar or box.
+- `two_group_compare` **(built)** — t-test or Mann-Whitney, paired or unpaired.
+  Box or violin with a bracket on top.
+- `multi_group_compare` **(built)** — one-way ANOVA, Welch's ANOVA, or
+  Kruskal-Wallis chosen from the assumptions, with Tukey / Games-Howell / Dunn
+  post hoc. Brackets only for significant pairs; omnibus test shown as a
+  subtitle.
+- `factorial_anova` — two-way and three-way ANOVA. Non-parametric factorial via
+  aligned rank transform (ARTool) or Scheirer-Ray-Hare is an open design choice.
+- `survival_km` — Kaplan-Meier curves with a log-rank p-value and a risk table.
+  Tidy input: `time, event, group`.
+- `cox_forest` — Cox proportional hazards model, forest plot of hazard ratios
+  with confidence intervals. Tidy input: `time, event, covariate…`.
+- `heatmap` — ComplexHeatmap (R) / PyComplexHeatmap (Python). Input is a numeric
+  matrix (features by samples) plus an optional annotation table, not tidy-long.
 - `correlation` — Pearson or Spearman, scatter with fit and CI.
 - `proportions` — chi-square or Fisher, bar of proportions.
 
-Survival, dose-response, and mixed-effects models are candidates for later
-versions and are out of scope for v1.
+Dose-response and mixed-effects models are candidates for later versions.
+
+Container additions by family: ANOVA needs nothing beyond the current image;
+survival adds `survival` + `survminer` (CRAN); heatmaps add ComplexHeatmap
+(Bioconductor, a heavy build handled in a dedicated image rebuild).
 
 ## Test selection logic
 

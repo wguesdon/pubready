@@ -23,4 +23,9 @@ rm -rf "$OUT"
 ./cli/figkit render --config example/edited_config.yaml \
   --stamp violin --out "$OUT"
 
+# Multi-group path -> one-way ANOVA + Tukey, significant-only brackets
+./cli/figkit plot --recipe multi_group_compare --data example/gene_expression.csv \
+  --x genotype --y expression --ylab "Expression (a.u.)" --xlab "Genotype" \
+  --stamp anova --out "$OUT"
+
 echo "Reference bundles written under $OUT/"
