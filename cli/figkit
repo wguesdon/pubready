@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# figkit: the stable command surface for pubplot. The agent calls this, not R
+# or Python directly. Every command runs inside the pinned Podman image with the
+# core scripts mounted read-only, so the environment is reproducible.
+set -euo pipefail
+
+IMAGE="${PUBPLOT_IMAGE:-localhost/pubplot:0.1.0}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+CORE_DIR="$REPO_ROOT/core"
+
+usage() {
+  cat <<'EOF'
+figkit — reproducible publication figures
+
+Usage:
+  figkit inspect --data FILE [--sheet S] [--format text|json]
+  figkit plot --recipe NAME --data FILE --x COL --y COL [options]
+  figkit render --config plot_config.yaml [--data FILE]
+  figkit build
+  figkit shell
+
+Common plot options:
+  --test auto|welch_t|student_t|wilcoxon   choose or force the test
+  --paired                                 paired design
+  --geom box|violin                        plot geometry
+  --xlab, --ylab, --title                  labels
+  --palette "#3B6DB3,#C1432B"              fill colors
+  --out DIR                                output root (default pubplot_output)
+
+Recipes: two_group_compare
+EOF
+}
+
+image_id()      { podman image inspect --format '{{.Id}}'     "$IMAGE" 2>/dev/null || echo ""; }
+image_digest()  { podman image inspect --format '{{.Digest}}' "$IMAGE" 2>/dev/null || echo ""; }
+podman_version(){ podman --version 2>/dev/null | awk '{print $3}'; }
+
+require_image() {
+  if ! podman image exists "$IMAGE"; then
+    echo "Image '$IMAGE' not found. Build it first: figkit build" >&2
+    exit 1
+  fi
+}
+
+run_r() {
+  # $1 = entry script name under core/r/entry; rest = args
+  local entry="$1"; shift
+  require_image
+  podman --log-level=error run --rm \
+    -v "$PWD":/work -w /work \
+    -v "$CORE_DIR":/opt/pubplot/core:ro \
+    -e PUBPLOT_CORE=/opt/pubplot/core \
+    -e PUBPLOT_IMAGE="$IMAGE" \
+    -e PUBPLOT_IMAGE_ID="$(image_id)" \
+    -e PUBPLOT_IMAGE_DIGEST="$(image_digest)" \
+    -e PUBPLOT_PODMAN_VERSION="$(podman_version)" \
+    -e PUBPLOT_GIT_COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)" \
+    "$IMAGE" \
+    Rscript "/opt/pubplot/core/r/entry/${entry}.R" "$@"
+}
+
+cmd="${1:-}"; [ $# -gt 0 ] && shift || true
+
+case "$cmd" in
+  inspect) run_r inspect "$@" ;;
+  plot)    run_r plot    "$@" ;;
+  render)  run_r render  "$@" ;;
+  build)
+    podman build -t "$IMAGE" -f "$REPO_ROOT/container/Containerfile" "$REPO_ROOT"
+    ;;
+  shell)
+    require_image
+    podman --log-level=error run --rm -it \
+      -v "$PWD":/work -w /work \
+      -v "$CORE_DIR":/opt/pubplot/core:ro \
+      -e PUBPLOT_CORE=/opt/pubplot/core \
+      "$IMAGE" bash
+    ;;
+  ""|-h|--help|help) usage ;;
+  *) echo "unknown command: $cmd" >&2; usage; exit 1 ;;
+esac

@@ -25,12 +25,26 @@ Done this session:
 - Created private repo, cloned locally.
 - Wrote PRD.md.
 - Scaffolded repo directories: core/, container/, cli/, skills/, reference/.
+- Built the container (rocker/r-ver:4.4.1 + uv), image localhost/pubplot:0.1.0.
+- Implemented the R engine: figkit CLI (inspect/plot/render/build/shell), the
+  two_group_compare recipe, the assumption-driven test resolver, the house
+  theme, and the full artifact bundle writer.
+- Verified end to end on example data: t-test path, Mann-Whitney path, and a
+  render round-trip from an edited config. Confirmed the emitted standalone
+  script reproduces the figure in the pinned container.
+- Added example test cases (tumor_volume.csv, cytokine_pg_ml.csv,
+  edited_config.yaml) and tests/smoke_test.sh; all three cases pass.
 
-Next steps (not yet started, awaiting PRD sign-off before building):
-- Resolve the open questions in PRD.md (figure theme presets, Excel cleaning,
-  R packaging, CLI distribution).
-- Milestone 1: container with both engines and pinned deps.
-- Milestone 2: figkit inspect + two_group_compare recipe in R, end to end.
+Milestone status:
+- M1 (container) DONE. M2 (inspect + two_group_compare in R + bundle) DONE.
+- Next: M3 Python engine (same recipe), then M4 reference decision tree + Claude
+  Code skill, M5 Codex/opencode adapters, M6 remaining recipes.
+
+How to run (from repo root, image already built):
+- ./cli/figkit inspect --data example/tumor_volume.csv
+- ./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv --x group --y volume
+- ./tests/smoke_test.sh
+- Rebuild image: ./cli/figkit build
 
 Resolved this session:
 - R core: plain .R scripts sourced by the CLI, not a formal package.

@@ -1,0 +1,38 @@
+# pubplot environment image: R + Python, both engines, pinned by image digest.
+# Application code (core/) is mounted at runtime and pinned separately by the
+# pubplot git commit recorded in each bundle's manifest.
+FROM docker.io/rocker/r-ver:4.4.1
+
+# System libraries: build deps for R graphics packages, plus Python.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      curl ca-certificates \
+      python3 python3-venv python3-dev \
+      libcurl4-openssl-dev libssl-dev libxml2-dev \
+      libfontconfig1-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev \
+      libharfbuzz-dev libfribidi-dev \
+      pandoc \
+ && rm -rf /var/lib/apt/lists/*
+
+# R packages. rocker/r-ver pins the Posit Package Manager snapshot to the R
+# release date, so these installs are reproducible and use binary builds.
+RUN install2.r --error --skipinstalled \
+      ggplot2 ggpubr rstatix ggprism \
+      readr readxl \
+      jsonlite digest yaml optparse svglite scales \
+ && rm -rf /tmp/downloaded_packages
+
+# Python packages via uv. The built image freezes the resolved set into
+# requirements.lock, which together with the image digest is the pin.
+COPY container/requirements.txt /opt/pubplot/requirements.txt
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
+ && ln -s /root/.local/bin/uv /usr/local/bin/uv \
+ && uv venv /opt/pubplot/venv \
+ && VIRTUAL_ENV=/opt/pubplot/venv uv pip install --no-cache -r /opt/pubplot/requirements.txt \
+ && VIRTUAL_ENV=/opt/pubplot/venv uv pip freeze > /opt/pubplot/requirements.lock
+ENV PATH="/opt/pubplot/venv/bin:${PATH}"
+
+# Core scripts are mounted here at runtime by the figkit CLI.
+RUN mkdir -p /opt/pubplot/core
+
+LABEL org.opencontainers.image.title="pubplot" \
+      org.opencontainers.image.description="R and Python environment for reproducible publication-ready figures"
