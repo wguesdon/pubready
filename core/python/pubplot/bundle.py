@@ -120,7 +120,7 @@ def build_manifest(spec, in_name, orig, sums, n_rows, test_meta, container, git_
 
 
 def reproduce_md(container, git_commit, script_name):
-    img = container.get("image", "localhost/pubplot:0.1.0")
+    img = container.get("image", "localhost/pubplot:0.2.0")
     return (
         "# Reproduce this figure\n\n"
         "This bundle is self-contained. To regenerate the figure in the exact\n"

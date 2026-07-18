@@ -1,0 +1,44 @@
+[project]
+name = "pubplot"
+description = "Publication-ready figures with statistics, Python engine for pubplot."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "William Guesdon", email = "wguesdon@gmail.com" }]
+dynamic = ["version"]
+dependencies = [
+    "pandas",
+    "numpy<2",
+    "scipy",
+    "matplotlib",
+    "seaborn",
+    "pingouin",
+    "statannotations",
+    "openpyxl",
+    "pyyaml",
+    "statsmodels",
+    "scikit-posthocs",
+    "lifelines",
+    "PyComplexHeatmap",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# The engine is loaded from the runtime mount (PYTHONPATH), not installed into
+# the image. This packaging exists for versioning, dependency declaration, and
+# pytest. Version is single-sourced from pubplot/version.py to stay in lockstep
+# with the R DESCRIPTION, the root VERSION file, and the container image tag.
+[tool.hatch.version]
+path = "pubplot/version.py"
+pattern = "PUBPLOT_VERSION = ['\"](?P<version>[^'\"]+)['\"]"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pubplot"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
