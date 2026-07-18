@@ -108,6 +108,12 @@ Contents of every bundle:
   adjusted p-value, effect size, group n).
 - `input_<name>.csv` — a copy of the exact input data used, so the bundle does
   not depend on an external file that may change.
+- `data_log.md` — the data provenance record (see below): original filename,
+  md5 and sha256 checksums, dimensions, column types, and any cleaning step
+  applied on the way from raw to analyzed.
+- `plot_config.yaml` — the editable figure spec (see below): engine choice,
+  colors, labels, axis limits, theme, and bracket options. Re-render from this
+  file without a full rerun.
 - `manifest_<timestamp>.json` — structured provenance (schema below).
 - `session_info.txt` — full environment dump: R `sessionInfo()` or Python
   `pip freeze`. The complete package set, not just the headline ones.
@@ -146,7 +152,13 @@ run, not from the model.
   "recipe": "two_group_compare",
   "recipe_version": "1",
   "arguments": { "x": "group", "y": "volume", "test": "auto" },
-  "input": { "file": "input_tumor_volume.csv", "sha256": "<hash>", "n_rows": 42 },
+  "input": {
+    "file": "input_tumor_volume.csv",
+    "original_name": "tumor_volume.csv",
+    "md5": "<hash>",
+    "sha256": "<hash>",
+    "n_rows": 42
+  },
   "statistical_test": {
     "name": "Welch two-sample t-test",
     "statistic": 3.14,
@@ -172,6 +184,52 @@ The container is pinned by digest, not just tag, so `REPRODUCE.md` pulls the
 identical image. The input is copied in and checksummed. The full package set is
 captured. That combination is what makes the bundle reproducible rather than
 merely re-runnable.
+
+### Data provenance log
+
+`data_log.md` makes the path from raw data to analyzed data auditable. It
+records the original filename, both md5 and sha256 checksums of the exact bytes
+used, the row and column counts, and the column names with inferred types. When
+`figkit` applies any cleaning (dropping empty rows, coercing a column, filtering
+to the analyzed subset), each step is logged with the before and after row
+count. If nothing was changed, the log says so. A reviewer can confirm the file
+they hold is the file that was analyzed, and see exactly what was done to it.
+
+### Editable plot config
+
+`plot_config.yaml` is the one file a scientist edits to change how a figure
+looks. It is human-readable, and the agent co-edits it with the user during the
+chat. It also records the engine choice, so the figure's R-or-Python provenance
+travels with the spec.
+
+```yaml
+engine: r                     # r | python
+recipe: two_group_compare
+data:
+  file: input_tumor_volume.csv
+  x: group
+  y: volume
+test:
+  method: auto                # auto resolves from the assumption checks
+  paired: false
+  p_adjust: none
+appearance:
+  theme: pubplot_house
+  palette: ["#3b6db3", "#c1432b"]
+  x_label: "Treatment group"
+  y_label: "Tumor volume (mm^3)"
+  title: null
+  y_limits: [0, null]
+  show_points: true
+  bracket:
+    show: true
+    label: p.signif           # p.signif (stars) | p.format (numeric)
+```
+
+`figkit render --config plot_config.yaml` regenerates the figure from this spec
+without redoing the whole conversation. Change a color or a label, re-render, and
+a fresh bundle is written with the updated config recorded in it. The stats are
+recomputed so the figure and the numbers never drift apart.
 
 ## Recipe catalog (initial target)
 
