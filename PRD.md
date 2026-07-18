@@ -60,8 +60,9 @@ user's.
 4. The agent recommends a test, explains why in one or two lines, and the user
    confirms or overrides.
 5. The matching recipe renders inside a Podman container.
-6. Output: the figure (PDF, PNG, SVG), a stats table CSV, and the exact script
-   that produced them.
+6. Output: one self-contained artifact bundle folder (see below) holding the
+   figure, the script, the stats, a copy of the input, the full environment, a
+   manifest, and a manuscript-ready methods paragraph.
 
 ## Statistics on top
 
@@ -88,11 +89,89 @@ This is the feature that makes it feel like publication figures.
 - `reference/` — the statistical test decision tree and assumption-check notes,
   shared by every host tool.
 
-## Reproducibility
+## Reproducibility: the artifact bundle
 
-Reproducibility is the trust anchor. Nothing is hidden. Every figure ships with
-its script and its numbers, so the scientist can drop both into a methods
-section and a reviewer can rerun them.
+Reproducibility is the trust anchor, and it is enforced by structure, not by
+convention. Every run of `figkit plot` writes one self-contained output folder.
+That folder is the artifact. It holds everything needed to regenerate the exact
+figure on another machine years later.
+
+Bundle folder name is snake_case with a timestamp, for example
+`two_group_compare_tumor_volume_2026_07_18_140355/`.
+
+Contents of every bundle:
+
+- `figure_<name>_<timestamp>.pdf`, `.png`, `.svg` — the figure in each format.
+- `script_<timestamp>.R` or `.py` — the exact, runnable script that produced the
+  figure. Standalone: reads the input, runs the test, draws the plot.
+- `stats_<timestamp>.csv` — the statistics table (test, statistic, p-value,
+  adjusted p-value, effect size, group n).
+- `input_<name>.csv` — a copy of the exact input data used, so the bundle does
+  not depend on an external file that may change.
+- `manifest_<timestamp>.json` — structured provenance (schema below).
+- `session_info.txt` — full environment dump: R `sessionInfo()` or Python
+  `pip freeze`. The complete package set, not just the headline ones.
+- `methods_<timestamp>.md` — a manuscript-ready methods paragraph (see below).
+- `REPRODUCE.md` — the one command to rerun this bundle in the pinned container.
+
+### Methods paragraph
+
+Every bundle includes a methods file written in the register of a journal
+methods section, ready to paste into a manuscript. It is templated from the same
+manifest that drives the figure, so the reported test, software, versions,
+correction method, and sample sizes always match what was actually run. No
+hand-copying numbers between the figure and the paper.
+
+Example output:
+
+> Tumor volume was compared between the two groups with a Welch two-sample
+> t-test. Normality was assessed by the Shapiro-Wilk test and equal variance was
+> not assumed. Effect size is reported as Cohen's d. Significance was set at
+> P < 0.05. Analyses were performed in R 4.4.1 with rstatix 0.7.2, and figures
+> were produced with ggpubr 0.6.0 and ggprism 1.0.5. Group sizes were n = 21 and
+> n = 21.
+
+The paragraph is generated deterministically by the recipe from the manifest.
+The agent may refine the wording on request, but the reported facts come from the
+run, not from the model.
+
+### Manifest schema
+
+```json
+{
+  "pubplot_version": "0.1.0",
+  "pubplot_git_commit": "<sha>",
+  "created_utc": "2026-07-18T14:03:55Z",
+  "engine": "r",
+  "recipe": "two_group_compare",
+  "recipe_version": "1",
+  "arguments": { "x": "group", "y": "volume", "test": "auto" },
+  "input": { "file": "input_tumor_volume.csv", "sha256": "<hash>", "n_rows": 42 },
+  "statistical_test": {
+    "name": "Welch two-sample t-test",
+    "statistic": 3.14,
+    "p_value": 0.004,
+    "adjustment": "none",
+    "effect_size": { "name": "Cohen's d", "value": 0.98 }
+  },
+  "container": {
+    "image": "localhost/pubplot:0.1.0",
+    "digest": "sha256:<digest>",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": { "ggpubr": "0.6.0", "rstatix": "0.7.2", "ggprism": "1.0.5" }
+  },
+  "outputs": ["figure_...pdf", "figure_...png", "figure_...svg", "stats_...csv"]
+}
+```
+
+The container is pinned by digest, not just tag, so `REPRODUCE.md` pulls the
+identical image. The input is copied in and checksummed. The full package set is
+captured. That combination is what makes the bundle reproducible rather than
+merely re-runnable.
 
 ## Recipe catalog (initial target)
 
@@ -146,21 +225,26 @@ three stay in sync.
 - Exotic models beyond the documented escape hatch: mixed-effects, Bayesian,
   multivariate.
 
+## Resolved decisions
+
+- R core: plain `.R` scripts sourced by the CLI, not a formal R package. Easy for
+  the agent to read and extend. Revisit packaging once several recipes exist.
+- Figure theme: one clean house style for v1. Journal presets (Nature, Cell,
+  PLOS) come later.
+
 ## Open questions
 
-- Figure theme: ship a single house style, or expose journal presets (Nature,
-  Cell, PLOS) from the start?
 - Excel ingestion: how much cleaning to do for messy sheets before declaring the
   data not tidy and asking the user to fix it.
-- Packaging of the R core: a real R package, or a set of scripts sourced by the
-  CLI.
 - How the CLI is distributed to users: a shell entrypoint into the container, or
   an installed command that shells out to Podman.
 
 ## Milestones
 
 1. Container with R and Python engines and pinned deps.
-2. `figkit inspect` and one end-to-end recipe (`two_group_compare`) in R.
+2. `figkit inspect`, one end-to-end recipe (`two_group_compare`) in R, and the
+   artifact bundle writer (figure, script, stats, input copy, manifest, session
+   info, methods paragraph, REPRODUCE.md).
 3. The same recipe in Python.
 4. Decision-tree reference and the Claude Code skill wired to the CLI.
 5. Codex and opencode adapters.
