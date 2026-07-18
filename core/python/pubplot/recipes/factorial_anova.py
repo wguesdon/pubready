@@ -25,6 +25,10 @@ def recipe_factorial_anova(df, spec):
     f1, f2, f3 = spec["data"]["x"], spec["data"]["fill"], spec["data"].get("facet")
     if not f2:
         raise ValueError("factorial_anova needs at least two factors: pass --x and --fill")
+    method = (spec["test"].get("method") or "auto").lower()
+    if method in ("art", "aligned_rank"):
+        raise ValueError("the aligned rank transform (non-parametric factorial) is R-only; "
+                         "rerun with --engine r")
     factors = [f1, f2] + ([f3] if f3 else [])
     for f in factors + [y]:
         if f not in df.columns:
