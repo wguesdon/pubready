@@ -28,4 +28,14 @@ rm -rf "$OUT"
   --x genotype --y expression --ylab "Expression (a.u.)" --xlab "Genotype" \
   --stamp anova --out "$OUT"
 
+# Two-way factorial ANOVA -> grouped box with effects on top
+./cli/figkit plot --recipe factorial_anova --data example/twoway_response.csv \
+  --y response --x genotype --fill treatment --ylab "Response (a.u.)" \
+  --stamp twoway --out "$OUT"
+
+# Three-way factorial ANOVA -> faceted grouped box with effects on top
+./cli/figkit plot --recipe factorial_anova --data example/threeway_response.csv \
+  --y response --x genotype --fill treatment --facet sex --ylab "Response (a.u.)" \
+  --stamp threeway --out "$OUT"
+
 echo "Reference bundles written under $OUT/"

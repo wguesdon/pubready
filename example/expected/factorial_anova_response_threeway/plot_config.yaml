@@ -1,11 +1,11 @@
 engine: r
-recipe: two_group_compare
+recipe: factorial_anova
 data:
-  file: input_concentration.csv
-  x: group
-  'y': concentration
-  fill: ~
-  facet: ~
+  file: input_response.csv
+  x: genotype
+  'y': response
+  fill: treatment
+  facet: sex
 test:
   method: auto
   paired: no
@@ -13,8 +13,8 @@ test:
 appearance:
   theme: pubplot_house
   palette: ~
-  x_label: Group
-  y_label: IL-6 (pg/mL)
+  x_label: ~
+  y_label: Response (a.u.)
   title: ~
   y_limits:
   - ~

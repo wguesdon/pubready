@@ -21,14 +21,16 @@ Usage:
   figkit shell
 
 Common plot options:
-  --test auto|welch_t|student_t|wilcoxon   choose or force the test
+  --x, --y                                 axis columns (tidy data)
+  --fill, --facet                          extra factors (factorial_anova)
+  --test auto|welch_t|wilcoxon|anova|kruskal|art   choose or force the test
   --paired                                 paired design
-  --geom box|violin                        plot geometry
+  --geom box|violin|bar                    plot geometry
   --xlab, --ylab, --title                  labels
   --palette "#3B6DB3,#C1432B"              fill colors
   --out DIR                                output root (default pubplot_output)
 
-Recipes: two_group_compare, multi_group_compare
+Recipes: two_group_compare, multi_group_compare, factorial_anova
 EOF
 }
 

@@ -46,11 +46,20 @@ Milestone status:
   reference bundle + smoke case added.
 - Refactor: recipes now return methods + build_script; write_bundle no longer
   hard-codes two-group logic, so new recipes plug in cleanly.
-- Next in ANOVA family: factorial_anova (two-way / three-way). Open choice for
-  non-parametric factorial: aligned rank transform (ARTool) vs Scheirer-Ray-Hare.
-  Then survival family (adds survival + survminer), then heatmap (Bioconductor
-  rebuild). After recipes: M-Python engine, reference decision tree + Claude Code
+- factorial_anova BUILT: two-way and three-way ANOVA (Type II), aligned rank
+  transform (ARTool) for the non-parametric factorial path, grouped box/bar,
+  faceted by the third factor, effects shown as a wrapped subtitle. Added ARTool
+  + emmeans to the image (image rebuilt). Added --fill / --facet CLI options and
+  per-recipe figure sizing (recipes return width/height). Examples
+  twoway_response.csv + threeway_response.csv (from make_factorial_data.R,
+  seeded), reference bundles, and smoke cases [5]/[6].
+- ANOVA family now complete (one-way + factorial). Next per user's list:
+  survival family (survival_km + cox_forest; adds survival + survminer), then
+  heatmap (ComplexHeatmap / PyComplexHeatmap, matrix input, Bioconductor
+  rebuild). After recipes: Python engine, reference decision tree + Claude Code
   skill, Codex/opencode adapters.
+- Factorial post-hoc pairwise (emmeans / ART contrasts) is installed but not yet
+  wired into the figure; effects table is the current multiple-test output.
 
 How to run (from repo root, image already built):
 - ./cli/figkit inspect --data example/tumor_volume.csv

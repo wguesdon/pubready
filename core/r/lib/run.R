@@ -33,6 +33,8 @@ run_recipe <- function(spec, raw_input, out_root, sheet = NULL, stamp = NULL) {
     git_commit     = Sys.getenv("PUBPLOT_GIT_COMMIT", "unknown"),
     methods_text   = res$methods,
     build_script   = res$build_script,
+    fig_width      = res$width %||% 3.8,
+    fig_height     = res$height %||% 4.0,
     stamp          = stamp
   )
   cat(sprintf("Wrote bundle: %s\n", bdir))

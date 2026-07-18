@@ -62,6 +62,26 @@ else
   echo "FAIL: expected one-way ANOVA"; fail=1
 fi
 
+echo "[5] two-way factorial ANOVA"
+./cli/figkit plot --recipe factorial_anova --data example/twoway_response.csv \
+  --y response --x genotype --fill treatment --ylab "Response (a.u.)" --out "$OUT/twoway"
+check_bundle "$OUT/twoway" "twoway_response"
+if compgen -G "$OUT/twoway/*/stats_*.csv" > /dev/null && grep -q "genotype:treatment" "$OUT"/twoway/*/stats_*.csv; then
+  echo "PASS: two-way interaction term present"
+else
+  echo "FAIL: expected interaction term"; fail=1
+fi
+
+echo "[6] three-way factorial ANOVA"
+./cli/figkit plot --recipe factorial_anova --data example/threeway_response.csv \
+  --y response --x genotype --fill treatment --facet sex --ylab "Response (a.u.)" --out "$OUT/threeway"
+check_bundle "$OUT/threeway" "threeway_response"
+if compgen -G "$OUT/threeway/*/stats_*.csv" > /dev/null && grep -q "genotype:treatment:sex" "$OUT"/threeway/*/stats_*.csv; then
+  echo "PASS: three-way term present"
+else
+  echo "FAIL: expected three-way term"; fail=1
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then
   echo "ALL SMOKE TESTS PASSED"

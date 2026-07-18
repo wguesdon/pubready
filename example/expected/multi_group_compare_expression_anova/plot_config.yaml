@@ -4,6 +4,8 @@ data:
   file: input_expression.csv
   x: genotype
   'y': expression
+  fill: ~
+  facet: ~
 test:
   method: auto
   paired: no
