@@ -1,0 +1,4 @@
+^bootstrap\.R$
+^entry$
+^tests/run_tests\.R$
+^\.Rbuildignore$

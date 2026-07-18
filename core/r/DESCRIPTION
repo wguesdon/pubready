@@ -1,0 +1,38 @@
+Package: pubplot
+Title: Publication-Ready Figures with Statistics, R Engine
+Version: 0.2.0
+Authors@R:
+    person("William", "Guesdon", email = "wguesdon@gmail.com", role = c("aut", "cre"))
+Description: The R engine for pubplot. A curated library of parameterized recipe
+    functions turns tidy data into a publication-ready figure with the chosen
+    statistical test drawn on top, and writes a self-contained reproducibility
+    bundle. Driven by the figkit CLI inside a pinned container; not intended for
+    standalone install. The Python engine mirrors this package one to one.
+License: file LICENSE
+Encoding: UTF-8
+Imports:
+    ARTool,
+    broom,
+    circlize,
+    ComplexHeatmap,
+    digest,
+    ggplot2,
+    ggpubr,
+    grDevices,
+    grid,
+    jsonlite,
+    optparse,
+    readr,
+    readxl,
+    rstatix,
+    stats,
+    survival,
+    survminer,
+    tools,
+    utils,
+    yaml
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
