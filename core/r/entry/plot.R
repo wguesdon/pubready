@@ -16,6 +16,7 @@ opts <- list(
   make_option("--title",    type = "character", default = NULL),
   make_option("--palette",  type = "character", default = NULL),
   make_option("--sheet",    type = "character", default = NULL),
+  make_option("--stamp",    type = "character", default = NULL),
   make_option("--out",      type = "character", default = "pubplot_output")
 )
 opt <- parse_args(OptionParser(option_list = opts))
@@ -27,4 +28,5 @@ for (req in c("recipe", "data", "x", "y")) {
 source(file.path(Sys.getenv("PUBPLOT_CORE", "/opt/pubplot/core"), "r", "bootstrap.R"))
 
 spec <- spec_from_opt(opt)
-run_recipe(spec, raw_input = opt$data, out_root = opt$out, sheet = opt$sheet)
+run_recipe(spec, raw_input = opt$data, out_root = opt$out, sheet = opt$sheet,
+           stamp = opt$stamp)

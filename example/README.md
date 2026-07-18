@@ -45,3 +45,22 @@ where a bare `y` is read as a boolean. The reader normalizes it.
 | `tumor_volume.csv`    | Student's two-sample t-test | yes         |
 | `cytokine_pg_ml.csv`  | Mann-Whitney U test         | yes         |
 | `edited_config.yaml`  | (same as tumor_volume)      | yes         |
+
+## Generated figures
+
+The complete reference bundles are committed under `expected/`. Each folder
+holds the figure, the standalone script, the stats, the input copy, the data
+log, the config, the manifest, and the methods paragraph. Regenerate them with
+`./example/generate_expected.sh` (deterministic names, so they diff cleanly).
+
+Parametric (t-test):
+
+![t-test](expected/two_group_compare_volume_ttest/figure_volume_ttest.png)
+
+Non-parametric (Mann-Whitney):
+
+![Mann-Whitney](expected/two_group_compare_concentration_mwu/figure_concentration_mwu.png)
+
+Render from edited config (violin, custom palette, numeric p):
+
+![violin](expected/two_group_compare_volume_violin/figure_volume_violin.png)

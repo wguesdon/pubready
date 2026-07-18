@@ -9,7 +9,7 @@ container_info <- function() {
   )
 }
 
-run_recipe <- function(spec, raw_input, out_root, sheet = NULL) {
+run_recipe <- function(spec, raw_input, out_root, sheet = NULL, stamp = NULL) {
   df    <- read_tidy(raw_input, sheet)
   clean <- clean_tidy(df, spec)
 
@@ -30,7 +30,8 @@ run_recipe <- function(spec, raw_input, out_root, sheet = NULL) {
     data_log_steps = clean$steps,
     out_root       = out_root,
     container      = container_info(),
-    git_commit     = Sys.getenv("PUBPLOT_GIT_COMMIT", "unknown")
+    git_commit     = Sys.getenv("PUBPLOT_GIT_COMMIT", "unknown"),
+    stamp          = stamp
   )
   cat(sprintf("Wrote bundle: %s\n", bdir))
   invisible(bdir)
