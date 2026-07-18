@@ -1,0 +1,18 @@
+engine: r
+recipe: two_group_compare
+data:
+  file: example/tumor_volume.csv
+  x: group
+  y: volume
+test:
+  method: auto
+  paired: false
+appearance:
+  geom: violin
+  palette:
+    - "#2E8B57"
+    - "#7A5195"
+  x_label: "Group"
+  y_label: "Tumor volume (mm^3)"
+  bracket:
+    label: p.format

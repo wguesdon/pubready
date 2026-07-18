@@ -3,8 +3,14 @@
 *.xlsx
 *.xls
 !reference/**/*.csv
+!example/**/*.csv
+!example/*.csv
+pubplot_output/
 outputs/
 figures/
+example_output/
+render_output/
+test_output/
 
 # R
 .Rproj.user/
