@@ -25,6 +25,7 @@ opts <- list(
   make_option("--palette",  type = "character", default = NULL),
   make_option("--sheet",    type = "character", default = NULL),
   make_option("--stamp",    type = "character", default = NULL),
+  make_option("--engine",   type = "character", default = NULL),  # read by the figkit dispatcher for routing; ignored here
   make_option("--out",      type = "character", default = "pubplot_output")
 )
 opt <- parse_args(OptionParser(option_list = opts))

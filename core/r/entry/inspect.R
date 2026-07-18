@@ -6,6 +6,7 @@ suppressPackageStartupMessages(library(optparse))
 opts <- list(
   make_option("--data",   type = "character"),
   make_option("--sheet",  type = "character", default = NULL),
+  make_option("--engine", type = "character", default = NULL),  # read by the figkit dispatcher for routing; ignored here
   make_option("--format", type = "character", default = "text")
 )
 opt <- parse_args(OptionParser(option_list = opts))
