@@ -2,7 +2,7 @@
 # Generate the heatmap example data deterministically: a features-by-samples
 # expression matrix plus a sample annotation table. Run once inside the pubplot
 # container from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.1.0 \
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.2.0 \
 #     Rscript example/make_heatmap_data.R
 set.seed(11)
 

@@ -24,7 +24,9 @@ __pycache__/
 .venv/
 venv/
 .ipynb_checkpoints/
-uv.lock
+.pytest_cache/
+# uv.lock is committed on purpose: pubplot is an application, and the lock is
+# part of the reproducibility story.
 
 # OS / editor
 .DS_Store

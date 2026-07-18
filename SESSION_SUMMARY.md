@@ -2,6 +2,31 @@
 
 Resume point for work on pubplot. Update as work progresses.
 
+## 2026-07-18 — packaging and versioning (v0.2.0)
+
+Turned both engines into proper packages and added release plumbing. Key
+decision: keep loading engine code from the runtime mount (fast iteration, code
+pinned by git commit) rather than installing it into the image. Packaging is for
+tests, versioning, and dependency declaration, not for baking code in.
+
+- R engine (`core/r`) is now a source R package: `DESCRIPTION`, `NAMESPACE`,
+  code moved from `lib/`+`recipes/` to `R/`, testthat suite in `tests/testthat`.
+  `bootstrap.R` sources `R/`; figkit command surface unchanged.
+- Python engine (`core/python`) has `pyproject.toml` (deps mirrored, version
+  single-sourced from `version.py`), `uv.lock` (now committed; removed from
+  `.gitignore`), and a pytest suite in `tests`.
+- `figkit test` runs both suites in-container against the mounted source;
+  `figkit version` prints version + image tag/digest + podman + commit.
+- Root `VERSION` file is the single source of truth; bumped to 0.2.0 across R
+  DESCRIPTION, python version.py, image tag, and runtime fallbacks. Added
+  `CHANGELOG.md` (Keep a Changelog). Container gained a test-tooling layer
+  (testthat + pytest, late so heavy layers stay cached) and a version label.
+- Validated: `figkit test` green (R 4 files, Python 14 passed), full
+  `tests/smoke_test.sh` green (all recipes, both engines). Image rebuilt as
+  `localhost/pubplot:0.2.0` in ~28s (cache reuse).
+- Open decision deferred to the user: license choice (leaning MIT). DESCRIPTION
+  uses `License: file LICENSE` as a placeholder; no LICENSE file added yet.
+
 ## 2026-07-18
 
 Kickoff session. Agreed the concept and drafted the PRD.
@@ -87,8 +112,11 @@ Milestone status:
   with _py stamps alongside R in example/expected/. Smoke test now 9 R + 6 Python.
 - Gotchas fixed: entry/inspect.py shadowed stdlib inspect (renamed inspect_data.py);
   pingouin 0.6.1 uses underscore columns (p_val, cohen_d, U_val).
-- Next: reference decision tree + Claude Code SKILL.md, then Codex/opencode
-  adapters. Deferred: factorial pairwise post-hoc brackets; survival_km needs --x;
+- Done: host adapters built — skills/claude-code/SKILL.md, skills/codex/AGENTS.md,
+  skills/opencode/ (AGENTS.md + /pubplot command). Each carries the same figkit
+  operating guide; detail stays in docs/how_it_works.md so they do not drift.
+- Next: reference decision tree (reference/decision_tree.md, assumptions.md).
+  Deferred: factorial pairwise post-hoc brackets; survival_km needs --x;
   Python heatmap has no per-feature stars on the figure (in stats CSV only).
 
 How to run (from repo root, image already built):
