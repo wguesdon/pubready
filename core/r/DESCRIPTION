@@ -8,7 +8,7 @@ Description: The R engine for pubplot. A curated library of parameterized recipe
     statistical test drawn on top, and writes a self-contained reproducibility
     bundle. Driven by the figkit CLI inside a pinned container; not intended for
     standalone install. The Python engine mirrors this package one to one.
-License: file LICENSE
+License: MIT + file LICENSE
 Encoding: UTF-8
 Imports:
     ARTool,
