@@ -1,0 +1,115 @@
+{
+  "pubplot_version": "0.1.0",
+  "pubplot_git_commit": "cf6e272",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "factorial_anova",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "genotype",
+    "y": "response",
+    "fill": "treatment",
+    "facet": "sex",
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_response.csv",
+    "original_name": "threeway_response.csv",
+    "md5": "b1ab1ae1731e3311d49a8727536cd99f",
+    "sha256": "b2267d6af2d2f49bbf1e1e75507c56dd8257334c80639c781f35701ca9ea67e8",
+    "n_rows": 48
+  },
+  "statistical_test": {
+    "name": "3-way ANOVA",
+    "type": "type_II_anova",
+    "factors": [
+      "genotype",
+      "treatment",
+      "sex"
+    ],
+    "effects": [
+      {
+        "effect": "genotype",
+        "df1": 1.0,
+        "df2": 40.0,
+        "statistic": 111.2970333218272,
+        "p_value": 4.034754681085697e-13,
+        "effect_size": 0.30127889946431574
+      },
+      {
+        "effect": "treatment",
+        "df1": 1.0,
+        "df2": 40.0,
+        "statistic": 197.0118992019824,
+        "p_value": 4.8090104894002654e-17,
+        "effect_size": 0.5333073703888866
+      },
+      {
+        "effect": "sex",
+        "df1": 1.0,
+        "df2": 40.0,
+        "statistic": 10.202550409161775,
+        "p_value": 0.0027343973072734788,
+        "effect_size": 0.02761810505867848
+      },
+      {
+        "effect": "genotype:treatment",
+        "df1": 1.0,
+        "df2": 40.0,
+        "statistic": 10.074217718845782,
+        "p_value": 0.002890120529548012,
+        "effect_size": 0.02727071096784143
+      },
+      {
+        "effect": "genotype:sex",
+        "df1": 1.0,
+        "df2": 40.0,
+        "statistic": 0.2437711941844083,
+        "p_value": 0.624195816399937,
+        "effect_size": 0.0006598838703329309
+      },
+      {
+        "effect": "treatment:sex",
+        "df1": 1.0,
+        "df2": 40.0,
+        "statistic": 0.5118078258574037,
+        "p_value": 0.47851267962764477,
+        "effect_size": 0.0013854538068922826
+      },
+      {
+        "effect": "genotype:treatment:sex",
+        "df1": 1.0,
+        "df2": 40.0,
+        "statistic": 0.07401466079151847,
+        "p_value": 0.7869780803081738,
+        "effect_size": 0.00020035624384536136
+      }
+    ]
+  },
+  "container": {
+    "image": "localhost/pubplot:0.1.0",
+    "image_id": "6192160892c9cd60dc3c82d9f1fc3a7bc849f2da45750786d034ed45e9a6b073",
+    "digest": "sha256:0b27b73f590b4a5c3eb79ce87d8ed965bbf52e94918d7fd3fabfe303c547d856",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_response_threeway_py.pdf",
+    "figure_response_threeway_py.png",
+    "figure_response_threeway_py.svg"
+  ]
+}

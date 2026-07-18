@@ -1,0 +1,105 @@
+{
+  "pubplot_version": "0.1.0",
+  "pubplot_git_commit": "cf6e272",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "cox_forest",
+  "recipe_version": "1",
+  "arguments": {
+    "x": null,
+    "y": null,
+    "fill": null,
+    "facet": null,
+    "time": "time",
+    "event": "event",
+    "covariates": [
+      "arm",
+      "age",
+      "sex",
+      "stage"
+    ]
+  },
+  "input": {
+    "file": "input_hazard_ratios.csv",
+    "original_name": "survival_trial.csv",
+    "md5": "6f53a662fffe08afdcf72fe041adaf29",
+    "sha256": "17dccfaf72c84d69607aa73efad89ed98d9af94e72ddd285bc864fa65346b75e",
+    "n_rows": 120
+  },
+  "statistical_test": {
+    "name": "Cox proportional-hazards model",
+    "n": 120,
+    "events": 75,
+    "covariates": [
+      "arm",
+      "age",
+      "sex",
+      "stage"
+    ],
+    "proportional_hazards": {
+      "test": "proportional_hazard_test (min p)",
+      "p_value": 0.12256003845830177
+    },
+    "hazard_ratios": [
+      {
+        "term": "arm[treated]",
+        "HR": 0.5446495910272949,
+        "ci_low": 0.3372095343625995,
+        "ci_high": 0.879699850619351,
+        "p_value": 0.012993515964860746
+      },
+      {
+        "term": "age",
+        "HR": 1.004515095790653,
+        "ci_low": 0.983062836058313,
+        "ci_high": 1.0264354837348875,
+        "p_value": 0.6825276288126748
+      },
+      {
+        "term": "sex[male]",
+        "HR": 1.2092289747884706,
+        "ci_low": 0.7549859866379953,
+        "ci_high": 1.936770667730414,
+        "p_value": 0.4292316420949487
+      },
+      {
+        "term": "stage[II]",
+        "HR": 0.9628789620278184,
+        "ci_low": 0.5588367376954668,
+        "ci_high": 1.6590460737049886,
+        "p_value": 0.8916075543126436
+      },
+      {
+        "term": "stage[III]",
+        "HR": 0.7385650617304216,
+        "ci_low": 0.3943575846309485,
+        "ci_high": 1.383207453507801,
+        "p_value": 0.3438311323080432
+      }
+    ]
+  },
+  "container": {
+    "image": "localhost/pubplot:0.1.0",
+    "image_id": "6192160892c9cd60dc3c82d9f1fc3a7bc849f2da45750786d034ed45e9a6b073",
+    "digest": "sha256:0b27b73f590b4a5c3eb79ce87d8ed965bbf52e94918d7fd3fabfe303c547d856",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_hazard_ratios_cox_py.pdf",
+    "figure_hazard_ratios_cox_py.png",
+    "figure_hazard_ratios_cox_py.svg"
+  ]
+}

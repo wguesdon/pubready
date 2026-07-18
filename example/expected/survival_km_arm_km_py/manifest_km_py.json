@@ -1,0 +1,70 @@
+{
+  "pubplot_version": "0.1.0",
+  "pubplot_git_commit": "cf6e272",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "survival_km",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "arm",
+    "y": null,
+    "fill": null,
+    "facet": null,
+    "time": "time",
+    "event": "event",
+    "covariates": null
+  },
+  "input": {
+    "file": "input_arm.csv",
+    "original_name": "survival_trial.csv",
+    "md5": "6f53a662fffe08afdcf72fe041adaf29",
+    "sha256": "17dccfaf72c84d69607aa73efad89ed98d9af94e72ddd285bc864fa65346b75e",
+    "n_rows": 120
+  },
+  "statistical_test": {
+    "name": "Kaplan-Meier estimate with log-rank test",
+    "log_rank": {
+      "chisq": 7.272447205450543,
+      "df": 1,
+      "p_value": 0.007002033695484484
+    },
+    "groups": [
+      {
+        "group": "control",
+        "n": 60,
+        "events": 45,
+        "median_survival": 6.8
+      },
+      {
+        "group": "treated",
+        "n": 60,
+        "events": 30,
+        "median_survival": 11.4
+      }
+    ]
+  },
+  "container": {
+    "image": "localhost/pubplot:0.1.0",
+    "image_id": "6192160892c9cd60dc3c82d9f1fc3a7bc849f2da45750786d034ed45e9a6b073",
+    "digest": "sha256:0b27b73f590b4a5c3eb79ce87d8ed965bbf52e94918d7fd3fabfe303c547d856",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_arm_km_py.pdf",
+    "figure_arm_km_py.png",
+    "figure_arm_km_py.svg"
+  ]
+}

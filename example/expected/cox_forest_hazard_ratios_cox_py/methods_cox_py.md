@@ -1,0 +1,1 @@
+Hazard ratios were estimated with a Cox proportional-hazards model (120 subjects, 75 events) including arm, age, sex, stage. Significant predictors: arm[treated] (HR = 0.54, 95% CI 0.34-0.88, P = 0.013). The proportional-hazards assumption was not violated (minimum covariate cox.zph P = 0.12). Analyses were performed in Python 3.10.12 with lifelines 0.30.0.

@@ -12,7 +12,7 @@ expect_files=(
   "figure_*.pdf" "figure_*.png" "figure_*.svg"
   "stats_*.csv" "manifest_*.json" "methods_*.md"
   "data_log.md" "plot_config.yaml" "session_info.txt"
-  "REPRODUCE.md" "script_*.R" "input_*"
+  "REPRODUCE.md" "script_*" "input_*"
 )
 
 check_bundle() {  # $1 = output root, $2 = label
@@ -117,6 +117,25 @@ if compgen -G "$OUT/heatmap/*/expression_annotation.csv" > /dev/null; then
 else
   echo "FAIL: annotation not copied"; fail=1
 fi
+
+echo "--- Python engine (all six recipes) ---"
+pyc() {  # $1 = short label; rest = plot args
+  local label="$1"; shift
+  ./cli/figkit plot --engine python "$@" --out "$OUT/py_$label" > /dev/null 2>&1
+  if compgen -G "$OUT/py_$label/*/manifest_*.json" > /dev/null && \
+     grep -q '"engine": "python"' "$OUT"/py_$label/*/manifest_*.json; then
+    echo "PASS: python $label"
+  else
+    echo "FAIL: python $label"; fail=1
+  fi
+}
+pyc tg  --recipe two_group_compare  --data example/tumor_volume.csv     --x group --y volume
+pyc mg  --recipe multi_group_compare --data example/gene_expression.csv --x genotype --y expression
+pyc fa2 --recipe factorial_anova    --data example/twoway_response.csv   --y response --x genotype --fill treatment
+pyc fa3 --recipe factorial_anova    --data example/threeway_response.csv --y response --x genotype --fill treatment --facet sex
+pyc km  --recipe survival_km        --data example/survival_trial.csv    --time time --event event --x arm
+pyc cox --recipe cox_forest         --data example/survival_trial.csv    --time time --event event --covariates arm,age,sex,stage
+pyc hm  --recipe heatmap            --data example/expression_matrix.csv --annotation example/expression_annotation.csv
 
 echo
 if [ "$fail" -eq 0 ]; then

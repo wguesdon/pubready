@@ -234,7 +234,8 @@ recomputed so the figure and the numbers never drift apart.
 ## Recipe catalog
 
 Each recipe is a named function with a fixed argument surface, present in both
-engines. Status as of 2026-07-18 in the R engine.
+engines. As of 2026-07-18 all six are built in both R and Python; pick the engine
+per figure with `--engine r|python` (default r).
 
 - `two_group_compare` **(built)** — t-test or Mann-Whitney, paired or unpaired.
   Box or violin with a bracket on top.
@@ -245,17 +246,18 @@ engines. Status as of 2026-07-18 in the R engine.
 - `factorial_anova` **(built)** — two-way and three-way ANOVA (Type II sums of
   squares), with the aligned rank transform (ARTool) for the non-parametric
   factorial path. Grouped box or bar, faceted by the third factor, every effect's
-  p-value shown on top.
+  p-value shown on top. The Python engine is parametric only (no ART).
 - `survival_km` **(built)** — Kaplan-Meier curves with censoring ticks, the
   log-rank p-value on the plot, and a number-at-risk table. Tidy input:
   `time, event` and a grouping column.
 - `cox_forest` **(built)** — Cox proportional-hazards model, forest plot of
   hazard ratios with 95% CIs, plus a cox.zph proportional-hazards check. Tidy
   input: `time, event, covariate…`.
-- `heatmap` **(built, R)** — ComplexHeatmap clustered heatmap from a matrix CSV
-  (features by samples) plus an optional annotation CSV. Row z-score and both-axis
-  clustering by default; per-feature Welch t-test with significance stars when the
-  annotation has two groups. Python (PyComplexHeatmap) still to come.
+- `heatmap` **(built)** — clustered heatmap from a matrix CSV (features by
+  samples) plus an optional annotation CSV. Row z-score and both-axis clustering
+  by default; per-feature Welch t-test when the annotation has two groups (stars
+  on the figure in R). R uses ComplexHeatmap; Python uses PyComplexHeatmap with a
+  seaborn clustermap fallback.
 - `correlation` — Pearson or Spearman, scatter with fit and CI.
 - `proportions` — chi-square or Fisher, bar of proportions.
 
@@ -263,7 +265,9 @@ Dose-response and mixed-effects models are candidates for later versions.
 
 Container additions by family: the ANOVA family added `ARTool` + `emmeans`
 (CRAN); the survival family added `survival` + `survminer` + `broom` (CRAN); the
-heatmap added `ComplexHeatmap` (Bioconductor) + `circlize` (CRAN).
+heatmap added `ComplexHeatmap` (Bioconductor) + `circlize` (CRAN). The Python
+engine added `statsmodels`, `scikit-posthocs`, `lifelines`, and
+`PyComplexHeatmap`.
 
 ## Test selection logic
 

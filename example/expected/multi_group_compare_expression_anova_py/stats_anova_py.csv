@@ -1,0 +1,7 @@
+outcome,group1,group2,post_hoc,p_adj,p_adj_signif,displayed
+expression,het,ko,Tukey's HSD,4.9960036108132044e-15,****,True
+expression,het,rescue,Tukey's HSD,1.2967871768632122e-06,****,True
+expression,het,wt,Tukey's HSD,4.561359057131398e-08,****,True
+expression,ko,rescue,Tukey's HSD,4.884981308350689e-15,****,True
+expression,ko,wt,Tukey's HSD,4.884981308350689e-15,****,True
+expression,rescue,wt,Tukey's HSD,0.6857947897299388,ns,False

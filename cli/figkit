@@ -21,6 +21,7 @@ Usage:
   figkit shell
 
 Common plot options:
+  --engine r|python                        recipe engine (default r)
   --x, --y                                 axis columns (tidy data)
   --fill, --facet                          extra factors (factorial_anova)
   --time, --event                          survival columns (1 = event, 0 = censored)
@@ -51,9 +52,8 @@ require_image() {
   fi
 }
 
-run_r() {
-  # $1 = entry script name under core/r/entry; rest = args
-  local entry="$1"; shift
+# Shared podman run for either engine. $1 = interpreter+script; rest = args.
+container_run() {
   require_image
   podman --log-level=error run --rm \
     -v "$PWD":/work -w /work \
@@ -65,16 +65,34 @@ run_r() {
     -e PUBPLOT_PODMAN_VERSION="$(podman_version)" \
     -e PUBPLOT_GIT_COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)" \
     -e PUBPLOT_CREATED="${PUBPLOT_CREATED:-}" \
-    "$IMAGE" \
-    Rscript "/opt/pubplot/core/r/entry/${entry}.R" "$@"
+    -e PYTHONPATH=/opt/pubplot/core/python \
+    "$IMAGE" "$@"
+}
+
+run_r()  { local e="$1"; shift; container_run Rscript "/opt/pubplot/core/r/entry/${e}.R" "$@"; }
+run_py() { local e="$1"; shift; [ "$e" = "inspect" ] && e="inspect_data"; container_run python3 "/opt/pubplot/core/python/entry/${e}.py" "$@"; }
+
+# Read the value of --engine from the argument list (default r).
+engine_of() {
+  local prev="" e="r"
+  for a in "$@"; do
+    [ "$prev" = "--engine" ] && e="$a"
+    prev="$a"
+  done
+  echo "$e"
+}
+
+dispatch() {
+  local cmd="$1"; shift
+  if [ "$(engine_of "$@")" = "python" ]; then run_py "$cmd" "$@"; else run_r "$cmd" "$@"; fi
 }
 
 cmd="${1:-}"; [ $# -gt 0 ] && shift || true
 
 case "$cmd" in
-  inspect) run_r inspect "$@" ;;
-  plot)    run_r plot    "$@" ;;
-  render)  run_r render  "$@" ;;
+  inspect) dispatch inspect "$@" ;;
+  plot)    dispatch plot    "$@" ;;
+  render)  dispatch render  "$@" ;;
   build)
     podman build -t "$IMAGE" -f "$REPO_ROOT/container/Containerfile" "$REPO_ROOT"
     ;;
