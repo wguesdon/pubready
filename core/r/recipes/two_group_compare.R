@@ -129,5 +129,9 @@ recipe_two_group_compare <- function(df, spec) {
     )
   )
 
-  list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved)
+  methods <- methods_paragraph(resolved, stats_df, test_meta, spec)
+  build_script <- function(in_name, fig_stub) emit_script(spec, resolved, in_name, fig_stub)
+
+  list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
+       methods = methods, build_script = build_script)
 }

@@ -8,7 +8,7 @@ environment it was made in:
 - Container image: `localhost/pubplot:0.1.0`
 - Image id: `0fdf1a82f66f110d35bc2f0fe8b60a9bacc9d3c2d190d6c71e44034c0e4417e1`
 - Image digest: `sha256:994931c28c7be349e19f358de1261a4886f092519ef389779e2d0852bde97edf`
-- pubplot commit: `45134a5`
+- pubplot commit: `d8ea256`
 
 ## 2. Run the standalone script
 

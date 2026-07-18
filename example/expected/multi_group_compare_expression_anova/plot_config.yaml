@@ -1,0 +1,24 @@
+engine: r
+recipe: multi_group_compare
+data:
+  file: input_expression.csv
+  x: genotype
+  'y': expression
+test:
+  method: auto
+  paired: no
+  p_adjust: none
+appearance:
+  theme: pubplot_house
+  palette: ~
+  x_label: Genotype
+  y_label: Expression (a.u.)
+  title: ~
+  y_limits:
+  - ~
+  - ~
+  show_points: yes
+  geom: box
+  bracket:
+    show: yes
+    label: p.signif

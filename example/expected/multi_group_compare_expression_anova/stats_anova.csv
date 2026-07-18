@@ -1,0 +1,7 @@
+outcome,group1,group2,n1,n2,post_hoc,estimate,p_adj,p_adj_signif,displayed
+expression,het,ko,10,10,Tukey's HSD,3.91,0,****,TRUE
+expression,het,rescue,10,10,Tukey's HSD,-1.5500000000000007,1.3e-6,****,TRUE
+expression,het,wt,10,10,Tukey's HSD,-1.8200000000000003,4.56e-8,****,TRUE
+expression,ko,rescue,10,10,Tukey's HSD,-5.460000000000001,0,****,TRUE
+expression,ko,wt,10,10,Tukey's HSD,-5.73,0,****,TRUE
+expression,rescue,wt,10,10,Tukey's HSD,-0.2699999999999996,0.686,ns,FALSE

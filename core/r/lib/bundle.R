@@ -197,7 +197,7 @@ reproduce_md <- function(container, git_commit, script_name) {
 
 write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df,
                          test_meta, data_log_steps, out_root, container,
-                         git_commit, stamp = NULL) {
+                         git_commit, methods_text, build_script, stamp = NULL) {
   # A fixed --stamp gives deterministic bundle and file names (used for the
   # committed reference outputs); otherwise names carry a real UTC timestamp.
   ts      <- if (!is.null(stamp) && nzchar(stamp)) stamp else timestamp_utc()
@@ -234,12 +234,10 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
     file.path(bdir, sprintf("manifest_%s.json", ts))
   )
 
-  writeLines(methods_paragraph(resolved, stats_df, test_meta, spec),
-             file.path(bdir, sprintf("methods_%s.md", ts)))
+  writeLines(methods_text, file.path(bdir, sprintf("methods_%s.md", ts)))
 
   script_name <- sprintf("script_%s.R", ts)
-  writeLines(emit_script(spec, resolved, in_name, fig_stub),
-             file.path(bdir, script_name))
+  writeLines(build_script(in_name, fig_stub), file.path(bdir, script_name))
 
   writeLines(reproduce_md(container, git_commit, script_name),
              file.path(bdir, "REPRODUCE.md"))
