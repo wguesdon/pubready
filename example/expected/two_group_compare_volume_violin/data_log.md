@@ -9,7 +9,7 @@
 
 ## Column types (analyzed data)
 
-- `group`: character
+- `group`: factor
 - `volume`: numeric
 
 ## Cleaning steps

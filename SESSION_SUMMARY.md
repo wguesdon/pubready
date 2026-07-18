@@ -53,13 +53,23 @@ Milestone status:
   per-recipe figure sizing (recipes return width/height). Examples
   twoway_response.csv + threeway_response.csv (from make_factorial_data.R,
   seeded), reference bundles, and smoke cases [5]/[6].
-- ANOVA family now complete (one-way + factorial). Next per user's list:
-  survival family (survival_km + cox_forest; adds survival + survminer), then
-  heatmap (ComplexHeatmap / PyComplexHeatmap, matrix input, Bioconductor
-  rebuild). After recipes: Python engine, reference decision tree + Claude Code
-  skill, Codex/opencode adapters.
-- Factorial post-hoc pairwise (emmeans / ART contrasts) is installed but not yet
-  wired into the figure; effects table is the current multiple-test output.
+- ANOVA family complete (one-way + factorial).
+- Survival family BUILT: survival_km (Kaplan-Meier + censoring ticks + log-rank
+  p on plot + number-at-risk table via survminer::ggsurvplot, combined with
+  ggpubr::ggarrange) and cox_forest (Cox PH + survminer::ggforest hazard-ratio
+  forest + cox.zph check + broom HR table). Added survival + survminer to the
+  image (rebuilt). New CLI options --time/--event/--covariates. Example
+  survival_trial.csv (make_survival_data.R, seeded), reference bundles, smoke
+  cases [7]/[8].
+- Refactor: cleaning moved into recipes (each returns df_used + clean_steps);
+  recipes can supply a bundle label (survival has no x/y) and figure width/height.
+  Use survminer::surv_fit (not survfit) to avoid the "symbol not subsettable"
+  ggsurvplot error with a variable formula.
+- Next per user's list: heatmap (ComplexHeatmap / PyComplexHeatmap, matrix input,
+  Bioconductor rebuild). After recipes: Python engine, reference decision tree +
+  Claude Code skill, Codex/opencode adapters.
+- Deferred: factorial pairwise post-hoc brackets (emmeans/ART contrasts, pkgs
+  installed); survival_km currently requires a grouping column (--x).
 
 How to run (from repo root, image already built):
 - ./cli/figkit inspect --data example/tumor_volume.csv

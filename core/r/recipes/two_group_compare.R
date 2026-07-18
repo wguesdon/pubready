@@ -4,6 +4,8 @@
 # on top. Returns the plot, a tidy stats table, and test metadata.
 
 recipe_two_group_compare <- function(df, spec) {
+  cl <- clean_tidy(df, spec)
+  df <- cl$df
   x <- spec$data$x
   y <- spec$data$y
 
@@ -133,5 +135,6 @@ recipe_two_group_compare <- function(df, spec) {
   build_script <- function(in_name, fig_stub) emit_script(spec, resolved, in_name, fig_stub)
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
-       methods = methods, build_script = build_script)
+       methods = methods, build_script = build_script,
+       df_used = df, clean_steps = cl$steps)
 }

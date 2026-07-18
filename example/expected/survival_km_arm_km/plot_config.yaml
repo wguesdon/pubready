@@ -1,0 +1,29 @@
+engine: r
+recipe: survival_km
+data:
+  file: input_arm.csv
+  x: arm
+  'y': ~
+  fill: ~
+  facet: ~
+  time: time
+  event: event
+  covariates: ~
+test:
+  method: auto
+  paired: no
+  p_adjust: none
+appearance:
+  theme: pubplot_house
+  palette: ~
+  x_label: Months
+  y_label: ~
+  title: ~
+  y_limits:
+  - ~
+  - ~
+  show_points: yes
+  geom: box
+  bracket:
+    show: yes
+    label: p.signif

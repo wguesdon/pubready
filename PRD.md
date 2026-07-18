@@ -246,10 +246,12 @@ engines. Status as of 2026-07-18 in the R engine.
   squares), with the aligned rank transform (ARTool) for the non-parametric
   factorial path. Grouped box or bar, faceted by the third factor, every effect's
   p-value shown on top.
-- `survival_km` — Kaplan-Meier curves with a log-rank p-value and a risk table.
-  Tidy input: `time, event, group`.
-- `cox_forest` — Cox proportional hazards model, forest plot of hazard ratios
-  with confidence intervals. Tidy input: `time, event, covariate…`.
+- `survival_km` **(built)** — Kaplan-Meier curves with censoring ticks, the
+  log-rank p-value on the plot, and a number-at-risk table. Tidy input:
+  `time, event` and a grouping column.
+- `cox_forest` **(built)** — Cox proportional-hazards model, forest plot of
+  hazard ratios with 95% CIs, plus a cox.zph proportional-hazards check. Tidy
+  input: `time, event, covariate…`.
 - `heatmap` — ComplexHeatmap (R) / PyComplexHeatmap (Python). Input is a numeric
   matrix (features by samples) plus an optional annotation table, not tidy-long.
 - `correlation` — Pearson or Spearman, scatter with fit and CI.
@@ -258,9 +260,9 @@ engines. Status as of 2026-07-18 in the R engine.
 Dose-response and mixed-effects models are candidates for later versions.
 
 Container additions by family: the ANOVA family added `ARTool` + `emmeans`
-(CRAN); survival adds `survival` + `survminer` (CRAN); heatmaps add
-ComplexHeatmap (Bioconductor, a heavy build handled in a dedicated image
-rebuild).
+(CRAN); the survival family added `survival` + `survminer` + `broom` (CRAN);
+heatmaps will add ComplexHeatmap (Bioconductor, a heavy build handled in a
+dedicated image rebuild).
 
 ## Test selection logic
 

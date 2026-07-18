@@ -1,0 +1,95 @@
+{
+  "pubplot_version": "0.1.0",
+  "pubplot_git_commit": "90f0285",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "cox_forest",
+  "recipe_version": "1",
+  "arguments": {
+    "x": {},
+    "y": {},
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_hazard_ratios.csv",
+    "original_name": "survival_trial.csv",
+    "md5": "6f53a662fffe08afdcf72fe041adaf29",
+    "sha256": "17dccfaf72c84d69607aa73efad89ed98d9af94e72ddd285bc864fa65346b75e",
+    "n_rows": 120
+  },
+  "statistical_test": {
+    "name": "Cox proportional-hazards model",
+    "n": 120,
+    "events": 75,
+    "covariates": [
+      "arm",
+      "age",
+      "sex",
+      "stage"
+    ],
+    "proportional_hazards": {
+      "test": "cox.zph global",
+      "p_value": 0.575726
+    },
+    "hazard_ratios": [
+      {
+        "term": "armtreated",
+        "HR": 0.544649,
+        "ci_low": 0.337209,
+        "ci_high": 0.8797,
+        "p_value": 0.012993
+      },
+      {
+        "term": "age",
+        "HR": 1.004515,
+        "ci_low": 0.983063,
+        "ci_high": 1.026435,
+        "p_value": 0.682527
+      },
+      {
+        "term": "sexmale",
+        "HR": 1.209229,
+        "ci_low": 0.754986,
+        "ci_high": 1.936771,
+        "p_value": 0.429231
+      },
+      {
+        "term": "stageII",
+        "HR": 0.962879,
+        "ci_low": 0.558837,
+        "ci_high": 1.659046,
+        "p_value": 0.891608
+      },
+      {
+        "term": "stageIII",
+        "HR": 0.738565,
+        "ci_low": 0.394357,
+        "ci_high": 1.383207,
+        "p_value": 0.343831
+      }
+    ]
+  },
+  "container": {
+    "image": "localhost/pubplot:0.1.0",
+    "image_id": "ee9e40c9eb1d90c899f403012aabd98793acbeb39521f197dc3e532e26749cfb",
+    "digest": "sha256:4e3fbeae25d9038f7ddc12c0bb5713b87f5669a976b573faf2abfd4c8c30fcbc",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_hazard_ratios_cox.pdf",
+    "figure_hazard_ratios_cox.png",
+    "figure_hazard_ratios_cox.svg"
+  ]
+}

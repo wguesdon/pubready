@@ -82,6 +82,26 @@ else
   echo "FAIL: expected three-way term"; fail=1
 fi
 
+echo "[7] Kaplan-Meier + log-rank"
+./cli/figkit plot --recipe survival_km --data example/survival_trial.csv \
+  --time time --event event --x arm --xlab "Months" --out "$OUT/km"
+check_bundle "$OUT/km" "survival_km"
+if compgen -G "$OUT/km/*/stats_*.csv" > /dev/null && grep -q "log_rank_p" "$OUT"/km/*/stats_*.csv; then
+  echo "PASS: KM with log-rank"
+else
+  echo "FAIL: expected KM stats"; fail=1
+fi
+
+echo "[8] Cox hazard-ratio forest"
+./cli/figkit plot --recipe cox_forest --data example/survival_trial.csv \
+  --time time --event event --covariates "arm,age,sex,stage" --out "$OUT/cox"
+check_bundle "$OUT/cox" "cox_forest"
+if compgen -G "$OUT/cox/*/stats_*.csv" > /dev/null && grep -q "armtreated" "$OUT"/cox/*/stats_*.csv; then
+  echo "PASS: Cox HR table"
+else
+  echo "FAIL: expected Cox HR table"; fail=1
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then
   echo "ALL SMOKE TESTS PASSED"

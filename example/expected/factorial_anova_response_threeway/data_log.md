@@ -9,9 +9,9 @@
 
 ## Column types (analyzed data)
 
-- `genotype`: character
-- `treatment`: character
-- `sex`: character
+- `genotype`: factor
+- `treatment`: factor
+- `sex`: factor
 - `response`: numeric
 
 ## Cleaning steps

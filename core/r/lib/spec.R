@@ -27,7 +27,11 @@ spec_from_opt <- function(opt) {
     engine = "r",
     recipe = opt$recipe,
     data   = list(file = basename(opt$data), x = opt$x, y = opt$y,
-                  fill = opt$fill, facet = opt$facet),
+                  fill = opt$fill, facet = opt$facet,
+                  time = opt$time, event = opt$event,
+                  covariates = if (!is.null(opt$covariates)) {
+                    trimws(strsplit(opt$covariates, ",")[[1]])
+                  } else NULL),
     test   = list(
       method   = opt$test %||% "auto",
       paired   = isTRUE(opt$paired),

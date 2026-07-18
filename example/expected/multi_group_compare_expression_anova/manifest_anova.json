@@ -1,6 +1,6 @@
 {
   "pubplot_version": "0.1.0",
-  "pubplot_git_commit": "5040627",
+  "pubplot_git_commit": "90f0285",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "multi_group_compare",
@@ -47,8 +47,8 @@
   },
   "container": {
     "image": "localhost/pubplot:0.1.0",
-    "image_id": "8e759d0550177f4eec47a0d1ce44e8184a08b4703ade063539cdf2f9b2ed2a59",
-    "digest": "sha256:abd4a9e761aaeb5f2694699bd76d1800abf656cdedd37d8183c1f8e3ebf07766",
+    "image_id": "ee9e40c9eb1d90c899f403012aabd98793acbeb39521f197dc3e532e26749cfb",
+    "digest": "sha256:4e3fbeae25d9038f7ddc12c0bb5713b87f5669a976b573faf2abfd4c8c30fcbc",
     "podman_version": "4.9.3"
   },
   "environment": {
