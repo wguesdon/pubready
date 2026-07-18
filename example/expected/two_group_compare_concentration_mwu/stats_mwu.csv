@@ -1,0 +1,2 @@
+outcome,group1,group2,n1,n2,test,statistic,df,p_value,p_adjust_method,effect_size_name,effect_size,shapiro_p_group1,shapiro_p_group2,var_equal_p
+concentration,control,treated,12,12,Mann-Whitney U test,11,NA,1.44e-4,none,r (rank-biserial),NA,7.385806435948269e-6,7.854417275481864e-6,0.04941367447543188

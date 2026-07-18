@@ -1,0 +1,24 @@
+engine: r
+recipe: two_group_compare
+data:
+  file: input_concentration.csv
+  x: group
+  'y': concentration
+test:
+  method: auto
+  paired: no
+  p_adjust: none
+appearance:
+  theme: pubplot_house
+  palette: ~
+  x_label: Group
+  y_label: IL-6 (pg/mL)
+  title: ~
+  y_limits:
+  - ~
+  - ~
+  show_points: yes
+  geom: box
+  bracket:
+    show: yes
+    label: p.signif

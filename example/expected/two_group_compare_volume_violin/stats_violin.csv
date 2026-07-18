@@ -1,0 +1,2 @@
+outcome,group1,group2,n1,n2,test,statistic,df,p_value,p_adjust_method,effect_size_name,effect_size,shapiro_p_group1,shapiro_p_group2,var_equal_p
+volume,control,treated,12,12,Student's two-sample t-test,10.059451317619061,22,1.08e-9,none,Cohen's d,4.106753803422436,0.9999771354022828,0.9890035629702298,0.44006376163305627

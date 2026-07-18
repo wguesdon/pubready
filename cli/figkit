@@ -56,6 +56,7 @@ run_r() {
     -e PUBPLOT_IMAGE_DIGEST="$(image_digest)" \
     -e PUBPLOT_PODMAN_VERSION="$(podman_version)" \
     -e PUBPLOT_GIT_COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)" \
+    -e PUBPLOT_CREATED="${PUBPLOT_CREATED:-}" \
     "$IMAGE" \
     Rscript "/opt/pubplot/core/r/entry/${entry}.R" "$@"
 }
