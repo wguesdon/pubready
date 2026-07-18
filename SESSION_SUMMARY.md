@@ -32,6 +32,18 @@ Next steps (not yet started, awaiting PRD sign-off before building):
 - Milestone 1: container with both engines and pinned deps.
 - Milestone 2: figkit inspect + two_group_compare recipe in R, end to end.
 
-Open questions for the user:
-- Figure theme: single house style or journal presets from the start?
-- R core packaged as a real R package or scripts sourced by the CLI?
+Resolved this session:
+- R core: plain .R scripts sourced by the CLI, not a formal package.
+- Figure theme: one house style for v1, journal presets later.
+- Reproducibility artifact bundle: every figkit plot run writes one
+  self-contained folder with the figure, runnable script, stats CSV, a copy of
+  the input, manifest.json (provenance + container digest + package versions),
+  session_info.txt, a manuscript-ready methods_<ts>.md, and REPRODUCE.md.
+  See PRD.md "Reproducibility: the artifact bundle" for the manifest schema.
+
+Environment checked:
+- Podman 4.9.3, rootless, overlay driver. podman-compose present.
+
+Still open:
+- Excel ingestion cleaning threshold.
+- CLI distribution (container entrypoint vs installed command shelling to Podman).
