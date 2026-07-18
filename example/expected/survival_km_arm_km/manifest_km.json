@@ -1,0 +1,65 @@
+{
+  "pubplot_version": "0.1.0",
+  "pubplot_git_commit": "90f0285",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "survival_km",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "arm",
+    "y": {},
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_arm.csv",
+    "original_name": "survival_trial.csv",
+    "md5": "6f53a662fffe08afdcf72fe041adaf29",
+    "sha256": "17dccfaf72c84d69607aa73efad89ed98d9af94e72ddd285bc864fa65346b75e",
+    "n_rows": 120
+  },
+  "statistical_test": {
+    "name": "Kaplan-Meier estimate with log-rank test",
+    "log_rank": {
+      "chisq": 7.272447,
+      "df": 1,
+      "p_value": 0.007002
+    },
+    "groups": [
+      {
+        "group": "control",
+        "n": 60,
+        "events": 45,
+        "median_survival": 6.8
+      },
+      {
+        "group": "treated",
+        "n": 60,
+        "events": 30,
+        "median_survival": 11.4
+      }
+    ]
+  },
+  "container": {
+    "image": "localhost/pubplot:0.1.0",
+    "image_id": "ee9e40c9eb1d90c899f403012aabd98793acbeb39521f197dc3e532e26749cfb",
+    "digest": "sha256:4e3fbeae25d9038f7ddc12c0bb5713b87f5669a976b573faf2abfd4c8c30fcbc",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_arm_km.pdf",
+    "figure_arm_km.png",
+    "figure_arm_km.svg"
+  ]
+}

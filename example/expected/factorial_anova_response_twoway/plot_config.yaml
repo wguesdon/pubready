@@ -6,6 +6,9 @@ data:
   'y': response
   fill: treatment
   facet: ~
+  time: ~
+  event: ~
+  covariates: ~
 test:
   method: auto
   paired: no

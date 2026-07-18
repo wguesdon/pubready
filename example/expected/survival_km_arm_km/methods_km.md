@@ -1,0 +1,1 @@
+Survival was estimated by the Kaplan-Meier method and compared between groups of arm with the log-rank test (chi-square(1) = 7.27, P = 0.007). Median survival by group: control (median  6.8), treated (median 11.4). Censoring is marked with ticks and the number at risk is tabulated below the curves. Analyses were performed in R 4.4.1 with survival 3.6.4 and survminer 0.4.9.

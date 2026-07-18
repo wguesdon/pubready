@@ -6,6 +6,9 @@ data:
   'y': expression
   fill: ~
   facet: ~
+  time: ~
+  event: ~
+  covariates: ~
 test:
   method: auto
   paired: no

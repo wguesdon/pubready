@@ -9,7 +9,7 @@
 
 ## Column types (analyzed data)
 
-- `genotype`: character
+- `genotype`: factor
 - `expression`: numeric
 
 ## Cleaning steps

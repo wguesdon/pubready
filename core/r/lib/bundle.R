@@ -197,14 +197,14 @@ reproduce_md <- function(container, git_commit, script_name) {
 
 write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df,
                          test_meta, data_log_steps, out_root, container,
-                         git_commit, methods_text, build_script,
+                         git_commit, methods_text, build_script, base_label,
                          fig_width = 3.8, fig_height = 4.0, stamp = NULL) {
   # A fixed --stamp gives deterministic bundle and file names (used for the
   # committed reference outputs); otherwise names carry a real UTC timestamp.
   ts      <- if (!is.null(stamp) && nzchar(stamp)) stamp else timestamp_utc()
   env_created <- Sys.getenv("PUBPLOT_CREATED", "")
   created <- if (nzchar(env_created)) env_created else iso_utc()
-  base     <- slugify(spec$data$y)
+  base     <- slugify(base_label)
   bdir     <- file.path(out_root, sprintf("%s_%s_%s", spec$recipe, base, ts))
   dir.create(bdir, recursive = TRUE, showWarnings = FALSE)
 

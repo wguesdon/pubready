@@ -5,10 +5,13 @@ suppressPackageStartupMessages(library(optparse))
 opts <- list(
   make_option("--recipe",   type = "character"),
   make_option("--data",     type = "character"),
-  make_option("--x",        type = "character"),
-  make_option("--y",        type = "character"),
+  make_option("--x",        type = "character", default = NULL),
+  make_option("--y",        type = "character", default = NULL),
   make_option("--fill",     type = "character", default = NULL),
   make_option("--facet",    type = "character", default = NULL),
+  make_option("--time",     type = "character", default = NULL),
+  make_option("--event",    type = "character", default = NULL),
+  make_option("--covariates", type = "character", default = NULL),
   make_option("--test",     type = "character", default = "auto"),
   make_option("--paired",   action = "store_true", default = FALSE),
   make_option("--p_adjust", type = "character", default = "none"),
@@ -23,7 +26,7 @@ opts <- list(
 )
 opt <- parse_args(OptionParser(option_list = opts))
 
-for (req in c("recipe", "data", "x", "y")) {
+for (req in c("recipe", "data")) {
   if (is.null(opt[[req]])) stop(sprintf("missing required --%s", req))
 }
 

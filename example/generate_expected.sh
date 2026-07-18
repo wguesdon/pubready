@@ -38,4 +38,14 @@ rm -rf "$OUT"
   --y response --x genotype --fill treatment --facet sex --ylab "Response (a.u.)" \
   --stamp threeway --out "$OUT"
 
+# Kaplan-Meier survival curves with log-rank p and risk table
+./cli/figkit plot --recipe survival_km --data example/survival_trial.csv \
+  --time time --event event --x arm --xlab "Months" \
+  --stamp km --out "$OUT"
+
+# Cox proportional-hazards forest plot of hazard ratios
+./cli/figkit plot --recipe cox_forest --data example/survival_trial.csv \
+  --time time --event event --covariates "arm,age,sex,stage" \
+  --stamp cox --out "$OUT"
+
 echo "Reference bundles written under $OUT/"

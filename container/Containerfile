@@ -20,6 +20,7 @@ RUN install2.r --error --skipinstalled \
       readr readxl \
       jsonlite digest yaml optparse svglite scales \
       ARTool emmeans broom car \
+      survival survminer \
  && rm -rf /tmp/downloaded_packages
 
 # Python packages via uv. The built image freezes the resolved set into
