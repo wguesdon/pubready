@@ -16,7 +16,7 @@ From inside this folder:
 
 ```bash
 podman run --rm -v "$PWD":/work -w /work \
-  localhost/pubplot:0.1.0 Rscript script_twoway.R
+  localhost/pubplot:0.1.0 Rscript script_demo.R
 ```
 
 The script reads the bundled input copy, reruns the same test, and redraws

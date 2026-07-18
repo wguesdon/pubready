@@ -3,43 +3,30 @@
   "pubplot_git_commit": "3b5b248",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
-  "recipe": "survival_km",
+  "recipe": "heatmap",
   "recipe_version": "1",
   "arguments": {
-    "x": "arm",
+    "x": {},
     "y": {},
     "test": "auto",
     "paired": false,
     "p_adjust": "none"
   },
   "input": {
-    "file": "input_arm.csv",
-    "original_name": "survival_trial.csv",
-    "md5": "6f53a662fffe08afdcf72fe041adaf29",
-    "sha256": "17dccfaf72c84d69607aa73efad89ed98d9af94e72ddd285bc864fa65346b75e",
-    "n_rows": 120
+    "file": "input_expression_matrix.csv",
+    "original_name": "expression_matrix.csv",
+    "md5": "ca9f8a5e682388268ffb561ea779a536",
+    "sha256": "88a6c73257c7a2c3c3f481165584f21cb60cc907778508e023fb2762472198f4",
+    "n_rows": 30
   },
   "statistical_test": {
-    "name": "Kaplan-Meier estimate with log-rank test",
-    "log_rank": {
-      "chisq": 7.272447,
-      "df": 1,
-      "p_value": 0.007002
-    },
-    "groups": [
-      {
-        "group": "control",
-        "n": 60,
-        "events": 45,
-        "median_survival": 6.8
-      },
-      {
-        "group": "treated",
-        "n": 60,
-        "events": 30,
-        "median_survival": 11.4
-      }
-    ]
+    "name": "Clustered heatmap (ComplexHeatmap)",
+    "scale": "row",
+    "clustering": "both",
+    "n_features": 30,
+    "n_samples": 20,
+    "per_feature_test": "per-feature Welch t-test (control vs treated), BH-adjusted",
+    "n_significant": 20
   },
   "container": {
     "image": "localhost/pubplot:0.1.0",
@@ -58,8 +45,8 @@
     }
   },
   "outputs": [
-    "figure_arm_km.pdf",
-    "figure_arm_km.png",
-    "figure_arm_km.svg"
+    "figure_expression_matrix_demo.pdf",
+    "figure_expression_matrix_demo.png",
+    "figure_expression_matrix_demo.svg"
   ]
 }

@@ -1,14 +1,14 @@
 engine: r
-recipe: two_group_compare
+recipe: heatmap
 data:
-  file: input_concentration.csv
-  x: group
-  'y': concentration
+  file: input_expression_matrix.csv
+  x: ~
+  'y': ~
   fill: ~
   facet: ~
   time: ~
   event: ~
-  annotation: ~
+  annotation: example/expression_annotation.csv
   covariates: ~
 test:
   method: auto
@@ -17,8 +17,8 @@ test:
 appearance:
   theme: pubplot_house
   palette: ~
-  x_label: Group
-  y_label: IL-6 (pg/mL)
+  x_label: ~
+  y_label: ~
   title: ~
   y_limits:
   - ~

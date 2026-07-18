@@ -11,7 +11,19 @@ slugify <- function(s) {
   gsub("^_|_$", "", s)
 }
 
-save_figure <- function(plot, dir, stub, width = 3.8, height = 4.0) {
+save_figure <- function(plot, dir, stub, width = 3.8, height = 4.0, draw = NULL) {
+  # draw is a function that renders to the active device (base-graphics style,
+  # e.g. ComplexHeatmap); otherwise plot is a ggplot/grob saved with ggsave.
+  if (!is.null(draw)) {
+    grDevices::cairo_pdf(file.path(dir, paste0(stub, ".pdf")), width = width, height = height)
+    draw(); grDevices::dev.off()
+    grDevices::png(file.path(dir, paste0(stub, ".png")), width = width, height = height,
+                   units = "in", res = 300, bg = "white")
+    draw(); grDevices::dev.off()
+    grDevices::svg(file.path(dir, paste0(stub, ".svg")), width = width, height = height)
+    draw(); grDevices::dev.off()
+    return(invisible())
+  }
   ggplot2::ggsave(file.path(dir, paste0(stub, ".pdf")), plot,
                   width = width, height = height, device = grDevices::cairo_pdf)
   ggplot2::ggsave(file.path(dir, paste0(stub, ".png")), plot,
@@ -198,6 +210,7 @@ reproduce_md <- function(container, git_commit, script_name) {
 write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df,
                          test_meta, data_log_steps, out_root, container,
                          git_commit, methods_text, build_script, base_label,
+                         draw = NULL, extra_inputs = NULL,
                          fig_width = 3.8, fig_height = 4.0, stamp = NULL) {
   # A fixed --stamp gives deterministic bundle and file names (used for the
   # committed reference outputs); otherwise names carry a real UTC timestamp.
@@ -209,7 +222,7 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
   dir.create(bdir, recursive = TRUE, showWarnings = FALSE)
 
   fig_stub <- sprintf("figure_%s_%s", base, ts)
-  save_figure(plot, bdir, fig_stub, width = fig_width, height = fig_height)
+  save_figure(plot, bdir, fig_stub, width = fig_width, height = fig_height, draw = draw)
 
   readr::write_csv(stats_df, file.path(bdir, sprintf("stats_%s.csv", ts)))
 
@@ -217,6 +230,14 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
   in_name <- sprintf("input_%s.%s", base, if (nzchar(in_ext)) in_ext else "csv")
   file.copy(raw_input_path, file.path(bdir, in_name), overwrite = TRUE)
   sums <- file_checksums(raw_input_path)
+
+  # Copy any secondary input files (e.g. a heatmap annotation table) with their
+  # original names so the standalone script and REPRODUCE step can find them.
+  for (ex in extra_inputs) {
+    if (!is.null(ex) && nzchar(ex) && file.exists(ex)) {
+      file.copy(ex, file.path(bdir, basename(ex)), overwrite = TRUE)
+    }
+  }
 
   write_data_log(file.path(bdir, "data_log.md"),
                  raw_input_path, in_name, sums, df_used, data_log_steps)

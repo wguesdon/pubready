@@ -10,8 +10,10 @@ default_appearance <- function() {
     title       = NULL,
     y_limits    = list(NULL, NULL),
     show_points = TRUE,
-    geom        = "box",           # box | violin
-    bracket     = list(show = TRUE, label = "p.signif")
+    geom        = "box",           # box | violin | bar
+    bracket     = list(show = TRUE, label = "p.signif"),
+    scale       = "row",           # heatmap: row | column | none
+    cluster     = "both"           # heatmap: both | rows | columns | none
   )
 }
 
@@ -23,12 +25,15 @@ spec_from_opt <- function(opt) {
   if (!is.null(opt$ylab))    ap$y_label <- opt$ylab
   if (!is.null(opt$title))   ap$title   <- opt$title
   if (!is.null(opt$palette)) ap$palette <- trimws(strsplit(opt$palette, ",")[[1]])
+  if (!is.null(opt$scale))   ap$scale   <- opt$scale
+  if (!is.null(opt$cluster)) ap$cluster <- opt$cluster
   list(
     engine = "r",
     recipe = opt$recipe,
     data   = list(file = basename(opt$data), x = opt$x, y = opt$y,
                   fill = opt$fill, facet = opt$facet,
                   time = opt$time, event = opt$event,
+                  annotation = opt$annotation,
                   covariates = if (!is.null(opt$covariates)) {
                     trimws(strsplit(opt$covariates, ",")[[1]])
                   } else NULL),

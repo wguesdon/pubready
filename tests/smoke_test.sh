@@ -102,6 +102,22 @@ else
   echo "FAIL: expected Cox HR table"; fail=1
 fi
 
+echo "[9] clustered heatmap"
+./cli/figkit plot --recipe heatmap --data example/expression_matrix.csv \
+  --annotation example/expression_annotation.csv --out "$OUT/heatmap"
+check_bundle "$OUT/heatmap" "heatmap"
+if compgen -G "$OUT/heatmap/*/stats_*.csv" > /dev/null && grep -q "p_adj" "$OUT"/heatmap/*/stats_*.csv; then
+  echo "PASS: heatmap per-feature stats"
+else
+  echo "FAIL: expected heatmap stats"; fail=1
+fi
+# the annotation must be copied into the bundle for standalone reproduction
+if compgen -G "$OUT/heatmap/*/expression_annotation.csv" > /dev/null; then
+  echo "PASS: annotation copied into bundle"
+else
+  echo "FAIL: annotation not copied"; fail=1
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then
   echo "ALL SMOKE TESTS PASSED"

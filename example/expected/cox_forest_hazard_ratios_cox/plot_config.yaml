@@ -8,6 +8,7 @@ data:
   facet: ~
   time: time
   event: event
+  annotation: ~
   covariates:
   - arm
   - age
@@ -31,3 +32,5 @@ appearance:
   bracket:
     show: yes
     label: p.signif
+  scale: row
+  cluster: both
