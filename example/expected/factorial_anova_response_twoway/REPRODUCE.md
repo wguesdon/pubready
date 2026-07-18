@@ -6,9 +6,9 @@ environment it was made in:
 ## 1. Get the pinned environment
 
 - Container image: `localhost/pubplot:0.1.0`
-- Image id: `ee9e40c9eb1d90c899f403012aabd98793acbeb39521f197dc3e532e26749cfb`
-- Image digest: `sha256:4e3fbeae25d9038f7ddc12c0bb5713b87f5669a976b573faf2abfd4c8c30fcbc`
-- pubplot commit: `90f0285`
+- Image id: `7113ab1438c72d6287b277e29ae50e1612e26d679e505d5cdac6f799ff52ff79`
+- Image digest: `sha256:193a667e0981eb819e289eff0b06cbb512622d94fdb508a6e26fd81b8f8a7c74`
+- pubplot commit: `3b5b248`
 
 ## 2. Run the standalone script
 

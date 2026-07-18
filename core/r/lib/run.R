@@ -36,6 +36,8 @@ run_recipe <- function(spec, raw_input, out_root, sheet = NULL, stamp = NULL) {
     build_script   = res$build_script,
     base_label     = res$label %||% spec$data$y %||% spec$data$time %||%
                      spec$data$x %||% spec$recipe,
+    draw           = res$draw,
+    extra_inputs   = res$extra_inputs,
     fig_width      = res$width %||% 3.8,
     fig_height     = res$height %||% 4.0,
     stamp          = stamp

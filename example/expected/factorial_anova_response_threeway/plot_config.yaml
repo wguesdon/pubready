@@ -8,6 +8,7 @@ data:
   facet: sex
   time: ~
   event: ~
+  annotation: ~
   covariates: ~
 test:
   method: auto
@@ -27,3 +28,5 @@ appearance:
   bracket:
     show: yes
     label: p.signif
+  scale: row
+  cluster: both

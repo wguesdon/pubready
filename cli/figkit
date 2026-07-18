@@ -25,6 +25,9 @@ Common plot options:
   --fill, --facet                          extra factors (factorial_anova)
   --time, --event                          survival columns (1 = event, 0 = censored)
   --covariates "a,b,c"                     Cox model covariates
+  --annotation FILE                        heatmap column annotation CSV
+  --scale row|column|none                  heatmap value scaling
+  --cluster both|rows|columns|none         heatmap clustering
   --test auto|welch_t|wilcoxon|anova|kruskal|art   choose or force the test
   --paired                                 paired design
   --geom box|violin|bar                    plot geometry
@@ -33,7 +36,7 @@ Common plot options:
   --out DIR                                output root (default pubplot_output)
 
 Recipes: two_group_compare, multi_group_compare, factorial_anova,
-         survival_km, cox_forest
+         survival_km, cox_forest, heatmap
 EOF
 }
 

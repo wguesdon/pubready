@@ -48,4 +48,9 @@ rm -rf "$OUT"
   --time time --event event --covariates "arm,age,sex,stage" \
   --stamp cox --out "$OUT"
 
+# Clustered heatmap (row z-score, cluster both) with group annotation + sig stars
+./cli/figkit plot --recipe heatmap --data example/expression_matrix.csv \
+  --annotation example/expression_annotation.csv \
+  --stamp demo --out "$OUT"
+
 echo "Reference bundles written under $OUT/"

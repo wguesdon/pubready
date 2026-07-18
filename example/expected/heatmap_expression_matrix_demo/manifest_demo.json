@@ -1,0 +1,52 @@
+{
+  "pubplot_version": "0.1.0",
+  "pubplot_git_commit": "3b5b248",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "heatmap",
+  "recipe_version": "1",
+  "arguments": {
+    "x": {},
+    "y": {},
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_expression_matrix.csv",
+    "original_name": "expression_matrix.csv",
+    "md5": "ca9f8a5e682388268ffb561ea779a536",
+    "sha256": "88a6c73257c7a2c3c3f481165584f21cb60cc907778508e023fb2762472198f4",
+    "n_rows": 30
+  },
+  "statistical_test": {
+    "name": "Clustered heatmap (ComplexHeatmap)",
+    "scale": "row",
+    "clustering": "both",
+    "n_features": 30,
+    "n_samples": 20,
+    "per_feature_test": "per-feature Welch t-test (control vs treated), BH-adjusted",
+    "n_significant": 20
+  },
+  "container": {
+    "image": "localhost/pubplot:0.1.0",
+    "image_id": "7113ab1438c72d6287b277e29ae50e1612e26d679e505d5cdac6f799ff52ff79",
+    "digest": "sha256:193a667e0981eb819e289eff0b06cbb512622d94fdb508a6e26fd81b8f8a7c74",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_expression_matrix_demo.pdf",
+    "figure_expression_matrix_demo.png",
+    "figure_expression_matrix_demo.svg"
+  ]
+}

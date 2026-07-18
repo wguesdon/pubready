@@ -1,0 +1,32 @@
+engine: r
+recipe: heatmap
+data:
+  file: input_expression_matrix.csv
+  x: ~
+  'y': ~
+  fill: ~
+  facet: ~
+  time: ~
+  event: ~
+  annotation: example/expression_annotation.csv
+  covariates: ~
+test:
+  method: auto
+  paired: no
+  p_adjust: none
+appearance:
+  theme: pubplot_house
+  palette: ~
+  x_label: ~
+  y_label: ~
+  title: ~
+  y_limits:
+  - ~
+  - ~
+  show_points: yes
+  geom: box
+  bracket:
+    show: yes
+    label: p.signif
+  scale: row
+  cluster: both

@@ -65,11 +65,21 @@ Milestone status:
   recipes can supply a bundle label (survival has no x/y) and figure width/height.
   Use survminer::surv_fit (not survfit) to avoid the "symbol not subsettable"
   ggsurvplot error with a variable formula.
-- Next per user's list: heatmap (ComplexHeatmap / PyComplexHeatmap, matrix input,
-  Bioconductor rebuild). After recipes: Python engine, reference decision tree +
-  Claude Code skill, Codex/opencode adapters.
-- Deferred: factorial pairwise post-hoc brackets (emmeans/ART contrasts, pkgs
-  installed); survival_km currently requires a grouping column (--x).
+- heatmap BUILT: ComplexHeatmap clustered heatmap from a matrix CSV (first col =
+  feature id) + optional annotation CSV (--annotation, --scale, --cluster). Row
+  z-score + cluster both by default; per-feature Welch t-test with significance
+  stars when the annotation has 2 groups. Added ComplexHeatmap + circlize to the
+  image (rebuilt). Refactor: save_figure gained a draw-function path (base-
+  graphics devices, not just ggsave) and write_bundle copies extra_inputs (the
+  annotation) into the bundle. Example expression_matrix.csv +
+  expression_annotation.csv (make_heatmap_data.R, seeded), reference, smoke [9].
+- ALL SIX recipe families from the user's list are now built in R: two_group,
+  multi_group, factorial_anova, survival_km, cox_forest, heatmap. 9 smoke cases.
+- Next: Python engine (port the recipes; PyComplexHeatmap/lifelines/pingouin/
+  statannotations are in the image), then reference decision tree + Claude Code
+  SKILL.md, then Codex/opencode adapters.
+- Deferred: factorial pairwise post-hoc brackets (emmeans/ART contrasts);
+  survival_km requires a grouping column (--x).
 
 How to run (from repo root, image already built):
 - ./cli/figkit inspect --data example/tumor_volume.csv

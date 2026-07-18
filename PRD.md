@@ -252,17 +252,18 @@ engines. Status as of 2026-07-18 in the R engine.
 - `cox_forest` **(built)** — Cox proportional-hazards model, forest plot of
   hazard ratios with 95% CIs, plus a cox.zph proportional-hazards check. Tidy
   input: `time, event, covariate…`.
-- `heatmap` — ComplexHeatmap (R) / PyComplexHeatmap (Python). Input is a numeric
-  matrix (features by samples) plus an optional annotation table, not tidy-long.
+- `heatmap` **(built, R)** — ComplexHeatmap clustered heatmap from a matrix CSV
+  (features by samples) plus an optional annotation CSV. Row z-score and both-axis
+  clustering by default; per-feature Welch t-test with significance stars when the
+  annotation has two groups. Python (PyComplexHeatmap) still to come.
 - `correlation` — Pearson or Spearman, scatter with fit and CI.
 - `proportions` — chi-square or Fisher, bar of proportions.
 
 Dose-response and mixed-effects models are candidates for later versions.
 
 Container additions by family: the ANOVA family added `ARTool` + `emmeans`
-(CRAN); the survival family added `survival` + `survminer` + `broom` (CRAN);
-heatmaps will add ComplexHeatmap (Bioconductor, a heavy build handled in a
-dedicated image rebuild).
+(CRAN); the survival family added `survival` + `survminer` + `broom` (CRAN); the
+heatmap added `ComplexHeatmap` (Bioconductor) + `circlize` (CRAN).
 
 ## Test selection logic
 

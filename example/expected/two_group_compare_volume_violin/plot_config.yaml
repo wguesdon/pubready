@@ -24,3 +24,5 @@ appearance:
   bracket:
     show: yes
     label: p.format
+  scale: row
+  cluster: both
