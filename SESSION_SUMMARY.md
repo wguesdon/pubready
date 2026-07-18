@@ -73,13 +73,23 @@ Milestone status:
   graphics devices, not just ggsave) and write_bundle copies extra_inputs (the
   annotation) into the bundle. Example expression_matrix.csv +
   expression_annotation.csv (make_heatmap_data.R, seeded), reference, smoke [9].
-- ALL SIX recipe families from the user's list are now built in R: two_group,
-  multi_group, factorial_anova, survival_km, cox_forest, heatmap. 9 smoke cases.
-- Next: Python engine (port the recipes; PyComplexHeatmap/lifelines/pingouin/
-  statannotations are in the image), then reference decision tree + Claude Code
-  SKILL.md, then Codex/opencode adapters.
-- Deferred: factorial pairwise post-hoc brackets (emmeans/ART contrasts);
-  survival_km requires a grouping column (--x).
+- ALL SIX recipe families built in R AND Python: two_group, multi_group,
+  factorial_anova, survival_km, cox_forest, heatmap.
+- Python engine BUILT under core/python/pubplot (package) + core/python/entry.
+  figkit dispatches on --engine r|python (default r). Python stack: pingouin +
+  statannotations (two/multi-group), statsmodels (factorial, parametric only —
+  no ART), lifelines (KM + Cox), PyComplexHeatmap w/ seaborn clustermap fallback.
+  Numbers match R (KM p=0.007, Cox HR 0.545, ANOVA F identical). Added
+  statsmodels/scikit-posthocs/lifelines/PyComplexHeatmap to the image (new layer
+  after Bioconductor so R layers stay cached).
+- Python bundles are byte-identical in structure to R (engine="python" in
+  manifest, script_*.py, session_info = pip list). Reference bundles generated
+  with _py stamps alongside R in example/expected/. Smoke test now 9 R + 6 Python.
+- Gotchas fixed: entry/inspect.py shadowed stdlib inspect (renamed inspect_data.py);
+  pingouin 0.6.1 uses underscore columns (p_val, cohen_d, U_val).
+- Next: reference decision tree + Claude Code SKILL.md, then Codex/opencode
+  adapters. Deferred: factorial pairwise post-hoc brackets; survival_km needs --x;
+  Python heatmap has no per-feature stars on the figure (in stats CSV only).
 
 How to run (from repo root, image already built):
 - ./cli/figkit inspect --data example/tumor_volume.csv

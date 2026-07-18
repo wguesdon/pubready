@@ -53,4 +53,25 @@ rm -rf "$OUT"
   --annotation example/expression_annotation.csv \
   --stamp demo --out "$OUT"
 
+# ---------------------------------------------------------------------------
+# Python engine references (engine=python, _py stamp) so each recipe has both.
+# ---------------------------------------------------------------------------
+PY="--engine python"
+./cli/figkit plot $PY --recipe two_group_compare --data example/tumor_volume.csv \
+  --x group --y volume --ylab "Tumor volume (mm^3)" --xlab "Group" --stamp ttest_py --out "$OUT"
+./cli/figkit plot $PY --recipe two_group_compare --data example/cytokine_pg_ml.csv \
+  --x group --y concentration --ylab "IL-6 (pg/mL)" --xlab "Group" --stamp mwu_py --out "$OUT"
+./cli/figkit plot $PY --recipe multi_group_compare --data example/gene_expression.csv \
+  --x genotype --y expression --ylab "Expression (a.u.)" --xlab "Genotype" --stamp anova_py --out "$OUT"
+./cli/figkit plot $PY --recipe factorial_anova --data example/twoway_response.csv \
+  --y response --x genotype --fill treatment --ylab "Response (a.u.)" --stamp twoway_py --out "$OUT"
+./cli/figkit plot $PY --recipe factorial_anova --data example/threeway_response.csv \
+  --y response --x genotype --fill treatment --facet sex --ylab "Response (a.u.)" --stamp threeway_py --out "$OUT"
+./cli/figkit plot $PY --recipe survival_km --data example/survival_trial.csv \
+  --time time --event event --x arm --xlab "Months" --stamp km_py --out "$OUT"
+./cli/figkit plot $PY --recipe cox_forest --data example/survival_trial.csv \
+  --time time --event event --covariates "arm,age,sex,stage" --stamp cox_py --out "$OUT"
+./cli/figkit plot $PY --recipe heatmap --data example/expression_matrix.csv \
+  --annotation example/expression_annotation.csv --stamp demo_py --out "$OUT"
+
 echo "Reference bundles written under $OUT/"

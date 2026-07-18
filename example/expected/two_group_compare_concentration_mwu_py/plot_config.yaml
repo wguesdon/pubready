@@ -1,0 +1,32 @@
+engine: python
+recipe: two_group_compare
+data:
+  file: input_concentration.csv
+  x: group
+  y: concentration
+  fill: null
+  facet: null
+  time: null
+  event: null
+  annotation: null
+  covariates: null
+test:
+  method: auto
+  paired: false
+  p_adjust: none
+appearance:
+  theme: pubplot_house
+  palette: null
+  x_label: Group
+  y_label: IL-6 (pg/mL)
+  title: null
+  y_limits:
+  - null
+  - null
+  show_points: true
+  geom: box
+  bracket:
+    show: true
+    label: p.signif
+  scale: row
+  cluster: both

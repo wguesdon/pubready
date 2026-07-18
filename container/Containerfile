@@ -39,6 +39,12 @@ RUN install2.r --error --skipinstalled circlize GetoptLong \
  && R -q -e 'if (!requireNamespace("BiocManager", quietly=TRUE)) install.packages("BiocManager"); BiocManager::install("ComplexHeatmap", update=FALSE, ask=FALSE)' \
  && rm -rf /tmp/downloaded_packages
 
+# Extra Python packages for the Python engine (survival, factorial, heatmap).
+# Separate layer so the R/Bioconductor layers above stay cached across this add.
+COPY container/requirements-extra.txt /opt/pubplot/requirements-extra.txt
+RUN VIRTUAL_ENV=/opt/pubplot/venv uv pip install --no-cache -r /opt/pubplot/requirements-extra.txt \
+ && VIRTUAL_ENV=/opt/pubplot/venv uv pip freeze > /opt/pubplot/requirements.lock
+
 # Core scripts are mounted here at runtime by the figkit CLI.
 RUN mkdir -p /opt/pubplot/core
 

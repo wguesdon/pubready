@@ -1,6 +1,6 @@
 {
   "pubplot_version": "0.1.0",
-  "pubplot_git_commit": "3b5b248",
+  "pubplot_git_commit": "cf6e272",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "heatmap",
@@ -30,8 +30,8 @@
   },
   "container": {
     "image": "localhost/pubplot:0.1.0",
-    "image_id": "7113ab1438c72d6287b277e29ae50e1612e26d679e505d5cdac6f799ff52ff79",
-    "digest": "sha256:193a667e0981eb819e289eff0b06cbb512622d94fdb508a6e26fd81b8f8a7c74",
+    "image_id": "6192160892c9cd60dc3c82d9f1fc3a7bc849f2da45750786d034ed45e9a6b073",
+    "digest": "sha256:0b27b73f590b4a5c3eb79ce87d8ed965bbf52e94918d7fd3fabfe303c547d856",
     "podman_version": "4.9.3"
   },
   "environment": {

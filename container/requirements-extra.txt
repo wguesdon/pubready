@@ -1,0 +1,6 @@
+# Extra Python packages for the Python engine, installed in a layer after the
+# Bioconductor step so the expensive R layers stay cached across this add.
+statsmodels
+scikit-posthocs
+lifelines
+PyComplexHeatmap

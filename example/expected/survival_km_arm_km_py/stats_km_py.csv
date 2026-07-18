@@ -1,0 +1,3 @@
+group,n,events,median_survival,log_rank_p
+control,60,45,6.8,0.007002033695484484
+treated,60,30,11.4,0.007002033695484484

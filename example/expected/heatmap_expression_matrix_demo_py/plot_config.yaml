@@ -1,0 +1,32 @@
+engine: python
+recipe: heatmap
+data:
+  file: input_expression_matrix.csv
+  x: null
+  y: null
+  fill: null
+  facet: null
+  time: null
+  event: null
+  annotation: example/expression_annotation.csv
+  covariates: null
+test:
+  method: auto
+  paired: false
+  p_adjust: none
+appearance:
+  theme: pubplot_house
+  palette: null
+  x_label: null
+  y_label: null
+  title: null
+  y_limits:
+  - null
+  - null
+  show_points: true
+  geom: box
+  bracket:
+    show: true
+    label: p.signif
+  scale: row
+  cluster: both

@@ -1,0 +1,69 @@
+{
+  "pubplot_version": "0.1.0",
+  "pubplot_git_commit": "cf6e272",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "two_group_compare",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "group",
+    "y": "concentration",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_concentration.csv",
+    "original_name": "cytokine_pg_ml.csv",
+    "md5": "71253c2a457715e5eb78ba8b5da99b7b",
+    "sha256": "b4591b64add603dd5d4d265e4d7ddb417b65359ca5c76a169152e8d01041413c",
+    "n_rows": 24
+  },
+  "statistical_test": {
+    "name": "Mann-Whitney U test",
+    "statistic": 11.0,
+    "p_value": 0.0004776817289569815,
+    "adjustment": "none",
+    "effect_size": {
+      "name": "rank-biserial r",
+      "value": -0.8472222222222223
+    },
+    "assumptions": {
+      "normality": {
+        "test": "shapiro-wilk",
+        "p_group1": 7.385806425474998e-06,
+        "p_group2": 7.854417264035744e-06
+      },
+      "equal_variance": {
+        "test": "Levene",
+        "p": 0.383570595824012
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubplot:0.1.0",
+    "image_id": "6192160892c9cd60dc3c82d9f1fc3a7bc849f2da45750786d034ed45e9a6b073",
+    "digest": "sha256:0b27b73f590b4a5c3eb79ce87d8ed965bbf52e94918d7fd3fabfe303c547d856",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_concentration_mwu_py.pdf",
+    "figure_concentration_mwu_py.png",
+    "figure_concentration_mwu_py.svg"
+  ]
+}
