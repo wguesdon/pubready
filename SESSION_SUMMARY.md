@@ -40,6 +40,11 @@ Resolved this session:
   the input, manifest.json (provenance + container digest + package versions),
   session_info.txt, a manuscript-ready methods_<ts>.md, and REPRODUCE.md.
   See PRD.md "Reproducibility: the artifact bundle" for the manifest schema.
+- Bundle also includes data_log.md (original filename + md5 + sha256 + column
+  types + cleaning steps with row counts) and plot_config.yaml (editable spec:
+  engine choice, palette, labels, axis limits, theme, bracket options). The
+  agent co-edits plot_config.yaml with the user; figkit render --config
+  regenerates the figure without redoing the chat, recomputing stats each time.
 
 Environment checked:
 - Podman 4.9.3, rootless, overlay driver. podman-compose present.
