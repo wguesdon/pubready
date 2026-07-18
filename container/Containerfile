@@ -45,8 +45,18 @@ COPY container/requirements-extra.txt /opt/pubplot/requirements-extra.txt
 RUN VIRTUAL_ENV=/opt/pubplot/venv uv pip install --no-cache -r /opt/pubplot/requirements-extra.txt \
  && VIRTUAL_ENV=/opt/pubplot/venv uv pip freeze > /opt/pubplot/requirements.lock
 
+# Test tooling: testthat (R) and pytest (Python), used by `figkit test`. A late
+# layer so the heavy R/Bioconductor and Python engine layers above stay cached
+# across this add. pytest is intentionally not frozen into requirements.lock: it
+# is a dev tool, not a runtime dependency of figure generation.
+RUN install2.r --error --skipinstalled testthat \
+ && rm -rf /tmp/downloaded_packages
+RUN VIRTUAL_ENV=/opt/pubplot/venv uv pip install --no-cache "pytest>=7"
+
 # Core scripts are mounted here at runtime by the figkit CLI.
 RUN mkdir -p /opt/pubplot/core
 
+ARG PUBPLOT_VERSION=0.0.0
 LABEL org.opencontainers.image.title="pubplot" \
+      org.opencontainers.image.version="${PUBPLOT_VERSION}" \
       org.opencontainers.image.description="R and Python environment for reproducible publication-ready figures"

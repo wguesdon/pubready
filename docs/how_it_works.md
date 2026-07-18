@@ -46,9 +46,12 @@ Four pieces, kept deliberately separate.
 
 - **`figkit`** (`cli/figkit`) is the stable command surface. The agent only ever
   calls this. It runs everything inside the pinned container.
-- **Recipes** (`core/r/recipes`, `core/python/pubplot/recipes`) are the fixed
+- **Recipes** (`core/r/R`, `core/python/pubplot/recipes`) are the fixed
   functions. Each one owns its test choice, its figure, its stats table, its
-  methods paragraph, and the standalone script it emits.
+  methods paragraph, and the standalone script it emits. Both engines are proper
+  packages (`core/r` is a source R package, `core/python` has a `pyproject.toml`)
+  with their own test suites, but the code is loaded from the runtime mount, not
+  installed into the image.
 - **The container** (`container/Containerfile`) is one Podman image with R and
   Python and pinned versions. The environment is pinned by the image digest; the
   code is pinned by the pubplot git commit. Both are recorded in every bundle.
@@ -68,6 +71,8 @@ figkit plot --recipe NAME --data FILE [options]
 figkit render --config plot_config.yaml [--data FILE]
 figkit build          # build or rebuild the container image
 figkit shell          # open a shell in the image
+figkit test           # run both engines' test suites in the image
+figkit version        # print version, image tag/digest, podman, git commit
 ```
 
 Common options:
@@ -183,7 +188,7 @@ the figure.
 pubplot needs Podman and one built image.
 
 ```bash
-figkit build          # builds localhost/pubplot:0.1.0 from container/Containerfile
+figkit build          # builds localhost/pubplot:0.2.0 from container/Containerfile
 ```
 
 The image carries R (ggpubr, rstatix, ggprism, survival, survminer, ARTool,
@@ -192,9 +197,22 @@ statsmodels, scikit-posthocs, lifelines, PyComplexHeatmap), all pinned. The
 `core/` scripts are mounted at runtime, so editing a recipe does not need a
 rebuild; only changing the dependencies does.
 
+## Testing and versioning
+
+Both engines carry a unit suite. `figkit test` runs them inside the image
+against the mounted source, so the tested code is exactly what figkit runs: the
+R suite (`core/r/tests/testthat`) loads the source package with `pkgload`; the
+Python suite (`core/python/tests`) runs under `pytest`. The end-to-end
+`tests/smoke_test.sh` drives every recipe on both engines.
+
+The version lives in the root `VERSION` file and moves in lockstep across
+`core/r/DESCRIPTION`, `core/python/pubplot/version.py`, and the image tag.
+`CHANGELOG.md` records every release. "Breaking" means a change to the figkit
+command surface or to figure output, not just an internal refactor.
+
 ## Adding a recipe
 
-A recipe is one function, `recipe_<name>`, in `core/r/recipes/<name>.R` and
+A recipe is one function, `recipe_<name>`, in `core/r/R/<name>.R` and
 `core/python/pubplot/recipes/<name>.py`. It receives the raw data frame and the
 spec, and returns:
 
@@ -207,8 +225,9 @@ spec, and returns:
 
 The bundle writer does the rest. Because recipes own their own methods text and
 script, new ones plug in without touching the writer. Register the recipe by
-adding an example dataset, a smoke case in `tests/smoke_test.sh`, and a reference
-bundle in `example/generate_expected.sh`.
+adding an example dataset, a smoke case in `tests/smoke_test.sh`, a reference
+bundle in `example/generate_expected.sh`, and unit tests under
+`core/r/tests/testthat` and `core/python/tests`.
 
 ## Design principles
 

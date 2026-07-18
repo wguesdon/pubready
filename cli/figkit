@@ -4,10 +4,11 @@
 # core scripts mounted read-only, so the environment is reproducible.
 set -euo pipefail
 
-IMAGE="${PUBPLOT_IMAGE:-localhost/pubplot:0.1.0}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CORE_DIR="$REPO_ROOT/core"
+VERSION="$(cat "$REPO_ROOT/VERSION" 2>/dev/null || echo 0.0.0)"
+IMAGE="${PUBPLOT_IMAGE:-localhost/pubplot:$VERSION}"
 
 usage() {
   cat <<'EOF'
@@ -19,6 +20,8 @@ Usage:
   figkit render --config plot_config.yaml [--data FILE]
   figkit build
   figkit shell
+  figkit test
+  figkit version
 
 Common plot options:
   --engine r|python                        recipe engine (default r)
@@ -72,6 +75,37 @@ container_run() {
 run_r()  { local e="$1"; shift; container_run Rscript "/opt/pubplot/core/r/entry/${e}.R" "$@"; }
 run_py() { local e="$1"; shift; [ "$e" = "inspect" ] && e="inspect_data"; container_run python3 "/opt/pubplot/core/python/entry/${e}.py" "$@"; }
 
+# Run both engines' unit suites inside the image against the mounted source, so
+# the tested code is exactly what figkit runs. core is mounted read-only.
+run_tests() {
+  require_image
+  echo "== R engine (testthat) =="
+  podman --log-level=error run --rm \
+    -v "$CORE_DIR":/opt/pubplot/core:ro \
+    -e PUBPLOT_CORE=/opt/pubplot/core \
+    -e PUBPLOT_CORE_R=/opt/pubplot/core/r \
+    "$IMAGE" Rscript /opt/pubplot/core/r/tests/run_tests.R
+  echo
+  echo "== Python engine (pytest) =="
+  podman --log-level=error run --rm \
+    -v "$CORE_DIR":/opt/pubplot/core:ro \
+    -e PYTHONPATH=/opt/pubplot/core/python \
+    "$IMAGE" python3 -m pytest /opt/pubplot/core/python/tests -q -p no:cacheprovider
+}
+
+show_version() {
+  echo "pubplot $VERSION"
+  if podman image exists "$IMAGE" 2>/dev/null; then
+    echo "image:  $IMAGE"
+    echo "id:     $(image_id)"
+    echo "digest: $(image_digest)"
+  else
+    echo "image:  $IMAGE (not built; run: figkit build)"
+  fi
+  echo "podman: $(podman_version)"
+  echo "commit: $(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+}
+
 # Read the value of --engine from the argument list (default r).
 engine_of() {
   local prev="" e="r"
@@ -94,8 +128,12 @@ case "$cmd" in
   plot)    dispatch plot    "$@" ;;
   render)  dispatch render  "$@" ;;
   build)
-    podman build -t "$IMAGE" -f "$REPO_ROOT/container/Containerfile" "$REPO_ROOT"
+    podman build -t "$IMAGE" \
+      --build-arg "PUBPLOT_VERSION=$VERSION" \
+      -f "$REPO_ROOT/container/Containerfile" "$REPO_ROOT"
     ;;
+  test)    run_tests ;;
+  version|--version|-v) show_version ;;
   shell)
     require_image
     podman --log-level=error run --rm -it \
