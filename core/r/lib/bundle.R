@@ -197,7 +197,8 @@ reproduce_md <- function(container, git_commit, script_name) {
 
 write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df,
                          test_meta, data_log_steps, out_root, container,
-                         git_commit, methods_text, build_script, stamp = NULL) {
+                         git_commit, methods_text, build_script,
+                         fig_width = 3.8, fig_height = 4.0, stamp = NULL) {
   # A fixed --stamp gives deterministic bundle and file names (used for the
   # committed reference outputs); otherwise names carry a real UTC timestamp.
   ts      <- if (!is.null(stamp) && nzchar(stamp)) stamp else timestamp_utc()
@@ -208,7 +209,7 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
   dir.create(bdir, recursive = TRUE, showWarnings = FALSE)
 
   fig_stub <- sprintf("figure_%s_%s", base, ts)
-  save_figure(plot, bdir, fig_stub)
+  save_figure(plot, bdir, fig_stub, width = fig_width, height = fig_height)
 
   readr::write_csv(stats_df, file.path(bdir, sprintf("stats_%s.csv", ts)))
 

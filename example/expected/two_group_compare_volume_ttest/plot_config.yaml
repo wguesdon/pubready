@@ -4,6 +4,8 @@ data:
   file: input_volume.csv
   x: group
   'y': volume
+  fill: ~
+  facet: ~
 test:
   method: auto
   paired: no

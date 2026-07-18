@@ -1,0 +1,8 @@
+effect,df1,df2,statistic,p_value,effect_size,significant
+genotype,1,40,111.297,4.03e-13,0.736,TRUE
+treatment,1,40,197.012,4.81e-17,0.831,TRUE
+sex,1,40,10.203,0.003,0.203,TRUE
+genotype:treatment,1,40,10.074,0.003,0.201,TRUE
+genotype:sex,1,40,0.244,0.624,0.006,FALSE
+treatment:sex,1,40,0.512,0.479,0.013,FALSE
+genotype:treatment:sex,1,40,0.074,0.787,0.002,FALSE

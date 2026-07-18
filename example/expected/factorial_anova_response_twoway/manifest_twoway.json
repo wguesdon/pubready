@@ -1,0 +1,81 @@
+{
+  "pubplot_version": "0.1.0",
+  "pubplot_git_commit": "5040627",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "factorial_anova",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "genotype",
+    "y": "response",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_response.csv",
+    "original_name": "twoway_response.csv",
+    "md5": "dba50f83c02a1cd007bc013dd062a9b0",
+    "sha256": "e7d2443929aced46222aa951eb52064fade5b9ab5ceed25f6ebf447676bc8ff4",
+    "n_rows": 48
+  },
+  "statistical_test": {
+    "name": "2-way ANOVA",
+    "factors": [
+      "genotype",
+      "treatment"
+    ],
+    "type": "type_II_anova",
+    "residual_normality": {
+      "test": "shapiro-wilk",
+      "p": 0.340046
+    },
+    "effects": [
+      {
+        "effect": "genotype",
+        "df1": 1,
+        "df2": 42,
+        "statistic": 67.341,
+        "p_value": 2.89e-10,
+        "effect_size": 0.616
+      },
+      {
+        "effect": "treatment",
+        "df1": 2,
+        "df2": 42,
+        "statistic": 22.613,
+        "p_value": 2.16e-07,
+        "effect_size": 0.518
+      },
+      {
+        "effect": "genotype:treatment",
+        "df1": 2,
+        "df2": 42,
+        "statistic": 39.401,
+        "p_value": 2.32e-10,
+        "effect_size": 0.652
+      }
+    ]
+  },
+  "container": {
+    "image": "localhost/pubplot:0.1.0",
+    "image_id": "8e759d0550177f4eec47a0d1ce44e8184a08b4703ade063539cdf2f9b2ed2a59",
+    "digest": "sha256:abd4a9e761aaeb5f2694699bd76d1800abf656cdedd37d8183c1f8e3ebf07766",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_response_twoway.pdf",
+    "figure_response_twoway.png",
+    "figure_response_twoway.svg"
+  ]
+}

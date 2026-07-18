@@ -242,8 +242,10 @@ engines. Status as of 2026-07-18 in the R engine.
   Kruskal-Wallis chosen from the assumptions, with Tukey / Games-Howell / Dunn
   post hoc. Brackets only for significant pairs; omnibus test shown as a
   subtitle.
-- `factorial_anova` — two-way and three-way ANOVA. Non-parametric factorial via
-  aligned rank transform (ARTool) or Scheirer-Ray-Hare is an open design choice.
+- `factorial_anova` **(built)** — two-way and three-way ANOVA (Type II sums of
+  squares), with the aligned rank transform (ARTool) for the non-parametric
+  factorial path. Grouped box or bar, faceted by the third factor, every effect's
+  p-value shown on top.
 - `survival_km` — Kaplan-Meier curves with a log-rank p-value and a risk table.
   Tidy input: `time, event, group`.
 - `cox_forest` — Cox proportional hazards model, forest plot of hazard ratios
@@ -255,9 +257,10 @@ engines. Status as of 2026-07-18 in the R engine.
 
 Dose-response and mixed-effects models are candidates for later versions.
 
-Container additions by family: ANOVA needs nothing beyond the current image;
-survival adds `survival` + `survminer` (CRAN); heatmaps add ComplexHeatmap
-(Bioconductor, a heavy build handled in a dedicated image rebuild).
+Container additions by family: the ANOVA family added `ARTool` + `emmeans`
+(CRAN); survival adds `survival` + `survminer` (CRAN); heatmaps add
+ComplexHeatmap (Bioconductor, a heavy build handled in a dedicated image
+rebuild).
 
 ## Test selection logic
 

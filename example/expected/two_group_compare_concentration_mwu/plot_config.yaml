@@ -4,6 +4,8 @@ data:
   file: input_concentration.csv
   x: group
   'y': concentration
+  fill: ~
+  facet: ~
 test:
   method: auto
   paired: no

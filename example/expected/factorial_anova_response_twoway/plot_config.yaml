@@ -1,0 +1,26 @@
+engine: r
+recipe: factorial_anova
+data:
+  file: input_response.csv
+  x: genotype
+  'y': response
+  fill: treatment
+  facet: ~
+test:
+  method: auto
+  paired: no
+  p_adjust: none
+appearance:
+  theme: pubplot_house
+  palette: ~
+  x_label: ~
+  y_label: Response (a.u.)
+  title: ~
+  y_limits:
+  - ~
+  - ~
+  show_points: yes
+  geom: box
+  bracket:
+    show: yes
+    label: p.signif
