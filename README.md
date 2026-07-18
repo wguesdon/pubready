@@ -19,10 +19,31 @@ script and numbers behind it.
   Every figure ships with its script and its stats table.
 - **Runs where you work.** Claude Code, Codex, and opencode, on one shared core.
 
+## Quick start
+
+```bash
+figkit build                                    # build the container image once
+figkit inspect --data data.csv                  # see the columns and candidate x / y
+figkit plot --recipe two_group_compare --data data.csv --x group --y value
+```
+
+Each run writes a self-contained bundle: the figure, the exact script, the stats,
+a copy of the input, a manifest, and a manuscript-ready methods paragraph.
+
+## Documentation
+
+- [docs/how_it_works.md](docs/how_it_works.md) — the workflow, the recipes, the
+  bundle, the two engines, and how to add a recipe.
+- [example/README.md](example/README.md) — worked examples with R and Python
+  figures for every recipe.
+- [PRD.md](PRD.md) — the product plan.
+
 ## Status
 
-Early development. See [PRD.md](PRD.md) for the plan and
-[SESSION_SUMMARY.md](SESSION_SUMMARY.md) for current progress.
+All six recipes are built in both the R and Python engines: two-group comparison,
+multi-group ANOVA, factorial ANOVA, Kaplan-Meier, Cox hazard ratios, and
+clustered heatmaps. See [SESSION_SUMMARY.md](SESSION_SUMMARY.md) for progress and
+what comes next (the agent skill wrappers).
 
 ## Layout
 
