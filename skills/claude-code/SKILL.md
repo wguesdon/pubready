@@ -2,7 +2,7 @@
 name: pubplot
 description: >-
   Make a publication-ready figure from tidy data with the statistical test drawn
-  on top, publication figure tools publication figures style. Use when the user has a tidy CSV or Excel file and
+  on top. Use when the user has a tidy CSV or Excel file and
   wants a two-group or multi-group comparison, factorial ANOVA, Kaplan-Meier or Cox
   survival plot, or a clustered heatmap, with the right test chosen and annotated.
   Drives the figkit CLI. Do not hand-write ggplot or matplotlib.
@@ -12,8 +12,8 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 # pubplot
 
 Make a publication-ready figure from tidy data and put the statistical test on
-top, the way a scientist uses publication figure tools publication figures. A small library of tested,
-parameterized recipes does the plotting and the statistics. Your job is to choose
+top. A small library of tested, parameterized recipes does the plotting and the
+statistics. Your job is to choose
 the right test with the scientist and call the recipe. Do not write ggplot or
 matplotlib by hand. Write original plotting or stats code only when no recipe
 fits, and say so when you do.

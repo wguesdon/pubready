@@ -34,7 +34,7 @@ Kickoff session. Agreed the concept and drafted the PRD.
 Decisions made:
 - Repo name: pubplot. Private, on GitHub under wguesdon.
 - Goal: an agentic skill that turns tidy CSV/XLSX into publication-ready figures
-  with statistics drawn on top, used the way a scientist uses publication figure tools publication figures.
+  with statistics drawn on top.
 - Thin LLM. A curated library of parameterized functions does plotting and
   stats. The model chats to pick the test, then writes a short script calling
   those functions. It writes original code only when no recipe fits, and flags

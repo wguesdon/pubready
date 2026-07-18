@@ -1,10 +1,9 @@
 # How pubplot works
 
-pubplot turns tidy data into a publication-ready figure the way a scientist uses
-publication figure tools publication figures: drop the data in, decide on the right statistical test, and get a
-figure with the significance annotation drawn on top. The difference is that
-pubplot runs as an agent skill and ships a full reproducible record with every
-figure.
+pubplot turns tidy data into a publication-ready figure: drop the data in, decide
+on the right statistical test, and get a figure with the significance annotation
+drawn on top. It runs as an agent skill and ships a full reproducible record with
+every figure.
 
 This document explains the mental model, the workflow, the pieces, and how to
 drive it.

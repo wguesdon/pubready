@@ -1,8 +1,8 @@
 # pubplot (Codex adapter)
 
 When the user has tidy data and wants a publication figure, use pubplot. It makes
-a publication-ready figure with the statistical test drawn on top, the way a
-scientist uses publication figure tools publication figures. A small library of tested, parameterized recipes
+a publication-ready figure with the statistical test drawn on top. A small
+library of tested, parameterized recipes
 does the plotting and the statistics. Your job is to choose the right test with
 the user and call the recipe. Do not write ggplot or matplotlib by hand. Write
 original plotting or stats code only when no recipe fits, and say so when you do.

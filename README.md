@@ -1,7 +1,7 @@
 # pubplot
 
-An agentic skill for making publication-ready figures from tidy data, the way a
-scientist uses publication figure tools publication figures.
+An agentic skill for making publication-ready figures from tidy data, with the
+right statistical test chosen and drawn on top.
 
 Drop in a tidy CSV or Excel file, chat through the right statistical test, and
 get a figure with the significance annotation drawn on top, plus the exact
