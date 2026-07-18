@@ -23,6 +23,29 @@ Two steps, once.
 
 Open the agent in this folder and it can make figures.
 
+## Tested models
+
+pubplot is host and model agnostic: any agent that reads the adapter and can run
+`./cli/figkit` will drive it. The combinations below have produced a correct
+figure end to end.
+
+- **Claude Code** with its default model.
+- **opencode** with the models below, run as `opencode run -m <id>`:
+
+| Model (`opencode -m` id) | Result |
+|---|---|
+| `opencode/claude-sonnet-4-5` | works, including the `/pubplot` command |
+| `opencode/glm-5.2` | works |
+| `opencode/kimi-k2.7-code` | works |
+| `openrouter/qwen/qwen3-coder` | works |
+| `opencode/deepseek-v4-pro` | works |
+| `opencode/minimax-m3` | works |
+| `opencode/grok-4.5` | works |
+| `openrouter/openai/gpt-oss-120b` | works, but wants a directive prompt |
+
+**Codex** reads the adapter and runs the correct `figkit` command, but producing
+a figure needs Codex run outside its sandbox, since Podman needs a user namespace.
+
 ## Documentation
 
 - [docs/how_it_works.md](docs/how_it_works.md) — the workflow, the recipes, the bundle, and how to add one.
