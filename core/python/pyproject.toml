@@ -3,6 +3,7 @@ name = "pubplot"
 description = "Publication-ready figures with statistics, Python engine for pubplot."
 readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
 authors = [{ name = "William Guesdon", email = "wguesdon@gmail.com" }]
 dynamic = ["version"]
 dependencies = [
