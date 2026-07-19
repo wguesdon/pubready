@@ -11,7 +11,9 @@ def palette(n, custom=None):
     return [cols[i % len(cols)] for i in range(n)]
 
 
-def apply_pub_style(ax):
+def apply_pub_style(ax, theme="pubplot_house"):
+    if theme == "prism":
+        return apply_prism_style(ax)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     for s in ("left", "bottom"):
@@ -21,6 +23,25 @@ def apply_pub_style(ax):
     for lbl in (ax.xaxis.label, ax.yaxis.label):
         lbl.set_color("black")
         lbl.set_fontsize(13)
+    return ax
+
+
+def apply_prism_style(ax):
+    """A GraphPad Prism look: thick black axes, outward bold ticks, larger
+    labels. Matches the R ggprism::theme_prism variant."""
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    for s in ("left", "bottom"):
+        ax.spines[s].set_linewidth(1.3)
+        ax.spines[s].set_color("black")
+    ax.tick_params(colors="black", labelsize=12, width=1.3, length=6,
+                   direction="out")
+    for lbl in (ax.xaxis.label, ax.yaxis.label):
+        lbl.set_color("black")
+        lbl.set_fontsize(14)
+        lbl.set_fontweight("bold")
+    for lbl in ax.get_xticklabels():
+        lbl.set_fontweight("bold")
     return ax
 
 

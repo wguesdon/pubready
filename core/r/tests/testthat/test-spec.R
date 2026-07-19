@@ -23,6 +23,14 @@ test_that("spec_from_opt splits palette and covariates on commas", {
   expect_equal(spec$data$covariates, c("age", "sex", "stage"))
 })
 
+test_that("spec_from_opt carries the theme and defaults to the house style", {
+  opt <- list(recipe = "two_group_compare", data = "d.csv", x = "g", y = "v",
+              theme = "prism")
+  expect_equal(spec_from_opt(opt)$appearance$theme, "prism")
+  opt2 <- list(recipe = "two_group_compare", data = "d.csv", x = "g", y = "v")
+  expect_equal(spec_from_opt(opt2)$appearance$theme, "pubplot_house")
+})
+
 test_that("fix_axis_keys restores YAML-coerced boolean axis keys", {
   d <- list("TRUE" = "volume", x = "group")
   fixed <- fix_axis_keys(d)

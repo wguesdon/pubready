@@ -99,7 +99,7 @@ def recipe_multi_group_compare(df, spec):
     ax.set_xlabel(ap.get("x_label") or x)
     ax.set_ylabel(ap.get("y_label") or y)
     ax.set_title(f"{cap_first(label)}, P = {omni['p']:.2g}", fontsize=10, color="#4d4d4d")
-    apply_pub_style(ax)
+    apply_pub_style(ax, ap.get("theme"))
     fig.tight_layout()
 
     stats_df = pd.DataFrame([{

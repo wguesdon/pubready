@@ -55,7 +55,7 @@ recipe_survival_km <- function(df, spec) {
     censor = TRUE, palette = pal[seq_along(lvls)],
     legend.title = group_col, legend.labs = lvls,
     xlab = xlab, ylab = ylab,
-    ggtheme = theme_pubplot(),
+    ggtheme = pub_theme(spec$appearance$theme),
     risk.table.fontsize = 3.2,
     tables.theme = survminer::theme_cleantable()
   )

@@ -19,6 +19,7 @@ opts <- list(
   make_option("--paired",   action = "store_true", default = FALSE),
   make_option("--p_adjust", type = "character", default = "none"),
   make_option("--geom",     type = "character", default = "box"),
+  make_option("--theme",    type = "character", default = NULL),
   make_option("--xlab",     type = "character", default = NULL),
   make_option("--ylab",     type = "character", default = NULL),
   make_option("--title",    type = "character", default = NULL),

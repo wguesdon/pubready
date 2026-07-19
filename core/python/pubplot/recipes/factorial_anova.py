@@ -89,7 +89,7 @@ def recipe_factorial_anova(df, spec):
             ax.set_title(str(fl), fontsize=11)
         ax.set_xlabel(ap.get("x_label") or f1)
         ax.set_ylabel(ap.get("y_label") or y if ax is axes[0] else "")
-        apply_pub_style(ax)
+        apply_pub_style(ax, ap.get("theme"))
     handles = [mpatches.Patch(color=pal[i], label=lvl) for i, lvl in enumerate(f2_lv)]
     axes[-1].legend(handles=handles, title=f2, loc="center left",
                     bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=9)

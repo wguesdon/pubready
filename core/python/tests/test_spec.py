@@ -28,3 +28,11 @@ def test_default_appearance_shape():
     ap = default_appearance()
     assert ap["bracket"] == {"show": True, "label": "p.signif"}
     assert ap["y_limits"] == [None, None]
+
+
+def test_spec_from_args_carries_theme():
+    a = SimpleNamespace(recipe="two_group_compare", data="d.csv",
+                        x="g", y="v", theme="prism")
+    assert spec_from_args(a)["appearance"]["theme"] == "prism"
+    b = SimpleNamespace(recipe="two_group_compare", data="d.csv", x="g", y="v")
+    assert spec_from_args(b)["appearance"]["theme"] == "pubplot_house"

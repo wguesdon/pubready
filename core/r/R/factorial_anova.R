@@ -106,7 +106,7 @@ recipe_factorial_anova <- function(df, spec) {
     ggplot2::labs(x = spec$appearance$x_label %||% f1,
                   y = spec$appearance$y_label %||% y,
                   fill = f2, title = spec$appearance$title, subtitle = subtitle) +
-    theme_pubplot() +
+    pub_theme(spec$appearance$theme) +
     ggplot2::theme(legend.position = "right",
                    plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 9.5, colour = "grey30"))
   if (!is.null(f3) && nzchar(f3)) {

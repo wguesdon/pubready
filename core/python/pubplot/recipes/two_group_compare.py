@@ -95,7 +95,7 @@ def recipe_two_group_compare(df, spec):
     yl = ap.get("y_limits") or [None, None]
     if yl[0] is not None or yl[1] is not None:
         ax.set_ylim(yl[0], yl[1])
-    apply_pub_style(ax)
+    apply_pub_style(ax, ap.get("theme"))
     fig.tight_layout()
 
     stats_df = pd.DataFrame([{

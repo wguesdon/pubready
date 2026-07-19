@@ -24,6 +24,8 @@ def spec_from_args(a):
     ap = default_appearance()
     if getattr(a, "geom", None):
         ap["geom"] = a.geom
+    if getattr(a, "theme", None):
+        ap["theme"] = a.theme
     if getattr(a, "xlab", None):
         ap["x_label"] = a.xlab
     if getattr(a, "ylab", None):

@@ -122,7 +122,7 @@ recipe_multi_group_compare <- function(df, spec) {
                   y = spec$appearance$y_label %||% y,
                   title = spec$appearance$title,
                   subtitle = omni_lab) +
-    theme_pubplot() +
+    pub_theme(spec$appearance$theme) +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"))
   if (nrow(sig) > 0) {
     p <- p + ggpubr::stat_pvalue_manual(sig, label = "lab", tip.length = 0.01, bracket.size = 0.4)

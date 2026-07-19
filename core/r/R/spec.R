@@ -21,6 +21,7 @@ default_appearance <- function() {
 spec_from_opt <- function(opt) {
   ap <- default_appearance()
   if (!is.null(opt$geom))    ap$geom    <- opt$geom
+  if (!is.null(opt$theme))   ap$theme   <- opt$theme
   if (!is.null(opt$xlab))    ap$x_label <- opt$xlab
   if (!is.null(opt$ylab))    ap$y_label <- opt$ylab
   if (!is.null(opt$title))   ap$title   <- opt$title

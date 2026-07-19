@@ -89,7 +89,7 @@ recipe_two_group_compare <- function(df, spec) {
       y     = spec$appearance$y_label %||% y,
       title = spec$appearance$title
     ) +
-    theme_pubplot()
+    pub_theme(spec$appearance$theme)
 
   ylim <- spec$appearance$y_limits
   ymin <- if (length(ylim) >= 1) ylim[[1]] else NULL

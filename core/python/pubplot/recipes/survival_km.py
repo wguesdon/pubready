@@ -58,7 +58,7 @@ def recipe_survival_km(df, spec):
     ax.set_ylabel(spec["appearance"].get("y_label") or "Survival probability")
     ax.set_ylim(0, 1.02)
     ax.legend(title=g, frameon=False, fontsize=10)
-    apply_pub_style(ax)
+    apply_pub_style(ax, spec["appearance"].get("theme"))
     add_at_risk_counts(*kmfs, ax=ax)
     fig.tight_layout()
 

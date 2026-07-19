@@ -20,7 +20,8 @@ def main():
     p.add_argument("--test", default="auto")
     p.add_argument("--paired", action="store_true")
     p.add_argument("--p_adjust", default="none")
-    p.add_argument("--geom"); p.add_argument("--xlab"); p.add_argument("--ylab"); p.add_argument("--title")
+    p.add_argument("--geom"); p.add_argument("--theme")
+    p.add_argument("--xlab"); p.add_argument("--ylab"); p.add_argument("--title")
     p.add_argument("--palette"); p.add_argument("--sheet"); p.add_argument("--stamp")
     p.add_argument("--engine")  # consumed by the figkit dispatcher; ignored here
     p.add_argument("--out", default="pubplot_output")

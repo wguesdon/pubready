@@ -14,3 +14,15 @@ theme_pubplot <- function(base_size = 13) {
       legend.position = "none"
     )
 }
+
+# Resolve the ggplot theme from the spec. "prism" gives the GraphPad Prism look
+# via ggprism::theme_prism; anything else is the house style. A custom --palette
+# still applies on top, because the recipes set the fill scale themselves.
+pub_theme <- function(theme = "pubplot_house", base_size = 13) {
+  if (identical(theme, "prism")) {
+    ggprism::theme_prism(base_size = base_size) +
+      ggplot2::theme(legend.position = "none")
+  } else {
+    theme_pubplot(base_size)
+  }
+}
