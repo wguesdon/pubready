@@ -9,7 +9,7 @@ from scipy import stats
 from statannotations.Annotator import Annotator
 
 from ..clean import clean_xy
-from ..theme import apply_pub_style, new_fig, palette
+from ..theme import add_dist_geom, apply_pub_style, new_fig, palette
 from ..util import cap_first, p_stars, shapiro_normal
 
 
@@ -70,16 +70,7 @@ def recipe_two_group_compare(df, spec):
     geom = ap.get("geom") or "box"
     w, h = 3.8, 4.0
     fig, ax = new_fig(w, h)
-    if geom == "violin":
-        sns.violinplot(data=df, x=x, y=y, hue=x, order=lv, palette=pal, ax=ax,
-                       legend=False, cut=0, inner=None, alpha=0.9)
-    else:
-        sns.boxplot(data=df, x=x, y=y, hue=x, order=lv, palette=pal, ax=ax,
-                    legend=False, width=0.6, fliersize=0)
-    if ap.get("show_points", True):
-        sns.stripplot(data=df, x=x, y=y, hue=x, order=lv, palette=pal, ax=ax,
-                      legend=False, size=4, alpha=0.75, edgecolor="black",
-                      linewidth=0.3, jitter=0.12)
+    add_dist_geom(ax, df, x, y, lv, pal, geom, ap.get("show_points", True))
 
     blabel = (ap.get("bracket") or {}).get("label", "p.signif")
     ann = f"p = {pval:.2g}" if blabel == "p.format" else p_stars(pval)

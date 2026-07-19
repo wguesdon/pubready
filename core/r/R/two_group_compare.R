@@ -68,18 +68,7 @@ recipe_two_group_compare <- function(df, spec) {
   # layer inherits global aesthetics, and a global fill would break it because
   # its data has no grouping column.
   p <- ggplot2::ggplot(df, ggplot2::aes(x = .data[[x]], y = .data[[y]]))
-  p <- if (geom == "violin") {
-    p + ggplot2::geom_violin(ggplot2::aes(fill = .data[[x]]),
-                             trim = FALSE, width = 0.7, alpha = 0.9)
-  } else {
-    p + ggplot2::geom_boxplot(ggplot2::aes(fill = .data[[x]]),
-                              width = 0.6, outlier.shape = NA, alpha = 0.9)
-  }
-  if (isTRUE(spec$appearance$show_points)) {
-    p <- p + ggplot2::geom_jitter(ggplot2::aes(fill = .data[[x]]),
-                                  width = 0.12, size = 1.6, alpha = 0.75,
-                                  shape = 21, stroke = 0.3)
-  }
+  p <- add_dist_geom(p, x, geom, spec$appearance$show_points)
   p <- p +
     ggplot2::scale_fill_manual(values = pal) +
     ggpubr::stat_pvalue_manual(stat, label = label_col, tip.length = 0.01,
