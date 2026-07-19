@@ -20,6 +20,7 @@ dependencies = [
     "scikit-posthocs",
     "lifelines",
     "PyComplexHeatmap",
+    "upsetplot",
 ]
 
 [project.optional-dependencies]

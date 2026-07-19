@@ -4,3 +4,4 @@ statsmodels
 scikit-posthocs
 lifelines
 PyComplexHeatmap
+upsetplot
