@@ -53,6 +53,24 @@ rm -rf "$OUT"
   --annotation example/expression_annotation.csv \
   --stamp demo --out "$OUT"
 
+# Correlation scatter (auto -> Pearson) with a linear fit and CI band
+./cli/figkit plot --recipe correlation --data example/correlation_xy.csv \
+  --x gene_a --y gene_b --xlab "Gene A (a.u.)" --ylab "Gene B (a.u.)" \
+  --stamp corr --out "$OUT"
+
+# Clustered correlation heatmap (Pearson) with coefficients and significance stars
+./cli/figkit plot --recipe correlation_heatmap --data example/correlation_vars.csv \
+  --stamp corrhm --out "$OUT"
+
+# UpSet plot of set intersections from a binary membership matrix
+./cli/figkit plot --recipe upset --data example/set_membership.csv \
+  --stamp upset --out "$OUT"
+
+# Prism theme (ggprism) on the two-group comparison
+./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
+  --x group --y volume --ylab "Tumor volume (mm^3)" --xlab "Group" --theme prism \
+  --stamp prism --out "$OUT"
+
 # ---------------------------------------------------------------------------
 # Python engine references (engine=python, _py stamp) so each recipe has both.
 # ---------------------------------------------------------------------------
@@ -73,5 +91,13 @@ PY="--engine python"
   --time time --event event --covariates "arm,age,sex,stage" --stamp cox_py --out "$OUT"
 ./cli/figkit plot $PY --recipe heatmap --data example/expression_matrix.csv \
   --annotation example/expression_annotation.csv --stamp demo_py --out "$OUT"
+./cli/figkit plot $PY --recipe correlation --data example/correlation_xy.csv \
+  --x gene_a --y gene_b --xlab "Gene A (a.u.)" --ylab "Gene B (a.u.)" --stamp corr_py --out "$OUT"
+./cli/figkit plot $PY --recipe correlation_heatmap --data example/correlation_vars.csv \
+  --stamp corrhm_py --out "$OUT"
+./cli/figkit plot $PY --recipe upset --data example/set_membership.csv \
+  --stamp upset_py --out "$OUT"
+./cli/figkit plot $PY --recipe two_group_compare --data example/tumor_volume.csv \
+  --x group --y volume --ylab "Tumor volume (mm^3)" --xlab "Group" --theme prism --stamp prism_py --out "$OUT"
 
 echo "Reference bundles written under $OUT/"

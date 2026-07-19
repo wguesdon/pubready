@@ -1,0 +1,32 @@
+engine: r
+recipe: correlation
+data:
+  file: input_gene_b_vs_gene_a.csv
+  x: gene_a
+  'y': gene_b
+  fill: ~
+  facet: ~
+  time: ~
+  event: ~
+  annotation: ~
+  covariates: ~
+test:
+  method: auto
+  paired: no
+  p_adjust: none
+appearance:
+  theme: pubplot_house
+  palette: ~
+  x_label: Gene A (a.u.)
+  y_label: Gene B (a.u.)
+  title: ~
+  y_limits:
+  - ~
+  - ~
+  show_points: yes
+  geom: box
+  bracket:
+    show: yes
+    label: p.signif
+  scale: row
+  cluster: both

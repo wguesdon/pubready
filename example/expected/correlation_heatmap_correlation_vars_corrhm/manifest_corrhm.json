@@ -1,0 +1,51 @@
+{
+  "pubplot_version": "0.3.0",
+  "pubplot_git_commit": "1007a90",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "correlation_heatmap",
+  "recipe_version": "1",
+  "arguments": {
+    "x": {},
+    "y": {},
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_correlation_vars.csv",
+    "original_name": "correlation_vars.csv",
+    "md5": "fda74fb3c6af78c47ab35a25d432893d",
+    "sha256": "d31b1677465e09b861a26736371b7359f231a56aff901d33242590e12f23d372",
+    "n_rows": 80
+  },
+  "statistical_test": {
+    "name": "Clustered pearson correlation heatmap (ComplexHeatmap)",
+    "method": "pearson",
+    "clustering": "both",
+    "n_variables": 8,
+    "n_pairs": 28,
+    "n_significant": 15
+  },
+  "container": {
+    "image": "localhost/pubplot:0.3.0",
+    "image_id": "2d43d34f07864b4572a53398e14ad3d1631527725b7665e04f5b88bdbf622240",
+    "digest": "sha256:f0d2e1c018a637f042a69afaca8805e828f081f54ce88287af9643aa227417a5",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_correlation_vars_corrhm.pdf",
+    "figure_correlation_vars_corrhm.png",
+    "figure_correlation_vars_corrhm.svg"
+  ]
+}

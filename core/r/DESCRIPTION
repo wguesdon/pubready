@@ -1,6 +1,6 @@
 Package: pubplot
 Title: Publication-Ready Figures with Statistics, R Engine
-Version: 0.2.0
+Version: 0.3.0
 Authors@R:
     person("William", "Guesdon", email = "wguesdon@gmail.com", role = c("aut", "cre"))
 Description: The R engine for pubplot. A curated library of parameterized recipe
@@ -17,6 +17,7 @@ Imports:
     ComplexHeatmap,
     digest,
     ggplot2,
+    ggprism,
     ggpubr,
     grDevices,
     grid,

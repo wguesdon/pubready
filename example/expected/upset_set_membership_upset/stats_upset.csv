@@ -1,0 +1,20 @@
+type,sets,degree,size
+set,apoptosis,NA,36
+set,inflammation,NA,37
+set,metabolism,NA,35
+set,cell_cycle,NA,25
+intersection,apoptosis & inflammation,2,10
+intersection,metabolism,1,10
+intersection,inflammation,1,8
+intersection,apoptosis,1,6
+intersection,apoptosis & inflammation & metabolism & cell_cycle,4,5
+intersection,apoptosis & metabolism,2,5
+intersection,inflammation & metabolism,2,5
+intersection,metabolism & cell_cycle,2,5
+intersection,cell_cycle,1,5
+intersection,apoptosis & inflammation & metabolism,3,3
+intersection,apoptosis & inflammation & cell_cycle,3,3
+intersection,apoptosis & cell_cycle,2,3
+intersection,inflammation & cell_cycle,2,2
+intersection,apoptosis & metabolism & cell_cycle,3,1
+intersection,inflammation & metabolism & cell_cycle,3,1

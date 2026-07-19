@@ -44,10 +44,14 @@ If a command reports the image is missing, run `figkit build` first.
 | `survival_km` | time, event, group | `--time --event --x` | Kaplan-Meier + log-rank |
 | `cox_forest` | time, event, covariates | `--time --event --covariates "a,b,c"` | Cox proportional hazards |
 | `heatmap` | matrix CSV + annotation CSV | `--data --annotation` | per-feature Welch t-test when the annotation has two groups |
+| `correlation` | x, y (two numeric columns) | `--x --y` | Pearson / Spearman / Kendall, chosen from normality |
+| `correlation_heatmap` | table of numeric variables | `--data` | pairwise correlation, clustered, BH-adjusted stars |
+| `upset` | binary membership matrix | `--data` | descriptive intersection sizes (no test) |
 
 Common options: `--engine r|python` (default r), `--geom box|violin|bar`,
-`--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art`, `--scale`/`--cluster`
-(heatmap), `--xlab --ylab --title --palette`, `--out DIR`.
+`--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
+`pearson|spearman|kendall`), `--scale`/`--cluster` (heatmaps),
+`--theme pubplot_house|prism`, `--xlab --ylab --title --palette`, `--out DIR`.
 
 ## Choosing the test
 

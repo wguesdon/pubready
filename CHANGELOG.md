@@ -13,6 +13,31 @@ tag move together.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-19
+
+### Added
+- `correlation` recipe (both engines): a two-variable scatter with a linear fit
+  and 95% CI band. Pearson, Spearman, or Kendall chosen from the normality of
+  each variable, or forced with `--test`; the coefficient and p are annotated on
+  the plot.
+- `correlation_heatmap` recipe (both engines): pairwise correlation among the
+  numeric columns of a table, drawn as a clustered heatmap with dendrograms and
+  per-cell coefficients with BH-adjusted significance stars. ComplexHeatmap in R,
+  seaborn `clustermap` in Python.
+- `upset` recipe (both engines): an UpSet plot of set intersections from a binary
+  membership matrix, with a descriptive set-size and intersection-size table (no
+  hypothesis test). ComplexHeatmap `UpSet` in R, the `upsetplot` package in Python.
+- `--theme prism`: the GraphPad Prism look on the comparison recipes and the
+  correlation scatter (ggprism `theme_prism` in R, a matched matplotlib style in
+  Python). The previously inert `appearance.theme` spec key is now honored.
+- Example datasets and seeded generators (`correlation_xy.csv`,
+  `correlation_vars.csv`, `set_membership.csv`), reference bundles, smoke cases,
+  and unit tests for the three new recipes.
+
+### Changed
+- Python engine adds the `upsetplot` dependency; `ggprism` is now declared in the
+  R `DESCRIPTION` Imports. Default image tag is `localhost/pubplot:0.3.0`.
+
 ## [0.2.0] - 2026-07-18
 
 ### Added
@@ -56,6 +81,7 @@ tag move together.
   stats table, input copy, manifest, methods paragraph, and `REPRODUCE.md`.
 - Host adapters for Claude Code, Codex, and opencode on one shared core.
 
-[Unreleased]: https://github.com/wguesdon/pubplot/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/wguesdon/pubplot/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/wguesdon/pubplot/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/wguesdon/pubplot/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/wguesdon/pubplot/releases/tag/v0.1.0

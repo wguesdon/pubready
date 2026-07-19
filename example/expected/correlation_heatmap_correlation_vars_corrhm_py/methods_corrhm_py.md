@@ -1,0 +1,1 @@
+Pairwise pearson correlations among 8 variables were computed and drawn as a clustered heatmap with seaborn. Variables were hierarchically clustered on both axes. Each cell shows the coefficient with Benjamini-Hochberg adjusted significance stars (15 of the 28 pairs were significant at adjusted P < 0.05). Rendered in Python 3.10.12 with seaborn 0.13.2.

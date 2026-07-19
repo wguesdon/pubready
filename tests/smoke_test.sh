@@ -118,7 +118,45 @@ else
   echo "FAIL: annotation not copied"; fail=1
 fi
 
-echo "--- Python engine (all six recipes) ---"
+echo "[10] correlation scatter (expect Pearson)"
+./cli/figkit plot --recipe correlation --data example/correlation_xy.csv \
+  --x gene_a --y gene_b --out "$OUT/corr"
+check_bundle "$OUT/corr" "correlation"
+if compgen -G "$OUT/corr/*/stats_*.csv" > /dev/null && grep -q "Pearson correlation" "$OUT"/corr/*/stats_*.csv; then
+  echo "PASS: chose Pearson correlation"
+else
+  echo "FAIL: expected Pearson correlation"; fail=1
+fi
+
+echo "[11] clustered correlation heatmap"
+./cli/figkit plot --recipe correlation_heatmap --data example/correlation_vars.csv --out "$OUT/corrhm"
+check_bundle "$OUT/corrhm" "correlation_heatmap"
+if compgen -G "$OUT/corrhm/*/stats_*.csv" > /dev/null && grep -q "p_adj" "$OUT"/corrhm/*/stats_*.csv; then
+  echo "PASS: correlation heatmap pairwise stats"
+else
+  echo "FAIL: expected correlation heatmap stats"; fail=1
+fi
+
+echo "[12] UpSet plot"
+./cli/figkit plot --recipe upset --data example/set_membership.csv --out "$OUT/upset"
+check_bundle "$OUT/upset" "upset"
+if compgen -G "$OUT/upset/*/stats_*.csv" > /dev/null && grep -q "intersection" "$OUT"/upset/*/stats_*.csv; then
+  echo "PASS: UpSet intersection stats"
+else
+  echo "FAIL: expected UpSet stats"; fail=1
+fi
+
+echo "[13] prism theme carries through"
+./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
+  --x group --y volume --theme prism --out "$OUT/prism"
+check_bundle "$OUT/prism" "prism_theme"
+if compgen -G "$OUT/prism/*/plot_config.yaml" > /dev/null && grep -q "theme: prism" "$OUT"/prism/*/plot_config.yaml; then
+  echo "PASS: prism theme recorded in config"
+else
+  echo "FAIL: expected prism theme in config"; fail=1
+fi
+
+echo "--- Python engine (all recipes) ---"
 pyc() {  # $1 = short label; rest = plot args
   local label="$1"; shift
   ./cli/figkit plot --engine python "$@" --out "$OUT/py_$label" > /dev/null 2>&1
@@ -136,6 +174,10 @@ pyc fa3 --recipe factorial_anova    --data example/threeway_response.csv --y res
 pyc km  --recipe survival_km        --data example/survival_trial.csv    --time time --event event --x arm
 pyc cox --recipe cox_forest         --data example/survival_trial.csv    --time time --event event --covariates arm,age,sex,stage
 pyc hm  --recipe heatmap            --data example/expression_matrix.csv --annotation example/expression_annotation.csv
+pyc corr    --recipe correlation         --data example/correlation_xy.csv   --x gene_a --y gene_b
+pyc corrhm  --recipe correlation_heatmap --data example/correlation_vars.csv
+pyc upset   --recipe upset               --data example/set_membership.csv
+pyc prism   --recipe two_group_compare   --data example/tumor_volume.csv     --x group --y volume --theme prism
 
 echo
 if [ "$fail" -eq 0 ]; then

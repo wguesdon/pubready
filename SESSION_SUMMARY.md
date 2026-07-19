@@ -2,6 +2,46 @@
 
 Resume point for work on pubplot. Update as work progresses.
 
+## 2026-07-19 — new recipes + Prism theme (v0.3.0)
+
+Added three recipes and a style option, mirrored across both engines, taking the
+catalog from six to nine.
+
+- `correlation` (scatter + linear fit + CI, r and p annotated). Pearson /
+  Spearman / Kendall chosen from per-variable normality, forced with `--test`.
+  R: ggplot + `ggpubr::stat_cor`. Python: `pg.corr` + `sns.regplot`. Numbers match
+  (r = 0.71, p = 2.09e-10 on the example).
+- `correlation_heatmap` (clustered correlation matrix, coefficients + BH stars in
+  each cell, dendrograms). Input is a table of numeric variables; correlation is
+  among columns. R: ComplexHeatmap draw path. Python: `sns.clustermap`. No new dep.
+- `upset` (UpSet plot from a binary membership matrix, descriptive intersection
+  sizes, no test). R: `ComplexHeatmap::make_comb_mat` + `UpSet` (no new dep).
+  Python: new `upsetplot` dependency (only reason for a rebuild).
+- `--theme prism`: wired the previously inert `appearance.theme` spec key through
+  both spec builders and both entry scripts. R adds `pub_theme()` in `theme.R`
+  branching to `ggprism::theme_prism`; Python adds `apply_prism_style` in
+  `theme.py`. Applied to the four ggplot comparison recipes + correlation scatter.
+
+Plumbing: `--theme` option added to `entry/plot.{R,py}`; `ggprism` added to
+DESCRIPTION Imports; `upsetplot` added to `requirements-extra.txt` + pyproject
+(+ image rebuilt as `localhost/pubplot:0.3.0`). Bumped VERSION / DESCRIPTION /
+version.{R,py} and the runtime image-tag fallbacks to 0.3.0.
+
+Examples/tests/docs: seeded generators `make_correlation_data.R` +
+`make_upset_data.R` → `correlation_xy.csv`, `correlation_vars.csv`,
+`set_membership.csv`; reference bundles regenerated under `example/expected/`
+(R + Python, plus a Prism showcase); `example/README.md` gallery updated; smoke
+cases [10]-[13] + Python `pyc` lines; unit tests for all three recipes and a
+theme spec test in both engines. Updated `cli/figkit`, `docs/how_it_works.md`,
+the three skill adapters + the opencode command, PRD recipe catalog, CHANGELOG.
+
+Verified: `figkit test` green (R + 20 Python), full `tests/smoke_test.sh` green
+(13 R cases + all Python), every new recipe eyeballed on both engines.
+
+Deferred: `proportions` recipe (chi-square / Fisher) remains the next candidate.
+Python UpSet emits a harmless pandas FutureWarning from inside the upsetplot
+library. cox_forest is not Prism-themed (survminer forest, low themeability).
+
 ## 2026-07-18 — packaging and versioning (v0.2.0)
 
 Turned both engines into proper packages and added release plumbing. Key

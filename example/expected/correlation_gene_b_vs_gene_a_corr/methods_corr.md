@@ -1,0 +1,1 @@
+The association between Gene A (a.u.) and Gene B (a.u.) was assessed with a Pearson correlation (n = 60). The method was chosen from the Shapiro-Wilk normality of each variable. The correlation was r = 0.71 (P = 2.1e-10), with a linear fit and 95% confidence band shown. Significance was set at P < 0.05. Rendered in R 4.4.1 with ggplot2 3.5.1 and ggpubr 0.6.0.

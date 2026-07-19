@@ -1,0 +1,68 @@
+{
+  "pubplot_version": "0.3.0",
+  "pubplot_git_commit": "1007a90",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "correlation",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "gene_a",
+    "y": "gene_b",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_gene_b_vs_gene_a.csv",
+    "original_name": "correlation_xy.csv",
+    "md5": "b4e0baa020fa210c4d2c64be1569bb31",
+    "sha256": "b7de65016a54e3a4d34983a3ea4be3515a1b0c6387dd7ffea93aab56246f7c34",
+    "n_rows": 60
+  },
+  "statistical_test": {
+    "name": "Pearson correlation",
+    "estimate": {
+      "name": "r",
+      "value": 0.7101790316900503
+    },
+    "df": 58,
+    "p_value": 2.0897966433035745e-10,
+    "conf_int": {
+      "low": 0.56,
+      "high": 0.82
+    },
+    "assumptions": {
+      "normality": {
+        "test": "shapiro-wilk",
+        "p_x": 0.19354999297818615,
+        "p_y": 0.5984877446496581
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubplot:0.3.0",
+    "image_id": "2d43d34f07864b4572a53398e14ad3d1631527725b7665e04f5b88bdbf622240",
+    "digest": "sha256:f0d2e1c018a637f042a69afaca8805e828f081f54ce88287af9643aa227417a5",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_gene_b_vs_gene_a_corr_py.pdf",
+    "figure_gene_b_vs_gene_a_corr_py.png",
+    "figure_gene_b_vs_gene_a_corr_py.svg"
+  ]
+}

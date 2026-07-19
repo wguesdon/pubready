@@ -8,7 +8,7 @@ from .recipes import get_recipe
 
 def container_info():
     return {
-        "image": os.environ.get("PUBPLOT_IMAGE", "localhost/pubplot:0.2.0"),
+        "image": os.environ.get("PUBPLOT_IMAGE", "localhost/pubplot:0.3.0"),
         "image_id": os.environ.get("PUBPLOT_IMAGE_ID", ""),
         "digest": os.environ.get("PUBPLOT_IMAGE_DIGEST", ""),
         "podman_version": os.environ.get("PUBPLOT_PODMAN_VERSION", ""),

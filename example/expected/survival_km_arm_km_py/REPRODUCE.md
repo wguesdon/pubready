@@ -5,9 +5,9 @@ environment it was made in:
 
 ## 1. Get the pinned environment
 
-- Container image: `localhost/pubplot:0.1.0`
-- Image id: `6192160892c9cd60dc3c82d9f1fc3a7bc849f2da45750786d034ed45e9a6b073`
-- pubplot commit: `cf6e272`
+- Container image: `localhost/pubplot:0.3.0`
+- Image id: `2d43d34f07864b4572a53398e14ad3d1631527725b7665e04f5b88bdbf622240`
+- pubplot commit: `1007a90`
 
 ## 2. Run the standalone script
 
@@ -15,7 +15,7 @@ From inside this folder:
 
 ```bash
 podman run --rm -v "$PWD":/work -w /work \
-  localhost/pubplot:0.1.0 python3 script_km_py.py
+  localhost/pubplot:0.3.0 python3 script_km_py.py
 ```
 
 The script reads the bundled input copy, reruns the analysis, and redraws

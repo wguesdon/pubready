@@ -33,14 +33,17 @@ Common plot options:
   --scale row|column|none                  heatmap value scaling
   --cluster both|rows|columns|none         heatmap clustering
   --test auto|welch_t|wilcoxon|anova|kruskal|art   choose or force the test
+                                           (correlation: auto|pearson|spearman|kendall)
   --paired                                 paired design
   --geom box|violin|bar                    plot geometry
+  --theme pubplot_house|prism              figure style (comparison + correlation)
   --xlab, --ylab, --title                  labels
   --palette "#3B6DB3,#C1432B"              fill colors
   --out DIR                                output root (default pubplot_output)
 
 Recipes: two_group_compare, multi_group_compare, factorial_anova,
-         survival_km, cox_forest, heatmap
+         survival_km, cox_forest, heatmap, correlation,
+         correlation_heatmap, upset
 EOF
 }
 

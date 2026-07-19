@@ -14,6 +14,8 @@ Start by inspecting the columns, then walk the design with the user before drawi
 `!./cli/figkit inspect --data $ARGUMENTS`
 
 Then pick the recipe (`two_group_compare`, `multi_group_compare`, `factorial_anova`,
-`survival_km`, `cox_forest`, `heatmap`), confirm the columns and the test with the
-user, and run `./cli/figkit plot`. Leave `--test auto` unless the user forces a
-test. When it finishes, point them at the bundle folder under `pubplot_output/`.
+`survival_km`, `cox_forest`, `heatmap`, `correlation`, `correlation_heatmap`,
+`upset`), confirm the columns and the test with the user, and run
+`./cli/figkit plot`. Leave `--test auto` unless the user forces a test; add
+`--theme prism` for the GraphPad Prism look on the comparison and correlation
+recipes. When it finishes, point them at the bundle folder under `pubplot_output/`.

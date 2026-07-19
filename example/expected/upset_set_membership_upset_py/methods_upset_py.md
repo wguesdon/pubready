@@ -1,0 +1,1 @@
+Set intersections among 4 sets (apoptosis, inflammation, metabolism, cell_cycle) across 72 elements were drawn as an UpSet plot with the upsetplot package. The plot shows the 15 observed intersections and each set's total size; it is descriptive, so no statistical test is applied. Rendered in Python 3.10.12 with upsetplot 0.9.0.

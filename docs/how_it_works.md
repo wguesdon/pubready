@@ -104,6 +104,9 @@ engines. Pick the engine per figure with `--engine`.
 | `survival_km` | `time, event, group` | Kaplan-Meier with a log-rank test | step curves, log-rank p, number-at-risk table |
 | `cox_forest` | `time, event, covariate…` | Cox proportional hazards | forest plot of hazard ratios with 95% CI |
 | `heatmap` | matrix CSV + annotation CSV | per-feature Welch t-test when the annotation has two groups | clustered heatmap, z-scored, group annotation bar |
+| `correlation` | `x, y` (two numeric columns) | Pearson / Spearman / Kendall, chosen from normality | scatter with a linear fit, CI band, r and p annotated |
+| `correlation_heatmap` | table of numeric variables | pairwise correlation, BH-adjusted | clustered correlation matrix, coefficients + significance stars |
+| `upset` | binary membership matrix | descriptive (intersection sizes, no test) | UpSet plot of set intersections |
 
 ### Test selection
 
@@ -111,8 +114,9 @@ engines. Pick the engine per figure with `--engine`.
 prompt. For the two-group and multi-group recipes it checks normality per group
 with the Shapiro-Wilk test and equal variance with Levene's test, then chooses:
 parametric when both hold, non-parametric otherwise, with the Welch correction
-when variances differ. The scientist can override any step by passing `--test`
-explicitly.
+when variances differ. The `correlation` recipe uses the same normality check to
+pick Pearson (both variables normal) or Spearman. The scientist can override any
+step by passing `--test` explicitly.
 
 ### Examples
 
@@ -134,6 +138,18 @@ figkit plot --recipe cox_forest --data trial.csv --time months --event status --
 
 # clustered heatmap with a sample annotation
 figkit plot --recipe heatmap --data matrix.csv --annotation samples.csv
+
+# correlation scatter, Pearson or Spearman chosen from the data
+figkit plot --recipe correlation --data data.csv --x gene_a --y gene_b
+
+# clustered correlation heatmap across a panel of numeric variables
+figkit plot --recipe correlation_heatmap --data cytokines.csv
+
+# UpSet plot from a binary membership matrix
+figkit plot --recipe upset --data memberships.csv
+
+# any comparison recipe in the GraphPad Prism style
+figkit plot --recipe two_group_compare --data data.csv --x group --y volume --theme prism
 ```
 
 ## The artifact bundle
@@ -174,6 +190,10 @@ the same numbers. The manifest records which engine drew the figure.
 | ANOVA / post hoc | rstatix | pingouin + scikit-posthocs + statsmodels |
 | survival | survival / survminer | lifelines |
 | heatmap | ComplexHeatmap | PyComplexHeatmap (seaborn clustermap fallback) |
+| correlation | ggplot2 + ggpubr `stat_cor` | seaborn `regplot` |
+| correlation heatmap | ComplexHeatmap | seaborn `clustermap` |
+| UpSet | ComplexHeatmap `UpSet` | `upsetplot` |
+| Prism style (`--theme prism`) | ggprism `theme_prism` | matched matplotlib style |
 
 Where Python has no faithful equivalent, pubplot routes you to R rather than
 running something different. The one current case is the aligned rank transform
@@ -187,12 +207,13 @@ the figure.
 pubplot needs Podman and one built image.
 
 ```bash
-figkit build          # builds localhost/pubplot:0.2.0 from container/Containerfile
+figkit build          # builds localhost/pubplot:0.3.0 from container/Containerfile
 ```
 
 The image carries R (ggpubr, rstatix, ggprism, survival, survminer, ARTool,
 ComplexHeatmap) and Python (matplotlib, seaborn, statannotations, pingouin,
-statsmodels, scikit-posthocs, lifelines, PyComplexHeatmap), all pinned. The
+statsmodels, scikit-posthocs, lifelines, PyComplexHeatmap, upsetplot), all
+pinned. The
 `core/` scripts are mounted at runtime, so editing a recipe does not need a
 rebuild; only changing the dependencies does.
 

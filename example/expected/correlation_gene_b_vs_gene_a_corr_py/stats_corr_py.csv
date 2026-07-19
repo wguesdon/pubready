@@ -1,0 +1,2 @@
+x,y,n,method,estimate_name,estimate,statistic,df,p_value,conf_low,conf_high,shapiro_p_x,shapiro_p_y
+gene_a,gene_b,60,Pearson correlation,r,0.7101790316900503,7.6823864881460695,58,2.0897966433035745e-10,0.56,0.82,0.19354999297818615,0.5984877446496581

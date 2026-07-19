@@ -1,0 +1,55 @@
+{
+  "pubplot_version": "0.3.0",
+  "pubplot_git_commit": "1007a90",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "upset",
+  "recipe_version": "1",
+  "arguments": {
+    "x": null,
+    "y": null,
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_set_membership.csv",
+    "original_name": "set_membership.csv",
+    "md5": "62b68d6ca9159eb4de4ff4c2d35ded26",
+    "sha256": "5aabbab60c65f2af913bb91fd373a32c42ec6ded5459b606e3f5d099b1c70528",
+    "n_rows": 72
+  },
+  "statistical_test": {
+    "name": "UpSet plot (upsetplot)",
+    "n_sets": 4,
+    "n_elements": 72,
+    "n_intersections": 15,
+    "largest_intersection": 10
+  },
+  "container": {
+    "image": "localhost/pubplot:0.3.0",
+    "image_id": "2d43d34f07864b4572a53398e14ad3d1631527725b7665e04f5b88bdbf622240",
+    "digest": "sha256:f0d2e1c018a637f042a69afaca8805e828f081f54ce88287af9643aa227417a5",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_set_membership_upset_py.pdf",
+    "figure_set_membership_upset_py.png",
+    "figure_set_membership_upset_py.svg"
+  ]
+}

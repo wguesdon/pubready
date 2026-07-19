@@ -1,0 +1,32 @@
+engine: r
+recipe: two_group_compare
+data:
+  file: input_volume.csv
+  x: group
+  'y': volume
+  fill: ~
+  facet: ~
+  time: ~
+  event: ~
+  annotation: ~
+  covariates: ~
+test:
+  method: auto
+  paired: no
+  p_adjust: none
+appearance:
+  theme: prism
+  palette: ~
+  x_label: Group
+  y_label: Tumor volume (mm^3)
+  title: ~
+  y_limits:
+  - ~
+  - ~
+  show_points: yes
+  geom: box
+  bracket:
+    show: yes
+    label: p.signif
+  scale: row
+  cluster: both

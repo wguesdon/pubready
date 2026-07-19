@@ -1,0 +1,1 @@
+Pairwise pearson correlations among 8 variables were computed and drawn as a heatmap with ComplexHeatmap. Variables were hierarchically clustered on both axes. Each cell shows the coefficient with Benjamini-Hochberg adjusted significance stars (15 of the 28 pairs were significant at adjusted P < 0.05). Rendered in R 4.4.1 with ComplexHeatmap 2.22.0 and circlize 0.4.16.
