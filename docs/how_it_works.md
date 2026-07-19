@@ -231,7 +231,7 @@ the figure.
 pubplot needs Podman and one built image.
 
 ```bash
-figkit build          # builds localhost/pubplot:0.4.0 from container/Containerfile
+figkit build          # builds localhost/pubplot:0.4.1 from container/Containerfile
 ```
 
 The image carries R (ggpubr, rstatix, ggprism, ggrepel, ggdist, survival,

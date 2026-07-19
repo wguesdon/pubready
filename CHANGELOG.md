@@ -13,6 +13,18 @@ tag move together.
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-07-19
+
+### Changed
+- The volcano example now uses the airway RNA-seq benchmark (Himes et al. 2014,
+  GSE52778): real DESeq2 results for dexamethasone-treated vs untreated airway
+  smooth muscle cells, with the donor (cell line) blocked in the model and genes
+  labeled by HGNC symbol. `example/de_results.csv` and the volcano reference
+  bundles were regenerated, thresholded on the adjusted p.
+- Container adds DESeq2, airway, and org.Hs.eg.db (Bioconductor), used only to
+  build that example (not a recipe dependency). Default image tag is
+  `localhost/pubplot:0.4.1`.
+
 ## [0.4.0] - 2026-07-19
 
 ### Added
@@ -109,7 +121,8 @@ tag move together.
   stats table, input copy, manifest, methods paragraph, and `REPRODUCE.md`.
 - Host adapters for Claude Code, Codex, and opencode on one shared core.
 
-[Unreleased]: https://github.com/wguesdon/pubplot/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/wguesdon/pubplot/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/wguesdon/pubplot/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/wguesdon/pubplot/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/wguesdon/pubplot/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/wguesdon/pubplot/compare/v0.1.0...v0.2.0

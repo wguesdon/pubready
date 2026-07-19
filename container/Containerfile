@@ -51,6 +51,13 @@ RUN VIRTUAL_ENV=/opt/pubplot/venv uv pip install --no-cache -r /opt/pubplot/requ
 RUN install2.r --error --skipinstalled ggrepel ggdist \
  && rm -rf /tmp/downloaded_packages
 
+# Bioconductor packages used only to build the airway volcano example: DESeq2 for
+# the differential expression on the airway benchmark (GSE52778) and org.Hs.eg.db
+# to label genes by symbol. Not a recipe dependency -- the volcano recipe only
+# reads a DE table. A late layer so the layers above stay cached across this add.
+RUN R -q -e 'BiocManager::install(c("DESeq2", "airway", "org.Hs.eg.db"), update=FALSE, ask=FALSE)' \
+ && rm -rf /tmp/downloaded_packages
+
 # Test tooling: testthat (R) and pytest (Python), used by `figkit test`. A late
 # layer so the heavy R/Bioconductor and Python engine layers above stay cached
 # across this add. pytest is intentionally not frozen into requirements.lock: it

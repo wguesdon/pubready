@@ -7,7 +7,7 @@ import numpy as np, pandas as pd
 
 raw = pd.read_csv("input_de_results.csv")
 fc = pd.to_numeric(raw["log2FoldChange"], errors="coerce").to_numpy()
-p = pd.to_numeric(raw["pvalue"], errors="coerce").to_numpy()
+p = pd.to_numeric(raw["padj"], errors="coerce").to_numpy()
 lab = raw["gene"].astype(str).to_numpy()
 m = np.isfinite(fc) & np.isfinite(p) & (p > 0)
 fc, p, lab = fc[m], p[m], lab[m]

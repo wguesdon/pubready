@@ -71,8 +71,11 @@ rm -rf "$OUT"
   --x group --y volume --ylab "Tumor volume (mm^3)" --xlab "Group" --theme prism \
   --stamp prism --out "$OUT"
 
-# Volcano plot (EnhancedVolcano style) from a DESeq2-like table
-./cli/figkit plot --recipe volcano --data example/de_results.csv --stamp volcano --out "$OUT"
+# Volcano plot (EnhancedVolcano style) from the airway DESeq2 results, FDR-thresholded.
+# The ylab uses the --flag=value form because optparse reads a leading-dash value
+# (-log10 ...) as another flag.
+./cli/figkit plot --recipe volcano --data example/de_results.csv \
+  --y padj "--ylab=-log10 adjusted p" --stamp volcano --out "$OUT"
 
 # Enrichment dot plot (ORA) from a clusterProfiler-like table
 ./cli/figkit plot --recipe enrichment_dot --data example/enrichment_results.csv --stamp enrich --out "$OUT"
@@ -122,7 +125,8 @@ PY="--engine python"
   --stamp upset_py --out "$OUT"
 ./cli/figkit plot $PY --recipe two_group_compare --data example/tumor_volume.csv \
   --x group --y volume --ylab "Tumor volume (mm^3)" --xlab "Group" --theme prism --stamp prism_py --out "$OUT"
-./cli/figkit plot $PY --recipe volcano --data example/de_results.csv --stamp volcano_py --out "$OUT"
+./cli/figkit plot $PY --recipe volcano --data example/de_results.csv \
+  --y padj "--ylab=-log10 adjusted p" --stamp volcano_py --out "$OUT"
 ./cli/figkit plot $PY --recipe enrichment_dot --data example/enrichment_results.csv --stamp enrich_py --out "$OUT"
 ./cli/figkit plot $PY --recipe paired_compare --data example/paired_response.csv \
   --x condition --y value --id subject --ylab "Marker (a.u.)" --stamp paired_py --out "$OUT"

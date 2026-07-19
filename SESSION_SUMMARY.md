@@ -2,6 +2,18 @@
 
 Resume point for work on pubplot. Update as work progresses.
 
+## 2026-07-19 — airway volcano example (v0.4.1)
+
+Swapped the synthetic volcano example for the airway RNA-seq benchmark so the
+plot looks like a real DE analysis. `make_volcano_data.R` now runs DESeq2 on the
+airway data (dex trt vs untrt, `~ cell + dex` blocking on donor), maps Ensembl to
+HGNC symbols with org.Hs.eg.db, and writes `example/de_results.csv`. The volcano
+reference bundles are regenerated thresholded on the adjusted p (`--y padj`).
+Added DESeq2 + airway + org.Hs.eg.db to the Containerfile as a late Bioconductor
+layer (build-example only, not a recipe dependency). Bumped to 0.4.1 across the
+version files and image tag. Only the volcano bundle changed; the other reference
+bundles stay as 0.4.0 snapshots.
+
 ## 2026-07-19 — five more recipes + raincloud/bar geoms (v0.4.0)
 
 Took the catalog from nine to fourteen, driven by a gap analysis of standard

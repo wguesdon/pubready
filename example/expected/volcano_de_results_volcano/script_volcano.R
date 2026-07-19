@@ -4,7 +4,7 @@
 suppressPackageStartupMessages({ library(ggplot2); library(ggrepel) })
 
 raw <- read.csv("input_de_results.csv", check.names = FALSE)
-fc <- as.numeric(raw[["log2FoldChange"]]); p <- as.numeric(raw[["pvalue"]])
+fc <- as.numeric(raw[["log2FoldChange"]]); p <- as.numeric(raw[["padj"]])
 lab <- as.character(raw[["gene"]])
 keep <- is.finite(fc) & is.finite(p) & p > 0; fc <- fc[keep]; p <- p[keep]; lab <- lab[keep]
 fcc <- 1; pcc <- 0.05

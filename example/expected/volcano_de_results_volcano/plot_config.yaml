@@ -3,7 +3,7 @@ recipe: volcano
 data:
   file: input_de_results.csv
   x: ~
-  'y': ~
+  'y': padj
   fill: ~
   facet: ~
   time: ~
@@ -21,7 +21,7 @@ appearance:
   theme: pubplot_house
   palette: ~
   x_label: ~
-  y_label: ~
+  y_label: -log10 adjusted p
   title: ~
   y_limits:
   - ~
