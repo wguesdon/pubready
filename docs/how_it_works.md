@@ -107,6 +107,11 @@ engines. Pick the engine per figure with `--engine`.
 | `correlation` | `x, y` (two numeric columns) | Pearson / Spearman / Kendall, chosen from normality | scatter with a linear fit, CI band, r and p annotated |
 | `correlation_heatmap` | table of numeric variables | pairwise correlation, BH-adjusted | clustered correlation matrix, coefficients + significance stars |
 | `upset` | binary membership matrix | descriptive (intersection sizes, no test) | UpSet plot of set intersections |
+| `volcano` | DE table (log2FC + p) | thresholds on fold change and p (test is upstream) | EnhancedVolcano-style four-color scatter, top hits labeled |
+| `enrichment_dot` | GSEA / ORA result table | descriptive (enrichment is upstream) | dot plot, size = count, color = adjusted p |
+| `paired_compare` | `condition, value, id` | paired t-test or Wilcoxon signed-rank | before/after points with connecting lines and a bracket |
+| `proportions` | two categoricals | chi-square, or Fisher when a cell is sparse | 100% stacked bar of proportions with the p |
+| `pca` | samples × features + group | PERMANOVA for group separation | PC1/PC2 scatter, 95% ellipses, variance on the axes |
 
 ### Test selection
 
@@ -148,8 +153,24 @@ figkit plot --recipe correlation_heatmap --data cytokines.csv
 # UpSet plot from a binary membership matrix
 figkit plot --recipe upset --data memberships.csv
 
-# any comparison recipe in the GraphPad Prism style
+# any comparison recipe in the GraphPad Prism style, or as a raincloud or bar
 figkit plot --recipe two_group_compare --data data.csv --x group --y volume --theme prism
+figkit plot --recipe two_group_compare --data data.csv --x group --y volume --geom raincloud
+
+# volcano plot from a DESeq2 / limma results table
+figkit plot --recipe volcano --data de_results.csv
+
+# GSEA / ORA enrichment dot plot
+figkit plot --recipe enrichment_dot --data enrichment.csv
+
+# paired before/after with connecting lines
+figkit plot --recipe paired_compare --data paired.csv --x condition --y value --id subject
+
+# proportions with a chi-square or Fisher test
+figkit plot --recipe proportions --data response.csv --x arm --y response
+
+# PCA scatter with ellipses and a PERMANOVA p
+figkit plot --recipe pca --data samples.csv --group group
 ```
 
 ## The artifact bundle
@@ -194,6 +215,9 @@ the same numbers. The manifest records which engine drew the figure.
 | correlation heatmap | ComplexHeatmap | seaborn `clustermap` |
 | UpSet | ComplexHeatmap `UpSet` | `upsetplot` |
 | Prism style (`--theme prism`) | ggprism `theme_prism` | matched matplotlib style |
+| volcano / labels | ggplot2 + ggrepel | matplotlib + adjustText |
+| raincloud geom | ggdist half-eye | matplotlib half-violin |
+| PCA / PERMANOVA | prcomp + seeded permutation | numpy SVD + seeded permutation |
 
 Where Python has no faithful equivalent, pubplot routes you to R rather than
 running something different. The one current case is the aligned rank transform
@@ -207,13 +231,13 @@ the figure.
 pubplot needs Podman and one built image.
 
 ```bash
-figkit build          # builds localhost/pubplot:0.3.0 from container/Containerfile
+figkit build          # builds localhost/pubplot:0.4.0 from container/Containerfile
 ```
 
-The image carries R (ggpubr, rstatix, ggprism, survival, survminer, ARTool,
-ComplexHeatmap) and Python (matplotlib, seaborn, statannotations, pingouin,
-statsmodels, scikit-posthocs, lifelines, PyComplexHeatmap, upsetplot), all
-pinned. The
+The image carries R (ggpubr, rstatix, ggprism, ggrepel, ggdist, survival,
+survminer, ARTool, ComplexHeatmap) and Python (matplotlib, seaborn,
+statannotations, pingouin, statsmodels, scikit-posthocs, lifelines,
+PyComplexHeatmap, upsetplot, adjustText), all pinned. The
 `core/` scripts are mounted at runtime, so editing a recipe does not need a
 rebuild; only changing the dependencies does.
 

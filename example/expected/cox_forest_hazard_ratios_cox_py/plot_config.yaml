@@ -14,6 +14,9 @@ data:
   - age
   - sex
   - stage
+  id: null
+  group: null
+  label: null
 test:
   method: auto
   paired: false
@@ -34,3 +37,6 @@ appearance:
     label: p.signif
   scale: row
   cluster: both
+  fc_cutoff: 1.0
+  p_cutoff: 0.05
+  top_n: 15

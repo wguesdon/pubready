@@ -2,7 +2,7 @@
 
 container_info <- function() {
   list(
-    image          = Sys.getenv("PUBPLOT_IMAGE", "localhost/pubplot:0.3.0"),
+    image          = Sys.getenv("PUBPLOT_IMAGE", "localhost/pubplot:0.4.0"),
     image_id       = Sys.getenv("PUBPLOT_IMAGE_ID", ""),
     digest         = Sys.getenv("PUBPLOT_IMAGE_DIGEST", ""),
     podman_version = Sys.getenv("PUBPLOT_PODMAN_VERSION", "")

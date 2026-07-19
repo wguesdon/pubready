@@ -1,0 +1,54 @@
+{
+  "pubplot_version": "0.4.0",
+  "pubplot_git_commit": "f26dea0",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "proportions",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "arm",
+    "y": "response",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_response.csv",
+    "original_name": "response_by_arm.csv",
+    "md5": "b8a5c64645d67aefe9af72a0c3d14d2b",
+    "sha256": "89ccd79ae898130f014ac13653961046651fd52eecc5b901d8ab858f1e90df36",
+    "n_rows": 124
+  },
+  "statistical_test": {
+    "name": "Pearson's chi-squared test",
+    "statistic": 5.630165,
+    "df": 1,
+    "p_value": 0.017654,
+    "odds_ratio": 2.387755,
+    "or_conf_low": null,
+    "or_conf_high": null,
+    "n": 124,
+    "any_expected_below_5": false
+  },
+  "container": {
+    "image": "localhost/pubplot:0.4.0",
+    "image_id": "4cf3e55927bb05afb9692649c012295c7599388c7be89ffaf893c590e80bd530",
+    "digest": "sha256:feccf0bcc3ec0b49b272c9f5910ab221b2dbb649016ee2ee654df7e503e3bead",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_response_prop.pdf",
+    "figure_response_prop.png",
+    "figure_response_prop.svg"
+  ]
+}

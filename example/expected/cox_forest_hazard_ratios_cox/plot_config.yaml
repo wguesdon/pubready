@@ -9,6 +9,9 @@ data:
   time: time
   event: event
   annotation: ~
+  id: ~
+  group: ~
+  label: ~
   covariates:
   - arm
   - age
@@ -34,3 +37,6 @@ appearance:
     label: p.signif
   scale: row
   cluster: both
+  fc_cutoff: 1.0
+  p_cutoff: 0.05
+  top_n: 15.0

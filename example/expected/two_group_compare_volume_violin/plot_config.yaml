@@ -26,3 +26,6 @@ appearance:
     label: p.format
   scale: row
   cluster: both
+  fc_cutoff: 1.0
+  p_cutoff: 0.05
+  top_n: 15.0

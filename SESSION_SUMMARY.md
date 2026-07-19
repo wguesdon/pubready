@@ -2,6 +2,49 @@
 
 Resume point for work on pubplot. Update as work progresses.
 
+## 2026-07-19 — five more recipes + raincloud/bar geoms (v0.4.0)
+
+Took the catalog from nine to fourteen, driven by a gap analysis of standard
+publication figures. All mirrored across both engines.
+
+- `volcano` (EnhancedVolcano style, replicated in ggplot2 + matplotlib, no
+  Bioconductor dep). Auto-detects DESeq2/limma/edgeR columns; four-color scheme,
+  cutoff lines, top hits labeled with ggrepel / adjustText.
+- `enrichment_dot` (clusterProfiler GSEA/ORA dot plot). NES present → GSEA mode
+  (x = NES); else ORA (x = gene ratio). Size = count, color = p.adjust.
+- `paired_compare` (before/after with `--id` connecting lines). Paired t /
+  Wilcoxon signed-rank from the differences' normality. Conditions kept in
+  appearance order (pre before post), not alphabetical.
+- `proportions` (chi-square / Fisher, OR for 2x2, 100% stacked bar). Python
+  Fisher is 2x2 only; larger tables fall back to chi-square.
+- `pca` (PC1/PC2 scatter, 95% ellipses, % variance, seeded PERMANOVA). prcomp /
+  numpy SVD; a hand-rolled permutation PERMANOVA in both engines (no vegan).
+- `--geom raincloud` and `--geom bar` on the two comparison recipes, via a shared
+  `add_dist_geom` helper in theme.R / theme.py. Raincloud: ggdist half-eye (R) /
+  clipped matplotlib violin (Python) + box + rain points.
+
+Plumbing: new flags `--id --group --label --fc_cutoff --p_cutoff --top_n` wired
+through entry/plot.{R,py} + spec.{R,py} + default_appearance. Deps added: R
+`ggrepel` + `ggdist` (late CRAN layer to keep the Bioconductor/Python layers
+cached), Python `adjustText`. Image rebuilt as `localhost/pubplot:0.4.0`; version
+bumped across VERSION / DESCRIPTION / version.{R,py} / run+bundle fallbacks.
+
+Examples/tests/docs: seeded generators (`make_{volcano,enrichment,paired,
+proportions,pca}_data.R`) → `de_results.csv`, `enrichment_results.csv`,
+`paired_response.csv`, `response_by_arm.csv`, `pca_samples.csv`. Reference bundles
+regenerated (R + Python + raincloud/bar showcases); example/README gallery,
+smoke cases [14]-[20] + Python `pyc` lines, unit tests for all five recipes and a
+spec test for the new flags. Updated cli/figkit, docs/how_it_works, the three
+skill adapters + opencode command, PRD, CHANGELOG.
+
+Verified: `figkit test` green (R + 27 Python), full `tests/smoke_test.sh` green
+(20 R cases + all Python), every recipe and geom eyeballed on both engines with
+matching numbers (correlation r=0.71, PCA PC1 48.5% / PERMANOVA F=27.97,
+proportions P=0.018 / OR 2.39).
+
+Deferred candidates (from the gap analysis, not yet built): dose-response (4PL),
+ROC + AUC, Bland-Altman, stacked composition bar, generalized forest.
+
 ## 2026-07-19 — new recipes + Prism theme (v0.3.0)
 
 Added three recipes and a style option, mirrored across both engines, taking the

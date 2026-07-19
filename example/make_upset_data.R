@@ -3,7 +3,7 @@
 # matrix. First column = element id; each remaining column is a set, with 1 when
 # the element belongs to the set and 0 otherwise. Run once inside the pubplot
 # container from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.3.0 \
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.0 \
 #     Rscript example/make_upset_data.R
 set.seed(7)
 

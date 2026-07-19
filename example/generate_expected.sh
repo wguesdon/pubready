@@ -71,6 +71,29 @@ rm -rf "$OUT"
   --x group --y volume --ylab "Tumor volume (mm^3)" --xlab "Group" --theme prism \
   --stamp prism --out "$OUT"
 
+# Volcano plot (EnhancedVolcano style) from a DESeq2-like table
+./cli/figkit plot --recipe volcano --data example/de_results.csv --stamp volcano --out "$OUT"
+
+# Enrichment dot plot (ORA) from a clusterProfiler-like table
+./cli/figkit plot --recipe enrichment_dot --data example/enrichment_results.csv --stamp enrich --out "$OUT"
+
+# Paired before/after comparison with connecting lines
+./cli/figkit plot --recipe paired_compare --data example/paired_response.csv \
+  --x condition --y value --id subject --ylab "Marker (a.u.)" --stamp paired --out "$OUT"
+
+# Proportions (chi-square) as a 100% stacked bar
+./cli/figkit plot --recipe proportions --data example/response_by_arm.csv \
+  --x arm --y response --stamp prop --out "$OUT"
+
+# PCA scatter with 95% ellipses and a PERMANOVA p
+./cli/figkit plot --recipe pca --data example/pca_samples.csv --group group --stamp pca --out "$OUT"
+
+# Raincloud and bar geoms on the comparison recipes
+./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
+  --x group --y volume --ylab "Tumor volume (mm^3)" --geom raincloud --stamp raincloud --out "$OUT"
+./cli/figkit plot --recipe multi_group_compare --data example/gene_expression.csv \
+  --x genotype --y expression --ylab "Expression (a.u.)" --geom bar --stamp bar --out "$OUT"
+
 # ---------------------------------------------------------------------------
 # Python engine references (engine=python, _py stamp) so each recipe has both.
 # ---------------------------------------------------------------------------
@@ -99,5 +122,16 @@ PY="--engine python"
   --stamp upset_py --out "$OUT"
 ./cli/figkit plot $PY --recipe two_group_compare --data example/tumor_volume.csv \
   --x group --y volume --ylab "Tumor volume (mm^3)" --xlab "Group" --theme prism --stamp prism_py --out "$OUT"
+./cli/figkit plot $PY --recipe volcano --data example/de_results.csv --stamp volcano_py --out "$OUT"
+./cli/figkit plot $PY --recipe enrichment_dot --data example/enrichment_results.csv --stamp enrich_py --out "$OUT"
+./cli/figkit plot $PY --recipe paired_compare --data example/paired_response.csv \
+  --x condition --y value --id subject --ylab "Marker (a.u.)" --stamp paired_py --out "$OUT"
+./cli/figkit plot $PY --recipe proportions --data example/response_by_arm.csv \
+  --x arm --y response --stamp prop_py --out "$OUT"
+./cli/figkit plot $PY --recipe pca --data example/pca_samples.csv --group group --stamp pca_py --out "$OUT"
+./cli/figkit plot $PY --recipe two_group_compare --data example/tumor_volume.csv \
+  --x group --y volume --ylab "Tumor volume (mm^3)" --geom raincloud --stamp raincloud_py --out "$OUT"
+./cli/figkit plot $PY --recipe multi_group_compare --data example/gene_expression.csv \
+  --x genotype --y expression --ylab "Expression (a.u.)" --geom bar --stamp bar_py --out "$OUT"
 
 echo "Reference bundles written under $OUT/"

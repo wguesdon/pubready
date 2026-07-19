@@ -1,0 +1,57 @@
+{
+  "pubplot_version": "0.4.0",
+  "pubplot_git_commit": "f26dea0",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "volcano",
+  "recipe_version": "1",
+  "arguments": {
+    "x": null,
+    "y": null,
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_de_results.csv",
+    "original_name": "de_results.csv",
+    "md5": "2a0b8675f2db7d9381eac1b7943d4c70",
+    "sha256": "8c37f4a1280880a9ea3c131f478b552050679a6718c0f20ebf13b979d40bc7d2",
+    "n_rows": 2020
+  },
+  "statistical_test": {
+    "name": "Volcano plot",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "n_total": 2020,
+    "n_up": 115,
+    "n_down": 100,
+    "n_significant": 215
+  },
+  "container": {
+    "image": "localhost/pubplot:0.4.0",
+    "image_id": "4cf3e55927bb05afb9692649c012295c7599388c7be89ffaf893c590e80bd530",
+    "digest": "sha256:feccf0bcc3ec0b49b272c9f5910ab221b2dbb649016ee2ee654df7e503e3bead",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_de_results_volcano_py.pdf",
+    "figure_de_results_volcano_py.png",
+    "figure_de_results_volcano_py.svg"
+  ]
+}

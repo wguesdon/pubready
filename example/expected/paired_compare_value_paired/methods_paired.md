@@ -1,0 +1,1 @@
+Marker (a.u.) was compared between pre and post within each subject with a paired t-test (n = 22 pairs). The test was chosen from the Shapiro-Wilk normality of the within-subject differences. Effect size is reported as Cohen's dz = -2.13. Significance was set at P < 0.05. Drawn in R 4.4.1 with ggplot2 3.5.1 and ggpubr 0.6.0.

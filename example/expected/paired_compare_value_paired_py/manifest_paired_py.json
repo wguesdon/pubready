@@ -1,0 +1,65 @@
+{
+  "pubplot_version": "0.4.0",
+  "pubplot_git_commit": "f26dea0",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "paired_compare",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "condition",
+    "y": "value",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_value.csv",
+    "original_name": "paired_response.csv",
+    "md5": "e995b32f1de8c3186d6e6c6f0d010a9f",
+    "sha256": "8bfc166ad40f6287fcf50fe3c144a4ccce89d4a501007e5e47dd183fc2df2b0f",
+    "n_rows": 22
+  },
+  "statistical_test": {
+    "name": "paired t-test",
+    "statistic": -9.972925411867607,
+    "p_value": 2.0315796603119834e-09,
+    "n_pairs": 22,
+    "mean_difference": -11.190909090909091,
+    "effect_size": {
+      "name": "Cohen's dz",
+      "value": -2.1262348419712453
+    },
+    "assumptions": {
+      "normality_of_differences": {
+        "test": "shapiro-wilk",
+        "p": 0.6910774124765315
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubplot:0.4.0",
+    "image_id": "4cf3e55927bb05afb9692649c012295c7599388c7be89ffaf893c590e80bd530",
+    "digest": "sha256:feccf0bcc3ec0b49b272c9f5910ab221b2dbb649016ee2ee654df7e503e3bead",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_value_paired_py.pdf",
+    "figure_value_paired_py.png",
+    "figure_value_paired_py.svg"
+  ]
+}

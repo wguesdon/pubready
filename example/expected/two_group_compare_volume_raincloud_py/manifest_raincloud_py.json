@@ -1,0 +1,69 @@
+{
+  "pubplot_version": "0.4.0",
+  "pubplot_git_commit": "f26dea0",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "two_group_compare",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "group",
+    "y": "volume",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_volume.csv",
+    "original_name": "tumor_volume.csv",
+    "md5": "d61ed3cc297d2fa63d25dcab55991645",
+    "sha256": "7560f561606eed71ef05c9a9b5b82b36a6f830c3bd0f3586a9a905534cc4a355",
+    "n_rows": 24
+  },
+  "statistical_test": {
+    "name": "Student's two-sample t-test",
+    "statistic": 10.059451317619061,
+    "p_value": 1.0836205482623198e-09,
+    "adjustment": "none",
+    "effect_size": {
+      "name": "Cohen's d",
+      "value": 4.106753803422436
+    },
+    "assumptions": {
+      "normality": {
+        "test": "shapiro-wilk",
+        "p_group1": 0.9999771354025069,
+        "p_group2": 0.9890035629987018
+      },
+      "equal_variance": {
+        "test": "Levene",
+        "p": 0.45188503346213504
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubplot:0.4.0",
+    "image_id": "4cf3e55927bb05afb9692649c012295c7599388c7be89ffaf893c590e80bd530",
+    "digest": "sha256:feccf0bcc3ec0b49b272c9f5910ab221b2dbb649016ee2ee654df7e503e3bead",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_volume_raincloud_py.pdf",
+    "figure_volume_raincloud_py.png",
+    "figure_volume_raincloud_py.svg"
+  ]
+}

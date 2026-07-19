@@ -1,0 +1,38 @@
+engine: python
+recipe: enrichment_dot
+data:
+  file: input_enrichment_results.csv
+  x: null
+  y: null
+  fill: null
+  facet: null
+  time: null
+  event: null
+  annotation: null
+  covariates: null
+  id: null
+  group: null
+  label: null
+test:
+  method: auto
+  paired: false
+  p_adjust: none
+appearance:
+  theme: pubplot_house
+  palette: null
+  x_label: null
+  y_label: null
+  title: null
+  y_limits:
+  - null
+  - null
+  show_points: true
+  geom: box
+  bracket:
+    show: true
+    label: p.signif
+  scale: row
+  cluster: both
+  fc_cutoff: 1.0
+  p_cutoff: 0.05
+  top_n: 15

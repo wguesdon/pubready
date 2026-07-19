@@ -31,6 +31,18 @@ test_that("spec_from_opt carries the theme and defaults to the house style", {
   expect_equal(spec_from_opt(opt2)$appearance$theme, "pubplot_house")
 })
 
+test_that("spec_from_opt carries the new data and cutoff fields", {
+  opt <- list(recipe = "pca", data = "d.csv", id = "subj", group = "grp", label = "gene",
+              fc_cutoff = 2, p_cutoff = 0.01, top_n = 20)
+  spec <- spec_from_opt(opt)
+  expect_equal(spec$data$id, "subj")
+  expect_equal(spec$data$group, "grp")
+  expect_equal(spec$data$label, "gene")
+  expect_equal(spec$appearance$fc_cutoff, 2)
+  expect_equal(spec$appearance$p_cutoff, 0.01)
+  expect_equal(spec$appearance$top_n, 20)
+})
+
 test_that("fix_axis_keys restores YAML-coerced boolean axis keys", {
   d <- list("TRUE" = "volume", x = "group")
   fixed <- fix_axis_keys(d)

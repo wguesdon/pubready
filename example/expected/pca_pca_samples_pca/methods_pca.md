@@ -1,0 +1,1 @@
+Principal component analysis was run on 36 samples by 40 centered and scaled features. PC1 and PC2 explained 48.5% and 21.5% of the variance and are shown with 95% confidence ellipses per group. Group separation was tested with a one-way PERMANOVA on Euclidean distances (999 permutations): F = 27.97, p = 0.001. Drawn in R 4.4.1 with ggplot2 3.5.1.

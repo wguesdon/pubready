@@ -1,0 +1,55 @@
+{
+  "pubplot_version": "0.4.0",
+  "pubplot_git_commit": "f26dea0",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "pca",
+  "recipe_version": "1",
+  "arguments": {
+    "x": {},
+    "y": {},
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_pca_samples.csv",
+    "original_name": "pca_samples.csv",
+    "md5": "9e74a7175197a7384718838101886b09",
+    "sha256": "d9d6753bbd48ee1f41dbaae9da3d9e4ee5bb7f772840824cade20cba014cd984",
+    "n_rows": 36
+  },
+  "statistical_test": {
+    "name": "PCA with PERMANOVA",
+    "pc1_variance_pct": 48.496661,
+    "pc2_variance_pct": 21.544966,
+    "n_samples": 36,
+    "n_features": 40,
+    "permanova": {
+      "statistic_F": 27.972982,
+      "p_value": 0.001,
+      "permutations": 999
+    }
+  },
+  "container": {
+    "image": "localhost/pubplot:0.4.0",
+    "image_id": "4cf3e55927bb05afb9692649c012295c7599388c7be89ffaf893c590e80bd530",
+    "digest": "sha256:feccf0bcc3ec0b49b272c9f5910ab221b2dbb649016ee2ee654df7e503e3bead",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_pca_samples_pca.pdf",
+    "figure_pca_samples_pca.png",
+    "figure_pca_samples_pca.svg"
+  ]
+}

@@ -156,6 +156,58 @@ else
   echo "FAIL: expected prism theme in config"; fail=1
 fi
 
+echo "[14] volcano plot"
+./cli/figkit plot --recipe volcano --data example/de_results.csv --out "$OUT/volcano"
+check_bundle "$OUT/volcano" "volcano"
+if compgen -G "$OUT/volcano/*/stats_*.csv" > /dev/null && grep -q "direction" "$OUT"/volcano/*/stats_*.csv; then
+  echo "PASS: volcano labeled-hits stats"
+else
+  echo "FAIL: expected volcano stats"; fail=1
+fi
+
+echo "[15] enrichment dot plot"
+./cli/figkit plot --recipe enrichment_dot --data example/enrichment_results.csv --out "$OUT/enrich"
+check_bundle "$OUT/enrich" "enrichment_dot"
+
+echo "[16] paired comparison"
+./cli/figkit plot --recipe paired_compare --data example/paired_response.csv \
+  --x condition --y value --id subject --out "$OUT/paired"
+check_bundle "$OUT/paired" "paired_compare"
+if compgen -G "$OUT/paired/*/stats_*.csv" > /dev/null && grep -q "n_pairs" "$OUT"/paired/*/stats_*.csv; then
+  echo "PASS: paired stats with n_pairs"
+else
+  echo "FAIL: expected paired stats"; fail=1
+fi
+
+echo "[17] proportions (chi-square / Fisher)"
+./cli/figkit plot --recipe proportions --data example/response_by_arm.csv \
+  --x arm --y response --out "$OUT/prop"
+check_bundle "$OUT/prop" "proportions"
+if compgen -G "$OUT/prop/*/methods_*.md" > /dev/null && grep -qi "chi-squared\|Fisher" "$OUT"/prop/*/methods_*.md; then
+  echo "PASS: proportions test chosen"
+else
+  echo "FAIL: expected proportions test"; fail=1
+fi
+
+echo "[18] PCA scatter with PERMANOVA"
+./cli/figkit plot --recipe pca --data example/pca_samples.csv --group group --out "$OUT/pca"
+check_bundle "$OUT/pca" "pca"
+if compgen -G "$OUT/pca/*/methods_*.md" > /dev/null && grep -q "PERMANOVA" "$OUT"/pca/*/methods_*.md; then
+  echo "PASS: PCA with PERMANOVA"
+else
+  echo "FAIL: expected PCA PERMANOVA"; fail=1
+fi
+
+echo "[19] raincloud geom"
+./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
+  --x group --y volume --geom raincloud --out "$OUT/raincloud"
+check_bundle "$OUT/raincloud" "raincloud"
+
+echo "[20] bar geom (mean + SEM + dots)"
+./cli/figkit plot --recipe multi_group_compare --data example/gene_expression.csv \
+  --x genotype --y expression --geom bar --out "$OUT/bar"
+check_bundle "$OUT/bar" "bar_geom"
+
 echo "--- Python engine (all recipes) ---"
 pyc() {  # $1 = short label; rest = plot args
   local label="$1"; shift
@@ -178,6 +230,13 @@ pyc corr    --recipe correlation         --data example/correlation_xy.csv   --x
 pyc corrhm  --recipe correlation_heatmap --data example/correlation_vars.csv
 pyc upset   --recipe upset               --data example/set_membership.csv
 pyc prism   --recipe two_group_compare   --data example/tumor_volume.csv     --x group --y volume --theme prism
+pyc volcano --recipe volcano             --data example/de_results.csv
+pyc enrich  --recipe enrichment_dot      --data example/enrichment_results.csv
+pyc paired  --recipe paired_compare      --data example/paired_response.csv  --x condition --y value --id subject
+pyc prop    --recipe proportions         --data example/response_by_arm.csv  --x arm --y response
+pyc pca     --recipe pca                 --data example/pca_samples.csv      --group group
+pyc rain    --recipe two_group_compare   --data example/tumor_volume.csv     --x group --y volume --geom raincloud
+pyc bargeom --recipe multi_group_compare --data example/gene_expression.csv  --x genotype --y expression --geom bar
 
 echo
 if [ "$fail" -eq 0 ]; then

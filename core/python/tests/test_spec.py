@@ -36,3 +36,15 @@ def test_spec_from_args_carries_theme():
     assert spec_from_args(a)["appearance"]["theme"] == "prism"
     b = SimpleNamespace(recipe="two_group_compare", data="d.csv", x="g", y="v")
     assert spec_from_args(b)["appearance"]["theme"] == "pubplot_house"
+
+
+def test_spec_from_args_carries_new_data_and_cutoff_fields():
+    a = SimpleNamespace(recipe="pca", data="d.csv", x=None, y=None, id="subj",
+                        group="grp", label="gene", fc_cutoff=2.0, p_cutoff=0.01, top_n=20)
+    s = spec_from_args(a)
+    assert s["data"]["id"] == "subj"
+    assert s["data"]["group"] == "grp"
+    assert s["data"]["label"] == "gene"
+    assert s["appearance"]["fc_cutoff"] == 2.0
+    assert s["appearance"]["p_cutoff"] == 0.01
+    assert s["appearance"]["top_n"] == 20

@@ -1,0 +1,60 @@
+{
+  "pubplot_version": "0.4.0",
+  "pubplot_git_commit": "f26dea0",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "pca",
+  "recipe_version": "1",
+  "arguments": {
+    "x": null,
+    "y": null,
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_pca_samples.csv",
+    "original_name": "pca_samples.csv",
+    "md5": "9e74a7175197a7384718838101886b09",
+    "sha256": "d9d6753bbd48ee1f41dbaae9da3d9e4ee5bb7f772840824cade20cba014cd984",
+    "n_rows": 36
+  },
+  "statistical_test": {
+    "name": "PCA with PERMANOVA",
+    "pc1_variance_pct": 48.49666066472838,
+    "pc2_variance_pct": 21.544966207566947,
+    "n_samples": 36,
+    "n_features": 40,
+    "permanova": {
+      "statistic_F": 27.97298157551429,
+      "p_value": 0.001,
+      "permutations": 999
+    }
+  },
+  "container": {
+    "image": "localhost/pubplot:0.4.0",
+    "image_id": "4cf3e55927bb05afb9692649c012295c7599388c7be89ffaf893c590e80bd530",
+    "digest": "sha256:feccf0bcc3ec0b49b272c9f5910ab221b2dbb649016ee2ee654df7e503e3bead",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_pca_samples_pca_py.pdf",
+    "figure_pca_samples_pca_py.png",
+    "figure_pca_samples_pca_py.svg"
+  ]
+}

@@ -13,6 +13,34 @@ tag move together.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-19
+
+### Added
+- `volcano` recipe (both engines): an EnhancedVolcano-style scatter of a
+  differential-expression table. Auto-detects DESeq2 / limma / edgeR columns
+  (override with `--x`/`--y`/`--label`), a four-color scheme on the `--fc_cutoff`
+  and `--p_cutoff` thresholds, and top hits labeled with ggrepel / adjustText.
+- `enrichment_dot` recipe (both engines): a clusterProfiler-style GSEA / ORA dot
+  plot. An NES column gives a GSEA dot plot; otherwise ORA. Size is the gene
+  count, color the adjusted p, `--top_n` terms shown.
+- `paired_compare` recipe (both engines): a paired before/after plot connecting
+  each subject's two points (`--id`), with a paired t-test or Wilcoxon signed-rank
+  chosen from the differences' normality.
+- `proportions` recipe (both engines): a chi-square test of independence, or
+  Fisher's exact when a cell is sparse, with an odds ratio for a 2x2 table, drawn
+  as a 100% stacked proportion bar.
+- `pca` recipe (both engines): a PC1/PC2 scatter colored by `--group`, with 95%
+  confidence ellipses, variance explained on the axes, and a seeded PERMANOVA p.
+- `--geom raincloud` and `--geom bar` (mean + SEM + individual points) on the
+  two-group and multi-group comparison recipes.
+- New CLI flags `--id`, `--group`, `--label`, `--fc_cutoff`, `--p_cutoff`,
+  `--top_n`; seeded example generators and data, reference bundles, smoke cases,
+  and unit tests for the five new recipes and both geoms.
+
+### Changed
+- Container adds R `ggrepel` + `ggdist` and Python `adjustText`. Default image tag
+  is `localhost/pubplot:0.4.0`.
+
 ## [0.3.0] - 2026-07-19
 
 ### Added
@@ -81,7 +109,8 @@ tag move together.
   stats table, input copy, manifest, methods paragraph, and `REPRODUCE.md`.
 - Host adapters for Claude Code, Codex, and opencode on one shared core.
 
-[Unreleased]: https://github.com/wguesdon/pubplot/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/wguesdon/pubplot/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/wguesdon/pubplot/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/wguesdon/pubplot/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/wguesdon/pubplot/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/wguesdon/pubplot/releases/tag/v0.1.0

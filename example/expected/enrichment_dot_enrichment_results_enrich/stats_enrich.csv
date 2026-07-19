@@ -1,0 +1,16 @@
+term,gene_ratio,p_adjust,count
+Cytokine signaling in immune system,0.1175,3.18e-8,47
+Inflammatory response,0.1475,3.3e-8,59
+T cell receptor signaling,0.02,2.04e-7,8
+Interferon gamma response,0.025,2.39e-7,10
+Complement activation,0.0575,4.53e-7,23
+Apoptotic process,0.02,6.38e-7,8
+Cell cycle checkpoint,0.125,9.28e-7,50
+Oxidative phosphorylation,0.09,9.9e-7,36
+Fatty acid metabolism,0.05,2.79e-6,20
+Glycolysis,0.095,1.09e-5,38
+Extracellular matrix organization,0.0675,1.38e-5,27
+Angiogenesis,0.1225,1.7e-5,49
+Wnt signaling,0.12,2.45e-5,48
+p53 signaling pathway,0.0225,5.71e-5,9
+DNA repair,0.0625,8.28e-5,25

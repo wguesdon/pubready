@@ -1,0 +1,1 @@
+The distribution of the outcome (2 categories) across 2 groups (n = 124) was tested with Pearson's chi-squared test (P = 0.018). The odds ratio was 2.39. Proportions are shown as a 100% stacked bar per group. Analyses were performed in Python 3.10.12 with scipy 1.15.3; the figure was produced with matplotlib 3.10.9.

@@ -47,10 +47,16 @@ If a command reports the image is missing, run `figkit build` first.
 | `correlation` | x, y (two numeric columns) | `--x --y` | Pearson / Spearman / Kendall, chosen from normality |
 | `correlation_heatmap` | table of numeric variables | `--data` | pairwise correlation, clustered, BH-adjusted stars |
 | `upset` | binary membership matrix | `--data` | descriptive intersection sizes (no test) |
+| `volcano` | DE table (log2FC + p) | `--data [--x --y --label]` | EnhancedVolcano-style scatter, top hits labeled |
+| `enrichment_dot` | GSEA / ORA result table | `--data [--label]` | dot plot, size = count, color = adjusted p |
+| `paired_compare` | condition, value, id | `--x --y --id` | paired t-test or Wilcoxon, connecting lines |
+| `proportions` | two categoricals | `--x --y` | chi-square / Fisher, 100% stacked bar |
+| `pca` | samples × features + group | `--data --group` | PC1/PC2 scatter, 95% ellipses, PERMANOVA |
 
-Common options: `--engine r|python` (default r), `--geom box|violin|bar`,
+Common options: `--engine r|python` (default r), `--geom box|violin|bar|raincloud`,
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
-`pearson|spearman|kendall`), `--scale`/`--cluster` (heatmaps),
+`pearson|spearman|kendall`; proportions: `chisq|fisher`), `--scale`/`--cluster`
+(heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n` (volcano), `--id --group --label`,
 `--theme pubplot_house|prism`, `--xlab --ylab --title --palette`, `--out DIR`.
 
 ## Choosing the test

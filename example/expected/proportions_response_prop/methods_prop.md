@@ -1,0 +1,1 @@
+The distribution of the outcome (2 categories) across 2 groups (n = 124) was tested with Pearson's chi-squared test (P = 0.018). The odds ratio was 2.39. Proportions are shown as a 100% stacked bar per group. Drawn in R 4.4.1 with ggplot2 3.5.1.

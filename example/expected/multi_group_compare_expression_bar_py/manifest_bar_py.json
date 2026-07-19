@@ -1,0 +1,74 @@
+{
+  "pubplot_version": "0.4.0",
+  "pubplot_git_commit": "f26dea0",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "multi_group_compare",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "genotype",
+    "y": "expression",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_expression.csv",
+    "original_name": "gene_expression.csv",
+    "md5": "55d3ddd6425019751d19883d1fe81771",
+    "sha256": "0d5ab7e477ae444212d4b0eebf041038d659bee75d425c1cd51401dcd73d034b",
+    "n_rows": 40
+  },
+  "statistical_test": {
+    "name": "one-way ANOVA",
+    "omnibus": {
+      "statistic": 235.83211267605637,
+      "df1": 3,
+      "df2": 36,
+      "p_value": 1.0214193694811828e-23,
+      "effect_size": {
+        "name": "partial eta-squared",
+        "value": 0.9515801246641298
+      }
+    },
+    "post_hoc": "Tukey's HSD",
+    "n_comparisons": 6,
+    "n_significant": 5,
+    "assumptions": {
+      "normality": {
+        "test": "shapiro-wilk",
+        "all_normal": true
+      },
+      "equal_variance": {
+        "test": "Levene",
+        "p": 0.7373754225375306
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubplot:0.4.0",
+    "image_id": "4cf3e55927bb05afb9692649c012295c7599388c7be89ffaf893c590e80bd530",
+    "digest": "sha256:feccf0bcc3ec0b49b272c9f5910ab221b2dbb649016ee2ee654df7e503e3bead",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_expression_bar_py.pdf",
+    "figure_expression_bar_py.png",
+    "figure_expression_bar_py.svg"
+  ]
+}

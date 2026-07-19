@@ -1,0 +1,38 @@
+engine: r
+recipe: paired_compare
+data:
+  file: input_value.csv
+  x: condition
+  'y': value
+  fill: ~
+  facet: ~
+  time: ~
+  event: ~
+  annotation: ~
+  id: subject
+  group: ~
+  label: ~
+  covariates: ~
+test:
+  method: auto
+  paired: no
+  p_adjust: none
+appearance:
+  theme: pubplot_house
+  palette: ~
+  x_label: ~
+  y_label: Marker (a.u.)
+  title: ~
+  y_limits:
+  - ~
+  - ~
+  show_points: yes
+  geom: box
+  bracket:
+    show: yes
+    label: p.signif
+  scale: row
+  cluster: both
+  fc_cutoff: 1.0
+  p_cutoff: 0.05
+  top_n: 15.0

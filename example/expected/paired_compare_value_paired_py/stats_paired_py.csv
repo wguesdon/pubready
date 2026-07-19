@@ -1,0 +1,2 @@
+outcome,condition1,condition2,n_pairs,test,statistic,df,p_value,mean_diff,effect_size_name,effect_size,shapiro_p_diff
+value,pre,post,22,paired t-test,-9.972925411867607,21,2.0315796603119834e-09,-11.190909090909091,Cohen's dz,-2.1262348419712453,0.6910774124765315

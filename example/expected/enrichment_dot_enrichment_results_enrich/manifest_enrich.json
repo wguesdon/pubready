@@ -1,0 +1,49 @@
+{
+  "pubplot_version": "0.4.0",
+  "pubplot_git_commit": "f26dea0",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "enrichment_dot",
+  "recipe_version": "1",
+  "arguments": {
+    "x": {},
+    "y": {},
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_enrichment_results.csv",
+    "original_name": "enrichment_results.csv",
+    "md5": "7292703ccf5170ec7811de3a431c33ee",
+    "sha256": "3265457a2c00ffc902d1848a14b7ff6de77284a6cf42715c6d61b56d779178e8",
+    "n_rows": 20
+  },
+  "statistical_test": {
+    "name": "ORA dot plot",
+    "n_terms_total": 20,
+    "n_terms_shown": 15,
+    "x_axis": "gene ratio"
+  },
+  "container": {
+    "image": "localhost/pubplot:0.4.0",
+    "image_id": "4cf3e55927bb05afb9692649c012295c7599388c7be89ffaf893c590e80bd530",
+    "digest": "sha256:feccf0bcc3ec0b49b272c9f5910ab221b2dbb649016ee2ee654df7e503e3bead",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_enrichment_results_enrich.pdf",
+    "figure_enrichment_results_enrich.png",
+    "figure_enrichment_results_enrich.svg"
+  ]
+}

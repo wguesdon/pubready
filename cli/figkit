@@ -30,12 +30,18 @@ Common plot options:
   --time, --event                          survival columns (1 = event, 0 = censored)
   --covariates "a,b,c"                     Cox model covariates
   --annotation FILE                        heatmap column annotation CSV
+  --id COL                                 subject column (paired_compare)
+  --group COL                              grouping column (pca)
+  --label COL                              label column (volcano, enrichment_dot, pca)
   --scale row|column|none                  heatmap value scaling
-  --cluster both|rows|columns|none         heatmap clustering
+  --cluster both|rows|columns|none         heatmap / correlation clustering
+  --fc_cutoff N, --p_cutoff N              volcano thresholds (default 1, 0.05)
+  --top_n N                                labels / terms to show (volcano, enrichment_dot)
   --test auto|welch_t|wilcoxon|anova|kruskal|art   choose or force the test
-                                           (correlation: auto|pearson|spearman|kendall)
+                                           (correlation: auto|pearson|spearman|kendall;
+                                            proportions: auto|chisq|fisher)
   --paired                                 paired design
-  --geom box|violin|bar                    plot geometry
+  --geom box|violin|bar|raincloud          plot geometry (comparison recipes)
   --theme pubplot_house|prism              figure style (comparison + correlation)
   --xlab, --ylab, --title                  labels
   --palette "#3B6DB3,#C1432B"              fill colors
@@ -43,7 +49,8 @@ Common plot options:
 
 Recipes: two_group_compare, multi_group_compare, factorial_anova,
          survival_km, cox_forest, heatmap, correlation,
-         correlation_heatmap, upset
+         correlation_heatmap, upset, volcano, enrichment_dot,
+         paired_compare, proportions, pca
 EOF
 }
 

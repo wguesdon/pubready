@@ -1,0 +1,21 @@
+"Description","GeneRatio","Count","p.adjust"
+"Cytokine signaling in immune system","47/400",47,3.18e-08
+"Inflammatory response","59/400",59,3.3e-08
+"T cell receptor signaling","8/400",8,2.04e-07
+"Interferon gamma response","10/400",10,2.39e-07
+"Complement activation","23/400",23,4.53e-07
+"Apoptotic process","8/400",8,6.38e-07
+"Cell cycle checkpoint","50/400",50,9.28e-07
+"Oxidative phosphorylation","36/400",36,9.9e-07
+"Fatty acid metabolism","20/400",20,2.79e-06
+"Glycolysis","38/400",38,1.09e-05
+"Extracellular matrix organization","27/400",27,1.38e-05
+"Angiogenesis","49/400",49,1.7e-05
+"Wnt signaling","48/400",48,2.45e-05
+"p53 signaling pathway","9/400",9,5.71e-05
+"DNA repair","25/400",25,8.28e-05
+"Antigen processing","45/400",45,0.000196
+"Chemokine signaling","29/400",29,0.000454
+"NF-kappa B signaling","53/400",53,0.000847
+"Hypoxia response","52/400",52,0.0012
+"Epithelial mesenchymal transition","10/400",10,0.00342

@@ -1,0 +1,38 @@
+engine: python
+recipe: multi_group_compare
+data:
+  file: input_expression.csv
+  x: genotype
+  y: expression
+  fill: null
+  facet: null
+  time: null
+  event: null
+  annotation: null
+  covariates: null
+  id: null
+  group: null
+  label: null
+test:
+  method: auto
+  paired: false
+  p_adjust: none
+appearance:
+  theme: pubplot_house
+  palette: null
+  x_label: null
+  y_label: Expression (a.u.)
+  title: null
+  y_limits:
+  - null
+  - null
+  show_points: true
+  geom: bar
+  bracket:
+    show: true
+    label: p.signif
+  scale: row
+  cluster: both
+  fc_cutoff: 1.0
+  p_cutoff: 0.05
+  top_n: 15

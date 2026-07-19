@@ -1,0 +1,1 @@
+The top 15 of 20 enriched terms from a over-representation (ORA) analysis were shown as a dot plot. The x-axis is gene ratio, dot color the adjusted p-value, and dot size the gene count. The enrichment analysis was performed upstream; this figure summarises its output. Drawn in R 4.4.1 with ggplot2 3.5.1.

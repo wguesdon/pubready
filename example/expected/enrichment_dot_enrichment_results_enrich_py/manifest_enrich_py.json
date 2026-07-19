@@ -1,0 +1,54 @@
+{
+  "pubplot_version": "0.4.0",
+  "pubplot_git_commit": "f26dea0",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "enrichment_dot",
+  "recipe_version": "1",
+  "arguments": {
+    "x": null,
+    "y": null,
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_enrichment_results.csv",
+    "original_name": "enrichment_results.csv",
+    "md5": "7292703ccf5170ec7811de3a431c33ee",
+    "sha256": "3265457a2c00ffc902d1848a14b7ff6de77284a6cf42715c6d61b56d779178e8",
+    "n_rows": 20
+  },
+  "statistical_test": {
+    "name": "ORA dot plot",
+    "n_terms_total": 20,
+    "n_terms_shown": 15,
+    "x_axis": "gene ratio"
+  },
+  "container": {
+    "image": "localhost/pubplot:0.4.0",
+    "image_id": "4cf3e55927bb05afb9692649c012295c7599388c7be89ffaf893c590e80bd530",
+    "digest": "sha256:feccf0bcc3ec0b49b272c9f5910ab221b2dbb649016ee2ee654df7e503e3bead",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_enrichment_results_enrich_py.pdf",
+    "figure_enrichment_results_enrich_py.png",
+    "figure_enrichment_results_enrich_py.svg"
+  ]
+}
