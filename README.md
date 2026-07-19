@@ -64,13 +64,42 @@ cd pubplot
 | Codex | `ln -s skills/codex/AGENTS.md AGENTS.md` (append if a root `AGENTS.md` exists) |
 | opencode | add `skills/opencode/AGENTS.md` to `instructions` in `opencode.json`; for the `/pubplot` command also `mkdir -p .opencode/command && ln -s ../../skills/opencode/command/pubplot.md .opencode/command/pubplot.md` |
 
-Open the agent in this folder and it can make figures. Confirm the install with a
-quick render:
+Confirm the install by running `figkit` directly once:
 
 ```bash
 ./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
   --x group --y volume
 ```
+
+### 4. Ask for a figure
+
+Open the agent in this folder and describe the figure in plain language. The agent
+picks the recipe and runs `figkit`; you do not call `figkit` yourself. How you
+invoke pubplot differs per host, because each one loads the skill differently.
+
+**Claude Code** — the skill triggers from your request. Just ask:
+
+> Use pubplot to compare tumor volume between the two groups in `example/tumor_volume.csv`, with the right statistical test on top.
+
+**Codex** — it reads the root `AGENTS.md` and follows it, so ask the same way. Run
+Codex outside its sandbox so Podman can use a user namespace.
+
+> Use pubplot to compare tumor volume between the two groups in `example/tumor_volume.csv`.
+
+**opencode** — use the `/pubplot` slash command with a data file, or a plain prompt:
+
+> /pubplot example/tumor_volume.csv
+
+Or drive it headless with any model. Pass `--auto` so opencode approves the
+`figkit` calls without a prompt:
+
+```bash
+opencode run --auto -m openrouter/openai/gpt-oss-120b \
+  "Using pubplot, compare tumor volume between the two groups in example/tumor_volume.csv."
+```
+
+Each run writes a self-contained bundle under `pubplot_output/` with the figure,
+its stats table, a runnable script, and a manifest.
 
 ## Tested models
 
@@ -79,7 +108,7 @@ pubplot is host and model agnostic: any agent that reads the adapter and can run
 figure end to end.
 
 - **Claude Code** with its default model.
-- **opencode** with the models below, run as `opencode run -m <id>`:
+- **opencode** with the models below, run headless as `opencode run --auto -m <id>`:
 
 | Model (`opencode -m` id) | Result |
 |---|---|
