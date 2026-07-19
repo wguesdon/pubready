@@ -17,6 +17,9 @@ def default_appearance():
         "bracket": {"show": True, "label": "p.signif"},
         "scale": "row",
         "cluster": "both",
+        "fc_cutoff": 1.0,
+        "p_cutoff": 0.05,
+        "top_n": 15,
     }
 
 
@@ -38,6 +41,12 @@ def spec_from_args(a):
         ap["scale"] = a.scale
     if getattr(a, "cluster", None):
         ap["cluster"] = a.cluster
+    if getattr(a, "fc_cutoff", None) is not None:
+        ap["fc_cutoff"] = a.fc_cutoff
+    if getattr(a, "p_cutoff", None) is not None:
+        ap["p_cutoff"] = a.p_cutoff
+    if getattr(a, "top_n", None) is not None:
+        ap["top_n"] = a.top_n
     covs = [s.strip() for s in a.covariates.split(",")] if getattr(a, "covariates", None) else None
     return {
         "engine": "python",
@@ -47,6 +56,8 @@ def spec_from_args(a):
             "fill": getattr(a, "fill", None), "facet": getattr(a, "facet", None),
             "time": getattr(a, "time", None), "event": getattr(a, "event", None),
             "annotation": getattr(a, "annotation", None), "covariates": covs,
+            "id": getattr(a, "id", None), "group": getattr(a, "group", None),
+            "label": getattr(a, "label", None),
         },
         "test": {
             "method": getattr(a, "test", None) or "auto",

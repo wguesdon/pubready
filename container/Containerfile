@@ -45,6 +45,12 @@ COPY container/requirements-extra.txt /opt/pubplot/requirements-extra.txt
 RUN VIRTUAL_ENV=/opt/pubplot/venv uv pip install --no-cache -r /opt/pubplot/requirements-extra.txt \
  && VIRTUAL_ENV=/opt/pubplot/venv uv pip freeze > /opt/pubplot/requirements.lock
 
+# Extra CRAN packages added after v0.3.0: ggrepel + ggdist for the volcano labels
+# and the raincloud geom. A late layer so the heavy R/Bioconductor and Python
+# layers above stay cached across this add.
+RUN install2.r --error --skipinstalled ggrepel ggdist \
+ && rm -rf /tmp/downloaded_packages
+
 # Test tooling: testthat (R) and pytest (Python), used by `figkit test`. A late
 # layer so the heavy R/Bioconductor and Python engine layers above stay cached
 # across this add. pytest is intentionally not frozen into requirements.lock: it

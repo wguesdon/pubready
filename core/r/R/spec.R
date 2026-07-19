@@ -10,10 +10,13 @@ default_appearance <- function() {
     title       = NULL,
     y_limits    = list(NULL, NULL),
     show_points = TRUE,
-    geom        = "box",           # box | violin | bar
+    geom        = "box",           # box | violin | bar | raincloud
     bracket     = list(show = TRUE, label = "p.signif"),
     scale       = "row",           # heatmap: row | column | none
-    cluster     = "both"           # heatmap: both | rows | columns | none
+    cluster     = "both",          # heatmap: both | rows | columns | none
+    fc_cutoff   = 1.0,             # volcano: |log2FC| threshold
+    p_cutoff    = 0.05,            # volcano: p threshold
+    top_n       = 15              # volcano / enrichment: labels / terms to show
   )
 }
 
@@ -26,8 +29,11 @@ spec_from_opt <- function(opt) {
   if (!is.null(opt$ylab))    ap$y_label <- opt$ylab
   if (!is.null(opt$title))   ap$title   <- opt$title
   if (!is.null(opt$palette)) ap$palette <- trimws(strsplit(opt$palette, ",")[[1]])
-  if (!is.null(opt$scale))   ap$scale   <- opt$scale
-  if (!is.null(opt$cluster)) ap$cluster <- opt$cluster
+  if (!is.null(opt$scale))     ap$scale     <- opt$scale
+  if (!is.null(opt$cluster))   ap$cluster   <- opt$cluster
+  if (!is.null(opt$fc_cutoff)) ap$fc_cutoff <- opt$fc_cutoff
+  if (!is.null(opt$p_cutoff))  ap$p_cutoff  <- opt$p_cutoff
+  if (!is.null(opt$top_n))     ap$top_n     <- opt$top_n
   list(
     engine = "r",
     recipe = opt$recipe,
@@ -35,6 +41,7 @@ spec_from_opt <- function(opt) {
                   fill = opt$fill, facet = opt$facet,
                   time = opt$time, event = opt$event,
                   annotation = opt$annotation,
+                  id = opt$id, group = opt$group, label = opt$label,
                   covariates = if (!is.null(opt$covariates)) {
                     trimws(strsplit(opt$covariates, ",")[[1]])
                   } else NULL),

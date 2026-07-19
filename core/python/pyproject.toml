@@ -21,6 +21,7 @@ dependencies = [
     "lifelines",
     "PyComplexHeatmap",
     "upsetplot",
+    "adjustText",
 ]
 
 [project.optional-dependencies]
