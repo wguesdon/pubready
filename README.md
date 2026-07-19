@@ -5,15 +5,58 @@ data, designed to work across several agent harnesses and LLMs.
 
 ## Setup
 
-Two steps, once.
+Everything runs inside a pinned Podman container, so the only things you install
+on the host are **Podman** and **git**. The `./cli/figkit` command is a bash
+script, so you also need a POSIX shell: native on Linux and macOS, and WSL2 on
+Windows.
 
-1. Build the container image. Needs Podman.
+### 1. Install Podman
+
+**Ubuntu / Debian**
 
 ```bash
+sudo apt update && sudo apt install -y podman git
+```
+
+Rootless Podman works out of the box. On an older release you may want a newer
+Podman; see the [official install guide](https://podman.io/docs/installation).
+
+**macOS** (Intel or Apple Silicon)
+
+```bash
+brew install podman            # or install Podman Desktop from podman.io
+podman machine init
+podman machine start
+```
+
+Containers are Linux, so Podman runs a small Linux VM that `podman machine`
+manages. Clone pubplot somewhere under your home directory so the container can
+mount it.
+
+**Windows**
+
+Use WSL2 with Ubuntu and treat it as Linux. In an elevated PowerShell:
+
+```powershell
+wsl --install -d Ubuntu
+```
+
+Reboot, open the Ubuntu shell, and install Podman with the Ubuntu commands above.
+Clone and run pubplot from inside the WSL filesystem (your Linux home), not from a
+`/mnt/c/...` Windows path.
+
+### 2. Build the image
+
+Clone this repo, then from its root build the image. The first build downloads
+the R and Python stacks and takes a few minutes; after that it is cached.
+
+```bash
+git clone https://github.com/wguesdon/pubplot.git
+cd pubplot
 ./cli/figkit build
 ```
 
-2. Install the skill in your agent.
+### 3. Install the skill in your agent
 
 | Host | Install (run from the repo root) |
 |---|---|
@@ -21,7 +64,13 @@ Two steps, once.
 | Codex | `ln -s skills/codex/AGENTS.md AGENTS.md` (append if a root `AGENTS.md` exists) |
 | opencode | add `skills/opencode/AGENTS.md` to `instructions` in `opencode.json`; for the `/pubplot` command also `mkdir -p .opencode/command && ln -s ../../skills/opencode/command/pubplot.md .opencode/command/pubplot.md` |
 
-Open the agent in this folder and it can make figures.
+Open the agent in this folder and it can make figures. Confirm the install with a
+quick render:
+
+```bash
+./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
+  --x group --y volume
+```
 
 ## Tested models
 
