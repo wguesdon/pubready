@@ -270,7 +270,7 @@ spec, and returns:
 The bundle writer does the rest. Because recipes own their own methods text and
 script, new ones plug in without touching the writer. Register the recipe by
 adding an example dataset, a smoke case in `tests/smoke_test.sh`, a reference
-bundle in `example/generate_expected.sh`, and unit tests under
+bundle in `tools/make_examples/generate_expected.sh`, and unit tests under
 `core/r/tests/testthat` and `core/python/tests`.
 
 ## Design principles

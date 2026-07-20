@@ -2,7 +2,7 @@
 # Generate the factorial example datasets deterministically. Run once inside the
 # pubplot container from the repo root:
 #   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.0 \
-#     Rscript example/make_factorial_data.R
+#     Rscript tools/make_examples/make_factorial_data.R
 set.seed(42)
 
 # Two-way: genotype (wt/ko) x treatment (vehicle/low/high).

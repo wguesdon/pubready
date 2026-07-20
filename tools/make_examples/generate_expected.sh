@@ -2,11 +2,13 @@
 # Regenerate the committed reference bundles under example/expected/.
 # Uses fixed --stamp names and a fixed created date so the outputs are
 # deterministic and diff cleanly. Run from anywhere; requires the built image.
+# Set PUBPLOT_EXPECTED_OUT to write elsewhere (the determinism check points it
+# at a temp tree so it can diff against the committed bundles).
 set -e
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
 export PUBPLOT_CREATED="2026-07-18T00:00:00Z"
-OUT="example/expected"
+OUT="${PUBPLOT_EXPECTED_OUT:-example/expected}"
 rm -rf "$OUT"
 
 # Parametric path -> Student's t-test
@@ -71,7 +73,7 @@ rm -rf "$OUT"
   --x group --y volume --ylab "Tumor volume (mm^3)" --xlab "Group" --theme prism \
   --stamp prism --out "$OUT"
 
-# Volcano plot (EnhancedVolcano style) from the airway DESeq2 results, FDR-thresholded.
+# Volcano plot (EnhancedVolcano style) from the synthetic DE table, FDR-thresholded.
 # The ylab uses the --flag=value form because optparse reads a leading-dash value
 # (-log10 ...) as another flag.
 ./cli/figkit plot --recipe volcano --data example/de_results.csv \

@@ -4,7 +4,7 @@
 # the element belongs to the set and 0 otherwise. Run once inside the pubplot
 # container from the repo root:
 #   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.0 \
-#     Rscript example/make_upset_data.R
+#     Rscript tools/make_examples/make_upset_data.R
 set.seed(7)
 
 n <- 80

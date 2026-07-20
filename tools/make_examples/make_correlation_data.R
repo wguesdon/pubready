@@ -2,7 +2,7 @@
 # Generate the correlation example data deterministically. Run once inside the
 # pubplot container from the repo root:
 #   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.0 \
-#     Rscript example/make_correlation_data.R
+#     Rscript tools/make_examples/make_correlation_data.R
 #
 # Produces two files:
 #   correlation_xy.csv   two co-expressed genes (for the `correlation` recipe)

@@ -3,7 +3,7 @@
 # subject is measured under two conditions. Run once inside the pubplot container
 # from the repo root:
 #   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.0 \
-#     Rscript example/make_paired_data.R
+#     Rscript tools/make_examples/make_paired_data.R
 set.seed(8)
 
 n <- 22

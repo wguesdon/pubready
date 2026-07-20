@@ -5,6 +5,9 @@
 !reference/**/*.csv
 !example/**/*.csv
 !example/*.csv
+# Optional real-data airway benchmark output (tools/make_examples/make_volcano_airway.R).
+# Large; the committed volcano example uses the small synthetic de_results.csv instead.
+example/de_results_airway.csv
 pubplot_output/
 pubplot_demo/
 outputs/
@@ -12,6 +15,7 @@ figures/
 example_output/
 render_output/
 test_output/
+.determinism.*/
 
 # R
 .Rproj.user/

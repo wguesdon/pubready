@@ -2,9 +2,9 @@
 
 - Original file: `de_results.csv`
 - Stored in bundle as: `input_de_results.csv`
-- md5: `6e59e546d214600150e9fdcb32c42558`
-- sha256: `04ffb76a2c47874c30614ca3bb8af1ba5bdc1d17c6071e5a2bcf6749fb37eea2`
-- Analyzed rows: 17994
+- md5: `cccbb84090f24cd1610407c75dcadee2`
+- sha256: `487ba326154d5adb67175907eefabc4055bc7a610511a1175ca4cf5ac70248ae`
+- Analyzed rows: 1200
 - Columns: 3
 
 ## Column types (analyzed data)
@@ -15,4 +15,4 @@
 
 ## Cleaning steps
 
-- Dropped 11397 row(s) with missing or non-finite fold change or p (29391 -> 17994).
+- No cleaning applied; input used as-is.

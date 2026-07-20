@@ -3,7 +3,7 @@
 # recipe: treatment arm versus clinical response. Run once inside the pubplot
 # container from the repo root:
 #   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.0 \
-#     Rscript example/make_proportions_data.R
+#     Rscript tools/make_examples/make_proportions_data.R
 set.seed(5)
 
 make_arm <- function(arm, n, p_resp) {

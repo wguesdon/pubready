@@ -1,6 +1,6 @@
 {
   "pubplot_version": "0.4.1",
-  "pubplot_git_commit": "46b7035",
+  "pubplot_git_commit": "357509a",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "volcano",
@@ -17,18 +17,18 @@
   "input": {
     "file": "input_de_results.csv",
     "original_name": "de_results.csv",
-    "md5": "6e59e546d214600150e9fdcb32c42558",
-    "sha256": "04ffb76a2c47874c30614ca3bb8af1ba5bdc1d17c6071e5a2bcf6749fb37eea2",
-    "n_rows": 17994
+    "md5": "cccbb84090f24cd1610407c75dcadee2",
+    "sha256": "487ba326154d5adb67175907eefabc4055bc7a610511a1175ca4cf5ac70248ae",
+    "n_rows": 1200
   },
   "statistical_test": {
     "name": "Volcano plot",
     "fc_cutoff": 1.0,
     "p_cutoff": 0.05,
-    "n_total": 17994,
-    "n_up": 528,
-    "n_down": 483,
-    "n_significant": 1011
+    "n_total": 1200,
+    "n_up": 75,
+    "n_down": 75,
+    "n_significant": 150
   },
   "container": {
     "image": "localhost/pubplot:0.4.1",

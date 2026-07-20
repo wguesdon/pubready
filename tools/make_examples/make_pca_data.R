@@ -3,7 +3,7 @@
 # rows are samples, numeric columns are features, plus a group column. Run once
 # inside the pubplot container from the repo root:
 #   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.0 \
-#     Rscript example/make_pca_data.R
+#     Rscript tools/make_examples/make_pca_data.R
 set.seed(31)
 
 groups   <- rep(c("healthy", "mild", "severe"), each = 12)

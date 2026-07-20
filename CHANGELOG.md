@@ -13,6 +13,22 @@ tag move together.
 
 ## [Unreleased]
 
+### Changed
+- Moved the example data generators and `generate_expected.sh` out of `example/`
+  into `tools/make_examples/`. `example/` now holds only the input datasets, the
+  `expected/` reference bundles, and its README, so the folder a reader opens
+  first shows examples, not maintainer tooling.
+- The committed volcano example uses a small synthetic DE table (1200 genes) in
+  place of the 928 KB airway DESeq2 result. The airway benchmark stays available
+  as the optional `tools/make_examples/make_volcano_airway.R`. Committed footprint
+  drops by roughly 5 MB and the volcano figure is unchanged in kind. Output is not
+  affected for any other recipe.
+
+### Added
+- `tools/make_examples/check_determinism.sh`: regenerates the reference bundles in
+  a temp tree and confirms every stats table matches the committed copy, so "same
+  input, same numbers" is checkable rather than assumed.
+
 ## [0.4.1] - 2026-07-19
 
 ### Changed

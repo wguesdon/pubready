@@ -1,11 +1,20 @@
 #!/usr/bin/env Rscript
-# Build the volcano example from the airway benchmark (Himes et al. 2014,
-# GSE52778): primary human airway smooth muscle cells, dexamethasone-treated vs
-# untreated, four donors. This is the standard Bioconductor DE reference. We run
+# OPTIONAL: build a real-data volcano input from the airway benchmark (Himes et
+# al. 2014, GSE52778): primary human airway smooth muscle cells, dexamethasone-
+# treated vs untreated, four donors. The standard Bioconductor DE reference. Run
 # DESeq2 with the donor (cell line) blocked, contrast treated vs untreated, and
-# label genes by symbol. Run once inside the pubplot container from the repo root:
+# label genes by symbol.
+#
+# The committed volcano example uses the small synthetic table from
+# make_volcano_data.R instead, so the repo stays light. This script is here for
+# anyone who wants the genuine benchmark; it writes de_results_airway.csv, which
+# is gitignored. Point the recipe at it with:
+#   figkit plot --recipe volcano --data example/de_results_airway.csv --y padj
+#
+# Needs DESeq2 + airway + org.Hs.eg.db (already in the image). Run from the repo
+# root inside the container:
 #   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.1 \
-#     Rscript example/make_volcano_data.R
+#     Rscript tools/make_examples/make_volcano_airway.R
 suppressPackageStartupMessages({
   library(airway)
   library(DESeq2)
@@ -38,7 +47,7 @@ out <- data.frame(
 out <- out[!is.na(out$pvalue), ]                      # keep genes that were tested
 out <- out[order(out$padj), ]
 
-write.csv(out, "example/de_results.csv", row.names = FALSE)
+write.csv(out, "example/de_results_airway.csv", row.names = FALSE)
 n_sig <- sum(out$padj < 0.05 & abs(out$log2FoldChange) > 1, na.rm = TRUE)
-cat(sprintf("wrote example/de_results.csv (%d genes tested, %d significant at padj<0.05 & |log2FC|>1)\n",
+cat(sprintf("wrote example/de_results_airway.csv (%d genes tested, %d significant at padj<0.05 & |log2FC|>1)\n",
             nrow(out), n_sig))
