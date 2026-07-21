@@ -37,6 +37,9 @@ venv/
 # Local agent settings (machine-specific, not shared)
 .claude/settings.local.json
 
+# Personal session work log, kept locally but not published
+SESSION_SUMMARY.md
+
 # OS / editor
 .DS_Store
 *.swp
