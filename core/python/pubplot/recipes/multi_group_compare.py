@@ -114,6 +114,7 @@ def recipe_multi_group_compare(df, spec):
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": df, "clean_steps": steps, "width": w, "height": h,
+        "qc": {"quantity": "group values", "panels": {str(g): gr for g, gr in zip(lv, groups)}},
         "build_script": lambda in_name, fig_stub: _script(spec, fam, label, lv, pal, in_name, fig_stub, blabel),
     }
 

@@ -109,6 +109,7 @@ def recipe_correlation(df, spec):
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": df_used, "clean_steps": steps,
         "label": slugify(f"{y}_vs_{x}"), "width": w, "height": h,
+        "qc": {"quantity": "variable values", "panels": {x: xv, y: yv}},
         "build_script": lambda in_name, fig_stub: _script(spec, r, pal[0], in_name, fig_stub),
     }
 

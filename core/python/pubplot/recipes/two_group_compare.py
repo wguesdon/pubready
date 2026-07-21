@@ -112,6 +112,7 @@ def recipe_two_group_compare(df, spec):
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
         "methods": methods, "df_used": df, "clean_steps": steps,
         "width": w, "height": h,
+        "qc": {"quantity": "group values", "panels": {lv[0]: a, lv[1]: b}},
         "build_script": lambda in_name, fig_stub: _script(spec, r, lv, pal, in_name, fig_stub, ann),
     }
 

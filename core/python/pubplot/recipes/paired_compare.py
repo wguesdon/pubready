@@ -106,6 +106,7 @@ def recipe_paired_compare(df, spec):
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": m, "clean_steps": steps, "label": slugify(y),
         "width": w, "height": h,
+        "qc": {"quantity": "within-subject differences", "panels": {"differences": diffs}},
         "build_script": lambda in_name, fig_stub: _script(spec, family, lv, in_name, fig_stub),
     }
 

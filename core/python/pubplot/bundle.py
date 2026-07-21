@@ -152,6 +152,17 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
     fig_stub = f"figure_{base}_{ts}"
     save_figure(result["fig"], bdir, fig_stub, result.get("width", 3.8), result.get("height", 4.0))
 
+    # Normality QC panel: a QQ per checked quantity, so the reader can judge the
+    # assumption behind the test rather than trust a single Shapiro-Wilk p-value.
+    if result.get("qc"):
+        import matplotlib.pyplot as plt
+
+        from .qc import qc_normality
+        qfig, _ = qc_normality(result["qc"])
+        qfig.savefig(os.path.join(bdir, f"qc_normality_{ts}.png"), dpi=200, facecolor="white")
+        qfig.savefig(os.path.join(bdir, f"qc_normality_{ts}.pdf"), facecolor="white")
+        plt.close(qfig)
+
     result["stats"].to_csv(os.path.join(bdir, f"stats_{ts}.csv"), index=False)
 
     ext = os.path.splitext(raw_input)[1].lstrip(".") or "csv"
@@ -175,6 +186,8 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
     manifest = build_manifest(spec, in_name, os.path.basename(raw_input), sums,
                               len(result["df_used"]), result["test_meta"], container,
                               git_commit, created, fig_stub)
+    if result.get("qc"):
+        manifest["outputs"] += [f"qc_normality_{ts}.png", f"qc_normality_{ts}.pdf"]
     with open(os.path.join(bdir, f"manifest_{ts}.json"), "w") as f:
         json.dump(manifest, f, indent=2, default=_json_default)
 

@@ -107,6 +107,7 @@ def recipe_factorial_anova(df, spec):
     return {
         "fig": fig, "stats": eff, "test_meta": test_meta, "methods": methods,
         "df_used": df, "clean_steps": clean_steps, "width": w, "height": h,
+        "qc": {"quantity": "model residuals", "panels": {"residuals": model.resid.to_numpy()}},
         "build_script": lambda in_name, fig_stub: _script(spec, factors, f1_lv, f2_lv, facet_lv, pal, in_name, fig_stub),
     }
 
