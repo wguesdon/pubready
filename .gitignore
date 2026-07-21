@@ -40,6 +40,9 @@ venv/
 # Personal session work log, kept locally but not published
 SESSION_SUMMARY.md
 
+# Product requirements doc, kept local only
+PRD.md
+
 # OS / editor
 .DS_Store
 *.swp
