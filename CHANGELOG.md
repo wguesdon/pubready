@@ -25,6 +25,10 @@ tag move together.
   affected for any other recipe.
 
 ### Added
+- Every bundle writes `packages_<ts>.txt` beside the figure and script: the packages the
+  generated script loads directly first, then the complete installed set, each with its
+  version and headed with the R or Python version and the container OS. R's
+  `session_info.txt` listed only loaded packages, so this is the full environment record too.
 - `tools/make_examples/check_determinism.sh`: regenerates the reference bundles in
   a temp tree and confirms every stats table matches the committed copy, so "same
   input, same numbers" is checkable rather than assumed.

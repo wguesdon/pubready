@@ -11,6 +11,50 @@ slugify <- function(s) {
   gsub("^_|_$", "", s)
 }
 
+# The OS of the container, from /etc/os-release (e.g. "Ubuntu 22.04.5 LTS").
+os_pretty <- function() {
+  f <- "/etc/os-release"
+  if (!file.exists(f)) return(NA_character_)
+  ln <- grep("^PRETTY_NAME=", readLines(f, warn = FALSE), value = TRUE)
+  if (length(ln) == 0) return(NA_character_)
+  gsub('"', "", sub("^PRETTY_NAME=", "", ln[1]))
+}
+
+# Packages the generated script loads directly, via library()/require()/pkg::.
+script_direct_pkgs <- function(script_lines) {
+  txt <- paste(script_lines, collapse = "\n")
+  grab <- function(re) {
+    m <- regmatches(txt, gregexpr(re, txt, perl = TRUE))[[1]]
+    if (length(m) == 0) return(character(0))
+    sub(re, "\\1", m, perl = TRUE)
+  }
+  libs <- grab("(?:library|require)\\(([A-Za-z][A-Za-z0-9.]*)")
+  ns   <- grab("([A-Za-z][A-Za-z0-9.]*)::")
+  unique(c(libs, ns))
+}
+
+# Write the package versions that produced this figure, next to the figure and
+# script. The packages the script loads directly come first (the answer to "what
+# did this figure use"), then the complete installed set, since R sessionInfo()
+# lists only the loaded packages.
+write_packages <- function(path, script_lines = NULL) {
+  ip   <- installed.packages()[, c("Package", "Version"), drop = FALSE]
+  ver  <- stats::setNames(ip[, "Version"], ip[, "Package"])
+  rver <- paste(R.version$major, R.version$minor, sep = ".")
+  lines <- c("# Package versions for this figure",
+             sprintf("# R %s | %s", rver, os_pretty() %||% "unknown OS"), "")
+  direct <- if (!is.null(script_lines)) script_direct_pkgs(script_lines) else character(0)
+  direct <- direct[direct %in% names(ver)]
+  if (length(direct)) {
+    lines <- c(lines, "## Used by this script",
+               sprintf("%s==%s", direct, ver[direct]), "")
+  }
+  all_sorted <- ip[order(tolower(ip[, "Package"])), , drop = FALSE]
+  lines <- c(lines, "## Full environment (every installed package)", "",
+             sprintf("%s==%s", all_sorted[, "Package"], all_sorted[, "Version"]))
+  writeLines(lines, path)
+}
+
 save_figure <- function(plot, dir, stub, width = 3.8, height = 4.0, draw = NULL) {
   # draw is a function that renders to the active device (base-graphics style,
   # e.g. ComplexHeatmap); otherwise plot is a ggplot/grob saved with ggsave.
@@ -241,6 +285,7 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
   in_name <- sprintf("input_%s.%s", base, if (nzchar(in_ext)) in_ext else "csv")
   file.copy(raw_input_path, file.path(bdir, in_name), overwrite = TRUE)
   sums <- file_checksums(raw_input_path)
+  script_lines <- build_script(in_name, fig_stub)
 
   # Copy any secondary input files (e.g. a heatmap annotation table) with their
   # original names so the standalone script and REPRODUCE step can find them.
@@ -259,9 +304,12 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
 
   writeLines(capture.output(utils::sessionInfo()), file.path(bdir, "session_info.txt"))
 
+  write_packages(file.path(bdir, sprintf("packages_%s.txt", ts)), script_lines)
+
   manifest <- build_manifest(spec, resolved, in_name, basename(raw_input_path),
                              sums, nrow(df_used), test_meta, container,
                              git_commit, created, fig_stub)
+  manifest$outputs <- c(manifest$outputs, list(sprintf("packages_%s.txt", ts)))
   if (!is.null(qc)) {
     manifest$outputs <- c(manifest$outputs,
                           list(sprintf("qc_normality_%s.png", ts),
@@ -275,7 +323,7 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
   writeLines(methods_text, file.path(bdir, sprintf("methods_%s.md", ts)))
 
   script_name <- sprintf("script_%s.R", ts)
-  writeLines(build_script(in_name, fig_stub), file.path(bdir, script_name))
+  writeLines(script_lines, file.path(bdir, script_name))
 
   writeLines(reproduce_md(container, git_commit, script_name),
              file.path(bdir, "REPRODUCE.md"))

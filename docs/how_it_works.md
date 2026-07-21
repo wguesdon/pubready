@@ -199,6 +199,9 @@ Every `figkit plot` run writes one folder. That folder is the reproducible unit.
 - `plot_config.yaml` — the editable spec that drives `figkit render`.
 - `session_info.txt` — the full environment: R `sessionInfo()` or a Python
   package list.
+- `packages_*.txt` — the package versions for this figure: the ones the script loads
+  directly first, then the complete installed set, headed with the R or Python version
+  and the container OS.
 - `manifest_*.json` — structured provenance: recipe and arguments, the container
   pinned by digest, the pubplot git commit, and every package version.
 - `methods_*.md` — a manuscript-ready methods paragraph, templated from the same

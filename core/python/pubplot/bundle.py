@@ -95,6 +95,67 @@ def write_session_info(path):
     open(path, "w").write(header + "\n".join(lines) + "\n")
 
 
+def _os_pretty():
+    """The OS of the container, from /etc/os-release (e.g. 'Ubuntu 22.04.5 LTS')."""
+    try:
+        for line in open("/etc/os-release"):
+            if line.startswith("PRETTY_NAME="):
+                return line.split("=", 1)[1].strip().strip('"')
+    except Exception:
+        pass
+    return None
+
+
+def script_direct_dists(script_text):
+    """Distributions the generated script imports directly, in import order.
+    Maps import names to distribution names (e.g. sklearn -> scikit-learn)."""
+    import re
+    try:
+        from importlib.metadata import packages_distributions
+        mod_map = packages_distributions()
+    except Exception:
+        mod_map = {}
+    mods = []
+    for line in script_text.splitlines():
+        s = line.strip()
+        m = re.match(r"import\s+(.+)", s)
+        if m and not s.startswith("from"):
+            for part in m.group(1).split(","):
+                name = part.strip().split(" as ")[0].split(".")[0].strip()
+                if name:
+                    mods.append(name)
+        m = re.match(r"from\s+([A-Za-z0-9_.]+)\s+import", s)
+        if m:
+            mods.append(m.group(1).split(".")[0])
+    out = []
+    for mod in dict.fromkeys(mods):        # dedupe, keep order
+        for dist in mod_map.get(mod, [mod]):
+            if dist not in out:
+                out.append(dist)
+    return out
+
+
+def write_packages(path, script_text=None):
+    """The package versions that produced this figure, next to the figure and
+    script: the packages the script imports directly first, then the complete set."""
+    seen = {}
+    for d in distributions():
+        nm = d.metadata.get("Name")
+        if nm:
+            seen[nm] = d.version
+    lines = ["# Package versions for this figure",
+             f"# Python {platform.python_version()} | {_os_pretty() or 'unknown OS'}", ""]
+    if script_text:
+        direct = [n for n in script_direct_dists(script_text) if n in seen]
+        if direct:
+            lines.append("## Used by this script")
+            lines += [f"{n}=={seen[n]}" for n in direct]
+            lines.append("")
+    lines += ["## Full environment (every installed package)", ""]
+    lines += [f"{n}=={v}" for n, v in sorted(seen.items(), key=lambda t: t[0].lower())]
+    open(path, "w").write("\n".join(lines) + "\n")
+
+
 def build_manifest(spec, in_name, orig, sums, n_rows, test_meta, container, git_commit, created, fig_stub):
     return {
         "pubplot_version": PUBPLOT_VERSION,
@@ -169,6 +230,7 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
     in_name = f"input_{base}.{ext}"
     shutil.copyfile(raw_input, os.path.join(bdir, in_name))
     sums = file_checksums(raw_input)
+    script_text = result["build_script"](in_name, fig_stub)
 
     for ex in (result.get("extra_inputs") or []):
         if ex and os.path.exists(ex):
@@ -182,10 +244,12 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
     write_config(cfg, os.path.join(bdir, "plot_config.yaml"))
 
     write_session_info(os.path.join(bdir, "session_info.txt"))
+    write_packages(os.path.join(bdir, f"packages_{ts}.txt"), script_text)
 
     manifest = build_manifest(spec, in_name, os.path.basename(raw_input), sums,
                               len(result["df_used"]), result["test_meta"], container,
                               git_commit, created, fig_stub)
+    manifest["outputs"].append(f"packages_{ts}.txt")
     if result.get("qc"):
         manifest["outputs"] += [f"qc_normality_{ts}.png", f"qc_normality_{ts}.pdf"]
     with open(os.path.join(bdir, f"manifest_{ts}.json"), "w") as f:
@@ -194,7 +258,7 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
     open(os.path.join(bdir, f"methods_{ts}.md"), "w").write(result["methods"].rstrip() + "\n")
 
     script_name = f"script_{ts}.py"
-    open(os.path.join(bdir, script_name), "w").write(result["build_script"](in_name, fig_stub))
+    open(os.path.join(bdir, script_name), "w").write(script_text)
 
     open(os.path.join(bdir, "REPRODUCE.md"), "w").write(reproduce_md(container, git_commit, script_name))
 
