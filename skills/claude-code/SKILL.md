@@ -26,6 +26,7 @@ call R or Python directly.
 ```
 figkit build                                  # once, builds the image
 figkit inspect --data FILE [--format json]    # columns, types, group sizes, candidate x/y
+figkit diagnose --recipe NAME --data FILE ... # QQ + assumption check, recommend a test (no figure)
 figkit plot --recipe NAME --data FILE ...     # draw + test, writes a bundle
 figkit render --config plot_config.yaml       # redraw from an edited spec, recompute stats
 ```
@@ -36,13 +37,21 @@ If a command reports the image is missing, run `figkit build` first.
 
 1. Run `figkit inspect` on the data. Read the real column types and group sizes.
    Do not guess them.
-2. Talk through the design with the scientist: how many groups, paired or not,
-   one factor or several, time to event, or a matrix. Confirm before drawing.
-3. Call `figkit plot` with the recipe and columns. Leave `--test auto` unless the
-   scientist forces a test.
-4. Point them at the bundle folder under `pubplot_output/`: the figure, the
+2. Talk through the design with the scientist: how many groups, paired or not, one
+   factor or several, time to event, or a matrix. If they are unsure which test
+   applies, walk the plain-language questions in `reference/decision_tree.md`.
+   Confirm the design before drawing.
+3. If no test is named, run `figkit diagnose --recipe … --data … [--x --y …]`. It
+   draws a QQ plot with the Shapiro-Wilk p, skewness, and kurtosis for the quantity
+   the test depends on, and prints a recommended test. Show the scientist the
+   recommendation and the QQ, and let them accept it or force another with `--test`.
+   Shapiro is a default, not a verdict (underpowered at small n, over-rejects at
+   large n), so the QQ plot is the tiebreaker.
+4. Call `figkit plot` with the recipe and columns. Leave `--test auto` unless a test
+   is forced. The bundle also includes the QC panel (`qc_normality_<ts>.png`).
+5. Point them at the bundle folder under `pubplot_output/`: the figure, the
    standalone script, the stats table, the input copy, and a methods paragraph.
-5. To restyle, edit `plot_config.yaml` in the bundle and run `figkit render`. It
+6. To restyle, edit `plot_config.yaml` in the bundle and run `figkit render`. It
    recomputes the statistics, so the figure and the numbers never drift apart.
 
 ## Recipes
@@ -72,12 +81,15 @@ Common options: `--engine r|python` (default r), `--geom box|violin|bar|rainclou
 
 ## Choosing the test
 
-`--test auto` measures before it picks. For the two-group and multi-group recipes
-it checks normality per group with Shapiro-Wilk and equal variance with Levene,
-then goes parametric when both hold, non-parametric otherwise, with the Welch
-correction when variances differ. Walk this with the scientist and override any
-step with `--test`. Event columns code `1 = event, 0 = censored`. `survival_km`
-needs `--x` for the grouping arm.
+The full test-selection tree is in `reference/decision_tree.md`, and the assumption
+checks behind it in `reference/assumptions.md`; walk those with the scientist rather
+than deciding from memory. In short, `--test auto` measures before it picks: it checks
+normality (Shapiro-Wilk) and, for group comparisons, equal variance (F test or
+Levene), then goes parametric when the assumptions hold and non-parametric otherwise,
+with the Welch correction when variances differ. `figkit diagnose` shows that evidence
+as a QQ plot so the scientist can confirm the choice. Override any step with `--test`.
+Event columns code `1 = event, 0 = censored`; `survival_km` needs `--x` for the
+grouping arm.
 
 ## Engine limits
 

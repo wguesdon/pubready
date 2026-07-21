@@ -46,6 +46,18 @@ When a variance test cannot be computed, the recipe treats the variances as equa
 rather than failing. `paired_compare` and `correlation` key off normality alone, and
 `factorial_anova` keys off residual normality rather than group variance.
 
+## Seeing the assumption: the QQ plot
+
+A p-value is a poor sole judge of normality. Shapiro-Wilk is underpowered at small n,
+so it passes visibly non-normal small samples, and it over-rejects at large n, where
+the central limit theorem already makes the mean-based tests robust. So pubplot shows
+the assumption rather than only asserting it. `figkit diagnose` writes a QQ plot for the
+checked quantity, labelled with the Shapiro-Wilk p, skewness, and excess kurtosis, and
+prints the recommended test without drawing the figure, for the choose-a-test
+conversation. Every `figkit plot` bundle carries the same panel as `qc_normality_*`.
+Read the QQ: points near the line support normality, and mild, judged deviation is
+usually acceptable.
+
 ## How the checks steer the choice
 
 | Recipe | Normal, equal variance | Normal, unequal variance | Not normal |

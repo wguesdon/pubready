@@ -116,6 +116,8 @@ matrix with Benjamini-Hochberg. A single two-group comparison needs no correctio
 so `--p_adjust` defaults to none there.
 
 ## Overriding
-The tree gives the default; the scientist decides. Pass `--test` to force a method
-from the per-recipe options above. The assumption checks still run and are still
-recorded, and the methods paragraph states exactly what was run.
+The tree gives the default; the scientist decides. When the choice is not obvious, run
+`figkit diagnose` first: it shows the QQ plot and the assumption numbers and prints the
+recommended test, so the scientist can confirm it or force another with `--test`.
+Forcing a test still runs and records the assumption checks, and the methods paragraph
+states exactly what was run.

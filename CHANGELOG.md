@@ -31,6 +31,12 @@ tag move together.
 - `reference/decision_tree.md` and `reference/assumptions.md`: the test-selection
   tree and assumption-check notes that the adapters and PRD point to. Written to
   match the recipe code, closing the gap where `reference/` held only a stub.
+- Normality QC. `figkit diagnose` recommends a test and writes a QQ plot (per group,
+  per variable, paired differences, or ANOVA residuals) labelled with the Shapiro-Wilk
+  p, skewness, and kurtosis, without drawing the figure; every `figkit plot` bundle now
+  carries the same `qc_normality_*` panel. The adapters walk `reference/decision_tree.md`
+  and run `diagnose` when no test is named, so an unsure scientist is guided to the
+  choice and shown the evidence. Both engines. Additive: no existing output changes.
 
 ## [0.4.1] - 2026-07-19
 

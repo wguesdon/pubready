@@ -66,6 +66,7 @@ path.
 
 ```
 figkit inspect --data FILE [--format text|json]
+figkit diagnose --recipe NAME --data FILE [options]   # QQ + assumption check, recommend a test
 figkit plot --recipe NAME --data FILE [options]
 figkit render --config plot_config.yaml [--data FILE]
 figkit build          # build or rebuild the container image
@@ -123,6 +124,14 @@ when variances differ. The `correlation` recipe uses the same normality check to
 pick Pearson (both variables normal) or Spearman. The scientist can override any
 step by passing `--test` explicitly.
 
+`figkit diagnose` makes that choice visible before any figure is drawn. It writes a
+QQ plot for the quantity the test depends on (each group's values, the paired
+differences, the model residuals, or each correlated variable) labelled with the
+Shapiro-Wilk p, skewness, and kurtosis, and prints the recommended test. The QQ plot
+is the tiebreaker a p-value cannot be alone: Shapiro-Wilk is underpowered at small n
+and over-rejects at large n, so read the plot and tolerate mild deviation. Every
+`figkit plot` bundle carries the same panel as `qc_normality_*`.
+
 ### Examples
 
 ```bash
@@ -178,6 +187,8 @@ figkit plot --recipe pca --data samples.csv --group group
 Every `figkit plot` run writes one folder. That folder is the reproducible unit.
 
 - `figure_*.pdf`, `.png`, `.svg` — the figure in each format.
+- `qc_normality_*.png`, `.pdf` — a QQ panel per quantity the normality check ran on,
+  for the recipes that choose a test from normality (absent for the rest).
 - `script_*.R` or `script_*.py` — a standalone script that redraws the figure.
 - `stats_*.csv` — the test result: statistic, p-value, adjusted p, effect size,
   group sizes.
