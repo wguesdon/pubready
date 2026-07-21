@@ -28,6 +28,9 @@ tag move together.
 - `tools/make_examples/check_determinism.sh`: regenerates the reference bundles in
   a temp tree and confirms every stats table matches the committed copy, so "same
   input, same numbers" is checkable rather than assumed.
+- `reference/decision_tree.md` and `reference/assumptions.md`: the test-selection
+  tree and assumption-check notes that the adapters and PRD point to. Written to
+  match the recipe code, closing the gap where `reference/` held only a stub.
 
 ## [0.4.1] - 2026-07-19
 
