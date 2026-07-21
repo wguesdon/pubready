@@ -125,5 +125,6 @@ recipe_two_group_compare <- function(df, spec) {
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
-       df_used = df, clean_steps = cl$steps)
+       df_used = df, clean_steps = cl$steps,
+       qc = list(quantity = "group values", panels = by_group))
 }

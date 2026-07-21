@@ -14,7 +14,7 @@ test_that("recipe_two_group_compare runs the forced Welch t-test end to end", {
   res <- recipe_two_group_compare(df, spec)
 
   expect_named(res, c("plot", "stats", "test_meta", "resolved", "methods",
-                      "build_script", "df_used", "clean_steps"),
+                      "build_script", "df_used", "clean_steps", "qc"),
                ignore.order = TRUE)
   expect_s3_class(res$plot, "ggplot")
   expect_equal(res$stats$test, "Welch two-sample t-test")

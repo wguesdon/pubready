@@ -37,8 +37,9 @@ recipe_factorial_anova <- function(df, spec) {
   fml <- stats::as.formula(sprintf("`%s` ~ %s", y, rhs))
 
   method <- tolower(spec$test$method %||% "auto")
-  res_p  <- tryCatch(shapiro_safe(stats::residuals(stats::aov(fml, data = df)))$p,
-                     error = function(e) NA_real_)
+  resid_vec <- tryCatch(as.numeric(stats::residuals(stats::aov(fml, data = df))),
+                        error = function(e) NULL)
+  res_p  <- if (!is.null(resid_vec)) shapiro_safe(resid_vec)$p else NA_real_
   use_art <- if (method %in% c("anova", "aov")) FALSE
              else if (method %in% c("art", "aligned_rank")) TRUE
              else (!is.na(res_p) && res_p < 0.05)   # auto
@@ -139,6 +140,9 @@ recipe_factorial_anova <- function(df, spec) {
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
        df_used = df, clean_steps = clean_steps,
+       qc = if (!is.null(resid_vec))
+              list(quantity = "model residuals", panels = list(residuals = resid_vec))
+            else NULL,
        width = if (has_facet) 6.8 else 5.2, height = 4.4)
 }
 

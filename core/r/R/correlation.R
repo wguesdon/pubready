@@ -111,6 +111,8 @@ recipe_correlation <- function(df, spec) {
        methods = methods, build_script = build_script,
        label = slugify(sprintf("%s_vs_%s", y, x)),
        df_used = df_used, clean_steps = clean_steps,
+       qc = list(quantity = "variable values",
+                 panels = stats::setNames(list(xv, yv), c(x, y))),
        width = 4.6, height = 4.2)
 }
 

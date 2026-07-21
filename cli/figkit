@@ -16,6 +16,7 @@ figkit — reproducible publication figures
 
 Usage:
   figkit inspect --data FILE [--sheet S] [--format text|json]
+  figkit diagnose --recipe NAME --data FILE [--x COL --y COL ...]
   figkit plot --recipe NAME --data FILE --x COL --y COL [options]
   figkit render --config plot_config.yaml [--data FILE]
   figkit build
@@ -134,9 +135,10 @@ dispatch() {
 cmd="${1:-}"; [ $# -gt 0 ] && shift || true
 
 case "$cmd" in
-  inspect) dispatch inspect "$@" ;;
-  plot)    dispatch plot    "$@" ;;
-  render)  dispatch render  "$@" ;;
+  inspect)  dispatch inspect  "$@" ;;
+  diagnose) dispatch diagnose "$@" ;;
+  plot)     dispatch plot     "$@" ;;
+  render)   dispatch render   "$@" ;;
   build)
     podman build -t "$IMAGE" \
       --build-arg "PUBPLOT_VERSION=$VERSION" \

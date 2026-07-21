@@ -97,6 +97,8 @@ recipe_paired_compare <- function(df, spec) {
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
        label = slugify(y), df_used = m, clean_steps = clean_steps,
+       qc = list(quantity = "within-subject differences",
+                 panels = list(differences = diffs)),
        width = 3.8, height = 4.2)
 }
 

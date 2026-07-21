@@ -40,6 +40,7 @@ run_recipe <- function(spec, raw_input, out_root, sheet = NULL, stamp = NULL) {
     extra_inputs   = res$extra_inputs,
     fig_width      = res$width %||% 3.8,
     fig_height     = res$height %||% 4.0,
+    qc             = res$qc,
     stamp          = stamp
   )
   cat(sprintf("Wrote bundle: %s\n", bdir))

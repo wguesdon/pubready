@@ -211,7 +211,7 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
                          test_meta, data_log_steps, out_root, container,
                          git_commit, methods_text, build_script, base_label,
                          draw = NULL, extra_inputs = NULL,
-                         fig_width = 3.8, fig_height = 4.0, stamp = NULL) {
+                         fig_width = 3.8, fig_height = 4.0, qc = NULL, stamp = NULL) {
   # A fixed --stamp gives deterministic bundle and file names (used for the
   # committed reference outputs); otherwise names carry a real UTC timestamp.
   ts      <- if (!is.null(stamp) && nzchar(stamp)) stamp else timestamp_utc()
@@ -223,6 +223,17 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
 
   fig_stub <- sprintf("figure_%s_%s", base, ts)
   save_figure(plot, bdir, fig_stub, width = fig_width, height = fig_height, draw = draw)
+
+  # Normality QC panel: a QQ per checked quantity, so the reader can judge the
+  # assumption behind the test rather than trust a single Shapiro-Wilk p-value.
+  if (!is.null(qc)) {
+    qcres <- qc_normality(qc)
+    d <- qc_dims(nrow(qcres$panels))
+    ggplot2::ggsave(file.path(bdir, sprintf("qc_normality_%s.png", ts)), qcres$plot,
+                    width = d$width, height = d$height, dpi = 200, bg = "white")
+    ggplot2::ggsave(file.path(bdir, sprintf("qc_normality_%s.pdf", ts)), qcres$plot,
+                    width = d$width, height = d$height, device = grDevices::cairo_pdf)
+  }
 
   readr::write_csv(stats_df, file.path(bdir, sprintf("stats_%s.csv", ts)))
 
@@ -251,6 +262,11 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
   manifest <- build_manifest(spec, resolved, in_name, basename(raw_input_path),
                              sums, nrow(df_used), test_meta, container,
                              git_commit, created, fig_stub)
+  if (!is.null(qc)) {
+    manifest$outputs <- c(manifest$outputs,
+                          list(sprintf("qc_normality_%s.png", ts),
+                               sprintf("qc_normality_%s.pdf", ts)))
+  }
   writeLines(
     jsonlite::toJSON(manifest, auto_unbox = TRUE, pretty = TRUE, na = "null", digits = 6),
     file.path(bdir, sprintf("manifest_%s.json", ts))
