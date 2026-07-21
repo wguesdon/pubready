@@ -1,6 +1,6 @@
 {
   "pubplot_version": "0.4.1",
-  "pubplot_git_commit": "357509a",
+  "pubplot_git_commit": "15c0014",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "volcano",
@@ -47,6 +47,7 @@
   "outputs": [
     "figure_de_results_volcano.pdf",
     "figure_de_results_volcano.png",
-    "figure_de_results_volcano.svg"
+    "figure_de_results_volcano.svg",
+    "packages_volcano.txt"
   ]
 }

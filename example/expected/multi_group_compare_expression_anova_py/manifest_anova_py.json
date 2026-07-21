@@ -1,6 +1,6 @@
 {
-  "pubplot_version": "0.4.0",
-  "pubplot_git_commit": "f26dea0",
+  "pubplot_version": "0.4.1",
+  "pubplot_git_commit": "15c0014",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "multi_group_compare",
@@ -48,9 +48,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubplot:0.4.0",
-    "image_id": "4cf3e55927bb05afb9692649c012295c7599388c7be89ffaf893c590e80bd530",
-    "digest": "sha256:feccf0bcc3ec0b49b272c9f5910ab221b2dbb649016ee2ee654df7e503e3bead",
+    "image": "localhost/pubplot:0.4.1",
+    "image_id": "de93d6bacf2e827e806f040319b0b20ea7dc1f65c20388406bf4343fb26e2667",
+    "digest": "sha256:e47e117619ee83ef8194b4a007960cce130937a5827590cff65f0330f817ba25",
     "podman_version": "4.9.3"
   },
   "environment": {
@@ -69,6 +69,9 @@
   "outputs": [
     "figure_expression_anova_py.pdf",
     "figure_expression_anova_py.png",
-    "figure_expression_anova_py.svg"
+    "figure_expression_anova_py.svg",
+    "packages_anova_py.txt",
+    "qc_normality_anova_py.png",
+    "qc_normality_anova_py.pdf"
   ]
 }

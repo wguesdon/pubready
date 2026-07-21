@@ -5,10 +5,10 @@ environment it was made in:
 
 ## 1. Get the pinned environment
 
-- Container image: `localhost/pubplot:0.4.0`
-- Image id: `4cf3e55927bb05afb9692649c012295c7599388c7be89ffaf893c590e80bd530`
-- Image digest: `sha256:feccf0bcc3ec0b49b272c9f5910ab221b2dbb649016ee2ee654df7e503e3bead`
-- pubplot commit: `f26dea0`
+- Container image: `localhost/pubplot:0.4.1`
+- Image id: `de93d6bacf2e827e806f040319b0b20ea7dc1f65c20388406bf4343fb26e2667`
+- Image digest: `sha256:e47e117619ee83ef8194b4a007960cce130937a5827590cff65f0330f817ba25`
+- pubplot commit: `15c0014`
 
 ## 2. Run the standalone script
 
@@ -16,7 +16,7 @@ From inside this folder:
 
 ```bash
 podman run --rm -v "$PWD":/work -w /work \
-  localhost/pubplot:0.4.0 Rscript script_prop.R
+  localhost/pubplot:0.4.1 Rscript script_prop.R
 ```
 
 The script reads the bundled input copy, reruns the same test, and redraws
