@@ -208,6 +208,17 @@ echo "[20] bar geom (mean + SEM + dots)"
   --x genotype --y expression --geom bar --out "$OUT/bar"
 check_bundle "$OUT/bar" "bar_geom"
 
+echo "[21] spider plot (change from baseline)"
+./cli/figkit plot --recipe spider_response --data example/spider_response.csv \
+  --x week --y target_lesion_mm --id patient --group arm --out "$OUT/spider"
+check_bundle "$OUT/spider" "spider_response"
+if compgen -G "$OUT/spider/*/stats_*.csv" > /dev/null && \
+   grep -q "category_from_change" "$OUT"/spider/*/stats_*.csv; then
+  echo "PASS: spider per-patient categories"
+else
+  echo "FAIL: expected the spider category column"; fail=1
+fi
+
 echo "--- Python engine (all recipes) ---"
 pyc() {  # $1 = short label; rest = plot args
   local label="$1"; shift
@@ -237,6 +248,7 @@ pyc prop    --recipe proportions         --data example/response_by_arm.csv  --x
 pyc pca     --recipe pca                 --data example/pca_samples.csv      --group group
 pyc rain    --recipe two_group_compare   --data example/tumor_volume.csv     --x group --y volume --geom raincloud
 pyc bargeom --recipe multi_group_compare --data example/gene_expression.csv  --x genotype --y expression --geom bar
+pyc spider  --recipe spider_response     --data example/spider_response.csv  --x week --y target_lesion_mm --id patient --group arm
 
 echo
 if [ "$fail" -eq 0 ]; then

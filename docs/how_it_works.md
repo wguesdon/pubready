@@ -87,8 +87,9 @@ Common options:
 | `--annotation FILE` | heatmap column annotation CSV |
 | `--test` | force a test instead of `auto` |
 | `--paired` | paired design |
-| `--geom box\|violin\|bar` | figure geometry |
+| `--geom box\|violin\|bar\|raincloud` | figure geometry |
 | `--scale`, `--cluster` | heatmap scaling and clustering |
+| `--pd_threshold`, `--pr_threshold` | the two spider reference lines, +20 and -30 by default |
 | `--xlab`, `--ylab`, `--title`, `--palette` | labels and colors |
 | `--out DIR` | output root (default `pubplot_output`) |
 
@@ -113,6 +114,7 @@ engines. Pick the engine per figure with `--engine`.
 | `paired_compare` | `condition, value, id` | paired t-test or Wilcoxon signed-rank | before/after points with connecting lines and a bracket |
 | `proportions` | two categoricals | chi-square, or Fisher when a cell is sparse | 100% stacked bar of proportions with the p |
 | `pca` | samples × features + group | PERMANOVA for group separation | PC1/PC2 scatter, 95% ellipses, variance on the axes |
+| `spider_response` | `patient, time, value` | descriptive (change from baseline, no test) | one line per patient, RECIST reference lines at +20% and -30% |
 
 ### Test selection
 

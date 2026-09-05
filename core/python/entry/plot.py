@@ -20,6 +20,8 @@ def main():
     p.add_argument("--id"); p.add_argument("--group"); p.add_argument("--label")
     p.add_argument("--fc_cutoff", type=float); p.add_argument("--p_cutoff", type=float)
     p.add_argument("--top_n", type=int)
+    p.add_argument("--pd_threshold", type=float)
+    p.add_argument("--pr_threshold", type=float)
     p.add_argument("--test", default="auto")
     p.add_argument("--paired", action="store_true")
     p.add_argument("--p_adjust", default="none")

@@ -1,0 +1,61 @@
+{
+  "pubplot_version": "0.4.1",
+  "pubplot_git_commit": "c55152b",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "spider_response",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "week",
+    "y": "target_lesion_mm",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_target_lesion_mm.csv",
+    "original_name": "spider_response.csv",
+    "md5": "d3ceaf1a40e01ce2639a76cda972d28e",
+    "sha256": "97ca47b3a60d61efa8b26f77be4c7169722126bb8198f60c17acef4d6f04d23c",
+    "n_rows": 94
+  },
+  "statistical_test": {
+    "name": "Spider plot (change from baseline)",
+    "n_patients": 20,
+    "n_measurements": 94,
+    "n_dropped_patients": 0,
+    "n_without_follow_up": 0,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "partial_response": 7,
+    "stable_disease": 8,
+    "progressive_disease": 5
+  },
+  "container": {
+    "image": "localhost/pubplot:0.4.1",
+    "image_id": "4db9054289ed8c3ad23c6e14c7328d47cfba2ecaf29e993caaa92fc6f11a5c2c",
+    "digest": "sha256:4466918382e0c859745bafb62bbd098cc39c7a5f4ff607541e9cd90388e03db6",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_target_lesion_mm_spider_py.pdf",
+    "figure_target_lesion_mm_spider_py.png",
+    "figure_target_lesion_mm_spider_py.svg",
+    "packages_spider_py.txt"
+  ]
+}

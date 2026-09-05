@@ -1,0 +1,56 @@
+{
+  "pubplot_version": "0.4.1",
+  "pubplot_git_commit": "c55152b",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "spider_response",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "week",
+    "y": "target_lesion_mm",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_target_lesion_mm.csv",
+    "original_name": "spider_response.csv",
+    "md5": "d3ceaf1a40e01ce2639a76cda972d28e",
+    "sha256": "97ca47b3a60d61efa8b26f77be4c7169722126bb8198f60c17acef4d6f04d23c",
+    "n_rows": 94
+  },
+  "statistical_test": {
+    "name": "Spider plot (change from baseline)",
+    "n_patients": 20,
+    "n_measurements": 94,
+    "n_dropped_patients": 0,
+    "n_without_follow_up": 0,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "partial_response": 7,
+    "stable_disease": 8,
+    "progressive_disease": 5
+  },
+  "container": {
+    "image": "localhost/pubplot:0.4.1",
+    "image_id": "4db9054289ed8c3ad23c6e14c7328d47cfba2ecaf29e993caaa92fc6f11a5c2c",
+    "digest": "sha256:4466918382e0c859745bafb62bbd098cc39c7a5f4ff607541e9cd90388e03db6",
+    "podman_version": "4.9.3"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_target_lesion_mm_spider.pdf",
+    "figure_target_lesion_mm_spider.png",
+    "figure_target_lesion_mm_spider.svg",
+    "packages_spider.txt"
+  ]
+}

@@ -3,20 +3,22 @@
 
 default_appearance <- function() {
   list(
-    theme       = "pubplot_house",
-    palette     = NULL,            # NULL means use the house palette
-    x_label     = NULL,
-    y_label     = NULL,
-    title       = NULL,
-    y_limits    = list(NULL, NULL),
-    show_points = TRUE,
-    geom        = "box",           # box | violin | bar | raincloud
-    bracket     = list(show = TRUE, label = "p.signif"),
-    scale       = "row",           # heatmap: row | column | none
-    cluster     = "both",          # heatmap: both | rows | columns | none
-    fc_cutoff   = 1.0,             # volcano: |log2FC| threshold
-    p_cutoff    = 0.05,            # volcano: p threshold
-    top_n       = 15              # volcano / enrichment: labels / terms to show
+    theme        = "pubplot_house",
+    palette      = NULL,           # NULL means use the house palette
+    x_label      = NULL,
+    y_label      = NULL,
+    title        = NULL,
+    y_limits     = list(NULL, NULL),
+    show_points  = TRUE,
+    geom         = "box",          # box | violin | bar | raincloud
+    bracket      = list(show = TRUE, label = "p.signif"),
+    scale        = "row",          # heatmap: row | column | none
+    cluster      = "both",         # heatmap: both | rows | columns | none
+    fc_cutoff    = 1.0,            # volcano: |log2FC| threshold
+    p_cutoff     = 0.05,           # volcano: p threshold
+    top_n        = 15,             # volcano / enrichment: labels / terms to show
+    pd_threshold = 20,             # spider: RECIST progressive disease line
+    pr_threshold = -30             # spider: RECIST partial response line
   )
 }
 
@@ -34,6 +36,8 @@ spec_from_opt <- function(opt) {
   if (!is.null(opt$fc_cutoff)) ap$fc_cutoff <- opt$fc_cutoff
   if (!is.null(opt$p_cutoff))  ap$p_cutoff  <- opt$p_cutoff
   if (!is.null(opt$top_n))     ap$top_n     <- opt$top_n
+  if (!is.null(opt$pd_threshold)) ap$pd_threshold <- opt$pd_threshold
+  if (!is.null(opt$pr_threshold)) ap$pr_threshold <- opt$pr_threshold
   list(
     engine = "r",
     recipe = opt$recipe,

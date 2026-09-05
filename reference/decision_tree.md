@@ -107,6 +107,12 @@ These recipes show structure rather than run an inferential test:
   enrichment test is upstream of the figure.
 - `pca` — PCA scatter with 95% ellipses; group separation is tested with a seeded
   PERMANOVA and its p is reported.
+- `spider_response` — the change from baseline of each patient over time, one
+  line per patient, with the RECIST 1.1 reference lines at +20% and -30%. The
+  stats table carries the best and the worst change of each patient and the
+  category those two put the patient in. That reads the change from baseline
+  alone, and a full RECIST 1.1 assessment also reads the nadir, the non-target
+  lesions and any new lesion.
 
 ## Multiple comparisons
 Correct whenever there is more than one comparison. The multi-group post-hoc tests

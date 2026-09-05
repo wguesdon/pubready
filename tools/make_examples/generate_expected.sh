@@ -93,6 +93,11 @@ rm -rf "$OUT"
 # PCA scatter with 95% ellipses and a PERMANOVA p
 ./cli/figkit plot --recipe pca --data example/pca_samples.csv --group group --stamp pca --out "$OUT"
 
+# Spider plot: the change from baseline of each patient, with the RECIST lines
+./cli/figkit plot --recipe spider_response --data example/spider_response.csv \
+  --x week --y target_lesion_mm --id patient --group arm --xlab "Week" \
+  --stamp spider --out "$OUT"
+
 # Raincloud and bar geoms on the comparison recipes
 ./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
   --x group --y volume --ylab "Tumor volume (mm^3)" --geom raincloud --stamp raincloud --out "$OUT"
@@ -139,5 +144,7 @@ PY="--engine python"
   --x group --y volume --ylab "Tumor volume (mm^3)" --geom raincloud --stamp raincloud_py --out "$OUT"
 ./cli/figkit plot $PY --recipe multi_group_compare --data example/gene_expression.csv \
   --x genotype --y expression --ylab "Expression (a.u.)" --geom bar --stamp bar_py --out "$OUT"
+./cli/figkit plot $PY --recipe spider_response --data example/spider_response.csv \
+  --x week --y target_lesion_mm --id patient --group arm --xlab "Week" --stamp spider_py --out "$OUT"
 
 echo "Reference bundles written under $OUT/"

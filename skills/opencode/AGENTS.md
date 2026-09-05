@@ -61,6 +61,7 @@ If a command reports the image is missing, run `figkit build` first.
 | `paired_compare` | condition, value, id | `--x --y --id` | paired t-test or Wilcoxon, connecting lines |
 | `proportions` | two categoricals | `--x --y` | chi-square / Fisher, 100% stacked bar |
 | `pca` | samples × features + group | `--data --group` | PC1/PC2 scatter, 95% ellipses, PERMANOVA |
+| `spider_response` | patient, time, value | `--x --y --id [--group]` | descriptive change from baseline, RECIST lines (no test) |
 
 Common options: `--engine r|python` (default r), `--geom box|violin|bar|raincloud`,
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:

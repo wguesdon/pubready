@@ -20,6 +20,8 @@ def default_appearance():
         "fc_cutoff": 1.0,
         "p_cutoff": 0.05,
         "top_n": 15,
+        "pd_threshold": 20.0,
+        "pr_threshold": -30.0,
     }
 
 
@@ -47,6 +49,10 @@ def spec_from_args(a):
         ap["p_cutoff"] = a.p_cutoff
     if getattr(a, "top_n", None) is not None:
         ap["top_n"] = a.top_n
+    if getattr(a, "pd_threshold", None) is not None:
+        ap["pd_threshold"] = a.pd_threshold
+    if getattr(a, "pr_threshold", None) is not None:
+        ap["pr_threshold"] = a.pr_threshold
     covs = [s.strip() for s in a.covariates.split(",")] if getattr(a, "covariates", None) else None
     return {
         "engine": "python",

@@ -1,0 +1,40 @@
+engine: r
+recipe: spider_response
+data:
+  file: input_target_lesion_mm.csv
+  x: week
+  'y': target_lesion_mm
+  fill: ~
+  facet: ~
+  time: ~
+  event: ~
+  annotation: ~
+  id: patient
+  group: arm
+  label: ~
+  covariates: ~
+test:
+  method: auto
+  paired: no
+  p_adjust: none
+appearance:
+  theme: pubplot_house
+  palette: ~
+  x_label: Week
+  y_label: ~
+  title: ~
+  y_limits:
+  - ~
+  - ~
+  show_points: yes
+  geom: box
+  bracket:
+    show: yes
+    label: p.signif
+  scale: row
+  cluster: both
+  fc_cutoff: 1.0
+  p_cutoff: 0.05
+  top_n: 15.0
+  pd_threshold: 20.0
+  pr_threshold: -30.0

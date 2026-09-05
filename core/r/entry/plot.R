@@ -21,6 +21,8 @@ opts <- list(
   make_option("--fc_cutoff", type = "double",   default = NULL),
   make_option("--p_cutoff",  type = "double",   default = NULL),
   make_option("--top_n",     type = "integer",  default = NULL),
+  make_option("--pd_threshold", type = "double", default = NULL),
+  make_option("--pr_threshold", type = "double", default = NULL),
   make_option("--test",     type = "character", default = "auto"),
   make_option("--paired",   action = "store_true", default = FALSE),
   make_option("--p_adjust", type = "character", default = "none"),
