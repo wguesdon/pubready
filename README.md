@@ -1,4 +1,4 @@
-# pubplot
+# pubready
 
 An agentic skill to create reproducible, publication-ready figures from tidy
 data, designed to work across several agent harnesses and LLMs.
