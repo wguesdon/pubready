@@ -80,7 +80,8 @@ def add_dist_geom(ax, data, x, y, order, pal, geom="box", show_points=True):
     import numpy as np
     import seaborn as sns
     if geom == "violin":
-        sns.violinplot(data=data, x=x, y=y, hue=x, order=order, palette=pal, ax=ax,
+        sns.violinplot(data=data, x=x, y=y, hue=x, order=order, hue_order=order,
+                       palette=pal, ax=ax,
                        legend=False, cut=0, inner=None, alpha=0.9)
     elif geom == "bar":
         means = [data.loc[data[x] == g, y].mean() for g in order]
@@ -92,9 +93,11 @@ def add_dist_geom(ax, data, x, y, order, pal, geom="box", show_points=True):
         _raincloud(ax, data, x, y, order, pal, show_points)
         return
     else:
-        sns.boxplot(data=data, x=x, y=y, hue=x, order=order, palette=pal, ax=ax,
+        sns.boxplot(data=data, x=x, y=y, hue=x, order=order, hue_order=order,
+                    palette=pal, ax=ax,
                     legend=False, width=0.6, fliersize=0)
     if show_points:
-        sns.stripplot(data=data, x=x, y=y, hue=x, order=order, palette=pal, ax=ax,
+        sns.stripplot(data=data, x=x, y=y, hue=x, order=order, hue_order=order,
+                      palette=pal, ax=ax,
                       legend=False, size=4, alpha=0.7, edgecolor="black",
                       linewidth=0.3, jitter=0.12)

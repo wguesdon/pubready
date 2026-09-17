@@ -136,7 +136,15 @@ methods_paragraph <- function(resolved, stats_df, test_meta, spec) {
     else " Equal variances were not assumed, and the Welch correction was applied."
   } else " A non-parametric test was used because the normality assumption was not met."
   eff_txt <- if (!is.null(test_meta$effect_size)) {
-    sprintf(" Effect size is reported as %s.", test_meta$effect_size$name)
+    # The value is given, not only the name, so the paragraph can be read on its
+    # own. The Python engine writes the same sentence.
+    eff_v <- test_meta$effect_size$value
+    if (is.null(eff_v) || !is.finite(eff_v)) {
+      sprintf(" Effect size is reported as %s.", test_meta$effect_size$name)
+    } else {
+      sprintf(" Effect size is reported as %s = %s.", test_meta$effect_size$name,
+              formatC(eff_v, format = "f", digits = 2))
+    }
   } else ""
   adj_txt <- if (!identical(spec$test$p_adjust, "none")) {
     sprintf(" P-values were adjusted for multiple comparisons using the %s method.", spec$test$p_adjust)

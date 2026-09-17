@@ -95,10 +95,14 @@ grouping arm.
 ## Engine limits
 
 Pick the engine per figure with `--engine`. Both write the same bundle and, where
-a matching method exists, the same numbers. Two current gaps. The aligned rank
-transform for non-parametric factorial ANOVA is R only, so `--test art --engine
-python` errors and routes you to R. The Python heatmap keeps its per-feature
-significance stars in the stats table rather than on the figure.
+a matching method exists, the same numbers. The two-group and paired recipes agree
+digit for digit on the t-test, the Mann-Whitney U test and the Wilcoxon signed-rank
+test, and the smoke test asserts it. Three current gaps. The aligned rank transform
+for non-parametric factorial ANOVA is R only, so `--test art --engine python` errors
+and routes you to R. The Python heatmap keeps its per-feature significance stars in
+the stats table rather than on the figure. In `multi_group_compare` the two engines
+report different columns, and an extreme Tukey p underflows to 0 in R where Python
+still prints the exponent.
 
 ## Read more
 

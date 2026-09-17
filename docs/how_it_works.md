@@ -126,6 +126,14 @@ when variances differ. The `correlation` recipe uses the same normality check to
 pick Pearson (both variables normal) or Spearman. The scientist can override any
 step by passing `--test` explicitly.
 
+Both engines apply the p-value rule of R's `stats::wilcox.test` to the rank tests.
+The exact null distribution is used when each group holds fewer than 50 values and
+no value is tied, and the normal approximation with a continuity correction is used
+in every other condition. SciPy takes the exact route only for very small samples,
+so the Python engine states the rule instead of accepting the SciPy default. The
+rank-biserial correlation is computed from the U statistic, and it carries a sign:
+it is negative when the first group ranks below the second.
+
 `figkit diagnose` makes that choice visible before any figure is drawn. It writes a
 QQ plot for the quantity the test depends on (each group's values, the paired
 differences, the model residuals, or each correlated variable) labelled with the

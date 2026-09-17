@@ -13,6 +13,38 @@ tag move together.
 
 ## [Unreleased]
 
+### Fixed
+- The Python engine gave the points of the `bar` geom the colors of the wrong
+  groups. `ax.bar` colors by the plotted order, which is alphabetical, while the
+  seaborn call mapped the same palette to the groups in the order they appear in
+  the file. The blue bar carried red points whenever the two orders differed.
+  Every seaborn call now passes `hue_order`, so a group keeps one color in the
+  figure and across the two engines.
+- The R engine wrote `NA` in the effect size column of every Mann-Whitney run,
+  although the methods paragraph stated that the effect size was reported.
+  `rstatix::wilcox_effsize` needs the `coin` package, which the image does not
+  hold, so the call failed and the guard wrote `NA`. The rank-biserial
+  correlation is now computed from the U statistic in both engines, with the
+  sign that says which group ranks lower.
+
+### Changed
+- The two engines report the same numbers on the two-group and paired recipes.
+  Three differences are removed. `two_group_compare` in R checks equal variance
+  with Levene's test rather than the F test, which is what the multi-group recipe,
+  both Python recipes and the documentation already used. Both engines apply the
+  p-value rule of `stats::wilcox.test` to the rank tests, so an untied sample
+  below n = 50 takes the exact route in Python as well. The R stats table keeps
+  the full-precision p value rather than the value that `rstatix` rounds to three
+  significant digits. A caller who compares a new number with an older bundle
+  will see the difference, which is largest for the Levene column.
+- `paired_compare` in R no longer forces the normal approximation, so it agrees
+  with the Python engine and with `two_group_compare --paired`.
+- The methods paragraph of `two_group_compare` gives the effect size value and
+  not only its name, as `paired_compare` already did.
+- `tests/smoke_test.sh` asserts the parity. It runs the Mann-Whitney and the
+  signed-rank cases on both engines and compares the p value and the effect size
+  to six significant digits.
+
 ### Added
 - `spider_response`, the fifteenth recipe. It expresses each patient's
   measurement as a percentage change from that patient's own baseline, which

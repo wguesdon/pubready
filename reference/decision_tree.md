@@ -20,7 +20,7 @@ checks that led to it.
 ## Continuous outcome
 
 ### Two groups → `two_group_compare`
-Check normality of each group (Shapiro-Wilk) and equal variance (F test).
+Check normality of each group (Shapiro-Wilk) and equal variance (Levene's test).
 
 - Both groups normal, equal variance → Student's two-sample t-test.
 - Both groups normal, unequal variance → Welch two-sample t-test.

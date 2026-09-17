@@ -250,6 +250,38 @@ pyc rain    --recipe two_group_compare   --data example/tumor_volume.csv     --x
 pyc bargeom --recipe multi_group_compare --data example/gene_expression.csv  --x genotype --y expression --geom bar
 pyc spider  --recipe spider_response     --data example/spider_response.csv  --x week --y target_lesion_mm --id patient --group arm
 
+# Engine parity on the non-parametric paths. Both engines must report the same
+# p-value and the same effect size to six significant digits.
+echo
+echo "[parity] R against Python on the non-parametric tests"
+col_value() {  # $1 = stats csv, $2 = column name
+  awk -F, -v want="$2" 'NR==1 {for (i=1;i<=NF;i++) if ($i==want) c=i; next}
+                        NR==2 {printf "%.6g", $c}' "$1"
+}
+parity_case() {  # $1 = label; rest = plot args
+  local label="$1"; shift
+  ./cli/figkit plot "$@" --out "$OUT/par_${label}_r" > /dev/null 2>&1
+  ./cli/figkit plot --engine python "$@" --out "$OUT/par_${label}_py" > /dev/null 2>&1
+  local rf pf
+  rf="$(find "$OUT/par_${label}_r" -name 'stats_*.csv' | head -1)"
+  pf="$(find "$OUT/par_${label}_py" -name 'stats_*.csv' | head -1)"
+  if [ -z "$rf" ] || [ -z "$pf" ]; then
+    echo "FAIL: parity $label wrote no stats table"; fail=1; return
+  fi
+  local col ok=1
+  for col in p_value effect_size; do
+    if [ "$(col_value "$rf" "$col")" != "$(col_value "$pf" "$col")" ]; then
+      echo "  MISMATCH: $col is $(col_value "$rf" "$col") in R and $(col_value "$pf" "$col") in Python"
+      ok=0; fail=1
+    fi
+  done
+  [ "$ok" -eq 1 ] && echo "PASS: parity $label"
+}
+parity_case mwu --recipe two_group_compare --data example/cytokine_pg_ml.csv \
+  --x group --y concentration
+parity_case signed_rank --recipe paired_compare --data example/paired_response.csv \
+  --x condition --y value --id subject --test wilcoxon
+
 echo
 if [ "$fail" -eq 0 ]; then
   echo "ALL SMOKE TESTS PASSED"

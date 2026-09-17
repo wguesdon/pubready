@@ -46,7 +46,7 @@ def recipe_multi_group_compare(df, spec):
     groups = [df.loc[df[x] == g, y].to_numpy() for g in lv]
     all_normal = all(bool(shapiro_normal(g)[1]) for g in groups)
     try:
-        lev_p = float(stats.levene(*groups, center="mean").pvalue)
+        lev_p = float(stats.levene(*groups, center="median").pvalue)
     except Exception:
         lev_p = np.nan
     equal_var = np.isnan(lev_p) or lev_p > 0.05
@@ -157,9 +157,9 @@ def _script(spec, fam, label, lv, pal, in_name, fig_stub, blabel):
         ph_line = (f'import itertools, scikit_posthocs as sp; '
                    f'm = sp.posthoc_dunn(df, val_col="{y}", group_col="{x}", p_adjust="fdr_bh"); '
                    f'pairs = [(str(i), str(j), float(m.loc[i, j])) for i, j in itertools.combinations(list(m.index), 2)]')
-    geom_line = (f'sns.violinplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, palette={pal}, ax=ax, legend=False, cut=0, inner=None)'
+    geom_line = (f'sns.violinplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, hue_order=order, palette={pal}, ax=ax, legend=False, cut=0, inner=None)'
                  if geom == "violin" else
-                 f'sns.boxplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, palette={pal}, ax=ax, legend=False, width=0.6, fliersize=0)')
+                 f'sns.boxplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, hue_order=order, palette={pal}, ax=ax, legend=False, width=0.6, fliersize=0)')
     star = 'lambda p: "****" if p<1e-4 else "***" if p<1e-3 else "**" if p<1e-2 else "*"'
     return f'''#!/usr/bin/env python3
 # Standalone reproduction. Run inside the pinned pubready container.
@@ -177,7 +177,7 @@ sig = [(a, b, p) for a, b, p in pairs if p < 0.05]
 
 fig, ax = plt.subplots(figsize=(4.6, 4.2))
 {geom_line}
-sns.stripplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, palette={pal}, ax=ax,
+sns.stripplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, hue_order=order, palette={pal}, ax=ax,
               legend=False, size=3.5, alpha=0.7, edgecolor="black", linewidth=0.3, jitter=0.12)
 if sig:
     annot = Annotator(ax, [(a, b) for a, b, _ in sig], data=df, x="{x}", y="{y}", order=order)

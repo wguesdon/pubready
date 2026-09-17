@@ -18,19 +18,20 @@ recipe_two_group_compare <- function(df, spec) {
 
   paired <- isTRUE(spec$test$paired)
 
-  # Assumption checks.
+  # Assumption checks. Equal variance uses Levene's test, as the multi-group
+  # recipe and both Python recipes do, so the column compares across engines.
+  fml <- stats::as.formula(sprintf("`%s` ~ `%s`", y, x))
   by_group <- split(df[[y]], df[[x]])
   norm <- lapply(by_group, shapiro_safe)
   all_normal <- all(vapply(norm, function(n) isTRUE(n$normal), logical(1)))
   var_p <- tryCatch(
-    stats::var.test(df[[y]] ~ df[[x]])$p.value,
+    rstatix::levene_test(df, fml)$p[1],
     error = function(e) NA_real_
   )
   equal_var <- is.na(var_p) || var_p > 0.05
 
   resolved <- resolve_two_group_method(spec$test$method, all_normal, equal_var, paired)
 
-  fml <- stats::as.formula(sprintf("`%s` ~ `%s`", y, x))
   if (resolved$family == "t") {
     stat <- rstatix::t_test(df, fml, paired = paired, var.equal = isTRUE(resolved$var_equal))
     eff  <- tryCatch(
@@ -38,13 +39,37 @@ recipe_two_group_compare <- function(df, spec) {
       error = function(e) NULL
     )
     eff_name <- "Cohen's d"
+    eff_val <- if (!is.null(eff) && "effsize" %in% names(eff)) eff$effsize[1] else NA_real_
   } else {
     stat <- rstatix::wilcox_test(df, fml, paired = paired)
-    eff  <- tryCatch(rstatix::wilcox_effsize(df, fml, paired = paired),
-                     error = function(e) NULL)
-    eff_name <- "r (rank-biserial)"
+    eff_name <- "rank-biserial r"
+    eff_val <- if (paired) {
+      rank_biserial_paired(by_group[[lvls[1]]] - by_group[[lvls[2]]])
+    } else {
+      rank_biserial_unpaired(stat$statistic[1],
+                             length(by_group[[lvls[1]]]),
+                             length(by_group[[lvls[2]]]))
+    }
   }
-  eff_val <- if (!is.null(eff) && "effsize" %in% names(eff)) eff$effsize[1] else NA_real_
+
+  # rstatix rounds the p-value to three significant digits. The table keeps the
+  # full-precision value, so it matches the Python engine digit for digit. The
+  # vectors are passed rather than the formula, because the formula method of
+  # stats::t.test and stats::wilcox.test rejects paired = TRUE.
+  p_full <- tryCatch(
+    {
+      g1v <- by_group[[lvls[1]]]
+      g2v <- by_group[[lvls[2]]]
+      if (resolved$family == "t") {
+        stats::t.test(g1v, g2v, paired = paired,
+                      var.equal = isTRUE(resolved$var_equal))$p.value
+      } else {
+        suppressWarnings(stats::wilcox.test(g1v, g2v, paired = paired)$p.value)
+      }
+    },
+    error = function(e) NA_real_
+  )
+  if (!is.na(p_full)) stat$p <- p_full
 
   stat <- rstatix::add_significance(stat)
   stat <- tryCatch(
@@ -116,7 +141,7 @@ recipe_two_group_compare <- function(df, spec) {
     assumptions = list(
       normality      = list(test = "shapiro-wilk",
                             p_group1 = norm[[g1]]$p, p_group2 = norm[[g2]]$p),
-      equal_variance = list(test = "F test", p = var_p)
+      equal_variance = list(test = "Levene", p = var_p)
     )
   )
 

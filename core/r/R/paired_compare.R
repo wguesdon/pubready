@@ -47,10 +47,11 @@ recipe_paired_compare <- function(df, spec) {
     stat <- unname(tt$statistic); pval <- tt$p.value; dfree <- unname(tt$parameter)
     eff <- mean(diffs) / stats::sd(diffs); eff_name <- "Cohen's dz"; label <- "paired t-test"
   } else {
-    wt <- stats::wilcox.test(m$v2, m$v1, paired = TRUE, exact = FALSE)
+    # exact = NULL lets R take the exact route when no tie and no zero remain,
+    # which is the rule the Python engine repeats.
+    wt <- suppressWarnings(stats::wilcox.test(m$v2, m$v1, paired = TRUE))
     stat <- unname(wt$statistic); pval <- wt$p.value; dfree <- NA_real_
-    d <- diffs[diffs != 0]; rk <- rank(abs(d))
-    eff <- if (length(d)) (sum(rk[d > 0]) - sum(rk[d < 0])) / sum(rk) else NA_real_
+    eff <- rank_biserial_paired(diffs)
     eff_name <- "rank-biserial r"; label <- "Wilcoxon signed-rank test"
   }
 
@@ -119,7 +120,7 @@ recipe_paired_compare <- function(df, spec) {
   x <- spec$data$x; y <- spec$data$y; idc <- spec$data$id
   test_line <- if (family == "t") {
     "res <- t.test(m$v2, m$v1, paired = TRUE)"
-  } else "res <- wilcox.test(m$v2, m$v1, paired = TRUE, exact = FALSE)"
+  } else "res <- suppressWarnings(wilcox.test(m$v2, m$v1, paired = TRUE))"
   c(
     "#!/usr/bin/env Rscript",
     "# Standalone reproduction. Run inside the pinned pubready container.",

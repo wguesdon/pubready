@@ -50,3 +50,15 @@ test_that("resolve_two_group_method honors forced tests and paired labels", {
 
   expect_error(resolve_two_group_method("nonsense", TRUE, TRUE, FALSE), "unknown test method")
 })
+
+test_that("rank_biserial_unpaired maps U onto the full range", {
+  expect_equal(rank_biserial_unpaired(0, 6, 6), -1)
+  expect_equal(rank_biserial_unpaired(36, 6, 6), 1)
+  expect_equal(rank_biserial_unpaired(18, 6, 6), 0)
+})
+
+test_that("rank_biserial_paired follows Kerby's formula and drops zeros", {
+  expect_equal(rank_biserial_paired(c(1, 2, 3, -4)), 0.2)
+  expect_equal(rank_biserial_paired(c(0, 1, 2, 3, -4)), 0.2)
+  expect_true(is.na(rank_biserial_paired(c(0, 0))))
+})

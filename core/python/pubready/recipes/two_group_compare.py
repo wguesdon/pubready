@@ -10,7 +10,8 @@ from statannotations.Annotator import Annotator
 
 from ..clean import clean_xy
 from ..theme import add_dist_geom, apply_pub_style, new_fig, palette
-from ..util import cap_first, p_stars, shapiro_normal
+from ..util import (cap_first, mann_whitney_r, p_stars, rank_biserial_paired,
+                    rank_biserial_unpaired, shapiro_normal, wilcoxon_signed_rank_r)
 
 
 def _resolve(method, all_normal, equal_var, paired):
@@ -47,7 +48,7 @@ def recipe_two_group_compare(df, spec):
     p1, n1 = shapiro_normal(a); p2, n2 = shapiro_normal(b)
     all_normal = bool(n1) and bool(n2)
     try:
-        var_p = float(stats.levene(a, b, center="mean").pvalue)
+        var_p = float(stats.levene(a, b, center="median").pvalue)
     except Exception:
         var_p = np.nan
     equal_var = np.isnan(var_p) or var_p > 0.05
@@ -60,10 +61,14 @@ def recipe_two_group_compare(df, spec):
         dof = float(res["dof"].iloc[0]); eff = float(res["cohen_d"].iloc[0])
         eff_name = "Cohen's d"
     else:
-        res = pg.wilcoxon(a, b) if paired else pg.mwu(a, b)
-        col = "W_val" if paired else "U_val"
-        statistic = float(res[col].iloc[0]); pval = float(res["p_val"].iloc[0])
-        dof = np.nan; eff = float(res["RBC"].iloc[0]); eff_name = "rank-biserial r"
+        if paired:
+            d = a - b
+            statistic, pval = wilcoxon_signed_rank_r(d)
+            eff = rank_biserial_paired(d)
+        else:
+            statistic, pval = mann_whitney_r(a, b)
+            eff = rank_biserial_unpaired(statistic, len(a), len(b))
+        dof = np.nan; eff_name = "rank-biserial r"
 
     ap = spec["appearance"]
     pal = palette(2, ap.get("palette"))
@@ -107,7 +112,7 @@ def recipe_two_group_compare(df, spec):
         },
     }
 
-    methods = _methods(r, stats_df, eff_name, spec)
+    methods = _methods(r, stats_df, eff_name, eff, spec)
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
         "methods": methods, "df_used": df, "clean_steps": steps,
@@ -117,7 +122,7 @@ def recipe_two_group_compare(df, spec):
     }
 
 
-def _methods(r, stats_df, eff_name, spec):
+def _methods(r, stats_df, eff_name, eff_value, spec):
     from importlib.metadata import version as v
     y_label = spec["appearance"].get("y_label") or spec["data"]["y"]
     var_txt = ""
@@ -127,10 +132,14 @@ def _methods(r, stats_df, eff_name, spec):
     else:
         var_txt = " A non-parametric test was used because the normality assumption was not met."
     n1, n2 = int(stats_df["n1"].iloc[0]), int(stats_df["n2"].iloc[0])
+    # The value is given, not only the name, so the paragraph can be read on
+    # its own. The R engine writes the same sentence.
+    eff_txt = (eff_name if eff_value is None or not np.isfinite(eff_value)
+               else f"{eff_name} = {eff_value:.2f}")
     return (
         f"{cap_first(y_label)} was compared between the two groups with a {r['label']}."
         " Normality was assessed with the Shapiro-Wilk test." + var_txt +
-        f" Effect size is reported as {eff_name}."
+        f" Effect size is reported as {eff_txt}."
         " Significance was set at P < 0.05."
         f" Analyses were performed in Python {_pyver()} with pingouin {v('pingouin')};"
         f" figures were produced with seaborn {v('seaborn')} and statannotations {v('statannotations')}."
@@ -152,13 +161,26 @@ def _script(spec, r, lv, pal, in_name, fig_stub, ann):
         test_line = (f'res = pg.ttest(a, b, paired={paired}, '
                      f'correction={not r["var_equal"]}); '
                      f'p = float(res["p_val"].iloc[0])')
+    elif r["paired"]:
+        # R drops the zero differences and takes the exact route only when no tie
+        # and no zero remain, so the same rule is written out here.
+        test_line = (
+            'd = a - b; nz = d[d != 0]\n'
+            'exact = len(nz) < 50 and len(nz) == len(d) and len(set(abs(nz))) == len(nz)\n'
+            'res = (ss.wilcoxon(nz, alternative="two-sided", method="exact") if exact\n'
+            '       else ss.wilcoxon(nz, alternative="two-sided", method="approx", correction=True))\n'
+            'p = float(res.pvalue)')
     else:
-        fn = "pg.wilcoxon" if r["paired"] else "pg.mwu"
-        test_line = f'res = {fn}(a, b); p = float(res["p_val"].iloc[0])'
-    geom_line = (f'sns.violinplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, '
+        test_line = (
+            'exact = len(a) < 50 and len(b) < 50 and len(set(list(a) + list(b))) == len(a) + len(b)\n'
+            'res = (ss.mannwhitneyu(a, b, alternative="two-sided", method="exact") if exact\n'
+            '       else ss.mannwhitneyu(a, b, alternative="two-sided", method="asymptotic",\n'
+            '                            use_continuity=True))\n'
+            'p = float(res.pvalue)')
+    geom_line = (f'sns.violinplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, hue_order=order, '
                  f'palette={pal}, ax=ax, legend=False, cut=0, inner=None)'
                  if geom == "violin" else
-                 f'sns.boxplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, '
+                 f'sns.boxplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, hue_order=order, '
                  f'palette={pal}, ax=ax, legend=False, width=0.6, fliersize=0)')
     return f'''#!/usr/bin/env python3
 # Standalone reproduction. Run inside the pinned pubready container
@@ -167,6 +189,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd, seaborn as sns, pingouin as pg
+from scipy import stats as ss
 from statannotations.Annotator import Annotator
 
 df = pd.read_csv("{in_name}")
@@ -178,7 +201,7 @@ b = df.loc[df["{x}"] == order[1], "{y}"].to_numpy()
 
 fig, ax = plt.subplots(figsize=(3.8, 4.0))
 {geom_line}
-sns.stripplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, palette={pal},
+sns.stripplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, hue_order=order, palette={pal},
               ax=ax, legend=False, size=4, alpha=0.75, edgecolor="black", linewidth=0.3, jitter=0.12)
 annot = Annotator(ax, [(order[0], order[1])], data=df, x="{x}", y="{y}", order=order)
 annot.configure(line_width=1.0, fontsize=12)

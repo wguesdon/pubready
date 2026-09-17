@@ -31,3 +31,26 @@ test_that("recipe_two_group_compare rejects a grouping column that is not binary
   spec <- spec_from_opt(opt)
   expect_error(recipe_two_group_compare(df, spec), "exactly 2 groups")
 })
+
+test_that("the Mann-Whitney branch reports a signed effect size and Levene's p", {
+  set.seed(7)
+  df <- data.frame(
+    group = rep(c("control", "treated"), each = 12),
+    value = c(rlnorm(12, 1, 0.4), rlnorm(12, 2, 0.4)),
+    stringsAsFactors = FALSE
+  )
+  opt <- list(recipe = "two_group_compare", data = "toy.csv",
+              x = "group", y = "value", test = "wilcoxon", paired = FALSE,
+              p_adjust = "none")
+  spec <- spec_from_opt(opt)
+
+  out <- recipe_two_group_compare(df, spec)
+
+  expect_equal(out$stats$test, "Mann-Whitney U test")
+  expect_equal(out$stats$effect_size_name, "rank-biserial r")
+  expect_false(is.na(out$stats$effect_size))
+  expect_lt(out$stats$effect_size, 0)   # control ranks below treated
+  expect_gte(out$stats$effect_size, -1)
+  expect_equal(out$test_meta$assumptions$equal_variance$test, "Levene")
+  expect_false(is.na(out$stats$var_equal_p))
+})

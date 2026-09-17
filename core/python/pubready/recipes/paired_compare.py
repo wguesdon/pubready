@@ -8,7 +8,8 @@ from scipy import stats as ss
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
-from ..util import cap_first, p_stars, shapiro_normal
+from ..util import (cap_first, p_stars, rank_biserial_paired, shapiro_normal,
+                    wilcoxon_signed_rank_r)
 
 
 def recipe_paired_compare(df, spec):
@@ -57,11 +58,9 @@ def recipe_paired_compare(df, spec):
         eff = float(np.mean(diffs) / np.std(diffs, ddof=1)); eff_name = "Cohen's dz"
         label = "paired t-test"
     else:
-        nz = diffs[diffs != 0]
-        res = ss.wilcoxon(m["v2"], m["v1"])
-        stat = float(res.statistic); pval = float(res.pvalue); dof = np.nan
-        rk = ss.rankdata(np.abs(nz))
-        eff = float((rk[nz > 0].sum() - rk[nz < 0].sum()) / rk.sum()) if len(nz) else np.nan
+        stat, pval = wilcoxon_signed_rank_r(diffs)
+        dof = np.nan
+        eff = rank_biserial_paired(diffs)
         eff_name = "rank-biserial r"; label = "Wilcoxon signed-rank test"
 
     ap = spec["appearance"]
@@ -127,8 +126,13 @@ def _methods(label, lv, n, eff_name, eff, spec):
 
 def _script(spec, family, lv, in_name, fig_stub):
     x, y, idc = spec["data"]["x"], spec["data"]["y"], spec["data"]["id"]
-    test_line = ('res = ss.ttest_rel(m["v2"], m["v1"])' if family == "t"
-                 else 'res = ss.wilcoxon(m["v2"], m["v1"])')
+    test_line = ('res = ss.ttest_rel(m["v2"], m["v1"])' if family == "t" else
+                 # R reports V, the rank sum of the positive differences, and
+                 # takes the exact route only without a tie and without a zero.
+                 'd = (m["v2"] - m["v1"]).to_numpy(); nz = d[d != 0]\n'
+                 'exact = len(nz) < 50 and len(nz) == len(d) and len(set(abs(nz))) == len(nz)\n'
+                 'res = (ss.wilcoxon(nz, alternative="two-sided", method="exact") if exact\n'
+                 '       else ss.wilcoxon(nz, alternative="two-sided", method="approx", correction=True))')
     return f'''#!/usr/bin/env python3
 # Standalone reproduction. Run inside the pinned pubready container.
 import matplotlib

@@ -36,8 +36,8 @@ and the data is treated as normal. Both guards are recorded.
 For the continuous group comparisons the recipe also checks whether the groups share
 a variance, and treats them as equal when the test's P is above 0.05:
 
-- `two_group_compare` — F test (`var.test`) on the two groups. Equal variance keeps
-  the Student's t-test; unequal variance switches to Welch.
+- `two_group_compare` — Levene's test on the two groups, centered on the median.
+  Equal variance keeps the Student's t-test; unequal variance switches to Welch.
 - `multi_group_compare` — Levene's test across all groups. Equal variance keeps
   one-way ANOVA with Tukey; unequal variance switches to Welch's ANOVA with
   Games-Howell.

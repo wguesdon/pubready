@@ -12,6 +12,24 @@ shapiro_safe <- function(v) {
   list(test = "shapiro-wilk", n = n, p = p, normal = isTRUE(p > 0.05))
 }
 
+# Rank-biserial correlation for two independent groups, from the Mann-Whitney U
+# of the first group. Negative when the first group ranks lower. This is
+# computed here rather than with rstatix::wilcox_effsize, which needs the coin
+# package and returns the magnitude without the sign. The Python engine uses the
+# same formula.
+rank_biserial_unpaired <- function(u, n1, n2) {
+  2 * as.numeric(u) / (n1 * n2) - 1
+}
+
+# Rank-biserial correlation for paired differences (Kerby's formula). Zero
+# differences are dropped, as in the signed-rank test itself.
+rank_biserial_paired <- function(d) {
+  d <- d[is.finite(d) & d != 0]
+  if (length(d) == 0) return(NA_real_)
+  rk <- rank(abs(d))
+  (sum(rk[d > 0]) - sum(rk[d < 0])) / sum(rk)
+}
+
 # Resolve which two-group test to run from the request and the assumption checks.
 resolve_two_group_method <- function(method, all_normal, equal_var, paired) {
   method <- tolower(method %||% "auto")
