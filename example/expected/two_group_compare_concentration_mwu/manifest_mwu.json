@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "25f0328",
+  "pubready_git_commit": "b35bc2f",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "two_group_compare",
@@ -25,8 +25,8 @@
     "p_value": 0.000144,
     "adjustment": "none",
     "effect_size": {
-      "name": "r (rank-biserial)",
-      "value": null
+      "name": "rank-biserial r",
+      "value": -0.847222
     },
     "assumptions": {
       "normality": {
@@ -35,8 +35,8 @@
         "p_group2": 7.854417e-06
       },
       "equal_variance": {
-        "test": "F test",
-        "p": 0.049414
+        "test": "Levene",
+        "p": 0.559147
       }
     }
   },

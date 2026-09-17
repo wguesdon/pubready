@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "25f0328",
+  "pubready_git_commit": "b35bc2f",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "proportions",

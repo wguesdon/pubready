@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "25f0328",
+  "pubready_git_commit": "b35bc2f",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "two_group_compare",
@@ -22,7 +22,7 @@
   "statistical_test": {
     "name": "Student's two-sample t-test",
     "statistic": 10.059451,
-    "p_value": 1.08e-09,
+    "p_value": 1.083621e-09,
     "adjustment": "none",
     "effect_size": {
       "name": "Cohen's d",
@@ -35,8 +35,8 @@
         "p_group2": 0.989004
       },
       "equal_variance": {
-        "test": "F test",
-        "p": 0.440064
+        "test": "Levene",
+        "p": 0.456075
       }
     }
   },

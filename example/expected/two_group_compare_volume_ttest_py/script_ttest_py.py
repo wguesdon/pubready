@@ -5,6 +5,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd, seaborn as sns, pingouin as pg
+from scipy import stats as ss
 from statannotations.Annotator import Annotator
 
 df = pd.read_csv("input_volume.csv")
@@ -15,8 +16,8 @@ b = df.loc[df["group"] == order[1], "volume"].to_numpy()
 res = pg.ttest(a, b, paired=False, correction=False); p = float(res["p_val"].iloc[0])
 
 fig, ax = plt.subplots(figsize=(3.8, 4.0))
-sns.boxplot(data=df, x="group", y="volume", hue="group", order=order, palette=['#3B6DB3', '#C1432B'], ax=ax, legend=False, width=0.6, fliersize=0)
-sns.stripplot(data=df, x="group", y="volume", hue="group", order=order, palette=['#3B6DB3', '#C1432B'],
+sns.boxplot(data=df, x="group", y="volume", hue="group", order=order, hue_order=order, palette=['#3B6DB3', '#C1432B'], ax=ax, legend=False, width=0.6, fliersize=0)
+sns.stripplot(data=df, x="group", y="volume", hue="group", order=order, hue_order=order, palette=['#3B6DB3', '#C1432B'],
               ax=ax, legend=False, size=4, alpha=0.75, edgecolor="black", linewidth=0.3, jitter=0.12)
 annot = Annotator(ax, [(order[0], order[1])], data=df, x="group", y="volume", order=order)
 annot.configure(line_width=1.0, fontsize=12)

@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "25f0328",
+  "pubready_git_commit": "b35bc2f",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "two_group_compare",
@@ -24,11 +24,11 @@
   "statistical_test": {
     "name": "Mann-Whitney U test",
     "statistic": 11.0,
-    "p_value": 0.0004776817289569815,
+    "p_value": 0.00014422244870488242,
     "adjustment": "none",
     "effect_size": {
       "name": "rank-biserial r",
-      "value": -0.8472222222222223
+      "value": -0.8472222222222222
     },
     "assumptions": {
       "normality": {
@@ -38,7 +38,7 @@
       },
       "equal_variance": {
         "test": "Levene",
-        "p": 0.383570595824012
+        "p": 0.5591467798686465
       }
     }
   },

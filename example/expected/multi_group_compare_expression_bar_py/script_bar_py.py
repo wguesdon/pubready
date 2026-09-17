@@ -13,8 +13,8 @@ stars = lambda p: "****" if p<1e-4 else "***" if p<1e-3 else "**" if p<1e-2 else
 sig = [(a, b, p) for a, b, p in pairs if p < 0.05]
 
 fig, ax = plt.subplots(figsize=(4.6, 4.2))
-sns.boxplot(data=df, x="genotype", y="expression", hue="genotype", order=order, palette=['#3B6DB3', '#C1432B', '#2E8B57', '#7A5195'], ax=ax, legend=False, width=0.6, fliersize=0)
-sns.stripplot(data=df, x="genotype", y="expression", hue="genotype", order=order, palette=['#3B6DB3', '#C1432B', '#2E8B57', '#7A5195'], ax=ax,
+sns.boxplot(data=df, x="genotype", y="expression", hue="genotype", order=order, hue_order=order, palette=['#3B6DB3', '#C1432B', '#2E8B57', '#7A5195'], ax=ax, legend=False, width=0.6, fliersize=0)
+sns.stripplot(data=df, x="genotype", y="expression", hue="genotype", order=order, hue_order=order, palette=['#3B6DB3', '#C1432B', '#2E8B57', '#7A5195'], ax=ax,
               legend=False, size=3.5, alpha=0.7, edgecolor="black", linewidth=0.3, jitter=0.12)
 if sig:
     annot = Annotator(ax, [(a, b) for a, b, _ in sig], data=df, x="genotype", y="expression", order=order)
