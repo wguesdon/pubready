@@ -100,7 +100,7 @@ recipe_multi_group_compare <- function(df, spec) {
     }
   }
 
-  pal  <- spec$appearance$palette %||% pubplot_palette
+  pal  <- spec$appearance$palette %||% pubready_palette
   pal  <- rep(pal, length.out = length(lvls))
   geom <- spec$appearance$geom %||% "box"
 
@@ -211,7 +211,7 @@ recipe_multi_group_compare <- function(df, spec) {
 
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction. Run inside the pinned pubplot container",
+    "# Standalone reproduction. Run inside the pinned pubready container",
     "# (see REPRODUCE.md) from this bundle folder.",
     "suppressPackageStartupMessages({",
     "  library(ggplot2); library(ggpubr); library(rstatix); library(readr)",

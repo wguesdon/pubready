@@ -14,7 +14,7 @@ import numpy as np
 
 from .io import file_checksums
 from .spec import write_config
-from .version import PUBPLOT_VERSION
+from .version import PUBREADY_VERSION
 
 
 def _now():
@@ -26,7 +26,7 @@ def _ts(stamp=None):
 
 
 def _created():
-    return os.environ.get("PUBPLOT_CREATED") or _now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    return os.environ.get("PUBREADY_CREATED") or _now().strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def slugify(s):
@@ -158,8 +158,8 @@ def write_packages(path, script_text=None):
 
 def build_manifest(spec, in_name, orig, sums, n_rows, test_meta, container, git_commit, created, fig_stub):
     return {
-        "pubplot_version": PUBPLOT_VERSION,
-        "pubplot_git_commit": git_commit,
+        "pubready_version": PUBREADY_VERSION,
+        "pubready_git_commit": git_commit,
         "created_utc": created,
         "engine": "python",
         "recipe": spec["recipe"],
@@ -181,7 +181,7 @@ def build_manifest(spec, in_name, orig, sums, n_rows, test_meta, container, git_
 
 
 def reproduce_md(container, git_commit, script_name):
-    img = container.get("image", "localhost/pubplot:0.4.1")
+    img = container.get("image", "localhost/pubready:0.4.1")
     return (
         "# Reproduce this figure\n\n"
         "This bundle is self-contained. To regenerate the figure in the exact\n"
@@ -189,7 +189,7 @@ def reproduce_md(container, git_commit, script_name):
         "## 1. Get the pinned environment\n\n"
         f"- Container image: `{img}`\n"
         f"- Image id: `{container.get('image_id', 'unknown')}`\n"
-        f"- pubplot commit: `{git_commit}`\n\n"
+        f"- pubready commit: `{git_commit}`\n\n"
         "## 2. Run the standalone script\n\n"
         "From inside this folder:\n\n"
         "```bash\n"

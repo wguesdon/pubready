@@ -1,6 +1,6 @@
-# How pubplot works
+# How pubready works
 
-pubplot turns tidy data into a publication-ready figure: drop the data in, decide
+pubready turns tidy data into a publication-ready figure: drop the data in, decide
 on the right statistical test, and get a figure with the significance annotation
 drawn on top. It runs as an agent skill and ships a full reproducible record with
 every figure.
@@ -45,7 +45,7 @@ Four pieces, kept deliberately separate.
 
 - **`figkit`** (`cli/figkit`) is the stable command surface. The agent only ever
   calls this. It runs everything inside the pinned container.
-- **Recipes** (`core/r/R`, `core/python/pubplot/recipes`) are the fixed
+- **Recipes** (`core/r/R`, `core/python/pubready/recipes`) are the fixed
   functions. Each one owns its test choice, its figure, its stats table, its
   methods paragraph, and the standalone script it emits. Both engines are proper
   packages (`core/r` is a source R package, `core/python` has a `pyproject.toml`)
@@ -53,7 +53,7 @@ Four pieces, kept deliberately separate.
   installed into the image.
 - **The container** (`container/Containerfile`) is one Podman image with R and
   Python and pinned versions. The environment is pinned by the image digest; the
-  code is pinned by the pubplot git commit. Both are recorded in every bundle.
+  code is pinned by the pubready git commit. Both are recorded in every bundle.
 - **The bundle writer** takes what a recipe returns and writes the artifact
   folder. It is engine agnostic.
 
@@ -91,7 +91,7 @@ Common options:
 | `--scale`, `--cluster` | heatmap scaling and clustering |
 | `--pd_threshold`, `--pr_threshold` | the two spider reference lines, +20 and -30 by default |
 | `--xlab`, `--ylab`, `--title`, `--palette` | labels and colors |
-| `--out DIR` | output root (default `pubplot_output`) |
+| `--out DIR` | output root (default `pubready_output`) |
 
 ## The recipes
 
@@ -205,7 +205,7 @@ Every `figkit plot` run writes one folder. That folder is the reproducible unit.
   directly first, then the complete installed set, headed with the R or Python version
   and the container OS.
 - `manifest_*.json` — structured provenance: recipe and arguments, the container
-  pinned by digest, the pubplot git commit, and every package version.
+  pinned by digest, the pubready git commit, and every package version.
 - `methods_*.md` — a manuscript-ready methods paragraph, templated from the same
   manifest so the reported numbers always match the figure.
 - `REPRODUCE.md` — the one Podman command to regenerate the figure.
@@ -235,7 +235,7 @@ the same numbers. The manifest records which engine drew the figure.
 | raincloud geom | ggdist half-eye | matplotlib half-violin |
 | PCA / PERMANOVA | prcomp + seeded permutation | numpy SVD + seeded permutation |
 
-Where Python has no faithful equivalent, pubplot routes you to R rather than
+Where Python has no faithful equivalent, pubready routes you to R rather than
 running something different. The one current case is the aligned rank transform
 for non-parametric factorial ANOVA: `--test art --engine python` errors and points
 to `--engine r`. The Python `heatmap` draws the clustered matrix and the group
@@ -244,10 +244,10 @@ the figure.
 
 ## Setup
 
-pubplot needs Podman and one built image.
+pubready needs Podman and one built image.
 
 ```bash
-figkit build          # builds localhost/pubplot:0.4.1 from container/Containerfile
+figkit build          # builds localhost/pubready:0.4.1 from container/Containerfile
 ```
 
 The image carries R (ggpubr, rstatix, ggprism, ggrepel, ggdist, survival,
@@ -266,14 +266,14 @@ Python suite (`core/python/tests`) runs under `pytest`. The end-to-end
 `tests/smoke_test.sh` drives every recipe on both engines.
 
 The version lives in the root `VERSION` file and moves in lockstep across
-`core/r/DESCRIPTION`, `core/python/pubplot/version.py`, and the image tag.
+`core/r/DESCRIPTION`, `core/python/pubready/version.py`, and the image tag.
 `CHANGELOG.md` records every release. "Breaking" means a change to the figkit
 command surface or to figure output, not just an internal refactor.
 
 ## Adding a recipe
 
 A recipe is one function, `recipe_<name>`, in `core/r/R/<name>.R` and
-`core/python/pubplot/recipes/<name>.py`. It receives the raw data frame and the
+`core/python/pubready/recipes/<name>.py`. It receives the raw data frame and the
 spec, and returns:
 
 - the figure (a ggplot in R, a matplotlib figure in Python),

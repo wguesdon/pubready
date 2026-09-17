@@ -56,7 +56,7 @@ recipe_correlation <- function(df, spec) {
   statistic <- if (!is.null(ct$statistic)) unname(ct$statistic) else NA_real_
   dfree     <- if (!is.null(ct$parameter)) unname(ct$parameter) else NA_real_
 
-  pal <- spec$appearance$palette %||% pubplot_palette
+  pal <- spec$appearance$palette %||% pubready_palette
   point_col <- pal[1]
 
   p <- ggplot2::ggplot(df_used, ggplot2::aes(x = .data[[x]], y = .data[[y]])) +
@@ -143,7 +143,7 @@ recipe_correlation <- function(df, spec) {
   ylab <- spec$appearance$y_label %||% y
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction. Run inside the pinned pubplot container",
+    "# Standalone reproduction. Run inside the pinned pubready container",
     "# (see REPRODUCE.md) from this bundle folder.",
     "suppressPackageStartupMessages({ library(ggplot2); library(ggpubr) })",
     "",

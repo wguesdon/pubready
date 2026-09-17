@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from pubplot.qc import qc_moment_stats, qc_normality
-from pubplot.recipes.two_group_compare import recipe_two_group_compare
-from pubplot.spec import spec_from_args
+from pubready.qc import qc_moment_stats, qc_normality
+from pubready.recipes.two_group_compare import recipe_two_group_compare
+from pubready.spec import spec_from_args
 
 
 def test_qc_moment_stats_reports_moments_and_guards_small_n():

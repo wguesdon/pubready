@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 # Generate a clusterProfiler-style ORA enrichment table for the enrichment_dot
-# recipe. Run once inside the pubplot container from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.0 \
+# recipe. Run once inside the pubready container from the repo root:
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:0.4.0 \
 #     Rscript tools/make_examples/make_enrichment_data.R
 set.seed(19)
 

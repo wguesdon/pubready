@@ -35,7 +35,7 @@ opts <- list(
   make_option("--sheet",    type = "character", default = NULL),
   make_option("--stamp",    type = "character", default = NULL),
   make_option("--engine",   type = "character", default = NULL),  # read by the figkit dispatcher for routing; ignored here
-  make_option("--out",      type = "character", default = "pubplot_output")
+  make_option("--out",      type = "character", default = "pubready_output")
 )
 opt <- parse_args(OptionParser(option_list = opts))
 
@@ -43,7 +43,7 @@ for (req in c("recipe", "data")) {
   if (is.null(opt[[req]])) stop(sprintf("missing required --%s", req))
 }
 
-source(file.path(Sys.getenv("PUBPLOT_CORE", "/opt/pubplot/core"), "r", "bootstrap.R"))
+source(file.path(Sys.getenv("PUBREADY_CORE", "/opt/pubready/core"), "r", "bootstrap.R"))
 
 spec <- spec_from_opt(opt)
 run_recipe(spec, raw_input = opt$data, out_root = opt$out, sheet = opt$sheet,

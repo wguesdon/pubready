@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from pubplot.spec import default_appearance, spec_from_args
+from pubready.spec import default_appearance, spec_from_args
 
 
 def test_spec_from_args_builds_python_spec_with_defaults():
@@ -35,7 +35,7 @@ def test_spec_from_args_carries_theme():
                         x="g", y="v", theme="prism")
     assert spec_from_args(a)["appearance"]["theme"] == "prism"
     b = SimpleNamespace(recipe="two_group_compare", data="d.csv", x="g", y="v")
-    assert spec_from_args(b)["appearance"]["theme"] == "pubplot_house"
+    assert spec_from_args(b)["appearance"]["theme"] == "pubready_house"
 
 
 def test_spec_from_args_carries_new_data_and_cutoff_fields():

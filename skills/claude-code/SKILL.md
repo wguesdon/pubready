@@ -1,5 +1,5 @@
 ---
-name: pubplot
+name: pubready
 description: >-
   Make a publication-ready figure from tidy data with the statistical test drawn
   on top. Use when the user has a tidy CSV or Excel file and
@@ -9,7 +9,7 @@ description: >-
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 ---
 
-# pubplot
+# pubready
 
 Make a publication-ready figure from tidy data and put the statistical test on
 top. A small library of tested, parameterized recipes does the plotting and the
@@ -49,7 +49,7 @@ If a command reports the image is missing, run `figkit build` first.
    large n), so the QQ plot is the tiebreaker.
 4. Call `figkit plot` with the recipe and columns. Leave `--test auto` unless a test
    is forced. The bundle also includes the QC panel (`qc_normality_<ts>.png`).
-5. Point them at the bundle folder under `pubplot_output/`: the figure, the
+5. Point them at the bundle folder under `pubready_output/`: the figure, the
    standalone script, the stats table, the input copy, and a methods paragraph.
 6. To restyle, edit `plot_config.yaml` in the bundle and run `figkit render`. It
    recomputes the statistics, so the figure and the numbers never drift apart.
@@ -78,7 +78,7 @@ Common options: `--engine r|python` (default r), `--geom box|violin|bar|rainclou
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
 `pearson|spearman|kendall`; proportions: `chisq|fisher`), `--scale`/`--cluster`
 (heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n` (volcano), `--id --group --label`,
-`--theme pubplot_house|prism`, `--xlab --ylab --title --palette`, `--out DIR`.
+`--theme pubready_house|prism`, `--xlab --ylab --title --palette`, `--out DIR`.
 
 ## Choosing the test
 
@@ -113,8 +113,8 @@ Claude Code, link it under `.claude/skills`:
 
 ```bash
 mkdir -p .claude/skills
-ln -s ../../skills/claude-code .claude/skills/pubplot
+ln -s ../../skills/claude-code .claude/skills/pubready
 ```
 
 For a personal skill available in every project, link it under your home config
-instead: `ln -s "$PWD/skills/claude-code" ~/.claude/skills/pubplot`.
+instead: `ln -s "$PWD/skills/claude-code" ~/.claude/skills/pubready`.

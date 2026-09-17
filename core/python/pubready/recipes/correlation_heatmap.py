@@ -123,7 +123,7 @@ def _methods(method, cluster, k, n_sig):
 
 def _script(in_name, fig_stub, method, row_c, col_c):
     return f'''#!/usr/bin/env python3
-# Standalone reproduction. Run inside the pinned pubplot container
+# Standalone reproduction. Run inside the pinned pubready container
 # (see REPRODUCE.md) from this bundle folder.
 import matplotlib
 matplotlib.use("Agg")

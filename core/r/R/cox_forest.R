@@ -111,7 +111,7 @@ recipe_cox_forest <- function(df, spec) {
   rhs <- paste(sprintf("`%s`", covs), collapse = " + ")
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction. Run inside the pinned pubplot container",
+    "# Standalone reproduction. Run inside the pinned pubready container",
     "# (see REPRODUCE.md) from this bundle folder.",
     "suppressPackageStartupMessages({",
     "  library(survival); library(survminer); library(readr)",

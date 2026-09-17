@@ -61,7 +61,7 @@ recipe_two_group_compare <- function(df, spec) {
     label_col <- "p.signif"
   }
 
-  pal  <- spec$appearance$palette %||% pubplot_palette[seq_len(2)]
+  pal  <- spec$appearance$palette %||% pubready_palette[seq_len(2)]
   geom <- spec$appearance$geom %||% "box"
 
   # fill is mapped inside each geom, not globally: the significance-bracket

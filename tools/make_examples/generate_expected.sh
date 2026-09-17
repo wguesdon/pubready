@@ -2,13 +2,13 @@
 # Regenerate the committed reference bundles under example/expected/.
 # Uses fixed --stamp names and a fixed created date so the outputs are
 # deterministic and diff cleanly. Run from anywhere; requires the built image.
-# Set PUBPLOT_EXPECTED_OUT to write elsewhere (the determinism check points it
+# Set PUBREADY_EXPECTED_OUT to write elsewhere (the determinism check points it
 # at a temp tree so it can diff against the committed bundles).
 set -e
 cd "$(dirname "$0")/../.."
 
-export PUBPLOT_CREATED="2026-07-18T00:00:00Z"
-OUT="${PUBPLOT_EXPECTED_OUT:-example/expected}"
+export PUBREADY_CREATED="2026-07-18T00:00:00Z"
+OUT="${PUBREADY_EXPECTED_OUT:-example/expected}"
 rm -rf "$OUT"
 
 # Parametric path -> Student's t-test

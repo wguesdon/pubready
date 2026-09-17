@@ -115,7 +115,7 @@ recipe_enrichment_dot <- function(df, spec) {
   vline <- if (gsea_mode) '  + geom_vline(xintercept = 0, linetype = "dashed")' else ""
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction. Run inside the pinned pubplot container.",
+    "# Standalone reproduction. Run inside the pinned pubready container.",
     "suppressPackageStartupMessages(library(ggplot2))",
     "",
     sprintf('raw <- read.csv("%s", check.names = FALSE)', in_name),

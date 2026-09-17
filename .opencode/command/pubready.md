@@ -1,0 +1,1 @@
+../../skills/opencode/command/pubready.md

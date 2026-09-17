@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 # Generate a survival example dataset deterministically. Run once inside the
-# pubplot container from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.0 \
+# pubready container from the repo root:
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:0.4.0 \
 #     Rscript tools/make_examples/make_survival_data.R
 set.seed(7)
 

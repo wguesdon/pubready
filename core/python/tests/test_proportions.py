@@ -2,8 +2,8 @@ from types import SimpleNamespace
 
 import pandas as pd
 
-from pubplot.recipes.proportions import recipe_proportions
-from pubplot.spec import spec_from_args
+from pubready.recipes.proportions import recipe_proportions
+from pubready.spec import spec_from_args
 
 
 def test_proportions_chisq_2x2():

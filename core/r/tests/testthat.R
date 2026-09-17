@@ -2,6 +2,6 @@
 # The container runs the suite through tests/run_tests.R instead, which loads
 # the mounted source without installing.
 library(testthat)
-library(pubplot)
+library(pubready)
 
-test_check("pubplot")
+test_check("pubready")

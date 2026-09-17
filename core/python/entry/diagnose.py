@@ -9,12 +9,12 @@ import math
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.environ.get("PUBPLOT_CORE", "/opt/pubplot/core"), "python"))
-from pubplot.bundle import _ts, slugify   # noqa: E402
-from pubplot.io import read_tidy          # noqa: E402
-from pubplot.qc import qc_normality       # noqa: E402
-from pubplot.recipes import get_recipe    # noqa: E402
-from pubplot.spec import spec_from_args   # noqa: E402
+sys.path.insert(0, os.path.join(os.environ.get("PUBREADY_CORE", "/opt/pubready/core"), "python"))
+from pubready.bundle import _ts, slugify   # noqa: E402
+from pubready.io import read_tidy          # noqa: E402
+from pubready.qc import qc_normality       # noqa: E402
+from pubready.recipes import get_recipe    # noqa: E402
+from pubready.spec import spec_from_args   # noqa: E402
 
 
 def _clean(o):
@@ -44,7 +44,7 @@ def main():
     p.add_argument("--paired", action="store_true")
     p.add_argument("--sheet"); p.add_argument("--stamp")
     p.add_argument("--engine")  # consumed by the figkit dispatcher; ignored here
-    p.add_argument("--out", default="pubplot_output")
+    p.add_argument("--out", default="pubready_output")
     a, _ = p.parse_known_args()
 
     spec = spec_from_args(a)

@@ -49,7 +49,7 @@ qc_normality <- function(qc) {
   }))
 
   p <- ggplot2::ggplot(long, ggplot2::aes(sample = value)) +
-    ggplot2::stat_qq(colour = pubplot_palette[1], size = 1.2, alpha = 0.75) +
+    ggplot2::stat_qq(colour = pubready_palette[1], size = 1.2, alpha = 0.75) +
     ggplot2::stat_qq_line(colour = "#333333", linewidth = 0.5) +
     ggplot2::facet_wrap(~ panel, scales = "free") +
     ggplot2::labs(
@@ -57,7 +57,7 @@ qc_normality <- function(qc) {
       title = sprintf("Normality QC: %s", qc$quantity),
       subtitle = "Points near the line support normality; mild, judged deviation is usually acceptable."
     ) +
-    theme_pubplot(12) +
+    theme_pubready(12) +
     ggplot2::theme(
       strip.text    = ggplot2::element_text(size = 8.5, lineheight = 1.05),
       plot.subtitle = ggplot2::element_text(size = 9, colour = "grey30")

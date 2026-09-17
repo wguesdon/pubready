@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to pubplot are recorded here. The format follows
+All notable changes to pubready are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -31,6 +31,17 @@ tag move together.
   `tools/make_examples/make_spider_data.R` (seeded).
 
 ### Changed
+- The project is renamed from pubplot to pubready, because the GitHub repository
+  is now `wguesdon/pubready`. The change is breaking. The default output
+  directory is `pubready_output/`, the house theme value is `pubready_house`,
+  the default image tag is `localhost/pubready:<version>`, and each `PUBPLOT_*`
+  environment variable is now `PUBREADY_*`. The R package, the Python package
+  and the container paths under `/opt/pubready` carry the same name. The command
+  surface keeps the name `figkit`. A caller that sets `--theme pubplot_house`,
+  that reads `pubplot_output/`, or that exports a `PUBPLOT_*` variable must
+  change to the new name.
+- The Claude Code skill is `pubready` and the opencode command is `/pubready`.
+  The two earlier names do not resolve.
 - Moved the example data generators and `generate_expected.sh` out of `example/`
   into `tools/make_examples/`. `example/` now holds only the input datasets, the
   `expected/` reference bundles, and its README, so the folder a reader opens
@@ -167,9 +178,9 @@ tag move together.
   stats table, input copy, manifest, methods paragraph, and `REPRODUCE.md`.
 - Host adapters for Claude Code, Codex, and opencode on one shared core.
 
-[Unreleased]: https://github.com/wguesdon/pubplot/compare/v0.4.1...HEAD
-[0.4.1]: https://github.com/wguesdon/pubplot/compare/v0.4.0...v0.4.1
-[0.4.0]: https://github.com/wguesdon/pubplot/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/wguesdon/pubplot/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/wguesdon/pubplot/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/wguesdon/pubplot/releases/tag/v0.1.0
+[Unreleased]: https://github.com/wguesdon/pubready/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/wguesdon/pubready/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/wguesdon/pubready/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/wguesdon/pubready/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/wguesdon/pubready/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/wguesdon/pubready/releases/tag/v0.1.0

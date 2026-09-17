@@ -134,7 +134,7 @@ def _methods(n_samp, n_feat, ve, fstat, pval):
 
 def _script(grp_col, in_name, fig_stub):
     return f'''#!/usr/bin/env python3
-# Standalone reproduction. Run inside the pinned pubplot container.
+# Standalone reproduction. Run inside the pinned pubready container.
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt

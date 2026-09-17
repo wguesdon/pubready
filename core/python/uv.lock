@@ -944,7 +944,7 @@ wheels = [
 ]
 
 [[package]]
-name = "pubplot"
+name = "pubready"
 source = { editable = "." }
 dependencies = [
     { name = "adjusttext" },

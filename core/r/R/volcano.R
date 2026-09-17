@@ -118,7 +118,7 @@ recipe_volcano <- function(df, spec) {
   lab_expr <- if (!is.na(cols$lab)) sprintf('as.character(raw[["%s"]])', cols$lab) else "as.character(seq_len(nrow(raw)))"
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction. Run inside the pinned pubplot container",
+    "# Standalone reproduction. Run inside the pinned pubready container",
     "# (see REPRODUCE.md) from this bundle folder.",
     "suppressPackageStartupMessages({ library(ggplot2); library(ggrepel) })",
     "",

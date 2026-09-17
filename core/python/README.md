@@ -1,6 +1,6 @@
-# pubplot (Python engine)
+# pubready (Python engine)
 
-The Python engine for [pubplot](../../README.md): recipe functions that turn
+The Python engine for [pubready](../../README.md): recipe functions that turn
 tidy data into a publication-ready figure with the chosen statistical test drawn
 on top, mirroring the R engine one to one and writing the same reproducibility
 bundle.

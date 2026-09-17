@@ -5,9 +5,9 @@ import json
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.environ.get("PUBPLOT_CORE", "/opt/pubplot/core"), "python"))
-from pubplot.io import read_tidy                      # noqa: E402
-from pubplot.run import inspect_data, print_inspect   # noqa: E402
+sys.path.insert(0, os.path.join(os.environ.get("PUBREADY_CORE", "/opt/pubready/core"), "python"))
+from pubready.io import read_tidy                      # noqa: E402
+from pubready.run import inspect_data, print_inspect   # noqa: E402
 
 
 def main():

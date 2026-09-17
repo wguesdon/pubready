@@ -3,7 +3,7 @@
 
 default_appearance <- function() {
   list(
-    theme        = "pubplot_house",
+    theme        = "pubready_house",
     palette      = NULL,           # NULL means use the house palette
     x_label      = NULL,
     y_label      = NULL,

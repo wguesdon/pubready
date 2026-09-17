@@ -7,8 +7,8 @@ three adapters do not drift.
 - `claude-code/SKILL.md` — Claude Code Agent Skill (`name` + `description`
   frontmatter, triggers on figure requests).
 - `codex/AGENTS.md` — Codex instructions, read from the nearest `AGENTS.md`.
-- `opencode/` — opencode `AGENTS.md` instructions plus a `/pubplot` custom
-  command in `command/pubplot.md`.
+- `opencode/` — opencode `AGENTS.md` instructions plus a `/pubready` custom
+  command in `command/pubready.md`.
 
 Each adapter carries the same short operating guide: the `figkit` contract, the
 workflow, the recipe table, and how the `auto` test is chosen. The detail lives in
@@ -19,8 +19,8 @@ together when the `figkit` surface changes.
 
 | Host | Activate |
 |---|---|
-| Claude Code | `mkdir -p .claude/skills && ln -s ../../skills/claude-code .claude/skills/pubplot` |
+| Claude Code | `mkdir -p .claude/skills && ln -s ../../skills/claude-code .claude/skills/pubready` |
 | Codex | `ln -s skills/codex/AGENTS.md AGENTS.md` (append if a root `AGENTS.md` exists) |
-| opencode | add `skills/opencode/AGENTS.md` to `instructions` in `opencode.json`, and link `command/pubplot.md` into `.opencode/command/` |
+| opencode | add `skills/opencode/AGENTS.md` to `instructions` in `opencode.json`, and link `command/pubready.md` into `.opencode/command/` |
 
 See each adapter's own file for the full install note.

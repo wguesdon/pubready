@@ -8,10 +8,10 @@ from .recipes import get_recipe
 
 def container_info():
     return {
-        "image": os.environ.get("PUBPLOT_IMAGE", "localhost/pubplot:0.4.1"),
-        "image_id": os.environ.get("PUBPLOT_IMAGE_ID", ""),
-        "digest": os.environ.get("PUBPLOT_IMAGE_DIGEST", ""),
-        "podman_version": os.environ.get("PUBPLOT_PODMAN_VERSION", ""),
+        "image": os.environ.get("PUBREADY_IMAGE", "localhost/pubready:0.4.1"),
+        "image_id": os.environ.get("PUBREADY_IMAGE_ID", ""),
+        "digest": os.environ.get("PUBREADY_IMAGE_DIGEST", ""),
+        "podman_version": os.environ.get("PUBREADY_PODMAN_VERSION", ""),
     }
 
 
@@ -20,7 +20,7 @@ def run_recipe(spec, raw_input, out_root, sheet=None, stamp=None):
     fn = get_recipe(spec["recipe"])
     result = fn(df, spec)
     bdir = bundle.write_bundle(spec, result, raw_input, out_root, container_info(),
-                               os.environ.get("PUBPLOT_GIT_COMMIT", "unknown"), stamp)
+                               os.environ.get("PUBREADY_GIT_COMMIT", "unknown"), stamp)
     print(f"Wrote bundle: {bdir}")
     return bdir
 

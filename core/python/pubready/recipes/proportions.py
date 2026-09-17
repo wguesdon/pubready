@@ -119,7 +119,7 @@ def _script(spec, fisher, in_name, fig_stub):
     test_line = ('print(ss.fisher_exact(tab.to_numpy()))' if fisher
                  else 'print(ss.chi2_contingency(tab.to_numpy(), correction=False))')
     return f'''#!/usr/bin/env python3
-# Standalone reproduction. Run inside the pinned pubplot container.
+# Standalone reproduction. Run inside the pinned pubready container.
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt

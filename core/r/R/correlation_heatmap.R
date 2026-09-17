@@ -118,7 +118,7 @@ recipe_correlation_heatmap <- function(df, spec) {
 .ch_emit_script <- function(in_name, fig_stub, method, cluster_rows, cluster_cols) {
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction. Run inside the pinned pubplot container",
+    "# Standalone reproduction. Run inside the pinned pubready container",
     "# (see REPRODUCE.md) from this bundle folder.",
     "suppressPackageStartupMessages({ library(ComplexHeatmap); library(circlize) })",
     "",

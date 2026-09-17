@@ -1,1 +1,0 @@
-../../skills/opencode/command/pubplot.md

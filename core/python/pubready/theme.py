@@ -1,4 +1,4 @@
-"""The pubplot house style for matplotlib, matched to the R theme."""
+"""The pubready house style for matplotlib, matched to the R theme."""
 import matplotlib
 matplotlib.use("Agg")  # headless container
 import matplotlib.pyplot as plt
@@ -11,7 +11,7 @@ def palette(n, custom=None):
     return [cols[i % len(cols)] for i in range(n)]
 
 
-def apply_pub_style(ax, theme="pubplot_house"):
+def apply_pub_style(ax, theme="pubready_house"):
     if theme == "prism":
         return apply_prism_style(ax)
     ax.spines["top"].set_visible(False)

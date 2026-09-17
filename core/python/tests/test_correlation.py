@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pubplot.recipes.correlation import _resolve, recipe_correlation
-from pubplot.spec import spec_from_args
+from pubready.recipes.correlation import _resolve, recipe_correlation
+from pubready.spec import spec_from_args
 
 
 def test_resolve_picks_method_from_normality():

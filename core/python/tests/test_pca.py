@@ -3,8 +3,8 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 
-from pubplot.recipes.pca import recipe_pca
-from pubplot.spec import spec_from_args
+from pubready.recipes.pca import recipe_pca
+from pubready.spec import spec_from_args
 
 
 def test_pca_separates_two_groups():

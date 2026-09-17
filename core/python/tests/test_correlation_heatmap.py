@@ -3,8 +3,8 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 
-from pubplot.recipes.correlation_heatmap import recipe_correlation_heatmap
-from pubplot.spec import spec_from_args
+from pubready.recipes.correlation_heatmap import recipe_correlation_heatmap
+from pubready.spec import spec_from_args
 
 
 def test_recipe_correlation_heatmap_end_to_end():

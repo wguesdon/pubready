@@ -82,7 +82,7 @@ recipe_factorial_anova <- function(df, spec) {
     "No significant effects (P ≥ 0.05)"
   }
 
-  pal  <- spec$appearance$palette %||% pubplot_palette
+  pal  <- spec$appearance$palette %||% pubready_palette
   pal  <- rep(pal, length.out = nlevels(df[[f2]]))
   geom <- spec$appearance$geom %||% "box"
   pd   <- ggplot2::position_dodge(width = 0.8)
@@ -197,7 +197,7 @@ recipe_factorial_anova <- function(df, spec) {
 
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction. Run inside the pinned pubplot container",
+    "# Standalone reproduction. Run inside the pinned pubready container",
     "# (see REPRODUCE.md) from this bundle folder.",
     "suppressPackageStartupMessages({",
     "  library(ggplot2); library(rstatix); library(readr); library(ARTool)",

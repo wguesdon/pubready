@@ -1,6 +1,6 @@
 # Assumption checks
 
-pubplot measures the parametric assumptions before it chooses a test, and records
+pubready measures the parametric assumptions before it chooses a test, and records
 what it measured. This file documents what is checked, with which test, at which
 threshold, and how the result steers the choice. It pairs with
 [decision_tree.md](decision_tree.md).
@@ -50,7 +50,7 @@ rather than failing. `paired_compare` and `correlation` key off normality alone,
 
 A p-value is a poor sole judge of normality. Shapiro-Wilk is underpowered at small n,
 so it passes visibly non-normal small samples, and it over-rejects at large n, where
-the central limit theorem already makes the mean-based tests robust. So pubplot shows
+the central limit theorem already makes the mean-based tests robust. So pubready shows
 the assumption rather than only asserting it. `figkit diagnose` writes a QQ plot for the
 checked quantity, labelled with the Shapiro-Wilk p, skewness, and excess kurtosis, and
 prints the recommended test without drawing the figure, for the choose-a-test

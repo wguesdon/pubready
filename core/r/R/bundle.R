@@ -102,8 +102,8 @@ write_data_log <- function(path, raw_path, in_name, sums, df_used, steps) {
 build_manifest <- function(spec, resolved, in_name, orig_name, sums, n_rows,
                            test_meta, container, git_commit, created, fig_stub) {
   list(
-    pubplot_version    = PUBPLOT_VERSION,
-    pubplot_git_commit = git_commit,
+    pubready_version    = PUBREADY_VERSION,
+    pubready_git_commit = git_commit,
     created_utc        = created,
     engine             = spec$engine,
     recipe             = spec$recipe,
@@ -160,7 +160,7 @@ methods_paragraph <- function(resolved, stats_df, test_meta, spec) {
 # input using the concrete resolved parameters.
 emit_script <- function(spec, resolved, in_name, fig_stub) {
   x <- spec$data$x; y <- spec$data$y
-  pal <- spec$appearance$palette %||% pubplot_palette[1:2]
+  pal <- spec$appearance$palette %||% pubready_palette[1:2]
   pal_str <- paste0("c(", paste(sprintf('"%s"', pal), collapse = ", "), ")")
   paired <- if (isTRUE(resolved$paired)) "TRUE" else "FALSE"
   geom <- spec$appearance$geom %||% "box"
@@ -188,7 +188,7 @@ emit_script <- function(spec, resolved, in_name, fig_stub) {
 
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction of this figure. Run inside the pinned pubplot",
+    "# Standalone reproduction of this figure. Run inside the pinned pubready",
     "# container (see REPRODUCE.md) from this bundle folder.",
     "suppressPackageStartupMessages({",
     "  library(ggplot2); library(ggpubr); library(rstatix); library(readr)",
@@ -228,10 +228,10 @@ reproduce_md <- function(container, git_commit, script_name) {
     "",
     "## 1. Get the pinned environment",
     "",
-    sprintf("- Container image: `%s`", container$image %||% "localhost/pubplot:0.4.1"),
+    sprintf("- Container image: `%s`", container$image %||% "localhost/pubready:0.4.1"),
     sprintf("- Image id: `%s`", container$image_id %||% "unknown"),
     sprintf("- Image digest: `%s`", if (nzchar(container$digest %||% "")) container$digest else "n/a (local build)"),
-    sprintf("- pubplot commit: `%s`", git_commit),
+    sprintf("- pubready commit: `%s`", git_commit),
     "",
     "## 2. Run the standalone script",
     "",
@@ -239,7 +239,7 @@ reproduce_md <- function(container, git_commit, script_name) {
     "",
     "```bash",
     sprintf("podman run --rm -v \"$PWD\":/work -w /work \\"),
-    sprintf("  %s Rscript %s", container$image %||% "localhost/pubplot:0.4.1", script_name),
+    sprintf("  %s Rscript %s", container$image %||% "localhost/pubready:0.4.1", script_name),
     "```",
     "",
     "The script reads the bundled input copy, reruns the same test, and redraws",
@@ -259,7 +259,7 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
   # A fixed --stamp gives deterministic bundle and file names (used for the
   # committed reference outputs); otherwise names carry a real UTC timestamp.
   ts      <- if (!is.null(stamp) && nzchar(stamp)) stamp else timestamp_utc()
-  env_created <- Sys.getenv("PUBPLOT_CREATED", "")
+  env_created <- Sys.getenv("PUBREADY_CREATED", "")
   created <- if (nzchar(env_created)) env_created else iso_utc()
   base     <- slugify(base_label)
   bdir     <- file.path(out_root, sprintf("%s_%s_%s", spec$recipe, base, ts))

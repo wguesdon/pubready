@@ -2,8 +2,8 @@ from types import SimpleNamespace
 
 import pandas as pd
 
-from pubplot.recipes.volcano import recipe_volcano
-from pubplot.spec import spec_from_args
+from pubready.recipes.volcano import recipe_volcano
+from pubready.spec import spec_from_args
 
 
 def test_volcano_counts_and_columns():

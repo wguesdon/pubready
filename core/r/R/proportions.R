@@ -47,7 +47,7 @@ recipe_proportions <- function(df, spec) {
   cnt$group   <- factor(cnt$group, levels = levels(df[[x]]))
   cnt$outcome <- factor(cnt$outcome, levels = levels(df[[y]]))
 
-  pal <- spec$appearance$palette %||% pubplot_palette
+  pal <- spec$appearance$palette %||% pubready_palette
   pal <- rep(pal, length.out = nlevels(cnt$outcome))
   psub <- sprintf("%s, P = %s", test_label, formatC(pval, format = "g", digits = 2))
 
@@ -96,7 +96,7 @@ recipe_proportions <- function(df, spec) {
   test_line <- if (use_fisher) "print(fisher.test(tab))" else "print(chisq.test(tab, correct = FALSE))"
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction. Run inside the pinned pubplot container.",
+    "# Standalone reproduction. Run inside the pinned pubready container.",
     "suppressPackageStartupMessages({ library(ggplot2); library(scales) })",
     "",
     sprintf('raw <- read.csv("%s", check.names = FALSE)', in_name),

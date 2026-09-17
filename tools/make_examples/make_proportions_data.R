@@ -1,8 +1,8 @@
 #!/usr/bin/env Rscript
 # Generate a raw contingency dataset (one row per patient) for the proportions
-# recipe: treatment arm versus clinical response. Run once inside the pubplot
+# recipe: treatment arm versus clinical response. Run once inside the pubready
 # container from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.0 \
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:0.4.0 \
 #     Rscript tools/make_examples/make_proportions_data.R
 set.seed(5)
 

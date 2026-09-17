@@ -2,8 +2,8 @@ from types import SimpleNamespace
 
 import pandas as pd
 
-from pubplot.recipes.upset import recipe_upset
-from pubplot.spec import spec_from_args
+from pubready.recipes.upset import recipe_upset
+from pubready.spec import spec_from_args
 
 
 def test_recipe_upset_summarizes_sets_and_intersections():

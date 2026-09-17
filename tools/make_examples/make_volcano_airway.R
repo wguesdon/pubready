@@ -13,7 +13,7 @@
 #
 # Needs DESeq2 + airway + org.Hs.eg.db (already in the image). Run from the repo
 # root inside the container:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.1 \
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:0.4.1 \
 #     Rscript tools/make_examples/make_volcano_airway.R
 suppressPackageStartupMessages({
   library(airway)

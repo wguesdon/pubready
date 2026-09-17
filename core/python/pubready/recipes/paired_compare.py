@@ -130,7 +130,7 @@ def _script(spec, family, lv, in_name, fig_stub):
     test_line = ('res = ss.ttest_rel(m["v2"], m["v1"])' if family == "t"
                  else 'res = ss.wilcoxon(m["v2"], m["v1"])')
     return f'''#!/usr/bin/env python3
-# Standalone reproduction. Run inside the pinned pubplot container.
+# Standalone reproduction. Run inside the pinned pubready container.
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt

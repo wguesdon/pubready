@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 # Generate the spider plot example data deterministically: the target lesion sum
 # of 20 patients across five visits, in two arms. One row per measurement, which
-# is the shape a trial database exports. Run once inside the pubplot container
+# is the shape a trial database exports. Run once inside the pubready container
 # from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.1 \
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:0.4.1 \
 #     Rscript tools/make_examples/make_spider_data.R
 #
 # The design puts the response in the treated arm and the growth in the control

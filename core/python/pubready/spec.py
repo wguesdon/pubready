@@ -6,7 +6,7 @@ import yaml
 
 def default_appearance():
     return {
-        "theme": "pubplot_house",
+        "theme": "pubready_house",
         "palette": None,
         "x_label": None,
         "y_label": None,

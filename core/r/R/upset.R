@@ -93,7 +93,7 @@ recipe_upset <- function(df, spec) {
   }
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction. Run inside the pinned pubplot container",
+    "# Standalone reproduction. Run inside the pinned pubready container",
     "# (see REPRODUCE.md) from this bundle folder.",
     "suppressPackageStartupMessages(library(ComplexHeatmap))",
     "",

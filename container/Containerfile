@@ -1,6 +1,6 @@
-# pubplot environment image: R + Python, both engines, pinned by image digest.
+# pubready environment image: R + Python, both engines, pinned by image digest.
 # Application code (core/) is mounted at runtime and pinned separately by the
-# pubplot git commit recorded in each bundle's manifest.
+# pubready git commit recorded in each bundle's manifest.
 FROM docker.io/rocker/r-ver:4.4.1
 
 # System libraries: build deps for R graphics packages, plus Python.
@@ -25,13 +25,13 @@ RUN install2.r --error --skipinstalled \
 
 # Python packages via uv. The built image freezes the resolved set into
 # requirements.lock, which together with the image digest is the pin.
-COPY container/requirements.txt /opt/pubplot/requirements.txt
+COPY container/requirements.txt /opt/pubready/requirements.txt
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
  && ln -s /root/.local/bin/uv /usr/local/bin/uv \
- && uv venv /opt/pubplot/venv \
- && VIRTUAL_ENV=/opt/pubplot/venv uv pip install --no-cache -r /opt/pubplot/requirements.txt \
- && VIRTUAL_ENV=/opt/pubplot/venv uv pip freeze > /opt/pubplot/requirements.lock
-ENV PATH="/opt/pubplot/venv/bin:${PATH}"
+ && uv venv /opt/pubready/venv \
+ && VIRTUAL_ENV=/opt/pubready/venv uv pip install --no-cache -r /opt/pubready/requirements.txt \
+ && VIRTUAL_ENV=/opt/pubready/venv uv pip freeze > /opt/pubready/requirements.lock
+ENV PATH="/opt/pubready/venv/bin:${PATH}"
 
 # Bioconductor: ComplexHeatmap (+ circlize from CRAN) for the heatmap recipe.
 # Placed after the Python layer so that layer stays cached across this add.
@@ -41,9 +41,9 @@ RUN install2.r --error --skipinstalled circlize GetoptLong \
 
 # Extra Python packages for the Python engine (survival, factorial, heatmap).
 # Separate layer so the R/Bioconductor layers above stay cached across this add.
-COPY container/requirements-extra.txt /opt/pubplot/requirements-extra.txt
-RUN VIRTUAL_ENV=/opt/pubplot/venv uv pip install --no-cache -r /opt/pubplot/requirements-extra.txt \
- && VIRTUAL_ENV=/opt/pubplot/venv uv pip freeze > /opt/pubplot/requirements.lock
+COPY container/requirements-extra.txt /opt/pubready/requirements-extra.txt
+RUN VIRTUAL_ENV=/opt/pubready/venv uv pip install --no-cache -r /opt/pubready/requirements-extra.txt \
+ && VIRTUAL_ENV=/opt/pubready/venv uv pip freeze > /opt/pubready/requirements.lock
 
 # Extra CRAN packages added after v0.3.0: ggrepel + ggdist for the volcano labels
 # and the raincloud geom. A late layer so the heavy R/Bioconductor and Python
@@ -64,12 +64,12 @@ RUN R -q -e 'BiocManager::install(c("DESeq2", "airway", "org.Hs.eg.db"), update=
 # is a dev tool, not a runtime dependency of figure generation.
 RUN install2.r --error --skipinstalled testthat \
  && rm -rf /tmp/downloaded_packages
-RUN VIRTUAL_ENV=/opt/pubplot/venv uv pip install --no-cache "pytest>=7"
+RUN VIRTUAL_ENV=/opt/pubready/venv uv pip install --no-cache "pytest>=7"
 
 # Core scripts are mounted here at runtime by the figkit CLI.
-RUN mkdir -p /opt/pubplot/core
+RUN mkdir -p /opt/pubready/core
 
-ARG PUBPLOT_VERSION=0.0.0
-LABEL org.opencontainers.image.title="pubplot" \
-      org.opencontainers.image.version="${PUBPLOT_VERSION}" \
+ARG PUBREADY_VERSION=0.0.0
+LABEL org.opencontainers.image.title="pubready" \
+      org.opencontainers.image.version="${PUBREADY_VERSION}" \
       org.opencontainers.image.description="R and Python environment for reproducible publication-ready figures"

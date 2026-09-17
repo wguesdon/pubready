@@ -1,6 +1,6 @@
 # Python engine dependencies. statannotations pins seaborn tightly, so we let
 # the resolver choose a consistent set rather than over-constraining. The exact
-# resolved versions are frozen into /opt/pubplot/requirements.lock at build time
+# resolved versions are frozen into /opt/pubready/requirements.lock at build time
 # and, with the image digest, are the reproducibility pin.
 pandas
 numpy<2

@@ -1,6 +1,6 @@
 [project]
-name = "pubplot"
-description = "Publication-ready figures with statistics, Python engine for pubplot."
+name = "pubready"
+description = "Publication-ready figures with statistics, Python engine for pubready."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -33,14 +33,14 @@ build-backend = "hatchling.build"
 
 # The engine is loaded from the runtime mount (PYTHONPATH), not installed into
 # the image. This packaging exists for versioning, dependency declaration, and
-# pytest. Version is single-sourced from pubplot/version.py to stay in lockstep
+# pytest. Version is single-sourced from pubready/version.py to stay in lockstep
 # with the R DESCRIPTION, the root VERSION file, and the container image tag.
 [tool.hatch.version]
-path = "pubplot/version.py"
-pattern = "PUBPLOT_VERSION = ['\"](?P<version>[^'\"]+)['\"]"
+path = "pubready/version.py"
+pattern = "PUBREADY_VERSION = ['\"](?P<version>[^'\"]+)['\"]"
 
 [tool.hatch.build.targets.wheel]
-packages = ["pubplot"]
+packages = ["pubready"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

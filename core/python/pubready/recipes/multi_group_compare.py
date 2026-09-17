@@ -162,7 +162,7 @@ def _script(spec, fam, label, lv, pal, in_name, fig_stub, blabel):
                  f'sns.boxplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, palette={pal}, ax=ax, legend=False, width=0.6, fliersize=0)')
     star = 'lambda p: "****" if p<1e-4 else "***" if p<1e-3 else "**" if p<1e-2 else "*"'
     return f'''#!/usr/bin/env python3
-# Standalone reproduction. Run inside the pinned pubplot container.
+# Standalone reproduction. Run inside the pinned pubready container.
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd, seaborn as sns, pingouin as pg

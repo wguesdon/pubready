@@ -2,8 +2,8 @@ from types import SimpleNamespace
 
 import pandas as pd
 
-from pubplot.recipes.paired_compare import recipe_paired_compare
-from pubplot.spec import spec_from_args
+from pubready.recipes.paired_compare import recipe_paired_compare
+from pubready.spec import spec_from_args
 
 
 def test_paired_compare_paired_t_end_to_end():

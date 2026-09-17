@@ -1,9 +1,9 @@
-Package: pubplot
+Package: pubready
 Title: Publication-Ready Figures with Statistics, R Engine
 Version: 0.4.1
 Authors@R:
     person("William", "Guesdon", email = "wguesdon@gmail.com", role = c("aut", "cre"))
-Description: The R engine for pubplot. A curated library of parameterized recipe
+Description: The R engine for pubready. A curated library of parameterized recipe
     functions turns tidy data into a publication-ready figure with the chosen
     statistical test drawn on top, and writes a self-contained reproducibility
     bundle. Driven by the figkit CLI inside a pinned container; not intended for

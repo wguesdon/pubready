@@ -2,10 +2,10 @@
 
 container_info <- function() {
   list(
-    image          = Sys.getenv("PUBPLOT_IMAGE", "localhost/pubplot:0.4.1"),
-    image_id       = Sys.getenv("PUBPLOT_IMAGE_ID", ""),
-    digest         = Sys.getenv("PUBPLOT_IMAGE_DIGEST", ""),
-    podman_version = Sys.getenv("PUBPLOT_PODMAN_VERSION", "")
+    image          = Sys.getenv("PUBREADY_IMAGE", "localhost/pubready:0.4.1"),
+    image_id       = Sys.getenv("PUBREADY_IMAGE_ID", ""),
+    digest         = Sys.getenv("PUBREADY_IMAGE_DIGEST", ""),
+    podman_version = Sys.getenv("PUBREADY_PODMAN_VERSION", "")
   )
 }
 
@@ -31,7 +31,7 @@ run_recipe <- function(spec, raw_input, out_root, sheet = NULL, stamp = NULL) {
     data_log_steps = res$clean_steps,
     out_root       = out_root,
     container      = container_info(),
-    git_commit     = Sys.getenv("PUBPLOT_GIT_COMMIT", "unknown"),
+    git_commit     = Sys.getenv("PUBREADY_GIT_COMMIT", "unknown"),
     methods_text   = res$methods,
     build_script   = res$build_script,
     base_label     = res$label %||% spec$data$y %||% spec$data$time %||%

@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from pubplot.clean import clean_xy
+from pubready.clean import clean_xy
 
 
 def test_clean_xy_passes_clean_data_through():

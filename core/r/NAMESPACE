@@ -1,5 +1,5 @@
 # Every cross-package call in R/ is namespace-qualified (pkg::fn), so this
-# NAMESPACE only needs to export pubplot's own functions. Kept simple on
+# NAMESPACE only needs to export pubready's own functions. Kept simple on
 # purpose; regenerate with roxygen2 once function docs are added.
 exportPattern("^[^.]")
 export("%||%")

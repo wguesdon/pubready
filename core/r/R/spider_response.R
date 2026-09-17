@@ -114,7 +114,7 @@ recipe_spider_response <- function(df, spec) {
     levels(category)[levels(category) %in% plotdf$colour]
   }
   plotdf$colour <- factor(plotdf$colour, levels = levels_seen)
-  pal <- spec$appearance$palette %||% pubplot_palette
+  pal <- spec$appearance$palette %||% pubready_palette
   pal <- rep(pal, length.out = length(levels_seen))
 
   p <- ggplot2::ggplot(plotdf, ggplot2::aes(x = time, y = change,
@@ -195,7 +195,7 @@ recipe_spider_response <- function(df, spec) {
   x <- spec$data$x; y <- spec$data$y; idc <- spec$data$id
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction. Run inside the pinned pubplot container",
+    "# Standalone reproduction. Run inside the pinned pubready container",
     "# (see REPRODUCE.md) from this bundle folder.",
     "suppressPackageStartupMessages(library(ggplot2))",
     "",

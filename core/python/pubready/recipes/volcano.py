@@ -129,7 +129,7 @@ def _script(in_name, fig_stub, fc_col, p_col, lab_col, fcc, pcc, topn):
     lab_line = (f'lab = raw["{lab_col}"].astype(str).to_numpy()' if lab_col
                 else "lab = raw.index.astype(str).to_numpy()")
     return f'''#!/usr/bin/env python3
-# Standalone reproduction. Run inside the pinned pubplot container.
+# Standalone reproduction. Run inside the pinned pubready container.
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt

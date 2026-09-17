@@ -1,6 +1,6 @@
 import numpy as np
 
-from pubplot.util import cap_first, format_p, p_stars, shapiro_normal
+from pubready.util import cap_first, format_p, p_stars, shapiro_normal
 
 
 def test_cap_first():

@@ -14,7 +14,7 @@ tmp="$(mktemp -d ".determinism.XXXXXX")"
 trap 'rm -rf "$tmp"' EXIT
 
 echo "Regenerating reference bundles into $tmp (this is slow)..."
-PUBPLOT_EXPECTED_OUT="$tmp" ./tools/make_examples/generate_expected.sh >/dev/null
+PUBREADY_EXPECTED_OUT="$tmp" ./tools/make_examples/generate_expected.sh >/dev/null
 
 fail=0
 for want in example/expected/*/stats_*.csv; do

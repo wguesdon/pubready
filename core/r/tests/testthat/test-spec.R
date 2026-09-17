@@ -28,7 +28,7 @@ test_that("spec_from_opt carries the theme and defaults to the house style", {
               theme = "prism")
   expect_equal(spec_from_opt(opt)$appearance$theme, "prism")
   opt2 <- list(recipe = "two_group_compare", data = "d.csv", x = "g", y = "v")
-  expect_equal(spec_from_opt(opt2)$appearance$theme, "pubplot_house")
+  expect_equal(spec_from_opt(opt2)$appearance$theme, "pubready_house")
 })
 
 test_that("spec_from_opt carries the new data and cutoff fields", {

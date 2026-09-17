@@ -161,7 +161,7 @@ def _script(spec, r, lv, pal, in_name, fig_stub, ann):
                  f'sns.boxplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, '
                  f'palette={pal}, ax=ax, legend=False, width=0.6, fliersize=0)')
     return f'''#!/usr/bin/env python3
-# Standalone reproduction. Run inside the pinned pubplot container
+# Standalone reproduction. Run inside the pinned pubready container
 # (see REPRODUCE.md) from this bundle folder.
 import matplotlib
 matplotlib.use("Agg")

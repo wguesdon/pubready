@@ -1,8 +1,8 @@
 #!/usr/bin/env Rscript
 # Generate a paired before/after dataset for the paired_compare recipe: each
-# subject is measured under two conditions. Run once inside the pubplot container
+# subject is measured under two conditions. Run once inside the pubready container
 # from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.0 \
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:0.4.0 \
 #     Rscript tools/make_examples/make_paired_data.R
 set.seed(8)
 

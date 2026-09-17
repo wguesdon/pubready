@@ -44,7 +44,7 @@ recipe_heatmap <- function(df, spec) {
     for (cn in names(ann)) ann[[cn]] <- as.character(ann[[cn]])
     ann_cols <- lapply(names(ann), function(cn) {
       lv <- sort(unique(ann[[cn]]))
-      stats::setNames(rep(pubplot_palette, length.out = length(lv)), lv)
+      stats::setNames(rep(pubready_palette, length.out = length(lv)), lv)
     })
     names(ann_cols) <- names(ann)
     top_anno <- ComplexHeatmap::HeatmapAnnotation(
@@ -158,7 +158,7 @@ recipe_heatmap <- function(df, spec) {
 
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction. Run inside the pinned pubplot container",
+    "# Standalone reproduction. Run inside the pinned pubready container",
     "# (see REPRODUCE.md) from this bundle folder.",
     "suppressPackageStartupMessages({ library(ComplexHeatmap); library(circlize) })",
     "",

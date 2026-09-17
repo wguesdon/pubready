@@ -94,7 +94,7 @@ def _methods(n_sets, n_elem, n_inter, set_cols):
 def _script(in_name, fig_stub, set_cols, first_is_id):
     idcol = ", index_col=0" if first_is_id else ""
     return f'''#!/usr/bin/env python3
-# Standalone reproduction. Run inside the pinned pubplot container
+# Standalone reproduction. Run inside the pinned pubready container
 # (see REPRODUCE.md) from this bundle folder.
 import matplotlib
 matplotlib.use("Agg")

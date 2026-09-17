@@ -140,7 +140,7 @@ def _script(in_name, fig_stub, term_col, padj_col, count_col, ratio_col, nes_col
     count_line = (f'ct = pd.to_numeric(raw["{count_col}"], errors="coerce").to_numpy()'
                   if count_col else "ct = np.full(len(raw), 60.0)")
     return f'''#!/usr/bin/env python3
-# Standalone reproduction. Run inside the pinned pubplot container.
+# Standalone reproduction. Run inside the pinned pubready container.
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt

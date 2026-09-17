@@ -3,8 +3,8 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
-from pubplot.recipes.two_group_compare import _resolve, recipe_two_group_compare
-from pubplot.spec import spec_from_args
+from pubready.recipes.two_group_compare import _resolve, recipe_two_group_compare
+from pubready.spec import spec_from_args
 
 
 def test_resolve_picks_test_from_assumptions():

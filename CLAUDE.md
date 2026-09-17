@@ -1,9 +1,9 @@
 # Repository instructions
 
 For a publication figure request, read and follow `skills/claude-code/SKILL.md`
-before you work. It defines the pubplot workflow and it requires the
+before you work. It defines the pubready workflow and it requires the
 `./cli/figkit` command surface. The same guide is available as a project skill
-if `.claude/skills/pubplot` is linked, but read the file directly when it is not.
+if `.claude/skills/pubready` is linked, but read the file directly when it is not.
 
 For work on the repository itself, follow the rules below.
 
@@ -17,7 +17,7 @@ For work on the repository itself, follow the rules below.
 | `container/` | The `Containerfile` and the pinned R and Python dependencies. |
 | `skills/claude-code/SKILL.md` | The Claude Code adapter. |
 | `skills/codex/AGENTS.md` | The Codex adapter, linked from the root `AGENTS.md`. |
-| `skills/opencode/` | The opencode adapter and the `/pubplot` command. |
+| `skills/opencode/` | The opencode adapter and the `/pubready` command. |
 | `reference/` | The statistical decision tree and the assumption-check notes. |
 | `docs/how_it_works.md` | The full option table, one example per recipe, and the bundle contents. |
 | `example/` | The committed input data and the reference figures. |
@@ -41,7 +41,7 @@ For work on the repository itself, follow the rules below.
    the expected test is chosen.
 5. Add a new recipe to the recipe table in all three adapters, to
    `docs/how_it_works.md`, to `example/README.md` and to the smoke test.
-6. Write output only under `pubplot_output/` or a directory that `--out` names.
+6. Write output only under `pubready_output/` or a directory that `--out` names.
    These directories are ignored by git.
 7. Record a user-visible change in `CHANGELOG.md` and bump `VERSION` when the
    release goes out.

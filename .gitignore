@@ -8,8 +8,8 @@
 # Optional real-data airway benchmark output (tools/make_examples/make_volcano_airway.R).
 # Large; the committed volcano example uses the small synthetic de_results.csv instead.
 example/de_results_airway.csv
-pubplot_output/
-pubplot_demo/
+pubready_output/
+pubready_demo/
 outputs/
 figures/
 example_output/
@@ -31,7 +31,7 @@ __pycache__/
 venv/
 .ipynb_checkpoints/
 .pytest_cache/
-# uv.lock is committed on purpose: pubplot is an application, and the lock is
+# uv.lock is committed on purpose: pubready is an application, and the lock is
 # part of the reproducibility story.
 
 # Local agent settings (machine-specific, not shared)

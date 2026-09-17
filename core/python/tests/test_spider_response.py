@@ -4,8 +4,8 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
-from pubplot.recipes.spider_response import recipe_spider_response
-from pubplot.spec import spec_from_args
+from pubready.recipes.spider_response import recipe_spider_response
+from pubready.spec import spec_from_args
 
 
 def sample_spider():

@@ -12,7 +12,7 @@ opts <- list(
 opt <- parse_args(OptionParser(option_list = opts))
 if (is.null(opt$data)) stop("missing required --data")
 
-source(file.path(Sys.getenv("PUBPLOT_CORE", "/opt/pubplot/core"), "r", "bootstrap.R"))
+source(file.path(Sys.getenv("PUBREADY_CORE", "/opt/pubready/core"), "r", "bootstrap.R"))
 
 df   <- read_tidy(opt$data, opt$sheet)
 info <- inspect_data(df)

@@ -2,8 +2,8 @@ from types import SimpleNamespace
 
 import pandas as pd
 
-from pubplot.recipes.enrichment_dot import recipe_enrichment_dot
-from pubplot.spec import spec_from_args
+from pubready.recipes.enrichment_dot import recipe_enrichment_dot
+from pubready.spec import spec_from_args
 
 
 def test_enrichment_dot_ora_mode():

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# figkit: the stable command surface for pubplot. The agent calls this, not R
+# figkit: the stable command surface for pubready. The agent calls this, not R
 # or Python directly. Every command runs inside the pinned Podman image with the
 # core scripts mounted read-only, so the environment is reproducible.
 set -euo pipefail
@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CORE_DIR="$REPO_ROOT/core"
 VERSION="$(cat "$REPO_ROOT/VERSION" 2>/dev/null || echo 0.0.0)"
-IMAGE="${PUBPLOT_IMAGE:-localhost/pubplot:$VERSION}"
+IMAGE="${PUBREADY_IMAGE:-localhost/pubready:$VERSION}"
 
 usage() {
   cat <<'EOF'
@@ -43,10 +43,10 @@ Common plot options:
                                             proportions: auto|chisq|fisher)
   --paired                                 paired design
   --geom box|violin|bar|raincloud          plot geometry (comparison recipes)
-  --theme pubplot_house|prism              figure style (comparison + correlation)
+  --theme pubready_house|prism              figure style (comparison + correlation)
   --xlab, --ylab, --title                  labels
   --palette "#3B6DB3,#C1432B"              fill colors
-  --out DIR                                output root (default pubplot_output)
+  --out DIR                                output root (default pubready_output)
 
 Recipes: two_group_compare, multi_group_compare, factorial_anova,
          survival_km, cox_forest, heatmap, correlation,
@@ -71,20 +71,20 @@ container_run() {
   require_image
   podman --log-level=error run --rm \
     -v "$PWD":/work -w /work \
-    -v "$CORE_DIR":/opt/pubplot/core:ro \
-    -e PUBPLOT_CORE=/opt/pubplot/core \
-    -e PUBPLOT_IMAGE="$IMAGE" \
-    -e PUBPLOT_IMAGE_ID="$(image_id)" \
-    -e PUBPLOT_IMAGE_DIGEST="$(image_digest)" \
-    -e PUBPLOT_PODMAN_VERSION="$(podman_version)" \
-    -e PUBPLOT_GIT_COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)" \
-    -e PUBPLOT_CREATED="${PUBPLOT_CREATED:-}" \
-    -e PYTHONPATH=/opt/pubplot/core/python \
+    -v "$CORE_DIR":/opt/pubready/core:ro \
+    -e PUBREADY_CORE=/opt/pubready/core \
+    -e PUBREADY_IMAGE="$IMAGE" \
+    -e PUBREADY_IMAGE_ID="$(image_id)" \
+    -e PUBREADY_IMAGE_DIGEST="$(image_digest)" \
+    -e PUBREADY_PODMAN_VERSION="$(podman_version)" \
+    -e PUBREADY_GIT_COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)" \
+    -e PUBREADY_CREATED="${PUBREADY_CREATED:-}" \
+    -e PYTHONPATH=/opt/pubready/core/python \
     "$IMAGE" "$@"
 }
 
-run_r()  { local e="$1"; shift; container_run Rscript "/opt/pubplot/core/r/entry/${e}.R" "$@"; }
-run_py() { local e="$1"; shift; [ "$e" = "inspect" ] && e="inspect_data"; container_run python3 "/opt/pubplot/core/python/entry/${e}.py" "$@"; }
+run_r()  { local e="$1"; shift; container_run Rscript "/opt/pubready/core/r/entry/${e}.R" "$@"; }
+run_py() { local e="$1"; shift; [ "$e" = "inspect" ] && e="inspect_data"; container_run python3 "/opt/pubready/core/python/entry/${e}.py" "$@"; }
 
 # Run both engines' unit suites inside the image against the mounted source, so
 # the tested code is exactly what figkit runs. core is mounted read-only.
@@ -92,20 +92,20 @@ run_tests() {
   require_image
   echo "== R engine (testthat) =="
   podman --log-level=error run --rm \
-    -v "$CORE_DIR":/opt/pubplot/core:ro \
-    -e PUBPLOT_CORE=/opt/pubplot/core \
-    -e PUBPLOT_CORE_R=/opt/pubplot/core/r \
-    "$IMAGE" Rscript /opt/pubplot/core/r/tests/run_tests.R
+    -v "$CORE_DIR":/opt/pubready/core:ro \
+    -e PUBREADY_CORE=/opt/pubready/core \
+    -e PUBREADY_CORE_R=/opt/pubready/core/r \
+    "$IMAGE" Rscript /opt/pubready/core/r/tests/run_tests.R
   echo
   echo "== Python engine (pytest) =="
   podman --log-level=error run --rm \
-    -v "$CORE_DIR":/opt/pubplot/core:ro \
-    -e PYTHONPATH=/opt/pubplot/core/python \
-    "$IMAGE" python3 -m pytest /opt/pubplot/core/python/tests -q -p no:cacheprovider
+    -v "$CORE_DIR":/opt/pubready/core:ro \
+    -e PYTHONPATH=/opt/pubready/core/python \
+    "$IMAGE" python3 -m pytest /opt/pubready/core/python/tests -q -p no:cacheprovider
 }
 
 show_version() {
-  echo "pubplot $VERSION"
+  echo "pubready $VERSION"
   if podman image exists "$IMAGE" 2>/dev/null; then
     echo "image:  $IMAGE"
     echo "id:     $(image_id)"
@@ -141,7 +141,7 @@ case "$cmd" in
   render)   dispatch render   "$@" ;;
   build)
     podman build -t "$IMAGE" \
-      --build-arg "PUBPLOT_VERSION=$VERSION" \
+      --build-arg "PUBREADY_VERSION=$VERSION" \
       -f "$REPO_ROOT/container/Containerfile" "$REPO_ROOT"
     ;;
   test)    run_tests ;;
@@ -150,8 +150,8 @@ case "$cmd" in
     require_image
     podman --log-level=error run --rm -it \
       -v "$PWD":/work -w /work \
-      -v "$CORE_DIR":/opt/pubplot/core:ro \
-      -e PUBPLOT_CORE=/opt/pubplot/core \
+      -v "$CORE_DIR":/opt/pubready/core:ro \
+      -e PUBREADY_CORE=/opt/pubready/core \
       "$IMAGE" bash
     ;;
   ""|-h|--help|help) usage ;;

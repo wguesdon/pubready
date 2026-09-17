@@ -59,7 +59,7 @@ recipe_paired_compare <- function(df, spec) {
     data.frame(id = m$id, cond = lv[2], v = m$v2, stringsAsFactors = FALSE))
   plong$cond <- factor(plong$cond, levels = lv)
 
-  pal <- spec$appearance$palette %||% pubplot_palette[seq_len(2)]
+  pal <- spec$appearance$palette %||% pubready_palette[seq_len(2)]
   star <- if (is.na(pval)) "ns" else if (pval < 0.001) "***" else
           if (pval < 0.01) "**" else if (pval < 0.05) "*" else "ns"
   blabel <- spec$appearance$bracket$label %||% "p.signif"
@@ -122,7 +122,7 @@ recipe_paired_compare <- function(df, spec) {
   } else "res <- wilcox.test(m$v2, m$v1, paired = TRUE, exact = FALSE)"
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction. Run inside the pinned pubplot container.",
+    "# Standalone reproduction. Run inside the pinned pubready container.",
     "suppressPackageStartupMessages({ library(ggplot2); library(ggpubr) })",
     "",
     sprintf('raw <- read.csv("%s", check.names = FALSE)', in_name),

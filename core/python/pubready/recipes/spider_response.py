@@ -236,7 +236,7 @@ def _script(spec, in_name, fig_stub, pd_cut, pr_cut):
     """
     x, y, idc = spec["data"]["x"], spec["data"]["y"], spec["data"]["id"]
     return f'''#!/usr/bin/env python3
-# Standalone reproduction. Run inside the pinned pubplot container.
+# Standalone reproduction. Run inside the pinned pubready container.
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt

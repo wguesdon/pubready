@@ -51,7 +51,7 @@ recipe_pca <- function(df, spec) {
 
   perm <- .permanova(scale(mat), grp, nperm = 999, seed = 1)
 
-  pal <- spec$appearance$palette %||% pubplot_palette
+  pal <- spec$appearance$palette %||% pubready_palette
   pal <- rep(pal, length.out = nlevels(grp))
   psub <- sprintf("PERMANOVA: F = %.2f, p = %s", perm$F, formatC(perm$p, format = "g", digits = 2))
 
@@ -102,7 +102,7 @@ recipe_pca <- function(df, spec) {
 .pca_emit_script <- function(grp_col, feat_cols, in_name, fig_stub) {
   c(
     "#!/usr/bin/env Rscript",
-    "# Standalone reproduction. Run inside the pinned pubplot container.",
+    "# Standalone reproduction. Run inside the pinned pubready container.",
     "suppressPackageStartupMessages(library(ggplot2))",
     "",
     sprintf('raw <- read.csv("%s", check.names = FALSE)', in_name),

@@ -3,8 +3,8 @@
 # expression table shaped like a DESeq2 result. Deterministic (seeded) and base
 # R only, so it is cheap to regenerate and keeps the repo light. The columns
 # match what the volcano recipe auto-detects: gene, log2FoldChange, pvalue, padj.
-# Run once inside the pubplot container from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubplot:0.4.1 \
+# Run once inside the pubready container from the repo root:
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:0.4.1 \
 #     Rscript tools/make_examples/make_volcano_data.R
 #
 # For the genuine airway benchmark instead, see make_volcano_airway.R.

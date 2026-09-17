@@ -138,7 +138,7 @@ def _script(spec, r, color, in_name, fig_stub):
     x, y = spec["data"]["x"], spec["data"]["y"]
     ap = spec["appearance"]
     return f'''#!/usr/bin/env python3
-# Standalone reproduction. Run inside the pinned pubplot container
+# Standalone reproduction. Run inside the pinned pubready container
 # (see REPRODUCE.md) from this bundle folder.
 import matplotlib
 matplotlib.use("Agg")

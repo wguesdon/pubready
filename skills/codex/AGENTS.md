@@ -1,6 +1,6 @@
-# pubplot (Codex adapter)
+# pubready (Codex adapter)
 
-When the user has tidy data and wants a publication figure, use pubplot. It makes
+When the user has tidy data and wants a publication figure, use pubready. It makes
 a publication-ready figure with the statistical test drawn on top. A small
 library of tested, parameterized recipes
 does the plotting and the statistics. Your job is to choose the right test with
@@ -38,7 +38,7 @@ If a command reports the image is missing, run `figkit build` first.
    large n), so the QQ plot is the tiebreaker.
 4. Call `figkit plot` with the recipe and columns. Leave `--test auto` unless a test
    is forced. The bundle also includes the QC panel (`qc_normality_<ts>.png`).
-5. Point them at the bundle folder under `pubplot_output/`: the figure, the
+5. Point them at the bundle folder under `pubready_output/`: the figure, the
    standalone script, the stats table, the input copy, and a methods paragraph.
 6. To restyle, edit `plot_config.yaml` in the bundle and run `figkit render`. It
    recomputes the statistics, so the figure and the numbers never drift apart.
@@ -67,7 +67,7 @@ Common options: `--engine r|python` (default r), `--geom box|violin|bar|rainclou
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
 `pearson|spearman|kendall`; proportions: `chisq|fisher`), `--scale`/`--cluster`
 (heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n` (volcano), `--id --group --label`,
-`--theme pubplot_house|prism`, `--xlab --ylab --title --palette`, `--out DIR`.
+`--theme pubready_house|prism`, `--xlab --ylab --title --palette`, `--out DIR`.
 
 ## Choosing the test
 
