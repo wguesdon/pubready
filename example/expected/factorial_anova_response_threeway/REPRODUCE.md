@@ -5,10 +5,10 @@ environment it was made in:
 
 ## 1. Get the pinned environment
 
-- Container image: `localhost/pubplot:0.4.1`
-- Image id: `de93d6bacf2e827e806f040319b0b20ea7dc1f65c20388406bf4343fb26e2667`
-- Image digest: `sha256:e47e117619ee83ef8194b4a007960cce130937a5827590cff65f0330f817ba25`
-- pubplot commit: `d3cf89a`
+- Container image: `localhost/pubready:0.4.1`
+- Image id: `c6b5111edf89b3fa4919d18a52fe9f5c45ce02c5fba5672bbb6d97e988739a0e`
+- Image digest: `sha256:76bf116bce220b1a3d874fbf11ece1cf172bf558a2cdf835434a94626f1b97a8`
+- pubready commit: `25f0328`
 
 ## 2. Run the standalone script
 
@@ -16,7 +16,7 @@ From inside this folder:
 
 ```bash
 podman run --rm -v "$PWD":/work -w /work \
-  localhost/pubplot:0.4.1 Rscript script_threeway.R
+  localhost/pubready:0.4.1 Rscript script_threeway.R
 ```
 
 The script reads the bundled input copy, reruns the same test, and redraws

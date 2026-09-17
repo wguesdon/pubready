@@ -22,7 +22,7 @@ test:
   paired: no
   p_adjust: none
 appearance:
-  theme: pubplot_house
+  theme: pubready_house
   palette: ~
   x_label: ~
   y_label: ~
@@ -40,3 +40,5 @@ appearance:
   fc_cutoff: 1.0
   p_cutoff: 0.05
   top_n: 15.0
+  pd_threshold: 20.0
+  pr_threshold: -30.0

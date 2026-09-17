@@ -5,9 +5,9 @@ environment it was made in:
 
 ## 1. Get the pinned environment
 
-- Container image: `localhost/pubplot:0.4.1`
-- Image id: `4db9054289ed8c3ad23c6e14c7328d47cfba2ecaf29e993caaa92fc6f11a5c2c`
-- pubplot commit: `c55152b`
+- Container image: `localhost/pubready:0.4.1`
+- Image id: `c6b5111edf89b3fa4919d18a52fe9f5c45ce02c5fba5672bbb6d97e988739a0e`
+- pubready commit: `25f0328`
 
 ## 2. Run the standalone script
 
@@ -15,7 +15,7 @@ From inside this folder:
 
 ```bash
 podman run --rm -v "$PWD":/work -w /work \
-  localhost/pubplot:0.4.1 python3 script_spider_py.py
+  localhost/pubready:0.4.1 python3 script_spider_py.py
 ```
 
 The script reads the bundled input copy, reruns the analysis, and redraws

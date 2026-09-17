@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# Standalone reproduction. Run inside the pinned pubplot container
+# Standalone reproduction. Run inside the pinned pubready container
 # (see REPRODUCE.md) from this bundle folder.
 suppressPackageStartupMessages({ library(ComplexHeatmap); library(circlize) })
 

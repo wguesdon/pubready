@@ -36,3 +36,5 @@ appearance:
   fc_cutoff: 1.0
   p_cutoff: 0.05
   top_n: 15.0
+  pd_threshold: 20.0
+  pr_threshold: -30.0

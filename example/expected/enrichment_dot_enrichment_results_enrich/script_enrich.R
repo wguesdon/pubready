@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# Standalone reproduction. Run inside the pinned pubplot container.
+# Standalone reproduction. Run inside the pinned pubready container.
 suppressPackageStartupMessages(library(ggplot2))
 
 raw <- read.csv("input_enrichment_results.csv", check.names = FALSE)

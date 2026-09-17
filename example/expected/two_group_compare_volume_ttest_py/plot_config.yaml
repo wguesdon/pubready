@@ -18,7 +18,7 @@ test:
   paired: false
   p_adjust: none
 appearance:
-  theme: pubplot_house
+  theme: pubready_house
   palette: null
   x_label: Group
   y_label: Tumor volume (mm^3)
@@ -36,3 +36,5 @@ appearance:
   fc_cutoff: 1.0
   p_cutoff: 0.05
   top_n: 15
+  pd_threshold: 20.0
+  pr_threshold: -30.0

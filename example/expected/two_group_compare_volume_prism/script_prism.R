@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# Standalone reproduction of this figure. Run inside the pinned pubplot
+# Standalone reproduction of this figure. Run inside the pinned pubready
 # container (see REPRODUCE.md) from this bundle folder.
 suppressPackageStartupMessages({
   library(ggplot2); library(ggpubr); library(rstatix); library(readr)

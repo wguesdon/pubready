@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Standalone reproduction. Run inside the pinned pubplot container.
+# Standalone reproduction. Run inside the pinned pubready container.
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd, seaborn as sns, pingouin as pg

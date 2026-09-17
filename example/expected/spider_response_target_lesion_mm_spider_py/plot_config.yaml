@@ -18,7 +18,7 @@ test:
   paired: false
   p_adjust: none
 appearance:
-  theme: pubplot_house
+  theme: pubready_house
   palette: null
   x_label: Week
   y_label: null
