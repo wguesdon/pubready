@@ -10,6 +10,34 @@ on the host are **Podman** and **git**. The `./cli/figkit` command is a bash
 script, so you also need a POSIX shell: native on Linux and macOS, and WSL2 on
 Windows.
 
+### AWS SageMaker notebooks
+
+Use the notebook terminal to run the command line workflow. The container supports
+both `amd64` instances and `arm64` Graviton instances.
+
+Run this script if you also want Quarto in the notebook environment:
+
+```bash
+./scripts/install_quarto.sh
+export PATH="$HOME/.local/bin:$PATH"
+quarto --version
+```
+
+The script installs Quarto 1.11.4 under `$HOME/.local`. It does not require root
+access. The script verifies the downloaded archive before it installs Quarto.
+
+Build the image with rootless Podman, and then run `figkit` from the terminal:
+
+```bash
+./cli/figkit build
+./cli/figkit plot --recipe two_group_compare \
+  --data example/tumor_volume.csv --x group --y volume
+```
+
+Each generated bundle contains `report.qmd`, `report.html`, and
+`report_provenance.json`. The HTML report contains its images and other resources.
+The report command stops when the repository contains an untracked file.
+
 ### 1. Install Podman
 
 **Ubuntu / Debian**
@@ -98,8 +126,8 @@ opencode run --auto -m openrouter/openai/gpt-oss-120b \
   "Using pubready, compare tumor volume between the two groups in example/tumor_volume.csv."
 ```
 
-Each run writes a self-contained bundle under `pubready_output/` with the figure,
-its stats table, a runnable script, and a manifest.
+Each run writes a self-contained bundle under `pubready_output/`. The bundle
+contains the figure, statistics, a runnable script, a manifest, and a Quarto report.
 
 ## Tested models
 

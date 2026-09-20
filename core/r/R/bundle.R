@@ -259,6 +259,154 @@ reproduce_md <- function(container, git_commit, script_name) {
   )
 }
 
+report_escape_column <- function(column) {
+  column[is.na(column)] <- ""
+  gsub("|", "\\\\|", as.character(column), fixed = TRUE)
+}
+
+report_markdown_row <- function(row) {
+  paste0("| ", paste(row, collapse = " | "), " |")
+}
+
+report_markdown_table <- function(frame, limit = 100L) {
+  shown <- utils::head(frame, limit)
+  shown[] <- lapply(shown, report_escape_column)
+  header <- paste0("| ", paste(names(shown), collapse = " | "), " |")
+  rule <- paste0("| ", paste(rep("---", ncol(shown)), collapse = " | "), " |")
+  rows <- apply(shown, 1L, report_markdown_row)
+  paste(c(header, rule, rows), collapse = "\n")
+}
+
+report_git_dirty <- function() {
+  value <- Sys.getenv("PUBREADY_GIT_DIRTY", unset = "not_recorded")
+  if (value == "true") return(TRUE)
+  if (value == "false") return(FALSE)
+  value
+}
+
+report_provenance_text <- function(value) {
+  if (length(value) == 1L) return(as.character(value))
+  jsonlite::toJSON(value, auto_unbox = TRUE, null = "null")
+}
+
+build_report_provenance <- function(spec, container, git_commit, created,
+                                    in_name, sums) {
+  list(
+    repository = "pubready",
+    repository_version = PUBREADY_VERSION,
+    git_commit = git_commit,
+    git_dirty = report_git_dirty(),
+    llm_provider = Sys.getenv("PUBREADY_LLM_PROVIDER", unset = "none"),
+    llm_model = Sys.getenv("PUBREADY_LLM_MODEL", unset = "none"),
+    agent_harness = Sys.getenv("PUBREADY_AGENT_HARNESS", unset = "manual"),
+    agent_harness_version = Sys.getenv(
+      "PUBREADY_AGENT_HARNESS_VERSION",
+      unset = "not_recorded"
+    ),
+    container_image = container$image,
+    container_digest = container$digest %||% "not_recorded",
+    input = list(file = in_name, md5 = sums$md5, sha256 = sums$sha256),
+    command = paste("figkit plot --recipe", spec$recipe),
+    analysis_options = spec,
+    random_seeds = spec$seed %||% "not_applicable",
+    session_record = "session_info.txt",
+    created_utc = created,
+    review_state = "not_applicable",
+    reviewer = "none",
+    quarto_version = "1.11.4"
+  )
+}
+
+report_callout <- function(provenance) {
+  if (provenance$llm_model == "none") {
+    return("A manual command generated this report without an LLM model.")
+  }
+  paste0(
+    "An LLM generated this report through the `",
+    provenance$agent_harness,
+    "` agent harness."
+  )
+}
+
+write_quarto_report <- function(bdir, spec, stats_df, methods_text, fig_stub,
+                                provenance) {
+  jsonlite::write_json(
+    provenance,
+    file.path(bdir, "report_provenance.json"),
+    pretty = TRUE,
+    auto_unbox = TRUE,
+    null = "null"
+  )
+  provenance_frame <- data.frame(
+    field = names(provenance),
+    value = vapply(provenance, report_provenance_text, character(1)),
+    stringsAsFactors = FALSE
+  )
+  model <- jsonlite::toJSON(provenance$llm_model, auto_unbox = TRUE)
+  harness <- jsonlite::toJSON(provenance$agent_harness, auto_unbox = TRUE)
+  lines <- c(
+    "---",
+    'title: "Publication figure report"',
+    "author:",
+    paste0("  - name: ", model),
+    "    affiliations:",
+    paste0("      - name: ", harness),
+    "format:",
+    "  html:",
+    "    embed-resources: true",
+    "    toc: true",
+    "---",
+    "",
+    "::: {.callout-important}",
+    report_callout(provenance),
+    "No separate human scientific review is part of this fixed recipe.",
+    "The report records the selected recipe and does not claim a new method.",
+    ":::",
+    "",
+    "## Figure",
+    "",
+    paste0("![Publication figure](", fig_stub, ".png)"),
+    "",
+    "## Statistical results",
+    "",
+    report_markdown_table(stats_df),
+    "",
+    "## Methods",
+    "",
+    methods_text,
+    "",
+    "## Plot configuration",
+    "",
+    "The complete plot configuration is in `plot_config.yaml`.",
+    "",
+    "## Provenance",
+    "",
+    report_markdown_table(provenance_frame),
+    "",
+    "The report source reads only files in this bundle."
+  )
+  writeLines(lines, file.path(bdir, "report.qmd"), useBytes = TRUE)
+  old_directory <- getwd()
+  on.exit(setwd(old_directory), add = TRUE)
+  setwd(bdir)
+  status <- system2(
+    "quarto",
+    c("render", "report.qmd", "--to", "html", "--output", "report.html")
+  )
+  if (status != 0L || !file.exists("report.html")) {
+    stop("Quarto did not create report.html.")
+  }
+  c("report.qmd", "report.html", "report_provenance.json")
+}
+
+report_output_record <- function(path) {
+  list(
+    file = basename(path),
+    bytes = unname(file.info(path)$size),
+    sha256 = digest::digest(path, algo = "sha256", file = TRUE)
+  )
+}
+
 write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df,
                          test_meta, data_log_steps, out_root, container,
                          git_commit, methods_text, build_script, base_label,
@@ -323,11 +471,6 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
                           list(sprintf("qc_normality_%s.png", ts),
                                sprintf("qc_normality_%s.pdf", ts)))
   }
-  writeLines(
-    jsonlite::toJSON(manifest, auto_unbox = TRUE, pretty = TRUE, na = "null", digits = 6),
-    file.path(bdir, sprintf("manifest_%s.json", ts))
-  )
-
   writeLines(methods_text, file.path(bdir, sprintf("methods_%s.md", ts)))
 
   script_name <- sprintf("script_%s.R", ts)
@@ -335,6 +478,37 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
 
   writeLines(reproduce_md(container, git_commit, script_name),
              file.path(bdir, "REPRODUCE.md"))
+
+  provenance <- build_report_provenance(
+    spec,
+    container,
+    git_commit,
+    created,
+    in_name,
+    sums
+  )
+  report_outputs <- write_quarto_report(
+    bdir,
+    spec,
+    stats_df,
+    methods_text,
+    fig_stub,
+    provenance
+  )
+  manifest$outputs <- c(manifest$outputs, as.list(report_outputs))
+  output_paths <- file.path(bdir, unlist(manifest$outputs))
+  output_paths <- output_paths[file.exists(output_paths)]
+  manifest$output_checksums <- lapply(output_paths, report_output_record)
+  writeLines(
+    jsonlite::toJSON(
+      manifest,
+      auto_unbox = TRUE,
+      pretty = TRUE,
+      na = "null",
+      digits = 6
+    ),
+    file.path(bdir, sprintf("manifest_%s.json", ts))
+  )
 
   bdir
 }

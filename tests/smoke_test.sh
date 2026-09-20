@@ -13,6 +13,7 @@ expect_files=(
   "stats_*.csv" "manifest_*.json" "methods_*.md"
   "data_log.md" "plot_config.yaml" "session_info.txt"
   "REPRODUCE.md" "script_*" "input_*"
+  "report.qmd" "report.html" "report_provenance.json"
 )
 
 check_bundle() {  # $1 = output root, $2 = label

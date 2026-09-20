@@ -2,11 +2,13 @@
 layout as the R engine, tagged engine = "python"."""
 import copy
 import datetime
+import hashlib
 import json
 import os
 import platform
 import re
 import shutil
+import subprocess
 from importlib.metadata import distributions
 from importlib.metadata import version as _pkgver
 
@@ -62,6 +64,216 @@ def save_figure(fig, d, stub, w, h):
     for ext in ("pdf", "png", "svg"):
         fig.savefig(os.path.join(d, f"{stub}.{ext}"),
                     dpi=300, bbox_inches="tight", facecolor="white")
+
+
+def _markdown_value(value):
+    """Escape one Markdown table value.
+
+    Args:
+        value: The value to format.
+
+    Returns:
+        The escaped text.
+    """
+    if value is None:
+        return ""
+    return str(value).replace("|", r"\|").replace("\n", " ")
+
+
+def dataframe_markdown(frame, limit=100):
+    """Convert a data frame to a small Markdown table.
+
+    Args:
+        frame: The pandas data frame.
+        limit: The maximum row count.
+
+    Returns:
+        A Markdown table.
+    """
+    shown = frame.head(limit)
+    headers = [_markdown_value(column) for column in shown.columns]
+    lines = [
+        "| " + " | ".join(headers) + " |",
+        "| " + " | ".join(["---"] * len(headers)) + " |",
+    ]
+    for row in shown.itertuples(index=False, name=None):
+        lines.append("| " + " | ".join(_markdown_value(value) for value in row) + " |")
+    return "\n".join(lines)
+
+
+def _git_dirty():
+    """Read the recorded repository dirty state."""
+    value = os.environ.get("PUBREADY_GIT_DIRTY", "not_recorded")
+    if value in {"true", "false"}:
+        return value == "true"
+    return value
+
+
+def _report_provenance(spec, container, git_commit, created, in_name, sums):
+    """Build the shared report provenance record.
+
+    Args:
+        spec: The resolved recipe specification.
+        container: The container record.
+        git_commit: The source commit.
+        created: The creation time.
+        in_name: The bundled input name.
+        sums: The input checksums.
+
+    Returns:
+        The provenance record.
+    """
+    return {
+        "repository": "pubready",
+        "repository_version": PUBREADY_VERSION,
+        "git_commit": git_commit,
+        "git_dirty": _git_dirty(),
+        "llm_provider": os.environ.get("PUBREADY_LLM_PROVIDER", "none"),
+        "llm_model": os.environ.get("PUBREADY_LLM_MODEL", "none"),
+        "agent_harness": os.environ.get("PUBREADY_AGENT_HARNESS", "manual"),
+        "agent_harness_version": os.environ.get(
+            "PUBREADY_AGENT_HARNESS_VERSION", "not_recorded"
+        ),
+        "container_image": container.get("image", "unknown"),
+        "container_digest": container.get("digest") or "not_recorded",
+        "input": {"file": in_name, **sums},
+        "command": f"figkit plot --recipe {spec['recipe']}",
+        "analysis_options": spec,
+        "random_seeds": spec.get("seed", "not_applicable"),
+        "session_record": "session_info.txt",
+        "created_utc": created,
+        "review_state": "not_applicable",
+        "reviewer": "none",
+        "quarto_version": "1.11.4",
+    }
+
+
+def _provenance_frame(provenance):
+    """Convert provenance to a two column data frame.
+
+    Args:
+        provenance: The report provenance record.
+
+    Returns:
+        A pandas data frame.
+    """
+    import pandas as pd
+
+    values = []
+    for value in provenance.values():
+        if isinstance(value, (dict, list)):
+            values.append(json.dumps(value, default=_json_default))
+        else:
+            values.append(value)
+    return pd.DataFrame({"field": provenance.keys(), "value": values})
+
+
+def write_quarto_report(bdir, spec, stats_df, methods_text, fig_stub, provenance):
+    """Write and render one self contained Quarto report.
+
+    Args:
+        bdir: The bundle directory.
+        spec: The resolved recipe specification.
+        stats_df: The saved result values.
+        methods_text: The exact methods paragraph.
+        fig_stub: The figure file stem.
+        provenance: The shared provenance record.
+
+    Returns:
+        The report output names.
+
+    Raises:
+        RuntimeError: If Quarto does not render the report.
+    """
+    provenance_path = os.path.join(bdir, "report_provenance.json")
+    with open(provenance_path, "w") as stream:
+        json.dump(provenance, stream, indent=2, default=_json_default)
+    model = json.dumps(provenance["llm_model"])
+    harness = json.dumps(provenance["agent_harness"])
+    if provenance["llm_model"] == "none":
+        callout = "A manual command generated this report without an LLM model."
+    else:
+        callout = (
+            f"An LLM generated this report through the `{provenance['agent_harness']}` "
+            "agent harness."
+        )
+    qmd = f'''---
+title: "Publication figure report"
+author:
+  - name: {model}
+    affiliations:
+      - name: {harness}
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {{.callout-important}}
+{callout}
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new statistical method.
+:::
+
+## Figure
+
+![Publication figure]({fig_stub}.png)
+
+## Statistical results
+
+{dataframe_markdown(stats_df)}
+
+## Methods
+
+{methods_text.strip()}
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+{dataframe_markdown(_provenance_frame(provenance))}
+
+The report source reads only files in this bundle.
+'''
+    with open(os.path.join(bdir, "report.qmd"), "w") as stream:
+        stream.write(qmd)
+    completed = subprocess.run(
+        ["quarto", "render", "report.qmd", "--to", "html", "--output", "report.html"],
+        cwd=bdir,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(f"Quarto did not create report.html: {completed.stderr.strip()}")
+    return ["report.qmd", "report.html", "report_provenance.json"]
+
+
+def output_checksums(bdir, names):
+    """Calculate SHA256 checksums for bundle outputs.
+
+    Args:
+        bdir: The bundle directory.
+        names: The relative output names.
+
+    Returns:
+        Output checksum records.
+    """
+    records = []
+    for name in names:
+        path = os.path.join(bdir, name)
+        if not os.path.isfile(path):
+            continue
+        digest = hashlib.sha256()
+        with open(path, "rb") as stream:
+            block = stream.read(1024 * 1024)
+            while block:
+                digest.update(block)
+                block = stream.read(1024 * 1024)
+        records.append({"file": name, "bytes": os.path.getsize(path), "sha256": digest.hexdigest()})
+    return records
 
 
 def write_data_log(path, raw, in_name, sums, df_used, steps):
@@ -252,6 +464,17 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
     manifest["outputs"].append(f"packages_{ts}.txt")
     if result.get("qc"):
         manifest["outputs"] += [f"qc_normality_{ts}.png", f"qc_normality_{ts}.pdf"]
+    provenance = _report_provenance(spec, container, git_commit, created, in_name, sums)
+    report_outputs = write_quarto_report(
+        bdir,
+        spec,
+        result["stats"],
+        result["methods"],
+        fig_stub,
+        provenance,
+    )
+    manifest["outputs"] += report_outputs
+    manifest["output_checksums"] = output_checksums(bdir, manifest["outputs"])
     with open(os.path.join(bdir, f"manifest_{ts}.json"), "w") as f:
         json.dump(manifest, f, indent=2, default=_json_default)
 

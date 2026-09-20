@@ -3,6 +3,9 @@
 # pubready git commit recorded in each bundle's manifest.
 FROM docker.io/rocker/r-ver:4.4.1
 
+ARG QUARTO_VERSION=1.11.4
+ARG TARGETARCH
+
 # System libraries: build deps for R graphics packages, plus Python.
 RUN apt-get update && apt-get install -y --no-install-recommends \
       curl ca-certificates \
@@ -12,6 +15,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libharfbuzz-dev libfribidi-dev \
       pandoc \
  && rm -rf /var/lib/apt/lists/*
+
+# Quarto uses the matching Linux archive on Intel and AWS Graviton hosts.
+RUN architecture="${TARGETARCH:-}" \
+ && if [ -z "$architecture" ]; then architecture="$(uname -m)"; fi \
+ && case "$architecture" in \
+      amd64|x86_64) architecture="amd64" ;; \
+      arm64|aarch64) architecture="arm64" ;; \
+      *) echo "Unsupported architecture: $architecture" >&2; exit 1 ;; \
+    esac \
+ && base_url="https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}" \
+ && curl -fsSL -o /tmp/quarto.tar.gz "$base_url/quarto-${QUARTO_VERSION}-linux-${architecture}.tar.gz" \
+ && curl -fsSL -o /tmp/quarto-checksums.txt "$base_url/quarto-${QUARTO_VERSION}-checksums.txt" \
+ && expected="$(awk -v file="quarto-${QUARTO_VERSION}-linux-${architecture}.tar.gz" '$2 == file {print $1}' /tmp/quarto-checksums.txt)" \
+ && actual="$(sha256sum /tmp/quarto.tar.gz | awk '{print $1}')" \
+ && test -n "$expected" \
+ && test "$actual" = "$expected" \
+ && mkdir -p /opt/quarto \
+ && tar -xzf /tmp/quarto.tar.gz -C /opt/quarto --strip-components=1 \
+ && ln -s /opt/quarto/bin/quarto /usr/local/bin/quarto \
+ && quarto --version \
+ && rm -f /tmp/quarto.tar.gz /tmp/quarto-checksums.txt
 
 # R packages. rocker/r-ver pins the Posit Package Manager snapshot to the R
 # release date, so these installs are reproducible and use binary builds.

@@ -26,6 +26,10 @@ Usage:
 
 Common plot options:
   --engine r|python                        recipe engine (default r)
+  --llm-provider NAME                     LLM provider recorded in the report
+  --llm-model NAME                        LLM model recorded in the report
+  --agent-harness NAME                    agent harness recorded in the report
+  --agent-harness-version VERSION         agent harness version in the report
   --x, --y                                 axis columns (tidy data)
   --fill, --facet                          extra factors (factorial_anova)
   --time, --event                          survival columns (1 = event, 0 = censored)
@@ -59,6 +63,59 @@ image_id()      { podman image inspect --format '{{.Id}}'     "$IMAGE" 2>/dev/nu
 image_digest()  { podman image inspect --format '{{.Digest}}' "$IMAGE" 2>/dev/null || echo ""; }
 podman_version(){ podman --version 2>/dev/null | awk '{print $3}'; }
 
+git_dirty() {
+  if [ -n "$(git -C "$REPO_ROOT" status --porcelain 2>/dev/null)" ]; then
+    echo true
+  else
+    echo false
+  fi
+}
+
+require_tracked_report_source() {
+  if ! git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "Report generation requires a Git checkout." >&2
+    exit 1
+  fi
+  local untracked
+  untracked="$(git -C "$REPO_ROOT" ls-files --others --exclude-standard)"
+  if [ -n "$untracked" ]; then
+    echo "Report generation stopped because the repository has untracked files:" >&2
+    printf '%s\n' "$untracked" >&2
+    exit 1
+  fi
+}
+
+REPORT_LLM_PROVIDER="none"
+REPORT_LLM_MODEL="none"
+REPORT_AGENT_HARNESS="manual"
+REPORT_AGENT_HARNESS_VERSION="not_recorded"
+REPORT_ARGS=()
+
+parse_report_options() {
+  REPORT_ARGS=()
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --llm-provider|--llm-model|--agent-harness|--agent-harness-version)
+        if [ "$#" -lt 2 ]; then
+          echo "Missing value for $1." >&2
+          exit 1
+        fi
+        case "$1" in
+          --llm-provider) REPORT_LLM_PROVIDER="$2" ;;
+          --llm-model) REPORT_LLM_MODEL="$2" ;;
+          --agent-harness) REPORT_AGENT_HARNESS="$2" ;;
+          --agent-harness-version) REPORT_AGENT_HARNESS_VERSION="$2" ;;
+        esac
+        shift 2
+        ;;
+      *)
+        REPORT_ARGS+=("$1")
+        shift
+        ;;
+    esac
+  done
+}
+
 require_image() {
   if ! podman image exists "$IMAGE"; then
     echo "Image '$IMAGE' not found. Build it first: figkit build" >&2
@@ -77,7 +134,12 @@ container_run() {
     -e PUBREADY_IMAGE_ID="$(image_id)" \
     -e PUBREADY_IMAGE_DIGEST="$(image_digest)" \
     -e PUBREADY_PODMAN_VERSION="$(podman_version)" \
-    -e PUBREADY_GIT_COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)" \
+    -e PUBREADY_GIT_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo unknown)" \
+    -e PUBREADY_GIT_DIRTY="$(git_dirty)" \
+    -e PUBREADY_LLM_PROVIDER="$REPORT_LLM_PROVIDER" \
+    -e PUBREADY_LLM_MODEL="$REPORT_LLM_MODEL" \
+    -e PUBREADY_AGENT_HARNESS="$REPORT_AGENT_HARNESS" \
+    -e PUBREADY_AGENT_HARNESS_VERSION="$REPORT_AGENT_HARNESS_VERSION" \
     -e PUBREADY_CREATED="${PUBREADY_CREATED:-}" \
     -e PYTHONPATH=/opt/pubready/core/python \
     "$IMAGE" "$@"
@@ -129,7 +191,15 @@ engine_of() {
 
 dispatch() {
   local cmd="$1"; shift
-  if [ "$(engine_of "$@")" = "python" ]; then run_py "$cmd" "$@"; else run_r "$cmd" "$@"; fi
+  if [ "$cmd" = "plot" ] || [ "$cmd" = "render" ]; then
+    require_tracked_report_source
+  fi
+  parse_report_options "$@"
+  if [ "$(engine_of "${REPORT_ARGS[@]}")" = "python" ]; then
+    run_py "$cmd" "${REPORT_ARGS[@]}"
+  else
+    run_r "$cmd" "${REPORT_ARGS[@]}"
+  fi
 }
 
 cmd="${1:-}"; [ $# -gt 0 ] && shift || true
