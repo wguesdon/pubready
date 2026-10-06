@@ -1,0 +1,46 @@
+engine: python
+recipe: forest_meta
+data:
+  file: input_hazard_ratio.csv
+  x: null
+  y: hazard_ratio
+  fill: null
+  facet: null
+  time: null
+  event: null
+  annotation: null
+  covariates: null
+  id: null
+  group: null
+  label: trial
+  positive: null
+  se: null
+  ci_low: ci_low
+  ci_high: ci_high
+  measure: null
+  markers: null
+test:
+  method: auto
+  paired: false
+  p_adjust: none
+appearance:
+  theme: pubready_house
+  palette: null
+  x_label: Hazard ratio (95% CI, log scale)
+  y_label: null
+  title: null
+  y_limits:
+  - null
+  - null
+  show_points: true
+  geom: box
+  bracket:
+    show: true
+    label: p.signif
+  scale: row
+  cluster: both
+  fc_cutoff: 1.0
+  p_cutoff: 0.05
+  top_n: 15
+  pd_threshold: 20.0
+  pr_threshold: -30.0

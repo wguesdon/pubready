@@ -1,0 +1,134 @@
+{
+  "pubready_version": "0.4.1",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "dose_response",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "concentration_um",
+    "y": "viability_pct",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_viability_pct.csv",
+    "original_name": "dose_response.csv",
+    "md5": "065caf43fa8bffd4422569a6a1bbece0",
+    "sha256": "c6b98694438d373a93c7934f5421def4892b3a726d40429bcf0025e87e231590",
+    "n_rows": 72
+  },
+  "statistical_test": {
+    "name": "Four-parameter logistic fit",
+    "n_curves": 3,
+    "curves": {
+      "cmpd_A": {
+        "midpoint": "IC50",
+        "ec50": 0.044961802553668995,
+        "ci_low": 0.034800349893635465,
+        "ci_high": 0.058090326535620095,
+        "hill": -1.0752644847906188,
+        "bottom": 3.8653473492336854,
+        "top": 105.17812986516586,
+        "r_squared": 0.9876140221913577
+      },
+      "cmpd_B": {
+        "midpoint": "IC50",
+        "ec50": 0.299519955253651,
+        "ci_low": 0.2349631958046305,
+        "ci_high": 0.3818138550930498,
+        "hill": -1.065387798072742,
+        "bottom": 7.822126855689921,
+        "top": 99.62449027906047,
+        "r_squared": 0.9866298643569151
+      },
+      "cmpd_C": {
+        "midpoint": "IC50",
+        "ec50": 1.6309248460144736,
+        "ci_low": 0.8795222862922365,
+        "ci_high": 3.0242733979608696,
+        "hill": -0.8902615068755195,
+        "bottom": 8.149290227445647,
+        "top": 100.75050182089066,
+        "r_squared": 0.9775554089943896
+      }
+    },
+    "shared_ec50_test": {
+      "statistic": 97.81716482264211,
+      "df1": 2,
+      "df2": 60,
+      "p_value": 1.306057330829283e-19,
+      "shared_ec50": 0.9690023554623349,
+      "rss_shared": 5217.014140235969,
+      "rss_separate": 1224.4867457688601
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:0.4.1",
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_viability_pct_drc_py.pdf",
+    "figure_viability_pct_drc_py.png",
+    "figure_viability_pct_drc_py.svg",
+    "packages_drc_py.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_viability_pct_drc_py.pdf",
+      "bytes": 22476,
+      "sha256": "0d0cb0a24995ca201e9cfaa08dbf40682df07561060a627ab1b1235209ef9984"
+    },
+    {
+      "file": "figure_viability_pct_drc_py.png",
+      "bytes": 167723,
+      "sha256": "6a3154148b24d7206251ac382c7656c229e2a844cd150f15b637b1e05d37111c"
+    },
+    {
+      "file": "figure_viability_pct_drc_py.svg",
+      "bytes": 61633,
+      "sha256": "fd0caa68445a2af41adcbf9c7cf887c2e3d93467b5ea550a059e021c0eceda7f"
+    },
+    {
+      "file": "packages_drc_py.txt",
+      "bytes": 1066,
+      "sha256": "f60fb410706a5dbcb4d969bd0501b701822d882014cdae0bc6af0f571db9d745"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 4166,
+      "sha256": "63c7809d933acc1415cac6e6bbaa78656a11ae6d6d135b2789150f86cfa77067"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1418058,
+      "sha256": "cd4521291731c89bd900eaa789dfbe8e657345a8ca2cce81a84b963835555c7f"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2005,
+      "sha256": "80934842bf621a3af2036fe1629cb4f1a515cf1c3510e2b0cc7a656b88d06c5d"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-Python 3.10.12 (Linux-6.17.0-35-generic-x86_64-with-glibc2.35)
+Python 3.10.12 (Linux-7.0.0-38-generic-x86_64-with-glibc2.35)
 
 Installed packages:
 PyComplexHeatmap==1.8.5
@@ -32,10 +32,10 @@ patsy==1.0.3
 pillow==12.3.0
 pingouin==0.6.1
 pluggy==1.6.0
-pyparsing==3.3.2
+pyparsing==3.3.3
 pytest==9.1.1
 python-dateutil==2.9.0.post0
-pytz==2026.3.post1
+pytz==2026.5
 scikit-learn==1.7.2
 scikit-posthocs==0.17.0
 scipy==1.15.3
@@ -47,6 +47,6 @@ tabulate==0.10.0
 threadpoolctl==3.7.0
 tomli==2.4.1
 typing_extensions==4.16.0
-tzdata==2026.4
-wrapt==2.4.1
+tzdata==2026.5
+wrapt==2.5.0
 xarray==2025.6.1

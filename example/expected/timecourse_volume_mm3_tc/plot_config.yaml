@@ -1,0 +1,46 @@
+engine: r
+recipe: timecourse
+data:
+  file: input_volume_mm3.csv
+  x: day
+  'y': volume_mm3
+  fill: ~
+  facet: ~
+  time: ~
+  event: ~
+  annotation: ~
+  id: mouse
+  group: arm
+  label: ~
+  positive: ~
+  se: ~
+  ci_low: ~
+  ci_high: ~
+  measure: ~
+  markers: ~
+  covariates: ~
+test:
+  method: auto
+  paired: no
+  p_adjust: none
+appearance:
+  theme: pubready_house
+  palette: ~
+  x_label: Day
+  y_label: Tumour volume (mm^3)
+  title: ~
+  y_limits:
+  - ~
+  - ~
+  show_points: yes
+  geom: box
+  bracket:
+    show: yes
+    label: p.signif
+  scale: row
+  cluster: both
+  fc_cutoff: 1.0
+  p_cutoff: 0.05
+  top_n: 15.0
+  pd_threshold: 20.0
+  pr_threshold: -30.0

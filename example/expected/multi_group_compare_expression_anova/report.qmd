@@ -1,0 +1,66 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_expression_anova.png)
+
+## Statistical results
+
+| outcome | group1 | group2 | n1 | n2 | post_hoc | estimate | p_adj | p_adj_signif | displayed |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| expression | het | ko | 10 | 10 | Tukey's HSD | 3.91 | 0 | **** | TRUE |
+| expression | het | rescue | 10 | 10 | Tukey's HSD | -1.55 | 1.2967866700464e-06 | **** | TRUE |
+| expression | het | wt | 10 | 10 | Tukey's HSD | -1.82 | 4.56134162662991e-08 | **** | TRUE |
+| expression | ko | rescue | 10 | 10 | Tukey's HSD | -5.46 | 0 | **** | TRUE |
+| expression | ko | wt | 10 | 10 | Tukey's HSD | -5.73 | 0 | **** | TRUE |
+| expression | rescue | wt | 10 | 10 | Tukey's HSD | -0.27 | 0.685794789730678 | ns | FALSE |
+
+## Methods
+
+Expression (a.u.) was compared across 4 groups with a one-way ANOVA (F(3, 36) = 235.83, P = 1e-23). The effect size was partial eta-squared = 0.95. Pairwise comparisons used Tukey's HSD; only comparisons reaching significance (adjusted P < 0.05) are annotated on the figure. Analyses were performed in R 4.4.1 with rstatix 0.7.2; figures were produced with ggpubr 0.6.0 and ggprism 1.0.5. Group sizes: het (n = 10), ko (n = 10), rescue (n = 10), wt (n = 10).
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file":"input_expression.csv","md5":"55d3ddd6425019751d19883d1fe81771","sha256":"0d5ab7e477ae444212d4b0eebf041038d659bee75d425c1cd51401dcd73d034b"} |
+| command | figkit plot --recipe multi_group_compare |
+| analysis_options | {"engine":"r","recipe":"multi_group_compare","data":{"file":"gene_expression.csv","x":"genotype","y":"expression","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":"Genotype","y_label":"Expression (a.u.)","title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

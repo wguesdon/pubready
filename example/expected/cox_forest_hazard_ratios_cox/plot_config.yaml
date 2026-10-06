@@ -12,6 +12,12 @@ data:
   id: ~
   group: ~
   label: ~
+  positive: ~
+  se: ~
+  ci_low: ~
+  ci_high: ~
+  measure: ~
+  markers: ~
   covariates:
   - arm
   - age

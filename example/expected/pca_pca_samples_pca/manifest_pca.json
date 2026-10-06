@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "b35bc2f",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "pca",
@@ -33,9 +33,9 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "c6b5111edf89b3fa4919d18a52fe9f5c45ce02c5fba5672bbb6d97e988739a0e",
-    "digest": "sha256:76bf116bce220b1a3d874fbf11ece1cf172bf558a2cdf835434a94626f1b97a8",
-    "podman_version": "4.9.3"
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
   },
   "environment": {
     "language": "R",
@@ -51,6 +51,46 @@
     "figure_pca_samples_pca.pdf",
     "figure_pca_samples_pca.png",
     "figure_pca_samples_pca.svg",
-    "packages_pca.txt"
+    "packages_pca.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_pca_samples_pca.pdf",
+      "bytes": 17038,
+      "sha256": "54eeb811fd18189cac8b7caa4a750913f0a048be80f12c46c3aefc2b2c106077"
+    },
+    {
+      "file": "figure_pca_samples_pca.png",
+      "bytes": 141347,
+      "sha256": "c5d1df1c3b97a0042f126044dd4eb6dbc8b9cdd206bc40f2aab3a81dc881626e"
+    },
+    {
+      "file": "figure_pca_samples_pca.svg",
+      "bytes": 13515,
+      "sha256": "89e299c0a6e4e514d6b68c6becbd376ec2a08583d6a8dee4aac75925002ad186"
+    },
+    {
+      "file": "packages_pca.txt",
+      "bytes": 3477,
+      "sha256": "d608ef5a44ae5d7ff6b84ffbfb5ee9b8ce1d2c1a0aeb220065e7d20c1b865f91"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 2618,
+      "sha256": "7f95bfdcb4755c7ec04414553bd9315e9ab6a5ef12d1f5e8f512c4ffe2d89369"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1380733,
+      "sha256": "700c8f40d3f4b98f771c0fdf16881b3a57d1ab3eec90627c58425037196ff115"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1916,
+      "sha256": "22b38e78605678adc96fdac2dfe6457ddcd3215cee532c65d013c47561ac8d19"
+    }
   ]
 }

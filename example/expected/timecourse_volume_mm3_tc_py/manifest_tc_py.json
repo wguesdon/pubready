@@ -1,0 +1,145 @@
+{
+  "pubready_version": "0.4.1",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "timecourse",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "day",
+    "y": "volume_mm3",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_volume_mm3.csv",
+    "original_name": "tumor_growth.csv",
+    "md5": "b86e88025259e6532a144d1496106495",
+    "sha256": "dbf732b2b6cf9b41409b5419f1f5a21faabab658b627b18f9ac51654c2f09614",
+    "n_rows": 161
+  },
+  "statistical_test": {
+    "name": "mixed ANOVA (group between, time within)",
+    "n_subjects": 23,
+    "n_times": 7,
+    "n_dropped_subjects": 1,
+    "sphericity": {
+      "test": "Mauchly",
+      "W": 2.120733777436383e-06,
+      "statistic": 232.24441613749872,
+      "df": 20,
+      "p_value": 2.1479268585931415e-37
+    },
+    "gg_epsilon": 0.19512909918966329,
+    "correction_applied": true,
+    "effects": {
+      "arm": {
+        "F": 28.430557453102654,
+        "df1": 2,
+        "df2": 20,
+        "p_value": 1.4230925938205912e-06,
+        "p_gg": NaN,
+        "p_reported": 1.4230925938205912e-06,
+        "partial_eta2": 0.7397903995485067
+      },
+      "day": {
+        "F": 236.19920299127807,
+        "df1": 6,
+        "df2": 120,
+        "p_value": 5.6810913970117326e-64,
+        "p_gg": 2.607148307060976e-14,
+        "p_reported": 2.607148307060976e-14,
+        "partial_eta2": 0.9219357446608416
+      },
+      "arm:day": {
+        "F": 28.825839325366815,
+        "df1": 12,
+        "df2": 120,
+        "p_value": 8.619432333776584e-30,
+        "p_gg": 2.0039733609649322e-07,
+        "p_reported": 2.0039733609649322e-07,
+        "partial_eta2": 0.7424395666968489
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:0.4.1",
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_volume_mm3_tc_py.pdf",
+    "figure_volume_mm3_tc_py.png",
+    "figure_volume_mm3_tc_py.svg",
+    "packages_tc_py.txt",
+    "qc_normality_tc_py.png",
+    "qc_normality_tc_py.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_volume_mm3_tc_py.pdf",
+      "bytes": 17271,
+      "sha256": "bccb537274ab002050b20ee990c48cc4aa68d3912f90d9b75e34c9d5b62a7e4d"
+    },
+    {
+      "file": "figure_volume_mm3_tc_py.png",
+      "bytes": 254438,
+      "sha256": "a784a7f6590abcbcbd43073c8f7ae99bc27736c6f9d7cb23ac7aac36bb52a825"
+    },
+    {
+      "file": "figure_volume_mm3_tc_py.svg",
+      "bytes": 47780,
+      "sha256": "3119269cd309357278e8355b3029c20f3f704b1ba780af6603fe12a7c5b8c812"
+    },
+    {
+      "file": "packages_tc_py.txt",
+      "bytes": 1070,
+      "sha256": "bb04ae513c04b8de4957bf3b4be1588bd9843228508e297a5ca0ee693af74d3b"
+    },
+    {
+      "file": "qc_normality_tc_py.png",
+      "bytes": 65881,
+      "sha256": "b4c97e1c2858321a1232af415e5dcb1082e5e88d4817647ef214c71428ddab1e"
+    },
+    {
+      "file": "qc_normality_tc_py.pdf",
+      "bytes": 26548,
+      "sha256": "60dae08c0a02efe46cd31db70ae627a09cba518d46c48203d732098a7a1955ce"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3815,
+      "sha256": "2f7fd94237321f0632957366fc7a5a1c57c795f1ab3b80a4334406bd064df8a9"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1533162,
+      "sha256": "9668721abd4d3bd7d8cf5fc323228685ca8ef9ea299a1cd5ea778e04a80f5026"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1969,
+      "sha256": "9aaf9eac9ba96c6fdb68b6e4c874c17e01ff9f95ae04a037d7faf0d3d3711e7b"
+    }
+  ]
+}

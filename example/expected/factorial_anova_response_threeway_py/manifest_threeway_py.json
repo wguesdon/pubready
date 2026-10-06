@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "b35bc2f",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "factorial_anova",
@@ -32,67 +32,67 @@
     "effects": [
       {
         "effect": "genotype",
-        "df1": 1.0,
-        "df2": 40.0,
+        "df1": 1,
+        "df2": 40,
         "statistic": 111.2970333218272,
         "p_value": 4.034754681085697e-13,
-        "effect_size": 0.30127889946431574
+        "effect_size": 0.7356194029600359
       },
       {
         "effect": "treatment",
-        "df1": 1.0,
-        "df2": 40.0,
+        "df1": 1,
+        "df2": 40,
         "statistic": 197.0118992019824,
         "p_value": 4.8090104894002654e-17,
-        "effect_size": 0.5333073703888866
+        "effect_size": 0.8312321021236497
       },
       {
         "effect": "sex",
-        "df1": 1.0,
-        "df2": 40.0,
+        "df1": 1,
+        "df2": 40,
         "statistic": 10.202550409161775,
         "p_value": 0.0027343973072734788,
-        "effect_size": 0.02761810505867848
+        "effect_size": 0.20322773098196714
       },
       {
         "effect": "genotype:treatment",
-        "df1": 1.0,
-        "df2": 40.0,
+        "df1": 1,
+        "df2": 40,
         "statistic": 10.074217718845782,
         "p_value": 0.002890120529548012,
-        "effect_size": 0.02727071096784143
+        "effect_size": 0.2011857234677134
       },
       {
         "effect": "genotype:sex",
-        "df1": 1.0,
-        "df2": 40.0,
+        "df1": 1,
+        "df2": 40,
         "statistic": 0.2437711941844083,
         "p_value": 0.624195816399937,
-        "effect_size": 0.0006598838703329309
+        "effect_size": 0.006057364579680232
       },
       {
         "effect": "treatment:sex",
-        "df1": 1.0,
-        "df2": 40.0,
+        "df1": 1,
+        "df2": 40,
         "statistic": 0.5118078258574037,
         "p_value": 0.47851267962764477,
-        "effect_size": 0.0013854538068922826
+        "effect_size": 0.012633546941608786
       },
       {
         "effect": "genotype:treatment:sex",
-        "df1": 1.0,
-        "df2": 40.0,
+        "df1": 1,
+        "df2": 40,
         "statistic": 0.07401466079151847,
         "p_value": 0.7869780803081738,
-        "effect_size": 0.00020035624384536136
+        "effect_size": 0.0018469489872182567
       }
     ]
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "c6b5111edf89b3fa4919d18a52fe9f5c45ce02c5fba5672bbb6d97e988739a0e",
-    "digest": "sha256:76bf116bce220b1a3d874fbf11ece1cf172bf558a2cdf835434a94626f1b97a8",
-    "podman_version": "4.9.3"
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
   },
   "environment": {
     "language": "Python",
@@ -113,6 +113,56 @@
     "figure_response_threeway_py.svg",
     "packages_threeway_py.txt",
     "qc_normality_threeway_py.png",
-    "qc_normality_threeway_py.pdf"
+    "qc_normality_threeway_py.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_response_threeway_py.pdf",
+      "bytes": 18727,
+      "sha256": "7d0e9e4cb8fe312f3adeaabf7c9764a01eeedb42b911da0c0b42afcc9be45c8d"
+    },
+    {
+      "file": "figure_response_threeway_py.png",
+      "bytes": 133615,
+      "sha256": "8320887771dd7c23e915f2839d4aee5a31a199404f10579cd887e14280b20c30"
+    },
+    {
+      "file": "figure_response_threeway_py.svg",
+      "bytes": 60849,
+      "sha256": "b1f581afbe9acaab194fea6e896f4c8ecf6c15cf9d729189a6fb6649b9dbeb62"
+    },
+    {
+      "file": "packages_threeway_py.txt",
+      "bytes": 1074,
+      "sha256": "f41169b11e6d074b9fd8bc5864125ec1b47a33dd0c145b0a4aa4439517e08608"
+    },
+    {
+      "file": "qc_normality_threeway_py.png",
+      "bytes": 65897,
+      "sha256": "d3d90a57712ee0c605b4cab4bcfa2349614dac630d302ac90c14a54fb81f4603"
+    },
+    {
+      "file": "qc_normality_threeway_py.pdf",
+      "bytes": 23716,
+      "sha256": "06d4473afe294a29f17c52997337b6c8ce37c802fba6ea7fe58af612eb572c83"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 4017,
+      "sha256": "6b675b2f92443cb6f9e1f58064498a82f61d17d0c67f05aa4ddd535dfb092f1e"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1372438,
+      "sha256": "d07153c4c346d045e4422bd0bfa20e88674791b9fa6a0d1fdcf7c466c3956dfe"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1983,
+      "sha256": "4d10143b7bc98fd48a4cafc1e88c7ade8e0199ed5fe990ae7b53ff3c8552d6eb"
+    }
   ]
 }

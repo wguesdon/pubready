@@ -1,0 +1,84 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_months_swimmer.png)
+
+## Statistical results
+
+| patient | group | duration | ongoing | response_month | progression_month |
+| --- | --- | --- | --- | --- | --- |
+| PT-09 | control | 31.2 | FALSE |  | 31.2 |
+| PT-20 | treated | 26.5 | TRUE |  |  |
+| PT-16 | treated | 26.5 | TRUE | 4 |  |
+| PT-22 | treated | 24.7 | FALSE | 1.5 |  |
+| PT-21 | treated | 19.1 | TRUE | 3.2 |  |
+| PT-06 | control | 18.6 | FALSE | 1.6 | 18.6 |
+| PT-05 | control | 17.4 | FALSE | 2.4 | 17.4 |
+| PT-18 | treated | 16.2 | TRUE | 2.5 |  |
+| PT-01 | control | 15.6 | FALSE | 3.1 |  |
+| PT-13 | treated | 15.3 | FALSE | 3.5 |  |
+| PT-14 | treated | 13.5 | FALSE | 2.5 | 13.5 |
+| PT-02 | control | 12.2 | FALSE |  |  |
+| PT-19 | treated | 9.9 | FALSE |  | 9.9 |
+| PT-23 | treated | 5 | FALSE |  | 5 |
+| PT-15 | treated | 4.1 | FALSE | 3.2 | 4.1 |
+| PT-17 | treated | 2.8 | TRUE |  |  |
+| PT-24 | treated | 2.5 | FALSE | 2.5 |  |
+| PT-10 | control | 2.4 | FALSE |  | 2.4 |
+| PT-07 | control | 2.4 | FALSE |  |  |
+| PT-11 | control | 2.1 | FALSE |  | 2.1 |
+| PT-12 | control | 1.8 | FALSE |  | 1.8 |
+| PT-03 | control | 1.8 | FALSE | 1.8 | 1.8 |
+| PT-08 | control | 1.7 | FALSE |  | 1.7 |
+| PT-04 | control | 1.3 | FALSE |  | 1.3 |
+
+## Methods
+
+Each of the 24 patients is drawn as one horizontal bar whose length is the value of months, sorted from the longest course at the top. An arrow marks a course that was ongoing at the data cut-off. Symbols mark response_month (12 patient(s)), progression_month (13 patient(s)). control: 12 patient(s), median duration 2.4, 0 ongoing; treated: 12 patient(s), median duration 14.4, 5 ongoing. The figure is descriptive, so no statistical test is applied. Drawn in R 4.4.1 with ggplot2 3.5.1.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file":"input_months.csv","md5":"b8d75bab35e8ca31ee1a4ca5fc089e74","sha256":"94541cad1fc2ff7d0c412a3c79ef9f5b9a7fd2544a87bf360389f987e24dbe36"} |
+| command | figkit plot --recipe swimmer |
+| analysis_options | {"engine":"r","recipe":"swimmer","data":{"file":"swimmer_patients.csv","x":"Months on treatment","y":null,"fill":null,"facet":null,"time":"months","event":"ended","annotation":null,"id":"patient","group":"arm","label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"markers":["response_month","progression_month"],"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":"Months on treatment","y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

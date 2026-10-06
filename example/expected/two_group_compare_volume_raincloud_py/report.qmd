@@ -1,0 +1,61 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new statistical method.
+:::
+
+## Figure
+
+![Publication figure](figure_volume_raincloud_py.png)
+
+## Statistical results
+
+| outcome | group1 | group2 | n1 | n2 | test | statistic | df | p_value | p_adjust_method | effect_size_name | effect_size | shapiro_p_group1 | shapiro_p_group2 | var_equal_p |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| volume | control | treated | 12 | 12 | Student's two-sample t-test | 10.059451317619061 | 22.0 | 1.0836205482623198e-09 | none | Cohen's d | 4.106753803422436 | 0.9999771354025069 | 0.9890035629987018 | 0.45607484895043426 |
+
+## Methods
+
+Tumor volume (mm^3) was compared between the two groups with a Student's two-sample t-test. Normality was assessed with the Shapiro-Wilk test. Equal variances were assumed. Effect size is reported as Cohen's d = 4.11. Significance was set at P < 0.05. Analyses were performed in Python 3.10.12 with pingouin 0.6.1; figures were produced with seaborn 0.13.2 and statannotations 0.7.2. Group sizes were n = 12 and n = 12.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | False |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file": "input_volume.csv", "md5": "d61ed3cc297d2fa63d25dcab55991645", "sha256": "7560f561606eed71ef05c9a9b5b82b36a6f830c3bd0f3586a9a905534cc4a355"} |
+| command | figkit plot --recipe two_group_compare |
+| analysis_options | {"engine": "python", "recipe": "two_group_compare", "data": {"file": "tumor_volume.csv", "x": "group", "y": "volume", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": null, "group": null, "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": null, "y_label": "Tumor volume (mm^3)", "title": null, "y_limits": [null, null], "show_points": true, "geom": "raincloud", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

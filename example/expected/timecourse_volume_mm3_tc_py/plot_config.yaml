@@ -1,0 +1,46 @@
+engine: python
+recipe: timecourse
+data:
+  file: input_volume_mm3.csv
+  x: day
+  y: volume_mm3
+  fill: null
+  facet: null
+  time: null
+  event: null
+  annotation: null
+  covariates: null
+  id: mouse
+  group: arm
+  label: null
+  positive: null
+  se: null
+  ci_low: null
+  ci_high: null
+  measure: null
+  markers: null
+test:
+  method: auto
+  paired: false
+  p_adjust: none
+appearance:
+  theme: pubready_house
+  palette: null
+  x_label: Day
+  y_label: Tumour volume (mm^3)
+  title: null
+  y_limits:
+  - null
+  - null
+  show_points: true
+  geom: box
+  bracket:
+    show: true
+    label: p.signif
+  scale: row
+  cluster: both
+  fc_cutoff: 1.0
+  p_cutoff: 0.05
+  top_n: 15
+  pd_threshold: 20.0
+  pr_threshold: -30.0

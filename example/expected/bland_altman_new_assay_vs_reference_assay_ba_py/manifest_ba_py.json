@@ -1,0 +1,118 @@
+{
+  "pubready_version": "0.4.1",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "bland_altman",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "new_assay",
+    "y": "reference_assay",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_new_assay_vs_reference_assay.csv",
+    "original_name": "method_agreement.csv",
+    "md5": "a218e4c5dd5a5ae0131ca8fd388f991a",
+    "sha256": "4a9865549eed01bcf632a92a15dd7c170ec624bef0d2e63d90ea3a3b72faec82",
+    "n_rows": 40
+  },
+  "statistical_test": {
+    "name": "Bland-Altman agreement analysis",
+    "n": 40,
+    "bias": 5.932500000000001,
+    "bias_ci_low": 4.416927988565584,
+    "bias_ci_high": 7.448072011434418,
+    "sd_diff": 4.738894575201248,
+    "loa_low": -3.355562693926684,
+    "loa_high": 15.220562693926686,
+    "loa_low_ci_low": -5.967442917757813,
+    "loa_low_ci_high": -0.7436824700955547,
+    "loa_high_ci_low": 12.608682470095557,
+    "loa_high_ci_high": 17.832442917757817,
+    "prop_bias_slope": 0.04487823249742906,
+    "prop_bias_p": 0.0010256286042581875,
+    "shapiro_p_diff": 0.665288545023932
+  },
+  "container": {
+    "image": "localhost/pubready:0.4.1",
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_new_assay_vs_reference_assay_ba_py.pdf",
+    "figure_new_assay_vs_reference_assay_ba_py.png",
+    "figure_new_assay_vs_reference_assay_ba_py.svg",
+    "packages_ba_py.txt",
+    "qc_normality_ba_py.png",
+    "qc_normality_ba_py.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_new_assay_vs_reference_assay_ba_py.pdf",
+      "bytes": 16801,
+      "sha256": "919e3903bf814c17506f0705ee86d0ad1625f65fa024babd9d40087d27e50374"
+    },
+    {
+      "file": "figure_new_assay_vs_reference_assay_ba_py.png",
+      "bytes": 146673,
+      "sha256": "a0fddf2346ba7ff01fa7a135b6a8865c7f198737379f24809718c44b4923d0f3"
+    },
+    {
+      "file": "figure_new_assay_vs_reference_assay_ba_py.svg",
+      "bytes": 44538,
+      "sha256": "28af085cda0c8b89c5377de4147d8d24d67e64d605f0476eb976ca19fbc0890f"
+    },
+    {
+      "file": "packages_ba_py.txt",
+      "bytes": 1066,
+      "sha256": "f60fb410706a5dbcb4d969bd0501b701822d882014cdae0bc6af0f571db9d745"
+    },
+    {
+      "file": "qc_normality_ba_py.png",
+      "bytes": 70684,
+      "sha256": "3fc889bc910b947d26d330986c2e347c8235f8e993380edba62be78aa916dcd6"
+    },
+    {
+      "file": "qc_normality_ba_py.pdf",
+      "bytes": 26054,
+      "sha256": "8285f1ea6efa85ad00076a05d82dff6aa2a5887adb47769475880b76783cf46a"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3730,
+      "sha256": "368e651d3790938be93fb20b55e4fbf4f86688777bca3932a1cf8ccb76156bf7"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1389307,
+      "sha256": "b3dcf4c3473a18ffa38bc5134d563348b6553eebe28f285f504588f45f3c09e7"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1983,
+      "sha256": "475f6408afbe652a10c4f62f58cd5e288ee93a83be2097df766c13bada5ce91d"
+    }
+  ]
+}

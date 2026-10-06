@@ -1,0 +1,113 @@
+{
+  "pubready_version": "0.4.1",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "bland_altman",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "new_assay",
+    "y": "reference_assay",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_new_assay_vs_reference_assay.csv",
+    "original_name": "method_agreement.csv",
+    "md5": "a218e4c5dd5a5ae0131ca8fd388f991a",
+    "sha256": "4a9865549eed01bcf632a92a15dd7c170ec624bef0d2e63d90ea3a3b72faec82",
+    "n_rows": 40
+  },
+  "statistical_test": {
+    "name": "Bland-Altman agreement analysis",
+    "n": 40,
+    "bias": 5.9325,
+    "bias_ci_low": 4.416928,
+    "bias_ci_high": 7.448072,
+    "sd_diff": 4.738895,
+    "loa_low": -3.355563,
+    "loa_high": 15.220563,
+    "loa_low_ci_low": -5.967443,
+    "loa_low_ci_high": -0.743682,
+    "loa_high_ci_low": 12.608682,
+    "loa_high_ci_high": 17.832443,
+    "prop_bias_slope": 0.044878,
+    "prop_bias_p": 0.001026,
+    "shapiro_p_diff": 0.665289
+  },
+  "container": {
+    "image": "localhost/pubready:0.4.1",
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_new_assay_vs_reference_assay_ba.pdf",
+    "figure_new_assay_vs_reference_assay_ba.png",
+    "figure_new_assay_vs_reference_assay_ba.svg",
+    "packages_ba.txt",
+    "qc_normality_ba.png",
+    "qc_normality_ba.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_new_assay_vs_reference_assay_ba.pdf",
+      "bytes": 18426,
+      "sha256": "d5241c3c555d602ff0228f69daf42c05d27b56646dab4f5fe8365d4bbea10d4f"
+    },
+    {
+      "file": "figure_new_assay_vs_reference_assay_ba.png",
+      "bytes": 117118,
+      "sha256": "b767ab3c0d6575e0f87e6717187c12e74a7f865f48f645be9091fed31339a399"
+    },
+    {
+      "file": "figure_new_assay_vs_reference_assay_ba.svg",
+      "bytes": 11442,
+      "sha256": "96b35585753c0655abd8559cb048db4c984a0c1e06aa181d427ae3bbd409b691"
+    },
+    {
+      "file": "packages_ba.txt",
+      "bytes": 3477,
+      "sha256": "d608ef5a44ae5d7ff6b84ffbfb5ee9b8ce1d2c1a0aeb220065e7d20c1b865f91"
+    },
+    {
+      "file": "qc_normality_ba.png",
+      "bytes": 61188,
+      "sha256": "3e041980c10f029e06020a588cfaccce91b2f91fff6836bbd66ee287280031a0"
+    },
+    {
+      "file": "qc_normality_ba.pdf",
+      "bytes": 30914,
+      "sha256": "48575c3a00aef4f55a3f57adb77c39d2d4037b93ee1ff92bef2260156a292670"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3560,
+      "sha256": "4adb94fd48bceb97929cf2db9e38718d0a288aae8cd69f1421f9fc551312c2dc"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1349736,
+      "sha256": "d47992f3ed353cb6ffc8594476198cbf057633a9b9f5406a37c5123c26e98cb7"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1973,
+      "sha256": "cc5ed6473216106fd196fccd86434ada00a3529a52857c01c56df2d246cd651f"
+    }
+  ]
+}

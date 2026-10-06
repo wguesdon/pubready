@@ -1,0 +1,77 @@
+{
+  "repository": "pubready",
+  "repository_version": "0.4.1",
+  "git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "git_dirty": false,
+  "llm_provider": "none",
+  "llm_model": "none",
+  "agent_harness": "manual",
+  "agent_harness_version": "not_recorded",
+  "container_image": "localhost/pubready:0.4.1",
+  "container_digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+  "input": {
+    "file": "input_gene_b_vs_gene_a.csv",
+    "md5": "b4e0baa020fa210c4d2c64be1569bb31",
+    "sha256": "b7de65016a54e3a4d34983a3ea4be3515a1b0c6387dd7ffea93aab56246f7c34"
+  },
+  "command": "figkit plot --recipe correlation",
+  "analysis_options": {
+    "engine": "r",
+    "recipe": "correlation",
+    "data": {
+      "file": "correlation_xy.csv",
+      "x": "gene_a",
+      "y": "gene_b",
+      "fill": null,
+      "facet": null,
+      "time": null,
+      "event": null,
+      "annotation": null,
+      "id": null,
+      "group": null,
+      "label": null,
+      "positive": null,
+      "se": null,
+      "ci_low": null,
+      "ci_high": null,
+      "measure": null,
+      "markers": null,
+      "covariates": null
+    },
+    "test": {
+      "method": "auto",
+      "paired": false,
+      "p_adjust": "none"
+    },
+    "appearance": {
+      "theme": "pubready_house",
+      "palette": null,
+      "x_label": "Gene A (a.u.)",
+      "y_label": "Gene B (a.u.)",
+      "title": null,
+      "y_limits": [
+        null,
+        null
+      ],
+      "show_points": true,
+      "geom": "box",
+      "bracket": {
+        "show": true,
+        "label": "p.signif"
+      },
+      "scale": "row",
+      "cluster": "both",
+      "fc_cutoff": 1,
+      "p_cutoff": 0.05,
+      "top_n": 15,
+      "pd_threshold": 20,
+      "pr_threshold": -30
+    }
+  },
+  "random_seeds": "not_applicable",
+  "session_record": "session_info.txt",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "review_state": "not_applicable",
+  "reviewer": "none",
+  "quarto_version": "1.11.4"
+}

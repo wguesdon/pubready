@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "b35bc2f",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "cox_forest",
@@ -42,7 +42,7 @@
     },
     "hazard_ratios": [
       {
-        "term": "arm[treated]",
+        "term": "armtreated",
         "HR": 0.5446495910272949,
         "ci_low": 0.3372095343625995,
         "ci_high": 0.879699850619351,
@@ -56,21 +56,21 @@
         "p_value": 0.6825276288126748
       },
       {
-        "term": "sex[male]",
+        "term": "sexmale",
         "HR": 1.2092289747884706,
         "ci_low": 0.7549859866379953,
         "ci_high": 1.936770667730414,
         "p_value": 0.4292316420949487
       },
       {
-        "term": "stage[II]",
+        "term": "stageII",
         "HR": 0.9628789620278184,
         "ci_low": 0.5588367376954668,
         "ci_high": 1.6590460737049886,
         "p_value": 0.8916075543126436
       },
       {
-        "term": "stage[III]",
+        "term": "stageIII",
         "HR": 0.7385650617304216,
         "ci_low": 0.3943575846309485,
         "ci_high": 1.383207453507801,
@@ -80,9 +80,9 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "c6b5111edf89b3fa4919d18a52fe9f5c45ce02c5fba5672bbb6d97e988739a0e",
-    "digest": "sha256:76bf116bce220b1a3d874fbf11ece1cf172bf558a2cdf835434a94626f1b97a8",
-    "podman_version": "4.9.3"
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
   },
   "environment": {
     "language": "Python",
@@ -101,6 +101,46 @@
     "figure_hazard_ratios_cox_py.pdf",
     "figure_hazard_ratios_cox_py.png",
     "figure_hazard_ratios_cox_py.svg",
-    "packages_cox_py.txt"
+    "packages_cox_py.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_hazard_ratios_cox_py.pdf",
+      "bytes": 19222,
+      "sha256": "5f06f1aadc4a0622b79b43a7422ea11446b95dca6a7611505064effb3bd564cc"
+    },
+    {
+      "file": "figure_hazard_ratios_cox_py.png",
+      "bytes": 113687,
+      "sha256": "cd1e4f34d7803d95d0ae4ea78c239807aa5e078c6c7fb0ff922bfb31dd60170e"
+    },
+    {
+      "file": "figure_hazard_ratios_cox_py.svg",
+      "bytes": 44503,
+      "sha256": "bae6d35ea76cc9928f5909cb56d9b74701805b62ccd5a07f9659c091ecb8880f"
+    },
+    {
+      "file": "packages_cox_py.txt",
+      "bytes": 1070,
+      "sha256": "a8ac03a8b1d10af1064049f377735827c232c8240b1ad40f24c05ecab70b4c67"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3331,
+      "sha256": "8e17ea660a3558e5d4c0fc6a4837424bf544c98cf18a80180e9d07c1f1f31461"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1344898,
+      "sha256": "3f0d4f457ca7bea5350bbe5480be820d5995a4fa276bbe7a34ea596741072ecc"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2013,
+      "sha256": "b1e2a39414a82d1b0db8f98d23bfc8187f58f763992305291dce07d896d85dbb"
+    }
   ]
 }

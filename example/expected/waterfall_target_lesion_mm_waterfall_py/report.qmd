@@ -1,0 +1,80 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new statistical method.
+:::
+
+## Figure
+
+![Publication figure](figure_target_lesion_mm_waterfall_py.png)
+
+## Statistical results
+
+| patient | group | best_change_pct | worst_change_pct | category_from_change |
+| --- | --- | --- | --- | --- |
+| PT-04 | control | 8.35380835380835 | 26.044226044226033 | progressive disease |
+| PT-02 | control | 7.249999999999997 | 30.999999999999993 | progressive disease |
+| PT-06 | control | 6.955530216647656 | 27.25199543899657 | progressive disease |
+| PT-07 | control | 6.320541760722358 | 26.41083521444696 | progressive disease |
+| PT-03 | control | 5.801526717557247 | 13.587786259541993 | stable disease |
+| PT-08 | control | 4.770642201834865 | 11.192660550458717 | stable disease |
+| PT-05 | control | 4.16666666666666 | 10.879629629629619 | stable disease |
+| PT-10 | control | 3.2467532467532467 | 24.45887445887445 | progressive disease |
+| PT-09 | control | 1.904761904761898 | 16.666666666666668 | stable disease |
+| PT-01 | control | 1.6697588126159528 | 15.584415584415583 | stable disease |
+| PT-15 | treated | -22.555410691003917 | -15.123859191655812 | stable disease |
+| PT-18 | treated | -23.185840707964605 | -1.7699115044247788 | stable disease |
+| PT-20 | treated | -27.656250000000004 | -1.2499999999999956 | stable disease |
+| PT-12 | treated | -30.806451612903228 | -8.870967741935484 | partial response |
+| PT-11 | treated | -35.040983606557376 | -7.172131147540984 | partial response |
+| PT-17 | treated | -36.973478939157566 | -8.58034321372854 | partial response |
+| PT-13 | treated | -37.11943793911007 | -8.899297423887598 | partial response |
+| PT-16 | treated | -38.57350800582241 | -10.625909752547313 | partial response |
+| PT-14 | treated | -46.61016949152542 | -9.685230024213075 | partial response |
+| PT-19 | treated | -54.6972860125261 | -15.448851774530269 | partial response |
+
+## Methods
+
+The best response of each patient was the smallest percentage change in target_lesion_mm from that patient's own baseline over the visits after it. The 20 patients are drawn as bars sorted from the largest increase to the deepest decrease, with dashed reference lines at +20% and -30%, the RECIST 1.1 thresholds for progressive disease and for a partial response. On the change from baseline alone, 7 patient(s) reached a partial response, 8 were stable and 5 reached progressive disease. A full RECIST 1.1 assessment also reads the non-target lesions and any new lesion. The figure is descriptive, so no statistical test is applied. Drawn in Python 3.10.12 with matplotlib 3.10.9.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | False |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file": "input_target_lesion_mm.csv", "md5": "d3ceaf1a40e01ce2639a76cda972d28e", "sha256": "97ca47b3a60d61efa8b26f77be4c7169722126bb8198f60c17acef4d6f04d23c"} |
+| command | figkit plot --recipe waterfall |
+| analysis_options | {"engine": "python", "recipe": "waterfall", "data": {"file": "spider_response.csv", "x": "week", "y": "target_lesion_mm", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": "patient", "group": "arm", "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": null, "y_label": null, "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

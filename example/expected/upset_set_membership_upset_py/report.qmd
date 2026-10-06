@@ -1,0 +1,79 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new statistical method.
+:::
+
+## Figure
+
+![Publication figure](figure_set_membership_upset_py.png)
+
+## Statistical results
+
+| type | sets | degree | size |
+| --- | --- | --- | --- |
+| set | apoptosis | nan | 36 |
+| set | inflammation | nan | 37 |
+| set | metabolism | nan | 35 |
+| set | cell_cycle | nan | 25 |
+| intersection | apoptosis & inflammation | 2.0 | 10 |
+| intersection | metabolism | 1.0 | 10 |
+| intersection | inflammation | 1.0 | 8 |
+| intersection | apoptosis | 1.0 | 6 |
+| intersection | inflammation & metabolism | 2.0 | 5 |
+| intersection | cell_cycle | 1.0 | 5 |
+| intersection | apoptosis & inflammation & metabolism & cell_cycle | 4.0 | 5 |
+| intersection | metabolism & cell_cycle | 2.0 | 5 |
+| intersection | apoptosis & metabolism | 2.0 | 5 |
+| intersection | apoptosis & cell_cycle | 2.0 | 3 |
+| intersection | apoptosis & inflammation & cell_cycle | 3.0 | 3 |
+| intersection | apoptosis & inflammation & metabolism | 3.0 | 3 |
+| intersection | inflammation & cell_cycle | 2.0 | 2 |
+| intersection | inflammation & metabolism & cell_cycle | 3.0 | 1 |
+| intersection | apoptosis & metabolism & cell_cycle | 3.0 | 1 |
+
+## Methods
+
+Set intersections among 4 sets (apoptosis, inflammation, metabolism, cell_cycle) across 72 elements were drawn as an UpSet plot with the upsetplot package. The plot shows the 15 observed intersections and each set's total size; it is descriptive, so no statistical test is applied. Rendered in Python 3.10.12 with upsetplot 0.9.0.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | False |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file": "input_set_membership.csv", "md5": "62b68d6ca9159eb4de4ff4c2d35ded26", "sha256": "5aabbab60c65f2af913bb91fd373a32c42ec6ded5459b606e3f5d099b1c70528"} |
+| command | figkit plot --recipe upset |
+| analysis_options | {"engine": "python", "recipe": "upset", "data": {"file": "set_membership.csv", "x": null, "y": null, "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": null, "group": null, "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": null, "y_label": null, "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

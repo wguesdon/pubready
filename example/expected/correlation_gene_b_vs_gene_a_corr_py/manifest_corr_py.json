@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "b35bc2f",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "correlation",
@@ -43,9 +43,9 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "c6b5111edf89b3fa4919d18a52fe9f5c45ce02c5fba5672bbb6d97e988739a0e",
-    "digest": "sha256:76bf116bce220b1a3d874fbf11ece1cf172bf558a2cdf835434a94626f1b97a8",
-    "podman_version": "4.9.3"
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
   },
   "environment": {
     "language": "Python",
@@ -66,6 +66,56 @@
     "figure_gene_b_vs_gene_a_corr_py.svg",
     "packages_corr_py.txt",
     "qc_normality_corr_py.png",
-    "qc_normality_corr_py.pdf"
+    "qc_normality_corr_py.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_gene_b_vs_gene_a_corr_py.pdf",
+      "bytes": 14666,
+      "sha256": "bfd0e39bf6a6e6d1a71bce06443ac47c1597298d9aab288dba4489736fc14cde"
+    },
+    {
+      "file": "figure_gene_b_vs_gene_a_corr_py.png",
+      "bytes": 110797,
+      "sha256": "877c395e1bd4166ba9734f47ffbb3f2eab8338f22758a221f1ec0a01e1ddfce7"
+    },
+    {
+      "file": "figure_gene_b_vs_gene_a_corr_py.svg",
+      "bytes": 37233,
+      "sha256": "3ee98b53b01994d196924468f290536ee6686cf5a6afda76b72b707a46b017ec"
+    },
+    {
+      "file": "packages_corr_py.txt",
+      "bytes": 1084,
+      "sha256": "7f095af6ecba37276a4b0a8ebd15843f64ebf2aa2d3f3d538e91365cfee01a34"
+    },
+    {
+      "file": "qc_normality_corr_py.png",
+      "bytes": 100093,
+      "sha256": "fc7775d5dd12c4b471ff840bb64c2c230d6105247976806edf095bcaf798a431"
+    },
+    {
+      "file": "qc_normality_corr_py.pdf",
+      "bytes": 26372,
+      "sha256": "6aaddd270a9a566d8f9ab5cf25896cdfe39d68063dacb9cec204ffae0e0654de"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3111,
+      "sha256": "9cfc4a00df7c504d09050eb1de5e4431e3bf2731b6a281896a36ee9e9c4d94b8"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1340784,
+      "sha256": "e74e478e712abffa7495bee1711c55331a28be4f4517912fa64f506ec89e557d"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1977,
+      "sha256": "619e8d7a4e32bbc9031d4d435b98a4c7843d1827d3e4af323096ef1f4f293585"
+    }
   ]
 }

@@ -1,0 +1,113 @@
+{
+  "pubready_version": "0.4.1",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "forest_meta",
+  "recipe_version": "1",
+  "arguments": {
+    "x": null,
+    "y": "hazard_ratio",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_hazard_ratio.csv",
+    "original_name": "meta_trials.csv",
+    "md5": "24320e4211da4db9bf76c9a1fedeb1e9",
+    "sha256": "01b10b5db2fbcdca95bb708eb109ab543a00c92557e91fbc44d75ad98d46acc6",
+    "n_rows": 9
+  },
+  "statistical_test": {
+    "name": "Inverse-variance meta-analysis (fixed effect and DerSimonian-Laird random effects)",
+    "measure": "ratio",
+    "k": 9,
+    "fixed": {
+      "estimate": 0.7625665188602225,
+      "ci_low": 0.7028722228406328,
+      "ci_high": 0.8273305969276402,
+      "p_value": 7.144729415816091e-11
+    },
+    "random": {
+      "estimate": 0.7657242954756953,
+      "ci_low": 0.6986540559336346,
+      "ci_high": 0.8392332252307798,
+      "p_value": 1.146998963124877e-08
+    },
+    "heterogeneity": {
+      "q": 9.6434526298994,
+      "df": 8,
+      "p_value": 0.29094765927563637,
+      "i2": 17.042160033055964,
+      "tau2": 0.0033080091202378295
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:0.4.1",
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_hazard_ratio_meta_py.pdf",
+    "figure_hazard_ratio_meta_py.png",
+    "figure_hazard_ratio_meta_py.svg",
+    "packages_meta_py.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_hazard_ratio_meta_py.pdf",
+      "bytes": 26902,
+      "sha256": "90e10d4acad55beec5184a1768b622f13e8a5cfcc26d40c286517fd512283b9d"
+    },
+    {
+      "file": "figure_hazard_ratio_meta_py.png",
+      "bytes": 222685,
+      "sha256": "5b532975b12292c5de64ae7d133f8eca47697646a27a9cdfeaf47f855cea8da0"
+    },
+    {
+      "file": "figure_hazard_ratio_meta_py.svg",
+      "bytes": 72723,
+      "sha256": "68886a7ebe95b92a59e057ce2c8015f9cc038b8a15e6a14d9d933f3b62f54f63"
+    },
+    {
+      "file": "packages_meta_py.txt",
+      "bytes": 1072,
+      "sha256": "52c4fa2409ada3dde75589bac86e918145d62d78484a334e17593001ee388862"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 5370,
+      "sha256": "12ffe333a4569a0a9533105df70ba63b2b36ff0d923a60f2f2d10851f74df36c"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1493662,
+      "sha256": "581f0fbae84dd65d35e5ead640ada03d46dc3fce98fe036e0d16d4df7a5380b2"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1992,
+      "sha256": "a30ec2b1742691f39921a7caac9fb06656cdb02f5b82457c840098a3c3fbaab7"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_arm_km.png)
+
+## Statistical results
+
+| group | n | events | median_survival | ci_low | ci_high | log_rank_p |
+| --- | --- | --- | --- | --- | --- | --- |
+| control | 60 | 45 | 6.8 | 4.6 | 10.1 | 0.00700203369548444 |
+| treated | 60 | 30 | 11.4 | 9.3 | 19.2 | 0.00700203369548444 |
+
+## Methods
+
+Survival was estimated by the Kaplan-Meier method and compared between groups of arm with the log-rank test (chi-square(1) = 7.27, P = 0.007). Median survival by group: control (median  6.8), treated (median 11.4). Censoring is marked with ticks and the number at risk is tabulated below the curves. Analyses were performed in R 4.4.1 with survival 3.6.4 and survminer 0.4.9.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file":"input_arm.csv","md5":"6f53a662fffe08afdcf72fe041adaf29","sha256":"17dccfaf72c84d69607aa73efad89ed98d9af94e72ddd285bc864fa65346b75e"} |
+| command | figkit plot --recipe survival_km |
+| analysis_options | {"engine":"r","recipe":"survival_km","data":{"file":"survival_trial.csv","x":"arm","y":null,"fill":null,"facet":null,"time":"time","event":"event","annotation":null,"id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":"Months","y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

@@ -13,6 +13,12 @@ data:
   id: subject
   group: null
   label: null
+  positive: null
+  se: null
+  ci_low: null
+  ci_high: null
+  measure: null
+  markers: null
 test:
   method: auto
   paired: false

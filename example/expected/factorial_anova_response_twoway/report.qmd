@@ -1,0 +1,63 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_response_twoway.png)
+
+## Statistical results
+
+| effect | df1 | df2 | statistic | p_value | effect_size | effect_size_name | significant |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| genotype | 1 | 42 | 67.34103515749 | 2.88941030708033e-10 | 0.615880717248515 | partial eta squared | TRUE |
+| treatment | 2 | 42 | 22.6127769857257 | 2.16130787141873e-07 | 0.518489730500921 | partial eta squared | TRUE |
+| genotype:treatment | 2 | 42 | 39.4009950995388 | 2.31568361710087e-10 | 0.652323608818154 | partial eta squared | TRUE |
+
+## Methods
+
+Response (a.u.) was analyzed by a 2-way ANOVA (Type II sums of squares) with factors genotype, treatment. Effects tested: genotype (F(1, 42) = 67.34, P < 0.001); treatment (F(2, 42) = 22.61, P < 0.001); genotype x treatment (F(2, 42) = 39.40, P < 0.001). Effect sizes are partial eta squared. Significance was set at P < 0.05. Analyses were performed in R 4.4.1 with car 3.1.3; figures were produced with ggplot2 3.5.1.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file":"input_response.csv","md5":"dba50f83c02a1cd007bc013dd062a9b0","sha256":"e7d2443929aced46222aa951eb52064fade5b9ab5ceed25f6ebf447676bc8ff4"} |
+| command | figkit plot --recipe factorial_anova |
+| analysis_options | {"engine":"r","recipe":"factorial_anova","data":{"file":"twoway_response.csv","x":"genotype","y":"response","fill":"treatment","facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":"Response (a.u.)","title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

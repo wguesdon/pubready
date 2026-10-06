@@ -122,12 +122,15 @@ locfit==1.5-9.10
 magrittr==2.0.3
 markdown==1.13
 MASS==7.3-60.2
+mathjaxr==1.6-0
 Matrix==1.7-0
 MatrixGenerics==1.18.1
 MatrixModels==0.5-3
 matrixStats==1.4.1
 maxstat==0.7-25
 memoise==2.0.1
+metadat==1.2-0
+metafor==4.6-0
 methods==4.4.1
 mgcv==1.9-1
 microbenchmark==1.5.0
@@ -144,6 +147,7 @@ openssl==2.2.2
 optparse==1.7.5
 org.Hs.eg.db==3.20.0
 parallel==4.4.1
+pbapply==1.7-2
 pbkrtest==0.5.3
 pillar==1.9.0
 pkgbuild==1.4.5
@@ -155,6 +159,7 @@ png==0.1-8
 polynom==1.4-1
 praise==1.0.0
 prettyunits==1.2.0
+pROC==1.18.5
 processx==3.8.4
 progress==1.2.3
 ps==1.8.1

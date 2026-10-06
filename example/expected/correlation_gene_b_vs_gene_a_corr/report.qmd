@@ -1,0 +1,61 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_gene_b_vs_gene_a_corr.png)
+
+## Statistical results
+
+| x | y | n | method | estimate_name | estimate | statistic | df | p_value | conf_low | conf_high | shapiro_p_x | shapiro_p_y |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| gene_a | gene_b | 60 | Pearson correlation | r | 0.71017903169005 | 7.68238648814607 | 58 | 2.08979664330358e-10 | 0.556633086665529 | 0.816807249728976 | 0.193549995149016 | 0.598487747579009 |
+
+## Methods
+
+The association between Gene A (a.u.) and Gene B (a.u.) was assessed with a Pearson correlation (n = 60). The method was chosen from the Shapiro-Wilk normality of each variable. The correlation was r = 0.71 (P = 2.1e-10), with a linear fit and 95% confidence band shown. Significance was set at P < 0.05. Rendered in R 4.4.1 with ggplot2 3.5.1 and ggpubr 0.6.0.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file":"input_gene_b_vs_gene_a.csv","md5":"b4e0baa020fa210c4d2c64be1569bb31","sha256":"b7de65016a54e3a4d34983a3ea4be3515a1b0c6387dd7ffea93aab56246f7c34"} |
+| command | figkit plot --recipe correlation |
+| analysis_options | {"engine":"r","recipe":"correlation","data":{"file":"correlation_xy.csv","x":"gene_a","y":"gene_b","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":"Gene A (a.u.)","y_label":"Gene B (a.u.)","title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

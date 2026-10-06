@@ -1,0 +1,64 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_response_prop.png)
+
+## Statistical results
+
+| group | outcome | n | proportion |
+| --- | --- | --- | --- |
+| control | non-responder | 39 | 0.65 |
+| treated | non-responder | 28 | 0.4375 |
+| control | responder | 21 | 0.35 |
+| treated | responder | 36 | 0.5625 |
+
+## Methods
+
+The distribution of the outcome (2 categories) across 2 groups (n = 124) was tested with Pearson's chi-squared test (P = 0.018). The odds ratio was 2.39. Proportions are shown as a 100% stacked bar per group. Drawn in R 4.4.1 with ggplot2 3.5.1.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file":"input_response.csv","md5":"b8a5c64645d67aefe9af72a0c3d14d2b","sha256":"89ccd79ae898130f014ac13653961046651fd52eecc5b901d8ab858f1e90df36"} |
+| command | figkit plot --recipe proportions |
+| analysis_options | {"engine":"r","recipe":"proportions","data":{"file":"response_by_arm.csv","x":"arm","y":"response","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

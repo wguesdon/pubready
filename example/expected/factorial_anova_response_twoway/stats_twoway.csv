@@ -1,4 +1,4 @@
-effect,df1,df2,statistic,p_value,effect_size,significant
-genotype,1,42,67.341,2.89e-10,0.616,TRUE
-treatment,2,42,22.613,2.16e-7,0.518,TRUE
-genotype:treatment,2,42,39.401,2.32e-10,0.652,TRUE
+effect,df1,df2,statistic,p_value,effect_size,effect_size_name,significant
+genotype,1,42,67.34103515748997,2.8894103070803256e-10,0.6158807172485146,partial eta squared,TRUE
+treatment,2,42,22.612776985725702,2.1613078714187274e-7,0.5184897305009213,partial eta squared,TRUE
+genotype:treatment,2,42,39.400995099538825,2.3156836171008667e-10,0.6523236088181544,partial eta squared,TRUE

@@ -1,0 +1,61 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_new_assay_vs_reference_assay_ba.png)
+
+## Statistical results
+
+| method_a | method_b | n | bias | bias_ci_low | bias_ci_high | sd_diff | loa_low | loa_high | loa_low_ci_low | loa_low_ci_high | loa_high_ci_low | loa_high_ci_high | prop_bias_slope | prop_bias_p | shapiro_p_diff |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| new_assay | reference_assay | 40 | 5.9325 | 4.41692798856558 | 7.44807201143442 | 4.73889457520125 | -3.35556269392668 | 15.2205626939267 | -5.96744291775781 | -0.743682470095552 | 12.6086824700956 | 17.8324429177578 | 0.0448782324974291 | 0.00102562860425819 | 0.665288545663233 |
+
+## Methods
+
+Agreement between new_assay and reference_assay was assessed by the method of Bland and Altman (n = 40 pairs). The mean difference (new_assay - reference_assay) was 5.93 (95% CI 4.42 to 7.45) with a standard deviation of 4.74. The 95% limits of agreement were -3.36 (95% CI -5.97 to -0.744) and 15.2 (95% CI 12.6 to 17.8), computed as the mean difference plus or minus 1.96 standard deviations, with confidence intervals from the standard error of Bland and Altman (1999). A linear regression of the difference on the mean gave a slope of 0.045 (P = 0.001) as a test of proportional bias. The normality of the differences, which the limits assume, was checked with the Shapiro-Wilk test (P = 0.67). Computed in R 4.4.1 and drawn with ggplot2 3.5.1.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file":"input_new_assay_vs_reference_assay.csv","md5":"a218e4c5dd5a5ae0131ca8fd388f991a","sha256":"4a9865549eed01bcf632a92a15dd7c170ec624bef0d2e63d90ea3a3b72faec82"} |
+| command | figkit plot --recipe bland_altman |
+| analysis_options | {"engine":"r","recipe":"bland_altman","data":{"file":"method_agreement.csv","x":"new_assay","y":"reference_assay","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

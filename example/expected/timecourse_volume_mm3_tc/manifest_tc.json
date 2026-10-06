@@ -1,0 +1,140 @@
+{
+  "pubready_version": "0.4.1",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "timecourse",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "day",
+    "y": "volume_mm3",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_volume_mm3.csv",
+    "original_name": "tumor_growth.csv",
+    "md5": "b86e88025259e6532a144d1496106495",
+    "sha256": "dbf732b2b6cf9b41409b5419f1f5a21faabab658b627b18f9ac51654c2f09614",
+    "n_rows": 161
+  },
+  "statistical_test": {
+    "name": "mixed ANOVA (group between, time within)",
+    "n_subjects": 23,
+    "n_times": 7,
+    "n_dropped_subjects": 1,
+    "sphericity": {
+      "test": "Mauchly",
+      "W": 2.120734e-06,
+      "statistic": 232.244416,
+      "df": 20,
+      "p_value": 2.147927e-37
+    },
+    "gg_epsilon": 0.195129,
+    "correction_applied": true,
+    "effects": {
+      "arm": {
+        "F": 28.430557,
+        "df1": 2,
+        "df2": 20,
+        "p_value": 1.423093e-06,
+        "p_gg": null,
+        "p_reported": 1.423093e-06,
+        "partial_eta2": 0.73979
+      },
+      "day": {
+        "F": 236.199203,
+        "df1": 6,
+        "df2": 120,
+        "p_value": 5.681091e-64,
+        "p_gg": 2.607148e-14,
+        "p_reported": 2.607148e-14,
+        "partial_eta2": 0.921936
+      },
+      "arm:day": {
+        "F": 28.825839,
+        "df1": 12,
+        "df2": 120,
+        "p_value": 8.619432e-30,
+        "p_gg": 2.003973e-07,
+        "p_reported": 2.003973e-07,
+        "partial_eta2": 0.74244
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:0.4.1",
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_volume_mm3_tc.pdf",
+    "figure_volume_mm3_tc.png",
+    "figure_volume_mm3_tc.svg",
+    "packages_tc.txt",
+    "qc_normality_tc.png",
+    "qc_normality_tc.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_volume_mm3_tc.pdf",
+      "bytes": 16198,
+      "sha256": "9d5f419b58dce18fc3a0689f4a0a99c53014fe1e943ce62ec45dc559073d1ef1"
+    },
+    {
+      "file": "figure_volume_mm3_tc.png",
+      "bytes": 208954,
+      "sha256": "8c1cba2e283650d5c56acf7a4aee08341b7d2df9454856d3c2ca4a7eacfb6d23"
+    },
+    {
+      "file": "figure_volume_mm3_tc.svg",
+      "bytes": 23278,
+      "sha256": "6f2f01ddb592fa5560fe04554b04ea396a69ce13861369572557ba7847c1f007"
+    },
+    {
+      "file": "packages_tc.txt",
+      "bytes": 3477,
+      "sha256": "d608ef5a44ae5d7ff6b84ffbfb5ee9b8ce1d2c1a0aeb220065e7d20c1b865f91"
+    },
+    {
+      "file": "qc_normality_tc.png",
+      "bytes": 53332,
+      "sha256": "6dfe82c8f9e6ed645d85282ced477c7a49e5723932bea3b6a0e5eeb5bec39f0d"
+    },
+    {
+      "file": "qc_normality_tc.pdf",
+      "bytes": 25199,
+      "sha256": "0a34f18972b90151fc1fdd14542cf155a374dc043ede3d8207527ea08b38796d"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3615,
+      "sha256": "d53df3c7d82f3ddff69ec5df3741fcfe258cd26cb23406708ead095b34362bee"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1472321,
+      "sha256": "9a30815f3f7312a955a4d364c7c3ee86dfce2296a1399bfe85f3868f7cbe6f58"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1959,
+      "sha256": "f5e4beec571f441b2cfa44417d63ee7ce7f763e988dcb01fa1a3dc459a24aa41"
+    }
+  ]
+}

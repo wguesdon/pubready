@@ -1,0 +1,90 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_expression_matrix_demo.png)
+
+## Statistical results
+
+| feature | mean_control | mean_treated | p_value | p_adj | significant |
+| --- | --- | --- | --- | --- | --- |
+| gene_01 | 8.068 | 10.299 | 0.0103555185713799 | 0.0172591976189666 | TRUE |
+| gene_02 | 8.2 | 11.867 | 2.48751839678257e-05 | 0.000149251103806954 | TRUE |
+| gene_03 | 8.884 | 10.171 | 0.104964729225406 | 0.143133721671008 | FALSE |
+| gene_04 | 7.513 | 11.925 | 1.2610160018364e-05 | 0.000149251103806954 | TRUE |
+| gene_05 | 8.676 | 11.971 | 0.000235211188534737 | 0.000882041957005264 | TRUE |
+| gene_06 | 8.14 | 11.21 | 6.08131902725659e-05 | 0.00030406595136283 | TRUE |
+| gene_07 | 8.366 | 11.391 | 0.000537529475538867 | 0.00179176491846289 | TRUE |
+| gene_08 | 8.3 | 10.278 | 0.00697764861290111 | 0.0130830911491896 | TRUE |
+| gene_09 | 7.753 | 11.042 | 0.000635592346715264 | 0.00190677704014579 | TRUE |
+| gene_10 | 7.46 | 10.122 | 0.0018162348798828 | 0.00389193188546314 | TRUE |
+| gene_11 | 7.533 | 4.523 | 0.000215355558843079 | 0.000882041957005264 | TRUE |
+| gene_12 | 7.528 | 4.941 | 2.37457347082077e-05 | 0.000149251103806954 | TRUE |
+| gene_13 | 8.312 | 5.503 | 0.00171247643273232 | 0.00389193188546314 | TRUE |
+| gene_14 | 7.868 | 3.121 | 1.74167062857031e-06 | 5.22501188571094e-05 | TRUE |
+| gene_15 | 7.482 | 5.429 | 0.00893932557680321 | 0.0157752804296527 | TRUE |
+| gene_16 | 8.566 | 5.123 | 2.28775382863061e-05 | 0.000149251103806954 | TRUE |
+| gene_17 | 7.48 | 4.748 | 0.00213552301621939 | 0.00427104603243877 | TRUE |
+| gene_18 | 7.882 | 5.388 | 0.0135108679767265 | 0.0213329494369365 | TRUE |
+| gene_19 | 7.81 | 5.048 | 0.00103946265952445 | 0.0028348981623394 | TRUE |
+| gene_20 | 7.984 | 5.528 | 0.00151011375166693 | 0.00377528437916732 | TRUE |
+| gene_21 | 8.118 | 7.803 | 0.606826659447576 | 0.658508986876736 | FALSE |
+| gene_22 | 8.318 | 7.935 | 0.61460838775162 | 0.658508986876736 | FALSE |
+| gene_23 | 7.209 | 8.518 | 0.0374406605869221 | 0.0534866579813173 | FALSE |
+| gene_24 | 7.737 | 8.653 | 0.116456485136686 | 0.151899763221765 | FALSE |
+| gene_25 | 7.851 | 8.172 | 0.612821542200336 | 0.658508986876736 | FALSE |
+| gene_26 | 8.421 | 8.033 | 0.420948819568039 | 0.526186024460049 | FALSE |
+| gene_27 | 7.301 | 8.53 | 0.0213167245446705 | 0.0319750868170057 | TRUE |
+| gene_28 | 8.64 | 9.018 | 0.549106233364744 | 0.658508986876736 | FALSE |
+| gene_29 | 7.661 | 7.849 | 0.684857360736795 | 0.708473131796685 | FALSE |
+| gene_30 | 8.041 | 7.943 | 0.871092259075287 | 0.871092259075287 | FALSE |
+
+## Methods
+
+A heatmap of 30 features across 20 samples was drawn with ComplexHeatmap. Values were z-scored across samples within each feature (row scaling). Rows and columns were hierarchically clustered. A per-feature Welch t-test (control vs treated), BH-adjusted was applied per feature; 20 feature(s) were significant (adjusted P < 0.05) and are marked with stars. Rendered in R 4.4.1 with ComplexHeatmap 2.22.0 and circlize 0.4.16.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file":"input_expression_matrix.csv","md5":"ca9f8a5e682388268ffb561ea779a536","sha256":"88a6c73257c7a2c3c3f481165584f21cb60cc907778508e023fb2762472198f4"} |
+| command | figkit plot --recipe heatmap |
+| analysis_options | {"engine":"r","recipe":"heatmap","data":{"file":"expression_matrix.csv","x":null,"y":null,"fill":null,"facet":null,"time":null,"event":null,"annotation":"example/expression_annotation.csv","id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

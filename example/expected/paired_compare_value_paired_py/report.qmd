@@ -1,0 +1,61 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new statistical method.
+:::
+
+## Figure
+
+![Publication figure](figure_value_paired_py.png)
+
+## Statistical results
+
+| outcome | condition1 | condition2 | n_pairs | test | statistic | df | p_value | mean_diff | effect_size_name | effect_size | shapiro_p_diff |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| value | pre | post | 22 | paired t-test | -9.972925411867607 | 21 | 2.0315796603119834e-09 | -11.190909090909091 | Cohen's dz | -2.1262348419712453 | 0.6910774124765315 |
+
+## Methods
+
+Marker (a.u.) was compared between pre and post within each subject with a paired t-test (n = 22 pairs). The test was chosen from the Shapiro-Wilk normality of the within-subject differences. Effect size is reported as Cohen's dz = -2.13. Significance was set at P < 0.05. Analyses were performed in Python 3.10.12 with scipy 1.15.3; the figure was produced with matplotlib 3.10.9.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | False |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file": "input_value.csv", "md5": "e995b32f1de8c3186d6e6c6f0d010a9f", "sha256": "8bfc166ad40f6287fcf50fe3c144a4ccce89d4a501007e5e47dd183fc2df2b0f"} |
+| command | figkit plot --recipe paired_compare |
+| analysis_options | {"engine": "python", "recipe": "paired_compare", "data": {"file": "paired_response.csv", "x": "condition", "y": "value", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": "subject", "group": null, "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": null, "y_label": "Marker (a.u.)", "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "b35bc2f",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "multi_group_compare",
@@ -22,13 +22,13 @@
   "statistical_test": {
     "name": "one-way ANOVA",
     "omnibus": {
-      "statistic": 235.832,
+      "statistic": 235.832113,
       "df1": 3,
       "df2": 36,
-      "p_value": 1.02e-23,
+      "p_value": 1.021419e-23,
       "effect_size": {
-        "name": "generalized eta-squared",
-        "value": 0.952
+        "name": "partial eta-squared",
+        "value": 0.95158
       }
     },
     "post_hoc": "Tukey's HSD",
@@ -47,9 +47,9 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "c6b5111edf89b3fa4919d18a52fe9f5c45ce02c5fba5672bbb6d97e988739a0e",
-    "digest": "sha256:76bf116bce220b1a3d874fbf11ece1cf172bf558a2cdf835434a94626f1b97a8",
-    "podman_version": "4.9.3"
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
   },
   "environment": {
     "language": "R",
@@ -67,6 +67,56 @@
     "figure_expression_anova.svg",
     "packages_anova.txt",
     "qc_normality_anova.png",
-    "qc_normality_anova.pdf"
+    "qc_normality_anova.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_expression_anova.pdf",
+      "bytes": 16064,
+      "sha256": "2405d10ff9c5c0ded84221accfd4f6dbe107267058aec27ee8e64cf6ef7d5297"
+    },
+    {
+      "file": "figure_expression_anova.png",
+      "bytes": 69502,
+      "sha256": "ca97f71a08fea7f9981a0aff32873c2fe0cdb089a99c28b11f66e202a9b832f6"
+    },
+    {
+      "file": "figure_expression_anova.svg",
+      "bytes": 14924,
+      "sha256": "fda46c5a751e69c0e52b3a2d66522f930d7288e61a3739052686de60b8a57160"
+    },
+    {
+      "file": "packages_anova.txt",
+      "bytes": 3519,
+      "sha256": "b3bb475a9d5f3957fea286350476af1f6b4072c356c84e22eb707211bf067af4"
+    },
+    {
+      "file": "qc_normality_anova.png",
+      "bytes": 136501,
+      "sha256": "6be898cae309c7e2e62d701351dbbc6d4f6f08b56f307da08e4669c7784f2e54"
+    },
+    {
+      "file": "qc_normality_anova.pdf",
+      "bytes": 28983,
+      "sha256": "08b9c698681bac26f55b84cf714a222bd68e5ceb16df5ffcd1dc53d7939f7fae"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3342,
+      "sha256": "19795fa7951c351cf62b830fe4ad00685784cf4e57a64f1c87c8792e3ddbb387"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1286346,
+      "sha256": "8e7c8dd3828974f997d8257b608a0fd6e480086a4ecfd27032169f9779733461"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1983,
+      "sha256": "9a6e11a4f3c43dd5d48c3226b60efcf25f9ce7963687a618b833d2e70d9c6922"
+    }
   ]
 }

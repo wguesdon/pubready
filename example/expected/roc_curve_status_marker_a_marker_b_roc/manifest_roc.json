@@ -1,0 +1,113 @@
+{
+  "pubready_version": "0.4.1",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "roc_curve",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "marker_a,marker_b",
+    "y": "status",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_status_marker_a_marker_b.csv",
+    "original_name": "biomarker_roc.csv",
+    "md5": "f6d3a1a52479ba12f8a4ee2644beb33d",
+    "sha256": "093cd3826f05f33eb5db7e8f7d1b571a2e2c02a398727171a5702f39ecce3fa7",
+    "n_rows": 140
+  },
+  "statistical_test": {
+    "name": "ROC curve analysis (DeLong)",
+    "case_level": "disease",
+    "control_level": "healthy",
+    "n_cases": 60,
+    "n_controls": 80,
+    "markers": {
+      "marker_a": {
+        "auc": 0.833958,
+        "ci_low": 0.767586,
+        "ci_high": 0.900331,
+        "direction": "<",
+        "youden_threshold": 3.975,
+        "sensitivity": 0.783333,
+        "specificity": 0.7875,
+        "delong_p_vs_first": null
+      },
+      "marker_b": {
+        "auc": 0.621354,
+        "ci_low": 0.526665,
+        "ci_high": 0.716043,
+        "direction": "<",
+        "youden_threshold": 10.835,
+        "sensitivity": 0.316667,
+        "specificity": 0.9,
+        "delong_p_vs_first": 0.000011
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:0.4.1",
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_status_marker_a_marker_b_roc.pdf",
+    "figure_status_marker_a_marker_b_roc.png",
+    "figure_status_marker_a_marker_b_roc.svg",
+    "packages_roc.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_status_marker_a_marker_b_roc.pdf",
+      "bytes": 17341,
+      "sha256": "04c396728190ec693a5ba045034d7674924b6d42904e046a1730b6bd4481bb5a"
+    },
+    {
+      "file": "figure_status_marker_a_marker_b_roc.png",
+      "bytes": 92049,
+      "sha256": "03c2121de89b9a2cfc98ea327bb625ba5dd2e290b7bd58eb66924899fa07601e"
+    },
+    {
+      "file": "figure_status_marker_a_marker_b_roc.svg",
+      "bytes": 10481,
+      "sha256": "a546a4515d907ee0a544cab3960ef69a62991dff49885b6c88d57f428f393761"
+    },
+    {
+      "file": "packages_roc.txt",
+      "bytes": 3490,
+      "sha256": "937f7aa6e3b0da4a08c0de6ac39c357cd8b73d37b60b1e6d22d36020b516a206"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3550,
+      "sha256": "9b0428094022a9fecb71fca775b5deb267e31402e6564078d3e7e62b9f829783"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1316331,
+      "sha256": "b1cc27cba841e5d577cdf4de19ef828c8624357270456b276ef28daf7a793257"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1964,
+      "sha256": "629591eb1c2530d88346ff9e5e249328f3e7ea515fa2afa9e775d6e4a0d24f33"
+    }
+  ]
+}

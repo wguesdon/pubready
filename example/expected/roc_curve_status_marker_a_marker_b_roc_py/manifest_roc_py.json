@@ -1,0 +1,118 @@
+{
+  "pubready_version": "0.4.1",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "roc_curve",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "marker_a,marker_b",
+    "y": "status",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_status_marker_a_marker_b.csv",
+    "original_name": "biomarker_roc.csv",
+    "md5": "f6d3a1a52479ba12f8a4ee2644beb33d",
+    "sha256": "093cd3826f05f33eb5db7e8f7d1b571a2e2c02a398727171a5702f39ecce3fa7",
+    "n_rows": 140
+  },
+  "statistical_test": {
+    "name": "ROC curve analysis (DeLong)",
+    "case_level": "disease",
+    "control_level": "healthy",
+    "n_cases": 60,
+    "n_controls": 80,
+    "markers": {
+      "marker_a": {
+        "auc": 0.8339583333333335,
+        "auc_ci_low": 0.767585790501013,
+        "auc_ci_high": 0.9003308761656539,
+        "direction": "<",
+        "youden_threshold": 3.975,
+        "sensitivity": 0.7833333333333333,
+        "specificity": 0.7875,
+        "delong_p_vs_first": NaN
+      },
+      "marker_b": {
+        "auc": 0.6213541666666667,
+        "auc_ci_low": 0.5266651760981201,
+        "auc_ci_high": 0.7160431572352132,
+        "direction": "<",
+        "youden_threshold": 10.835,
+        "sensitivity": 0.31666666666666665,
+        "specificity": 0.9,
+        "delong_p_vs_first": 1.0612759207215801e-05
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:0.4.1",
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_status_marker_a_marker_b_roc_py.pdf",
+    "figure_status_marker_a_marker_b_roc_py.png",
+    "figure_status_marker_a_marker_b_roc_py.svg",
+    "packages_roc_py.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_status_marker_a_marker_b_roc_py.pdf",
+      "bytes": 18433,
+      "sha256": "9ac72bb5d97c14034ab5ef195d981d27ff0eb5f2443a43fb1697dc8513579382"
+    },
+    {
+      "file": "figure_status_marker_a_marker_b_roc_py.png",
+      "bytes": 114060,
+      "sha256": "4a78886433beaefedd10c11759748c898a0bf9c0927fc5224ceb57d30f1d3d6e"
+    },
+    {
+      "file": "figure_status_marker_a_marker_b_roc_py.svg",
+      "bytes": 43780,
+      "sha256": "485ca20c101a408ca5aa22ef6da43efc22cd27e641b8a77790ab96de17afc139"
+    },
+    {
+      "file": "packages_roc_py.txt",
+      "bytes": 1052,
+      "sha256": "87985f499843c00beb4fe9a7c6b58d362b1c7e2afb22ed62f2e88bc1e67feffd"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3742,
+      "sha256": "9cd3107e81eb612feea2fdd29bac2f5dd4051edc7269edb7ce101e2d143fe0cc"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1345868,
+      "sha256": "7ba9f45666618a461741cf2bc55bc32e596ee9e83b89aa594cff3767a6c05428"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1974,
+      "sha256": "87c7b7cd5aed1a7e258d74314dc790c285a39f423a40eadcb9fbb0a9dd7df4c0"
+    }
+  ]
+}

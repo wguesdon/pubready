@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "b35bc2f",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "proportions",
@@ -32,9 +32,9 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "c6b5111edf89b3fa4919d18a52fe9f5c45ce02c5fba5672bbb6d97e988739a0e",
-    "digest": "sha256:76bf116bce220b1a3d874fbf11ece1cf172bf558a2cdf835434a94626f1b97a8",
-    "podman_version": "4.9.3"
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
   },
   "environment": {
     "language": "R",
@@ -50,6 +50,46 @@
     "figure_response_prop.pdf",
     "figure_response_prop.png",
     "figure_response_prop.svg",
-    "packages_prop.txt"
+    "packages_prop.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_response_prop.pdf",
+      "bytes": 6913,
+      "sha256": "9b3155fda89661c0fcf486f5f56c3dcc71b319b989a59ee2dc1b8842cdd60239"
+    },
+    {
+      "file": "figure_response_prop.png",
+      "bytes": 68405,
+      "sha256": "7a19785a25bdbf179fcfa4c8272d82e92a0678a4b70cd324f891a209fadf90af"
+    },
+    {
+      "file": "figure_response_prop.svg",
+      "bytes": 6873,
+      "sha256": "eaa2047cf2337a3c705d5cbde78c88f052285cbd3e77afcf3b124de24d9f86af"
+    },
+    {
+      "file": "packages_prop.txt",
+      "bytes": 3491,
+      "sha256": "c33789f49ac710220421ecfb9962c55668b948672d78a8135211b68d0977181a"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 2624,
+      "sha256": "0bea51e08efcd7af987281ff790b876658ff4274e4bbaec694de13c6b97c3d7f"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1283514,
+      "sha256": "fa353587cea5287cbd9e6b35e70b8a6babaf1076ae870060aba3f5b1e8aac0b0"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1937,
+      "sha256": "1c9eecb4bb9437365dd5f914cdf8876a2f1c2670a2c56aa96149dd3f6695e256"
+    }
   ]
 }

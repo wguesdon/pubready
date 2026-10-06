@@ -1,0 +1,80 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_target_lesion_mm_spider.png)
+
+## Statistical results
+
+| patient | baseline | visits | best_change_pct | worst_change_pct | last_change_pct | category_from_change | group |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| PT-19 | 47.9 | 5 | -54.6972860125261 | -15.4488517745303 | -54.6972860125261 | partial response | treated |
+| PT-14 | 82.6 | 5 | -46.6101694915254 | -9.68523002421307 | -46.6101694915254 | partial response | treated |
+| PT-16 | 68.7 | 5 | -38.5735080058224 | -10.6259097525473 | -38.5735080058224 | partial response | treated |
+| PT-13 | 85.4 | 5 | -37.1194379391101 | -8.8992974238876 | -37.1194379391101 | partial response | treated |
+| PT-17 | 64.1 | 5 | -36.9734789391576 | -8.58034321372854 | -36.9734789391576 | partial response | treated |
+| PT-11 | 48.8 | 5 | -35.0409836065574 | -7.17213114754098 | -35.0409836065574 | partial response | treated |
+| PT-12 | 62 | 5 | -30.8064516129032 | -8.87096774193548 | -30.8064516129032 | partial response | treated |
+| PT-20 | 64 | 5 | -27.65625 | -1.25 | -27.65625 | stable disease | treated |
+| PT-18 | 56.5 | 5 | -23.1858407079646 | -1.76991150442478 | -23.1858407079646 | stable disease | treated |
+| PT-15 | 76.7 | 3 | -22.5554106910039 | -15.1238591916558 | -22.5554106910039 | stable disease | treated |
+| PT-01 | 53.9 | 5 | 1.66975881261595 | 15.5844155844156 | 15.5844155844156 | stable disease | control |
+| PT-09 | 84 | 5 | 1.9047619047619 | 16.6666666666667 | 16.6666666666667 | stable disease | control |
+| PT-10 | 46.2 | 5 | 3.24675324675325 | 24.4588744588745 | 24.4588744588745 | progressive disease | control |
+| PT-05 | 43.2 | 5 | 4.16666666666666 | 10.8796296296296 | 10.8796296296296 | stable disease | control |
+| PT-08 | 54.5 | 3 | 4.77064220183486 | 11.1926605504587 | 11.1926605504587 | stable disease | control |
+| PT-03 | 65.5 | 3 | 5.80152671755725 | 13.587786259542 | 13.587786259542 | stable disease | control |
+| PT-07 | 44.3 | 5 | 6.32054176072236 | 26.410835214447 | 23.4762979683973 | progressive disease | control |
+| PT-06 | 87.7 | 5 | 6.95553021664766 | 27.2519954389966 | 27.2519954389966 | progressive disease | control |
+| PT-02 | 40 | 5 | 7.25 | 31 | 31 | progressive disease | control |
+| PT-04 | 40.7 | 5 | 8.35380835380835 | 26.044226044226 | 26.044226044226 | progressive disease | control |
+
+## Methods
+
+Target_lesion_mm was expressed as a percentage change from each patient's own baseline, which is the first measurement in time, and drawn as one line per patient (n = 20 patients, 94 measurements). Dashed reference lines mark +20% and -30%, the RECIST 1.1 thresholds for progressive disease and for a partial response. On the change from baseline alone, 7 patient(s) reached a partial response, 8 were stable and 5 reached progressive disease. That categorisation reads the target lesion change from baseline only. A full RECIST 1.1 assessment also reads the nadir, the non-target lesions and any new lesion. The figure is descriptive, so no statistical test is applied. Drawn in R 4.4.1 with ggplot2 3.5.1.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file":"input_target_lesion_mm.csv","md5":"d3ceaf1a40e01ce2639a76cda972d28e","sha256":"97ca47b3a60d61efa8b26f77be4c7169722126bb8198f60c17acef4d6f04d23c"} |
+| command | figkit plot --recipe spider_response |
+| analysis_options | {"engine":"r","recipe":"spider_response","data":{"file":"spider_response.csv","x":"week","y":"target_lesion_mm","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":"patient","group":"arm","label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":"Week","y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

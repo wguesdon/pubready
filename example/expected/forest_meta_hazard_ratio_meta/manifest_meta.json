@@ -1,0 +1,108 @@
+{
+  "pubready_version": "0.4.1",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "forest_meta",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "Hazard ratio (95% CI, log scale)",
+    "y": "hazard_ratio",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_hazard_ratio.csv",
+    "original_name": "meta_trials.csv",
+    "md5": "24320e4211da4db9bf76c9a1fedeb1e9",
+    "sha256": "01b10b5db2fbcdca95bb708eb109ab543a00c92557e91fbc44d75ad98d46acc6",
+    "n_rows": 9
+  },
+  "statistical_test": {
+    "name": "Inverse-variance meta-analysis (fixed effect and DerSimonian-Laird random effects)",
+    "measure": "ratio",
+    "k": 9,
+    "fixed": {
+      "estimate": 0.762567,
+      "ci_low": 0.702872,
+      "ci_high": 0.827331,
+      "p_value": 7.144729e-11
+    },
+    "random": {
+      "estimate": 0.765724,
+      "ci_low": 0.698654,
+      "ci_high": 0.839233,
+      "p_value": 1.146999e-08
+    },
+    "heterogeneity": {
+      "q": 9.643453,
+      "df": 8,
+      "p_value": 0.290948,
+      "i2": 17.04216,
+      "tau2": 0.003308
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:0.4.1",
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_hazard_ratio_meta.pdf",
+    "figure_hazard_ratio_meta.png",
+    "figure_hazard_ratio_meta.svg",
+    "packages_meta.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_hazard_ratio_meta.pdf",
+      "bytes": 15461,
+      "sha256": "af1b775af856cdd9a03af8897ad5633b3c120afbd70d1c4d57281950eebe21a3"
+    },
+    {
+      "file": "figure_hazard_ratio_meta.png",
+      "bytes": 168585,
+      "sha256": "48766789e0c8f45b97b31d316ffd73837fd276f53f5083a459c49b7ecb4fb2c2"
+    },
+    {
+      "file": "figure_hazard_ratio_meta.svg",
+      "bytes": 15591,
+      "sha256": "687ecc8d9e635087735e5c3ee9433a423a7f4195c69fa0e41bc6d7abfc0c9c37"
+    },
+    {
+      "file": "packages_meta.txt",
+      "bytes": 3477,
+      "sha256": "7e196e2e4fc8356b6d781191e70a131edb430bfba1007393612b9d2372c57123"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 4959,
+      "sha256": "1c11d813559bfb304549ce5395ac22d8e7cc4bfed3b03da4e86a2912dd22d9af"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1421122,
+      "sha256": "13b14ad02046cdbc2edf1fdc9a59c40477cfda6b4ca6d27e9fded3ea39df7d05"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2012,
+      "sha256": "339e7c687cf9dca38fa6672cc757be4eaeb1b53e341db681a37b1d2ebbc3c3ae"
+    }
+  ]
+}

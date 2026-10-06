@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "b35bc2f",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "heatmap",
@@ -30,9 +30,9 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "c6b5111edf89b3fa4919d18a52fe9f5c45ce02c5fba5672bbb6d97e988739a0e",
-    "digest": "sha256:76bf116bce220b1a3d874fbf11ece1cf172bf558a2cdf835434a94626f1b97a8",
-    "podman_version": "4.9.3"
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
   },
   "environment": {
     "language": "R",
@@ -48,6 +48,46 @@
     "figure_expression_matrix_demo.pdf",
     "figure_expression_matrix_demo.png",
     "figure_expression_matrix_demo.svg",
-    "packages_demo.txt"
+    "packages_demo.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_expression_matrix_demo.pdf",
+      "bytes": 18290,
+      "sha256": "78ce059c7abc9a493ee9de7f5e12580b8114a666db9a2a9070ad88f7a0009dcb"
+    },
+    {
+      "file": "figure_expression_matrix_demo.png",
+      "bytes": 155104,
+      "sha256": "ce11f1a103dc56261203024503a649fb53d4a5bfd3584b6acf36e10fce62379f"
+    },
+    {
+      "file": "figure_expression_matrix_demo.svg",
+      "bytes": 283097,
+      "sha256": "5d6fa1d037c0753698d51076ccb9e59c9b4d31e14bd0c70861e5f56a9adde610"
+    },
+    {
+      "file": "packages_demo.txt",
+      "bytes": 3502,
+      "sha256": "3ab312069ecd57dbbb8649859cf857000e00b2417655dc7145099a933cf0ab88"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 5078,
+      "sha256": "5ad827dffd2a653437676e9b5319f8d8d230d7232f5c650159076727b68376a0"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1403438,
+      "sha256": "32fd10fd74180752a3391e5d6672f0946a45a8b77b01403f74b75da91d178ba9"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1964,
+      "sha256": "d78cd4a9d1de5d129152d7a043d0ee3938f70e9979f7bd0a1cce76c7471648f9"
+    }
   ]
 }

@@ -1,0 +1,67 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new statistical method.
+:::
+
+## Figure
+
+![Publication figure](figure_response_threeway_py.png)
+
+## Statistical results
+
+| effect | df1 | df2 | statistic | p_value | effect_size | effect_size_name | significant |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| genotype | 1 | 40 | 111.2970333218272 | 4.034754681085697e-13 | 0.7356194029600359 | partial eta squared | True |
+| treatment | 1 | 40 | 197.0118992019824 | 4.8090104894002654e-17 | 0.8312321021236497 | partial eta squared | True |
+| sex | 1 | 40 | 10.202550409161775 | 0.0027343973072734788 | 0.20322773098196714 | partial eta squared | True |
+| genotype:treatment | 1 | 40 | 10.074217718845782 | 0.002890120529548012 | 0.2011857234677134 | partial eta squared | True |
+| genotype:sex | 1 | 40 | 0.2437711941844083 | 0.624195816399937 | 0.006057364579680232 | partial eta squared | False |
+| treatment:sex | 1 | 40 | 0.5118078258574037 | 0.47851267962764477 | 0.012633546941608786 | partial eta squared | False |
+| genotype:treatment:sex | 1 | 40 | 0.07401466079151847 | 0.7869780803081738 | 0.0018469489872182567 | partial eta squared | False |
+
+## Methods
+
+Response (a.u.) was analyzed by a 3-way ANOVA (Type II sums of squares) with factors genotype, treatment, sex. Effects tested: genotype (F(1, 40) = 111.30, P < 0.001); treatment (F(1, 40) = 197.01, P < 0.001); sex (F(1, 40) = 10.20, P = 0.0027); genotype x treatment (F(1, 40) = 10.07, P = 0.0029); genotype x sex (F(1, 40) = 0.24, P = 0.62); treatment x sex (F(1, 40) = 0.51, P = 0.48); genotype x treatment x sex (F(1, 40) = 0.07, P = 0.79). Effect sizes are partial eta squared. Significance was set at P < 0.05. Analyses were performed in Python 3.10.12 with statsmodels 0.15.0; figures were produced with seaborn 0.13.2. (The Python engine uses parametric ANOVA only; the aligned rank transform is R-only.)
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | False |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file": "input_response.csv", "md5": "b1ab1ae1731e3311d49a8727536cd99f", "sha256": "b2267d6af2d2f49bbf1e1e75507c56dd8257334c80639c781f35701ca9ea67e8"} |
+| command | figkit plot --recipe factorial_anova |
+| analysis_options | {"engine": "python", "recipe": "factorial_anova", "data": {"file": "threeway_response.csv", "x": "genotype", "y": "response", "fill": "treatment", "facet": "sex", "time": null, "event": null, "annotation": null, "covariates": null, "id": null, "group": null, "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": null, "y_label": "Response (a.u.)", "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

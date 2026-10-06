@@ -12,10 +12,10 @@ for c in covs:
     s = df[c]
     if s.dtype == object or not np.issubdtype(s.dtype, np.number):
         for lvl in sorted(s.astype(str).unique())[1:]:
-            design["%s[%s]" % (c, lvl)] = (s.astype(str) == lvl).astype(int)
+            design["%s%s" % (c, lvl)] = (s.astype(str) == lvl).astype(int)
     else:
         design[c] = pd.to_numeric(s, errors="coerce")
-cph = CoxPHFitter().fit(design, "time", "event")
+cph = CoxPHFitter().fit(design, "time", "event", fit_options={"precision": 1e-11})
 s = cph.summary
 terms = list(s.index); hr = s["exp(coef)"].to_numpy()
 lo = s["exp(coef) lower 95%"].to_numpy(); hi = s["exp(coef) upper 95%"].to_numpy(); pv = s["p"].to_numpy()

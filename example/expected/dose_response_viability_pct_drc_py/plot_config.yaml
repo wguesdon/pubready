@@ -1,0 +1,46 @@
+engine: python
+recipe: dose_response
+data:
+  file: input_viability_pct.csv
+  x: concentration_um
+  y: viability_pct
+  fill: null
+  facet: null
+  time: null
+  event: null
+  annotation: null
+  covariates: null
+  id: null
+  group: compound
+  label: null
+  positive: null
+  se: null
+  ci_low: null
+  ci_high: null
+  measure: null
+  markers: null
+test:
+  method: auto
+  paired: false
+  p_adjust: none
+appearance:
+  theme: pubready_house
+  palette: null
+  x_label: Concentration (uM)
+  y_label: Viability (%)
+  title: null
+  y_limits:
+  - null
+  - null
+  show_points: true
+  geom: box
+  bracket:
+    show: true
+    label: p.signif
+  scale: row
+  cluster: both
+  fc_cutoff: 1.0
+  p_cutoff: 0.05
+  top_n: 15
+  pd_threshold: 20.0
+  pr_threshold: -30.0

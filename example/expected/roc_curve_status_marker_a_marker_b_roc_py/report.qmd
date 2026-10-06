@@ -1,0 +1,62 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new statistical method.
+:::
+
+## Figure
+
+![Publication figure](figure_status_marker_a_marker_b_roc_py.png)
+
+## Statistical results
+
+| marker | case_level | n_cases | n_controls | direction | auc | auc_ci_low | auc_ci_high | youden_threshold | sensitivity | specificity | delong_z_vs_first | delong_p_vs_first |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| marker_a | disease | 60 | 80 | < | 0.8339583333333335 | 0.767585790501013 | 0.9003308761656539 | 3.975 | 0.7833333333333333 | 0.7875 | nan | nan |
+| marker_b | disease | 60 | 80 | < | 0.6213541666666667 | 0.5266651760981201 | 0.7160431572352132 | 10.835 | 0.31666666666666665 | 0.9 | 4.404296741345254 | 1.0612759207215801e-05 |
+
+## Methods
+
+Receiver operating characteristic (ROC) curves were computed for the discrimination of status = disease (cases, n = 60) from healthy (controls, n = 80). The area under each curve (AUC) is reported with a 95% confidence interval by the method of DeLong et al. (1988), and the optimal threshold maximises the Youden index (sensitivity + specificity - 1). marker_a, AUC = 0.834 (95% CI 0.768 to 0.900), optimal threshold 3.975 (sensitivity 0.78, specificity 0.79); marker_b, AUC = 0.621 (95% CI 0.527 to 0.716), optimal threshold 10.84 (sensitivity 0.32, specificity 0.90). The AUC of each marker was compared with that of marker_a by DeLong's test for two correlated ROC curves: marker_b, Z = 4.40, P = 1.1e-05. Computed in Python 3.10.12 with numpy 1.26.4 and scipy 1.15.3, following the rules of pROC, and drawn with matplotlib 3.10.9.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 0.4.1 |
+| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_dirty | False |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:0.4.1 |
+| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| input | {"file": "input_status_marker_a_marker_b.csv", "md5": "f6d3a1a52479ba12f8a4ee2644beb33d", "sha256": "093cd3826f05f33eb5db7e8f7d1b571a2e2c02a398727171a5702f39ecce3fa7"} |
+| command | figkit plot --recipe roc_curve |
+| analysis_options | {"engine": "python", "recipe": "roc_curve", "data": {"file": "biomarker_roc.csv", "x": "marker_a,marker_b", "y": "status", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": null, "group": null, "label": null, "positive": "disease", "se": null, "ci_low": null, "ci_high": null, "measure": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": null, "y_label": null, "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

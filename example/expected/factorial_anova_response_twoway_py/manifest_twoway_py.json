@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "b35bc2f",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "factorial_anova",
@@ -31,35 +31,35 @@
     "effects": [
       {
         "effect": "genotype",
-        "df1": 1.0,
-        "df2": 42.0,
+        "df1": 1,
+        "df2": 42,
         "statistic": 67.34103515749051,
         "p_value": 2.889410307080023e-10,
-        "effect_size": 0.28856084804303067
+        "effect_size": 0.6158807172485166
       },
       {
         "effect": "treatment",
-        "df1": 2.0,
-        "df2": 42.0,
+        "df1": 2,
+        "df2": 42,
         "statistic": 22.612776985725574,
         "p_value": 2.1613078714188581e-07,
-        "effect_size": 0.19379452924501378
+        "effect_size": 0.51848973050092
       },
       {
         "effect": "genotype:treatment",
-        "df1": 2.0,
-        "df2": 42.0,
+        "df1": 2,
+        "df2": 42,
         "statistic": 39.4009950995388,
         "p_value": 2.315683617100895e-10,
-        "effect_size": 0.3376718083727747
+        "effect_size": 0.6523236088181542
       }
     ]
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "c6b5111edf89b3fa4919d18a52fe9f5c45ce02c5fba5672bbb6d97e988739a0e",
-    "digest": "sha256:76bf116bce220b1a3d874fbf11ece1cf172bf558a2cdf835434a94626f1b97a8",
-    "podman_version": "4.9.3"
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
   },
   "environment": {
     "language": "Python",
@@ -80,6 +80,56 @@
     "figure_response_twoway_py.svg",
     "packages_twoway_py.txt",
     "qc_normality_twoway_py.png",
-    "qc_normality_twoway_py.pdf"
+    "qc_normality_twoway_py.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_response_twoway_py.pdf",
+      "bytes": 16744,
+      "sha256": "16613d6dfd24f552a84306d7ce6003e97238e19ba109fd7c6f4318aa14ddbe78"
+    },
+    {
+      "file": "figure_response_twoway_py.png",
+      "bytes": 123233,
+      "sha256": "fda2269840373d9cdab2d73b01ec06ed1ec0f214e44a509273f14aef858a1d7d"
+    },
+    {
+      "file": "figure_response_twoway_py.svg",
+      "bytes": 51434,
+      "sha256": "5549532666844be1f0540250622806e041e400a6cc142977060b6bc02b5e865d"
+    },
+    {
+      "file": "packages_twoway_py.txt",
+      "bytes": 1074,
+      "sha256": "f41169b11e6d074b9fd8bc5864125ec1b47a33dd0c145b0a4aa4439517e08608"
+    },
+    {
+      "file": "qc_normality_twoway_py.png",
+      "bytes": 66209,
+      "sha256": "986d06bd3aa8e7fb1a40ba5286efa50213c6292287fdbf1ab265b54508987787"
+    },
+    {
+      "file": "qc_normality_twoway_py.pdf",
+      "bytes": 23419,
+      "sha256": "678cd095a928956b43adfe42a5557e703575b29b9f8c2476b14779c4ec499f5e"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3332,
+      "sha256": "454480214e01cd5af6ed6a4e39766e6abfa064562545b31d2dd42fcc270544c6"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1357600,
+      "sha256": "e0b880ee28b443062b59699e00f463c137fdd86f28571f59eebe480a5403a063"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1980,
+      "sha256": "93238ae4d84cd55eb4757f9108593fe12862a7024c1b9e9d9bdeb56356d8ca10"
+    }
   ]
 }

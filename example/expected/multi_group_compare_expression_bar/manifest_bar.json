@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "b35bc2f",
+  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "multi_group_compare",
@@ -22,13 +22,13 @@
   "statistical_test": {
     "name": "one-way ANOVA",
     "omnibus": {
-      "statistic": 235.832,
+      "statistic": 235.832113,
       "df1": 3,
       "df2": 36,
-      "p_value": 1.02e-23,
+      "p_value": 1.021419e-23,
       "effect_size": {
-        "name": "generalized eta-squared",
-        "value": 0.952
+        "name": "partial eta-squared",
+        "value": 0.95158
       }
     },
     "post_hoc": "Tukey's HSD",
@@ -47,9 +47,9 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "c6b5111edf89b3fa4919d18a52fe9f5c45ce02c5fba5672bbb6d97e988739a0e",
-    "digest": "sha256:76bf116bce220b1a3d874fbf11ece1cf172bf558a2cdf835434a94626f1b97a8",
-    "podman_version": "4.9.3"
+    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
+    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "podman_version": "5.7.0"
   },
   "environment": {
     "language": "R",
@@ -67,6 +67,56 @@
     "figure_expression_bar.svg",
     "packages_bar.txt",
     "qc_normality_bar.png",
-    "qc_normality_bar.pdf"
+    "qc_normality_bar.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_expression_bar.pdf",
+      "bytes": 16044,
+      "sha256": "c77babcb39b8a2715b23be2ff4f2b522d13b366def58d298b294b69bb927cd22"
+    },
+    {
+      "file": "figure_expression_bar.png",
+      "bytes": 68027,
+      "sha256": "0c853257807c3cf2010b599bbfe20d682386da4b655df7ce2db32e1d7f15c7b2"
+    },
+    {
+      "file": "figure_expression_bar.svg",
+      "bytes": 14626,
+      "sha256": "95585022968d3d7dd245213228070bbc933ec327d37c411eed61e490faedd3ad"
+    },
+    {
+      "file": "packages_bar.txt",
+      "bytes": 3519,
+      "sha256": "b3bb475a9d5f3957fea286350476af1f6b4072c356c84e22eb707211bf067af4"
+    },
+    {
+      "file": "qc_normality_bar.png",
+      "bytes": 136501,
+      "sha256": "6be898cae309c7e2e62d701351dbbc6d4f6f08b56f307da08e4669c7784f2e54"
+    },
+    {
+      "file": "qc_normality_bar.pdf",
+      "bytes": 28983,
+      "sha256": "c19f446a39f1727c891a0c4b7a59e1cf38b04a731e690d5431d7b10ebe4f30ce"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3334,
+      "sha256": "23a950408e217c721065459bd80c0bcc81e39f90f7c1f7689ed6f7334c9a2bcc"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1284368,
+      "sha256": "84257042a510da67d31026407ea7c1d57b5bb0154a8bb264d20961653afa232d"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1977,
+      "sha256": "e5af733003e8c922d1e56008d155a1add9086bb38a5bd9fda5413aeb3df074d9"
+    }
   ]
 }
