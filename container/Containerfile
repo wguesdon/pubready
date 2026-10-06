@@ -90,6 +90,14 @@ RUN install2.r --error --skipinstalled testthat \
  && rm -rf /tmp/downloaded_packages
 RUN VIRTUAL_ENV=/opt/pubready/venv uv pip install --no-cache "pytest>=7"
 
+# CRAN packages added in v0.5.0: pROC for the roc_curve recipe (AUC, DeLong
+# confidence interval and test) and metafor for the forest_meta recipe (pooled
+# fixed and random effects). Both also hold public benchmark datasets that
+# tools/make_benchmarks exports (aSAH and dat.bcg). A late layer so the heavy
+# layers above stay cached across this add.
+RUN install2.r --error --skipinstalled pROC metafor \
+ && rm -rf /tmp/downloaded_packages
+
 # Core scripts are mounted here at runtime by the figkit CLI.
 RUN mkdir -p /opt/pubready/core
 

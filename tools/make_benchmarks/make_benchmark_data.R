@@ -1,0 +1,297 @@
+#!/usr/bin/env Rscript
+# Export the public benchmark datasets to benchmarks/data/ and compute the
+# reference values that each recipe must reproduce. Every reference value comes
+# from an independent call to the canonical R function (t.test, aov, survdiff,
+# coxph, prcomp, nls with SSfpl, pROC, metafor), never from a pubready recipe, so
+# a match is evidence that the recipe computes the right number.
+#
+# Run inside the pinned image from the repo root:
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:<version> \
+#     Rscript tools/make_benchmarks/make_benchmark_data.R
+suppressPackageStartupMessages({
+  library(survival)
+  library(pROC)
+  library(metafor)
+})
+
+out_dir <- file.path("benchmarks", "data")
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+refs <- list()
+
+# Append one reference value. rel_tol is the relative tolerance the engine tests
+# apply; a published value rounded in the paper gets a wider tolerance.
+add_ref <- function(case, quantity, value, source, rel_tol = 1e-6) {
+  refs[[length(refs) + 1]] <<- data.frame(
+    case = case, quantity = quantity, value = signif(value, 12),
+    rel_tol = rel_tol, source = source, stringsAsFactors = FALSE)
+}
+
+write_data <- function(df, name) {
+  utils::write.csv(df, file.path(out_dir, paste0(name, ".csv")), row.names = FALSE)
+  # Read back, so each reference is computed on exactly the bytes the recipes read.
+  utils::read.csv(file.path(out_dir, paste0(name, ".csv")), check.names = FALSE,
+                  stringsAsFactors = FALSE)
+}
+
+# Expand a contingency table into one row per observation.
+expand_table <- function(tab) {
+  d <- as.data.frame(tab, stringsAsFactors = FALSE)
+  d[rep(seq_len(nrow(d)), d$Freq), setdiff(names(d), "Freq"), drop = FALSE]
+}
+
+# 1. sleep: Cushny and Peebles (1905), the data of Student (1908).
+sleep_df <- write_data(datasets::sleep[, c("ID", "group", "extra")], "sleep")
+g1 <- sleep_df$extra[sleep_df$group == 1]
+g2 <- sleep_df$extra[sleep_df$group == 2]
+tt <- stats::t.test(g2, g1, paired = TRUE)
+add_ref("sleep_paired", "statistic", tt$statistic, "stats::t.test(paired = TRUE)")
+add_ref("sleep_paired", "df", tt$parameter, "stats::t.test(paired = TRUE)")
+add_ref("sleep_paired", "p_value", tt$p.value, "stats::t.test(paired = TRUE)")
+tw <- stats::t.test(g1, g2, var.equal = FALSE)
+add_ref("sleep_welch", "statistic", tw$statistic, "stats::t.test(var.equal = FALSE)")
+add_ref("sleep_welch", "df", tw$parameter, "stats::t.test(var.equal = FALSE)")
+add_ref("sleep_welch", "p_value", tw$p.value, "stats::t.test(var.equal = FALSE)")
+
+# 2. PlantGrowth: Dobson (1983), one-way design with three groups.
+pg <- write_data(datasets::PlantGrowth, "plant_growth")
+pa <- stats::anova(stats::lm(weight ~ group, data = pg))
+add_ref("plant_growth_anova", "statistic", pa$`F value`[1], "stats::anova(lm())")
+add_ref("plant_growth_anova", "p_value", pa$`Pr(>F)`[1], "stats::anova(lm())")
+tk <- stats::TukeyHSD(stats::aov(weight ~ group, data = pg))$group
+add_ref("plant_growth_anova", "tukey_p_trt1_trt2", tk["trt2-trt1", "p adj"], "stats::TukeyHSD()")
+
+# 3. InsectSprays: Beall (1942), counts with unequal variances.
+ins <- write_data(datasets::InsectSprays, "insect_sprays")
+kt <- stats::kruskal.test(count ~ spray, data = ins)
+add_ref("insect_sprays_kruskal", "statistic", kt$statistic, "stats::kruskal.test()")
+add_ref("insect_sprays_kruskal", "p_value", kt$p.value, "stats::kruskal.test()")
+
+# 4. ToothGrowth: Bliss (1952) and Crampton (1947), a balanced 2 x 3 factorial design.
+tg <- write_data(datasets::ToothGrowth, "tooth_growth")
+tg$dose <- factor(tg$dose); tg$supp <- factor(tg$supp)
+ta <- car::Anova(stats::lm(len ~ dose * supp, data = tg), type = 2)
+for (term in c("dose", "supp", "dose:supp")) {
+  add_ref("tooth_growth_twoway", paste0("F_", term), ta[term, "F value"], "car::Anova(type = 2)")
+  add_ref("tooth_growth_twoway", paste0("p_", term), ta[term, "Pr(>F)"], "car::Anova(type = 2)")
+}
+
+# 5. lung: the NCCTG advanced lung cancer trial, Loprinzi et al. (1994).
+# survival codes status 1 = censored, 2 = dead; pubready reads 1 = event.
+lung <- survival::lung
+lung$event <- as.integer(lung$status == 2)
+lung$sex <- ifelse(lung$sex == 1, "male", "female")
+lung_df <- write_data(lung[, c("inst", "time", "event", "age", "sex", "ph.ecog",
+                               "ph.karno", "wt.loss")], "lung")
+sd <- survival::survdiff(Surv(time, event) ~ sex, data = lung_df)
+add_ref("lung_km", "log_rank_chisq", sd$chisq, "survival::survdiff()")
+add_ref("lung_km", "log_rank_p",
+        stats::pchisq(sd$chisq, length(sd$n) - 1, lower.tail = FALSE), "survival::survdiff()")
+cx <- survival::coxph(Surv(time, event) ~ age + sex + ph.ecog, data = lung_df)
+cs <- summary(cx)$coefficients
+for (term in rownames(cs)) {
+  add_ref("lung_cox", paste0("HR_", term), cs[term, "exp(coef)"], "survival::coxph()")
+  add_ref("lung_cox", paste0("p_", term), cs[term, "Pr(>|z|)"], "survival::coxph()")
+}
+
+# 6. mtcars: Henderson and Velleman (1981), Motor Trend 1974.
+mt <- cbind(car = rownames(datasets::mtcars), datasets::mtcars)
+mt_df <- write_data(mt, "mtcars")
+ct <- stats::cor.test(mt_df$wt, mt_df$mpg, method = "pearson")
+add_ref("mtcars_correlation", "estimate", ct$estimate, "stats::cor.test(pearson)")
+add_ref("mtcars_correlation", "p_value", ct$p.value, "stats::cor.test(pearson)")
+cm <- stats::cor(mt_df[, -1])
+add_ref("mtcars_correlation_heatmap", "r_mpg_wt", cm["mpg", "wt"], "stats::cor()")
+add_ref("mtcars_correlation_heatmap", "r_disp_cyl", cm["disp", "cyl"], "stats::cor()")
+
+# The same cars as a features-by-samples matrix for the heatmap recipe, with the
+# transmission as the sample annotation.
+feats <- c("mpg", "disp", "hp", "drat", "wt", "qsec")
+mmat <- data.frame(feature = feats, t(as.matrix(datasets::mtcars[, feats])),
+                   check.names = FALSE)
+mmat_df <- write_data(mmat, "mtcars_matrix")
+mann <- data.frame(car = rownames(datasets::mtcars),
+                   transmission = ifelse(datasets::mtcars$am == 1, "manual", "automatic"))
+mann_df <- write_data(mann, "mtcars_annotation")
+for (f in feats) {
+  v <- as.numeric(mmat_df[mmat_df$feature == f, -1])
+  g <- mann_df$transmission[match(names(mmat_df)[-1], mann_df$car)]
+  add_ref("mtcars_heatmap", paste0("p_", f),
+          stats::t.test(v[g == "automatic"], v[g == "manual"])$p.value,
+          "stats::t.test(var.equal = FALSE)")
+}
+
+# 7. airquality: New York, May to September 1973, with missing ozone values.
+aq <- write_data(datasets::airquality, "airquality")
+cs2 <- suppressWarnings(stats::cor.test(aq$Temp, aq$Ozone, method = "spearman", exact = FALSE))
+add_ref("airquality_spearman", "estimate", cs2$estimate, "stats::cor.test(spearman)")
+add_ref("airquality_spearman", "n", sum(stats::complete.cases(aq$Temp, aq$Ozone)), "stats::complete.cases()")
+
+# 8. iris: Anderson (1935), Fisher (1936).
+ir <- write_data(datasets::iris, "iris")
+pc <- stats::prcomp(ir[, 1:4], center = TRUE, scale. = TRUE)
+ve <- pc$sdev^2 / sum(pc$sdev^2) * 100
+add_ref("iris_pca", "pc1_variance_pct", ve[1], "stats::prcomp(scale. = TRUE)")
+add_ref("iris_pca", "pc2_variance_pct", ve[2], "stats::prcomp(scale. = TRUE)")
+
+# 9. Titanic: passenger class and survival, Dawson (1995).
+ti <- write_data(expand_table(datasets::Titanic), "titanic")
+tct <- stats::chisq.test(table(ti$Class, ti$Survived), correct = FALSE)
+add_ref("titanic_proportions", "statistic", tct$statistic, "stats::chisq.test(correct = FALSE)")
+add_ref("titanic_proportions", "p_value", tct$p.value, "stats::chisq.test(correct = FALSE)")
+
+# 10. UCBAdmissions: Bickel et al. (1975), a 2 x 2 table of gender by admission.
+ucb <- write_data(expand_table(datasets::UCBAdmissions), "ucb_admissions")
+utab <- table(factor(ucb$Gender, levels = unique(ucb$Gender)),
+              factor(ucb$Admit, levels = unique(ucb$Admit)))
+uct <- stats::chisq.test(utab, correct = FALSE)
+add_ref("ucb_proportions", "statistic", uct$statistic, "stats::chisq.test(correct = FALSE)")
+add_ref("ucb_proportions", "p_value", uct$p.value, "stats::chisq.test(correct = FALSE)")
+add_ref("ucb_proportions", "odds_ratio",
+        (utab[1, 1] * utab[2, 2]) / (utab[1, 2] * utab[2, 1]), "cross-product ratio")
+
+# 11. DNase: ELISA of recombinant DNase in rat serum, Davidian and Giltinan (1995).
+dn <- as.data.frame(datasets::DNase)
+dn$Run <- as.integer(as.character(dn$Run))
+dn <- dn[order(dn$Run, dn$conc), ]
+dn_df <- write_data(dn, "dnase")
+dn1_df <- write_data(dn[dn$Run == 1, ], "dnase_run1")
+# SSfpl is the self-starting four-parameter logistic of the stats package. Its
+# xmid is the natural log of the EC50 and its scal is the inverse Hill slope.
+# Two optimisers stop at their own tolerance on a flat optimum, so the fitted
+# parameters carry a relative tolerance of 1e-4, and the bottom plateau, which
+# sits near zero, 1e-2. The residual sum of squares is the sharp check.
+fpl <- stats::nls(density ~ SSfpl(log(conc), A, B, xmid, scal), data = dn1_df)
+cf <- stats::coef(fpl)
+add_ref("dnase_4pl", "bottom", cf[["A"]], "stats::nls(SSfpl)", rel_tol = 1e-2)
+add_ref("dnase_4pl", "top", cf[["B"]], "stats::nls(SSfpl)", rel_tol = 1e-4)
+add_ref("dnase_4pl", "ec50", exp(cf[["xmid"]]), "stats::nls(SSfpl)", rel_tol = 1e-4)
+add_ref("dnase_4pl", "hill", 1 / cf[["scal"]], "stats::nls(SSfpl)", rel_tol = 1e-4)
+add_ref("dnase_4pl", "rss", sum(stats::residuals(fpl)^2), "stats::nls(SSfpl)")
+
+# The shared-EC50 F test over the eleven runs, with the SSfpl parameterisation:
+# one natural-log midpoint for all runs, and the plateaus and scales per run.
+dn_df$run_i <- match(dn_df$Run, sort(unique(dn_df$Run)))
+sep_rss <- 0
+sep_start <- NULL
+for (r in sort(unique(dn_df$Run))) {
+  fr <- stats::nls(density ~ SSfpl(log(conc), A, B, xmid, scal), data = dn_df[dn_df$Run == r, ])
+  sep_rss <- sep_rss + sum(stats::residuals(fr)^2)
+  sep_start <- rbind(sep_start, stats::coef(fr))
+}
+shared_fit <- stats::nls(
+  density ~ A[run_i] + (B[run_i] - A[run_i]) / (1 + exp((xmid - log(conc)) / scal[run_i])),
+  data = dn_df,
+  start = list(A = sep_start[, "A"], B = sep_start[, "B"], scal = sep_start[, "scal"],
+               xmid = mean(sep_start[, "xmid"])))
+n_runs <- nrow(sep_start)
+df_sep <- nrow(dn_df) - 4 * n_runs
+f_shared <- ((sum(stats::residuals(shared_fit)^2) - sep_rss) / (n_runs - 1)) / (sep_rss / df_sep)
+add_ref("dnase_shared", "statistic", f_shared, "stats::nls(SSfpl), extra sum of squares", rel_tol = 1e-4)
+add_ref("dnase_shared", "p_value", stats::pf(f_shared, n_runs - 1, df_sep, lower.tail = FALSE),
+        "stats::nls(SSfpl), extra sum of squares", rel_tol = 1e-4)
+
+# 12. aSAH: aneurysmal subarachnoid haemorrhage, Turck et al. (2010), in pROC.
+as_df <- write_data(as.data.frame(pROC::aSAH), "asah")
+r1 <- pROC::roc(as_df$outcome, as_df$s100b, levels = c("Good", "Poor"), quiet = TRUE)
+r2 <- pROC::roc(as_df$outcome, as_df$ndka, levels = c("Good", "Poor"), quiet = TRUE)
+c1 <- pROC::ci.auc(r1, method = "delong")
+add_ref("asah_roc", "auc_s100b", as.numeric(pROC::auc(r1)), "pROC::auc()")
+add_ref("asah_roc", "auc_low_s100b", c1[1], "pROC::ci.auc(delong)")
+add_ref("asah_roc", "auc_high_s100b", c1[3], "pROC::ci.auc(delong)")
+add_ref("asah_roc", "auc_ndka", as.numeric(pROC::auc(r2)), "pROC::auc()")
+rt <- pROC::roc.test(r1, r2, method = "delong")
+add_ref("asah_roc", "delong_p", rt$p.value, "pROC::roc.test(delong)")
+
+# 13. PEFR: Bland and Altman (1986), Lancet 327:307-310, Table 1. Wright and
+# mini Wright peak flow meters on 17 subjects, two readings each (l/min).
+# Transcribed from https://www-users.york.ac.uk/~mb55/meas/ba.htm.
+pefr <- data.frame(
+  subject  = 1:17,
+  wright_1 = c(494, 395, 516, 434, 476, 557, 413, 442, 650, 433, 417, 656, 267, 478, 178, 423, 427),
+  wright_2 = c(490, 397, 512, 401, 470, 611, 415, 431, 638, 429, 420, 633, 275, 492, 165, 372, 421),
+  mini_1   = c(512, 430, 520, 428, 500, 600, 364, 380, 658, 445, 432, 626, 260, 477, 259, 350, 451),
+  mini_2   = c(525, 415, 508, 444, 500, 625, 460, 390, 642, 432, 420, 605, 227, 467, 268, 370, 443))
+pefr_df <- write_data(pefr, "pefr")
+dd <- pefr_df$wright_1 - pefr_df$mini_1
+add_ref("pefr_bland_altman", "bias_published", -2.1, "Bland and Altman (1986), rounded", rel_tol = 0.03)
+add_ref("pefr_bland_altman", "sd_published", 38.8, "Bland and Altman (1986), rounded", rel_tol = 0.002)
+add_ref("pefr_bland_altman", "bias", mean(dd), "mean of the differences")
+add_ref("pefr_bland_altman", "loa_low", mean(dd) - stats::qnorm(0.975) * stats::sd(dd), "mean - 1.96 SD")
+add_ref("pefr_bland_altman", "loa_high", mean(dd) + stats::qnorm(0.975) * stats::sd(dd), "mean + 1.96 SD")
+
+# 14. BCG: thirteen trials of the BCG vaccine against tuberculosis, Colditz et
+# al. (1994), as distributed in metadat (a metafor dependency). The recipe input
+# is the risk ratio and its 95% CI, which is how a paper reports a trial.
+bcg <- metafor::escalc(measure = "RR", ai = tpos, bi = tneg, ci = cpos, di = cneg,
+                       data = metadat::dat.bcg)
+z <- stats::qnorm(0.975)
+bcg_out <- data.frame(
+  trial = paste0(bcg$author, " (", bcg$year, ")"),
+  risk_ratio = exp(bcg$yi),
+  ci_low = exp(bcg$yi - z * sqrt(bcg$vi)),
+  ci_high = exp(bcg$yi + z * sqrt(bcg$vi)),
+  ablat = bcg$ablat, alloc = bcg$alloc, stringsAsFactors = FALSE)
+bcg_df <- write_data(bcg_out, "bcg")
+yi <- log(bcg_df$risk_ratio)
+vi <- ((log(bcg_df$ci_high) - log(bcg_df$ci_low)) / (2 * z))^2
+dl <- metafor::rma(yi = yi, vi = vi, method = "DL")
+fe <- metafor::rma(yi = yi, vi = vi, method = "FE")
+add_ref("bcg_meta", "random_estimate", exp(dl$b[1]), "metafor::rma(method = 'DL')")
+add_ref("bcg_meta", "random_ci_low", exp(dl$ci.lb), "metafor::rma(method = 'DL')")
+add_ref("bcg_meta", "random_ci_high", exp(dl$ci.ub), "metafor::rma(method = 'DL')")
+add_ref("bcg_meta", "tau2", dl$tau2, "metafor::rma(method = 'DL')")
+add_ref("bcg_meta", "i2", dl$I2, "metafor::rma(method = 'DL')")
+add_ref("bcg_meta", "q", dl$QE, "metafor::rma(method = 'DL')")
+add_ref("bcg_meta", "fixed_estimate", exp(fe$b[1]), "metafor::rma(method = 'FE')")
+
+# 15. Orthodont: Potthoff and Roy (1964), the distance from the pituitary to the
+# pterygomaxillary fissure in 27 children at ages 8, 10, 12 and 14.
+or <- as.data.frame(nlme::Orthodont)
+or$Subject <- as.character(or$Subject); or$Sex <- as.character(or$Sex)
+or_df <- write_data(or[, c("Subject", "Sex", "age", "distance")], "orthodont")
+
+# Mixed ANOVA references for a between factor and a within factor. The F tests
+# come from the classical split-plot aov with an Error stratum per subject. The
+# Greenhouse-Geisser epsilon and Mauchly's test come from car::Anova on the
+# multivariate linear model, which is the route rstatix takes, at full precision.
+mixed_refs <- function(case, d, id, grp, time, y) {
+  d <- d[, c(id, grp, time, y)]
+  names(d) <- c("id", "grp", "time", "y")
+  d$id <- factor(d$id); d$grp <- factor(d$grp); d$time_f <- factor(d$time)
+  oa <- summary(stats::aov(y ~ grp * time_f + Error(id / time_f), data = d))
+  between <- oa[["Error: id"]][[1]]
+  within <- oa[["Error: id:time_f"]][[1]]
+  rn_b <- trimws(rownames(between)); rn_w <- trimws(rownames(within))
+  add_ref(case, "F_group", between[rn_b == "grp", "F value"], "stats::aov(Error())")
+  add_ref(case, "p_group", between[rn_b == "grp", "Pr(>F)"], "stats::aov(Error())")
+  add_ref(case, "F_time", within[rn_w == "time_f", "F value"], "stats::aov(Error())")
+  add_ref(case, "F_interaction", within[rn_w == "grp:time_f", "F value"], "stats::aov(Error())")
+  add_ref(case, "p_interaction", within[rn_w == "grp:time_f", "Pr(>F)"], "stats::aov(Error())")
+  wide <- stats::reshape(d[, c("id", "grp", "time", "y")], idvar = c("id", "grp"),
+                         timevar = "time", direction = "wide")
+  ycols <- grep("^y\\.", names(wide), value = TRUE)
+  mlm <- stats::lm(as.matrix(wide[, ycols]) ~ grp, data = wide)
+  idata <- data.frame(time_f = factor(sub("^y\\.", "", ycols), levels = sub("^y\\.", "", ycols)))
+  av <- car::Anova(mlm, idata = idata, idesign = ~time_f, type = 2)
+  sv <- summary(av, multivariate = FALSE)
+  add_ref(case, "gg_epsilon", sv$pval.adjustments["time_f", "GG eps"], "car::Anova(idesign)")
+  add_ref(case, "mauchly_p", sv$sphericity.tests["time_f", "p-value"], "car::Anova(idesign)")
+}
+mixed_refs("orthodont_timecourse", or_df, "Subject", "Sex", "age", "distance")
+
+# 16. ChickWeight: Crowder and Hand (1990), body weight of chicks on four diets.
+# Five chicks died before day 21, so the mixed ANOVA uses the 45 complete chicks.
+cw <- as.data.frame(datasets::ChickWeight)
+cw$Chick <- as.integer(as.character(cw$Chick)); cw$Diet <- as.integer(as.character(cw$Diet))
+cw_df <- write_data(cw[order(cw$Chick, cw$Time), c("Chick", "Diet", "Time", "weight")], "chick_weight")
+complete_chicks <- names(which(table(cw_df$Chick) == length(unique(cw_df$Time))))
+add_ref("chick_weight_timecourse", "n_complete_chicks", length(complete_chicks),
+        "chicks seen at all 12 times")
+mixed_refs("chick_weight_timecourse", cw_df[cw_df$Chick %in% complete_chicks, ],
+           "Chick", "Diet", "Time", "weight")
+
+ref_df <- do.call(rbind, refs)
+utils::write.csv(ref_df, file.path("benchmarks", "reference_values.csv"), row.names = FALSE)
+cat(sprintf("Wrote %d datasets and %d reference values.\n",
+            length(list.files(out_dir, pattern = "\\.csv$")), nrow(ref_df)))
