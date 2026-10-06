@@ -13,6 +13,40 @@ tag move together.
 
 ## [Unreleased]
 
+### Added
+- Six recipes, in both engines, which take the catalog from 15 to 21:
+  - `dose_response` fits a four-parameter logistic curve to each curve and
+    reports the EC50, or the IC50 of a falling curve, with a 95% CI. With two or
+    more curves, an extra-sum-of-squares F test asks whether one shared midpoint
+    fits as well as one per curve. The shared fit is a profile over the midpoint
+    with the plateaus solved exactly, so both engines reach the same optimum when
+    the curves sit far apart.
+  - `roc_curve` draws the ROC curves of one or more markers, with each AUC, its
+    DeLong 95% CI, the Youden threshold and DeLong's test of each marker against
+    the first. R uses pROC, and Python restates the rules of pROC. The new
+    `--positive` option names the case level.
+  - `bland_altman` gives the bias and the 95% limits of agreement of two methods,
+    each with a CI (Bland and Altman 1999), and a regression test of proportional
+    bias. The differences go to the QC panel.
+  - `forest_meta` pools study estimates by inverse variance, as a fixed-effect
+    and a DerSimonian-Laird random-effects model, with Cochran's Q, I2 and tau2.
+    R uses metafor and Python statsmodels. The new `--ci_low`, `--ci_high`,
+    `--se` and `--measure` options describe the input.
+  - `timecourse` runs a mixed ANOVA (group between, time within) or a
+    repeated-measures ANOVA, with the Greenhouse-Geisser correction when
+    Mauchly's test rejects sphericity, and draws the mean +/- SEM per group over
+    time. `--test gg | uncorrected` forces the choice.
+  - `waterfall` draws the best change from baseline of each patient as sorted
+    bars with the RECIST lines, from one row per visit or one row per patient.
+- Example datasets for the new recipes: `dose_response.csv`, `biomarker_roc.csv`,
+  `method_agreement.csv`, `meta_trials.csv` and `tumor_growth.csv`, each from a
+  seeded generator in `tools/make_examples/`.
+- Public benchmarks. `benchmarks/` holds 19 published datasets and 83 reference
+  values from the canonical R functions. `figkit test` now mounts the folder, and
+  both unit suites compare every recipe with these values. `tests/benchmark_test.sh`
+  runs the 21 cases end to end through `figkit plot` with both engines.
+- The image adds pROC and metafor in a late layer.
+
 ### Fixed
 - The public benchmarks found five defects in the existing recipes. Each one
   changes a number in a stats table, so a caller who compares with an older

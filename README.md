@@ -156,4 +156,5 @@ a figure needs Codex run outside its sandbox, since Podman needs a user namespac
 
 - [docs/how_it_works.md](docs/how_it_works.md) — the workflow, the recipes, the bundle, and how to add one.
 - [example/README.md](example/README.md) — worked examples for every recipe.
+- [benchmarks/README.md](benchmarks/README.md) lists the public datasets that check every recipe, in both engines, against an independent reference value.
 - [CHANGELOG.md](CHANGELOG.md) — what changed in each release.

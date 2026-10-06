@@ -62,12 +62,26 @@ If a command reports the image is missing, run `figkit build` first.
 | `proportions` | two categoricals | `--x --y` | chi-square / Fisher, 100% stacked bar |
 | `pca` | samples × features + group | `--data --group` | PC1/PC2 scatter, 95% ellipses, PERMANOVA |
 | `spider_response` | patient, time, value | `--x --y --id [--group]` | descriptive change from baseline, RECIST lines (no test) |
+| `waterfall` | patient, time, value (or one best change per patient) | `--y --id [--x --group]` | descriptive best change from baseline, sorted bars, RECIST lines (no test) |
+| `dose_response` | dose, response[, curve] | `--x --y [--group]` | four-parameter logistic fit, EC50 or IC50 with 95% CI, shared-EC50 F test |
+| `roc_curve` | binary outcome, numeric markers | `--y --x "m1,m2" [--positive]` | ROC curves, AUC with DeLong CI, Youden threshold, DeLong test between markers |
+| `bland_altman` | method A, method B (one row per subject) | `--x --y` | bias and 95% limits of agreement with CIs, proportional bias test |
+| `forest_meta` | one row per study: estimate and 95% CI or SE | `--y --ci_low --ci_high [--se --label --measure]` | fixed-effect and DerSimonian-Laird pooling, Q, I2, tau2 |
+| `timecourse` | subject, time, value[, group] | `--x --y --id [--group]` | mixed (or repeated-measures) ANOVA, Greenhouse-Geisser when Mauchly rejects |
 
 Common options: `--engine r|python` (default r), `--geom box|violin|bar|raincloud`,
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
-`pearson|spearman|kendall`; proportions: `chisq|fisher`), `--scale`/`--cluster`
-(heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n` (volcano), `--id --group --label`,
+`pearson|spearman|kendall`; proportions: `chisq|fisher`; timecourse:
+`gg|uncorrected`), `--scale`/`--cluster` (heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n`
+(volcano), `--id --group --label`, `--positive LEVEL` (roc_curve case level),
+`--ci_low --ci_high --se --measure ratio|difference` (forest_meta),
+`--pd_threshold --pr_threshold` (spider_response, waterfall),
 `--theme pubready_house|prism`, `--xlab --ylab --title --palette`, `--out DIR`.
+
+For `roc_curve`, confirm the case level with the scientist: by default it is the
+second level in sorted order, so a `healthy`/`disease` outcome needs
+`--positive disease`. For `forest_meta`, pass `--measure ratio` for an odds, risk
+or hazard ratio when the CIs are not given on the ratio scale.
 
 ## Choosing the test
 

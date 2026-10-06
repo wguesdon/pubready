@@ -45,6 +45,30 @@ def apply_prism_style(ax):
     return ax
 
 
+def plain_tick(value, pos=None):
+    """Format a log-axis tick as a plain number (0.1, 1, 10), as ggplot2 does.
+
+    Args:
+        value: The tick value.
+        pos: The tick position, unused; matplotlib passes it.
+
+    Returns:
+        str: The label.
+    """
+    return f"{value:g}"
+
+
+def plain_log_axis(axis):
+    """Label a log-scaled matplotlib axis with plain numbers.
+
+    Args:
+        axis: The axis, for example ``ax.xaxis``.
+    """
+    from matplotlib.ticker import FuncFormatter, NullFormatter
+    axis.set_major_formatter(FuncFormatter(plain_tick))
+    axis.set_minor_formatter(NullFormatter())
+
+
 def new_fig(w=3.8, h=4.0):
     fig, ax = plt.subplots(figsize=(w, h))
     return fig, ax

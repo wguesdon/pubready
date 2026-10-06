@@ -62,6 +62,54 @@ effect's p-value is drawn on the figure. Force with `--test anova | art`. The
 aligned rank transform is R only; `--test art --engine python` errors and routes
 you to R.
 
+### Repeated measures over time → `timecourse`
+Each subject is measured at every time point, and a subject can belong to a group.
+The test is a mixed ANOVA with the group between subjects and time within subjects,
+or a one-way repeated-measures ANOVA when there is no group. The ANOVA needs
+complete subjects, so the recipe drops a subject with a missing visit and records
+the drop.
+
+- Mauchly's test rejects sphericity (P < 0.05) → the time effect and the
+  interaction carry the Greenhouse-Geisser correction.
+- Otherwise → no correction.
+
+Both P values are in the stats table. Force with `--test gg | uncorrected`. Two
+time points with a subject id are better served by `paired_compare`. The QC panel
+shows the residuals. Growth data such as tumour volumes often give residuals
+that spread with the mean. In that condition, analyse the log of the value.
+
+### Response against dose → `dose_response`
+A four-parameter logistic curve is fitted to each curve (`--group`). The midpoint
+is an EC50 when the curve rises and an IC50 when it falls, with a 95% CI from the
+fit. With two or more curves, an extra-sum-of-squares F test asks whether one
+shared midpoint fits as well as one midpoint per curve. A dose of zero or below
+cannot go on a log axis, so the recipe drops it and records the drop.
+
+## Agreement and accuracy
+
+### Two methods that measure the same quantity → `bland_altman`
+Do not use a correlation to show agreement: two methods can correlate well and
+still disagree. The Bland-Altman plot gives the bias and the 95% limits of
+agreement, each with a confidence interval. A regression of the difference on
+the mean tests for a proportional bias. The limits assume normal differences, so
+the QC panel shows their QQ plot.
+
+### A marker that discriminates cases from controls → `roc_curve`
+The outcome must have exactly two levels. Confirm the case level with the
+scientist and pass `--positive` when the default is wrong. The default is the
+second level in sorted order. The recipe reports the AUC with a DeLong 95% CI and
+the threshold that maximises the Youden index. Two or more markers on the same
+subjects are compared with the first marker by DeLong's test for correlated ROC
+curves.
+
+## Combining studies → `forest_meta`
+Each row is one study with its estimate and 95% CI, or its standard error. A
+ratio (odds, risk or hazard ratio) is pooled on the log scale. `--measure auto`
+picks the ratio scale when every value is positive and the CIs are more symmetric
+on the log scale. The recipe reports the fixed-effect and the DerSimonian-Laird
+random-effects estimates. Read the heterogeneity (Cochran's Q, I2 and tau2) before
+you report a pooled value. When I2 is high, report the random-effects estimate.
+
 ## Association between two continuous variables → `correlation`
 Check normality of each variable (Shapiro-Wilk).
 
@@ -113,6 +161,9 @@ These recipes show structure rather than run an inferential test:
   category those two put the patient in. That reads the change from baseline
   alone, and a full RECIST 1.1 assessment also reads the nadir, the non-target
   lesions and any new lesion.
+- `waterfall` draws the best change from baseline of each patient as one sorted
+  bar, with the same RECIST reference lines and the same categories as
+  `spider_response`. It also accepts one precomputed change per patient.
 
 ## Multiple comparisons
 Correct whenever there is more than one comparison. The multi-group post-hoc tests

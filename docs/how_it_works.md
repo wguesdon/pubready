@@ -89,7 +89,11 @@ Common options:
 | `--paired` | paired design |
 | `--geom box\|violin\|bar\|raincloud` | figure geometry |
 | `--scale`, `--cluster` | heatmap scaling and clustering |
-| `--pd_threshold`, `--pr_threshold` | the two spider reference lines, +20 and -30 by default |
+| `--id`, `--group`, `--label` | the subject, the grouping and the label columns of the recipes that use them |
+| `--pd_threshold`, `--pr_threshold` | the two RECIST reference lines of `spider_response` and `waterfall`, +20 and -30 by default |
+| `--positive LEVEL` | the case level of the `roc_curve` outcome (default: the second level in sorted order) |
+| `--ci_low`, `--ci_high`, `--se` | the 95% CI bounds, or the standard error, of each study in `forest_meta` |
+| `--measure auto\|ratio\|difference` | the pooling scale of `forest_meta` (a ratio is pooled on the log scale) |
 | `--xlab`, `--ylab`, `--title`, `--palette` | labels and colors |
 | `--out DIR` | output root (default `pubready_output`) |
 
@@ -115,6 +119,12 @@ engines. Pick the engine per figure with `--engine`.
 | `proportions` | two categoricals | chi-square, or Fisher when a cell is sparse | 100% stacked bar of proportions with the p |
 | `pca` | samples × features + group | PERMANOVA for group separation | PC1/PC2 scatter, 95% ellipses, variance on the axes |
 | `spider_response` | `patient, time, value` | descriptive (change from baseline, no test) | one line per patient, RECIST reference lines at +20% and -30% |
+| `waterfall` | `patient, time, value`, or one best change per patient | descriptive (best change from baseline, no test) | one sorted bar per patient, RECIST reference lines |
+| `dose_response` | `dose, response[, curve]` | four-parameter logistic fit; extra-sum-of-squares F test of one shared EC50 | fitted curves on a log dose axis, mean +/- SEM at each dose, EC50 or IC50 in the legend |
+| `roc_curve` | binary outcome, numeric markers | AUC with a DeLong 95% CI; DeLong test of each marker against the first | ROC curves with the Youden point, AUCs in the legend |
+| `bland_altman` | `method_a, method_b`, one row per subject | bias and 95% limits of agreement with CIs; regression test of proportional bias | difference against mean, shaded CIs of the bias and the limits |
+| `forest_meta` | one row per study: estimate and 95% CI or SE | fixed-effect and DerSimonian-Laird pooling; Cochran's Q, I2, tau2 | forest plot with weighted squares, pooled diamonds and an estimate column |
+| `timecourse` | `subject, time, value[, group]` | mixed ANOVA (group between, time within) or repeated-measures ANOVA; Greenhouse-Geisser when Mauchly's test rejects sphericity | mean +/- SEM per group over time, one thin line per subject |
 
 ### Test selection
 
@@ -190,6 +200,24 @@ figkit plot --recipe proportions --data response.csv --x arm --y response
 
 # PCA scatter with ellipses and a PERMANOVA p
 figkit plot --recipe pca --data samples.csv --group group
+
+# four-parameter logistic dose-response curves, one per compound
+figkit plot --recipe dose_response --data viability.csv --x concentration --y viability --group compound
+
+# ROC curves of two markers, with the case level stated
+figkit plot --recipe roc_curve --data biomarkers.csv --y status --x marker_a,marker_b --positive disease
+
+# Bland-Altman agreement between two assays
+figkit plot --recipe bland_altman --data assays.csv --x new_assay --y reference_assay
+
+# meta-analysis forest plot from hazard ratios and their CIs
+figkit plot --recipe forest_meta --data trials.csv --y hazard_ratio --ci_low ci_low --ci_high ci_high --label trial
+
+# repeated-measures time course with a mixed ANOVA
+figkit plot --recipe timecourse --data growth.csv --x day --y volume --id mouse --group arm
+
+# waterfall of the best change from baseline
+figkit plot --recipe waterfall --data lesions.csv --x week --y lesion_mm --id patient --group arm
 ```
 
 ## The artifact bundle
@@ -242,6 +270,10 @@ the same numbers. The manifest records which engine drew the figure.
 | volcano / labels | ggplot2 + ggrepel | matplotlib + adjustText |
 | raincloud geom | ggdist half-eye | matplotlib half-violin |
 | PCA / PERMANOVA | prcomp + seeded permutation | numpy SVD + seeded permutation |
+| dose-response (4PL) | `stats::nls` | `scipy.optimize.curve_fit` |
+| ROC / DeLong | pROC | the rules of pROC, restated with numpy |
+| meta-analysis | metafor `rma` | statsmodels `combine_effects` |
+| mixed ANOVA | split-plot sums of squares, the GG epsilon and Mauchly's test of car | the same formulas with numpy |
 
 Where Python has no faithful equivalent, pubready routes you to R rather than
 running something different. The one current case is the aligned rank transform
@@ -259,7 +291,7 @@ figkit build          # builds localhost/pubready:0.4.1 from container/Container
 ```
 
 The image carries R (ggpubr, rstatix, ggprism, ggrepel, ggdist, survival,
-survminer, ARTool, ComplexHeatmap) and Python (matplotlib, seaborn,
+survminer, ARTool, ComplexHeatmap, pROC, metafor) and Python (matplotlib, seaborn,
 statannotations, pingouin, statsmodels, scikit-posthocs, lifelines,
 PyComplexHeatmap, upsetplot, adjustText), all pinned. The
 `core/` scripts are mounted at runtime, so editing a recipe does not need a
@@ -272,6 +304,14 @@ against the mounted source, so the tested code is exactly what figkit runs: the
 R suite (`core/r/tests/testthat`) loads the source package with `pkgload`; the
 Python suite (`core/python/tests`) runs under `pytest`. The end-to-end
 `tests/smoke_test.sh` drives every recipe on both engines.
+
+The public benchmarks in `benchmarks/` check the numbers. Each recipe runs on
+a published dataset, for example the `sleep` data of Student (1908), the NCCTG
+lung cancer trial, the BCG vaccine trials or the PEFR data of Bland and Altman
+(1986). Both suites compare the result with a reference value that the
+canonical R function computed, such as `stats::t.test`, `survival::coxph`,
+`pROC::roc` or `metafor::rma`. `tests/benchmark_test.sh` runs the same cases
+end to end through `figkit plot`. See `benchmarks/README.md`.
 
 The version lives in the root `VERSION` file and moves in lockstep across
 `core/r/DESCRIPTION`, `core/python/pubready/version.py`, and the image tag.
@@ -295,7 +335,9 @@ The bundle writer does the rest. Because recipes own their own methods text and
 script, new ones plug in without touching the writer. Register the recipe by
 adding an example dataset, a smoke case in `tests/smoke_test.sh`, a reference
 bundle in `tools/make_examples/generate_expected.sh`, and unit tests under
-`core/r/tests/testthat` and `core/python/tests`.
+`core/r/tests/testthat` and `core/python/tests`. Add a public dataset and its
+reference values to `tools/make_benchmarks/make_benchmark_data.R`, and a case
+to both benchmark suites and to `tests/benchmark_test.sh`.
 
 ## Design principles
 

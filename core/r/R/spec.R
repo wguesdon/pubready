@@ -46,6 +46,9 @@ spec_from_opt <- function(opt) {
                   time = opt$time, event = opt$event,
                   annotation = opt$annotation,
                   id = opt$id, group = opt$group, label = opt$label,
+                  positive = opt$positive, se = opt$se,
+                  ci_low = opt$ci_low, ci_high = opt$ci_high,
+                  measure = opt$measure,
                   covariates = if (!is.null(opt$covariates)) {
                     trimws(strsplit(opt$covariates, ",")[[1]])
                   } else NULL),

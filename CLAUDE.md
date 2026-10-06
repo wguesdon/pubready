@@ -22,6 +22,9 @@ For work on the repository itself, follow the rules below.
 | `docs/how_it_works.md` | The full option table, one example per recipe, and the bundle contents. |
 | `example/` | The committed input data and the reference figures. |
 | `tests/smoke_test.sh` | The end-to-end test over the example cases. |
+| `benchmarks/` | Public benchmark datasets and the reference values that each recipe must reproduce. |
+| `tests/benchmark_test.sh` | The end-to-end run of every benchmark case with both engines. |
+| `tools/make_benchmarks/` | The exporter that writes the benchmark datasets and computes the reference values. |
 
 ## Rules for work in this repository
 
@@ -38,9 +41,11 @@ For work on the repository itself, follow the rules below.
    one commit. Put the detail in `docs/how_it_works.md`, not in the adapters.
 4. Run `./tests/smoke_test.sh` after a change to `cli/figkit`, to a recipe or to
    the container. It asserts that each example writes a complete bundle and that
-   the expected test is chosen.
+   the expected test is chosen. Run `./cli/figkit test` too. It compares every
+   recipe, in both engines, with the reference values in `benchmarks/`.
 5. Add a new recipe to the recipe table in all three adapters, to
-   `docs/how_it_works.md`, to `example/README.md` and to the smoke test.
+   `docs/how_it_works.md`, to `example/README.md` and to the smoke test. Add a
+   public benchmark case for it as `benchmarks/README.md` describes.
 6. Write output only under `pubready_output/` or a directory that `--out` names.
    These directories are ignored by git.
 7. Record a user-visible change in `CHANGELOG.md` and bump `VERSION` when the

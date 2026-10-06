@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# Benchmark test. Runs every recipe on public benchmark datasets (benchmarks/data)
+# through figkit, with both engines, and asserts that each run writes a complete
+# bundle. The numbers themselves are checked against benchmarks/reference_values.csv
+# by the unit suites (figkit test), which compare each recipe with an independent
+# call to the canonical R function. Requires the image: figkit build.
+#
+# Usage: tests/benchmark_test.sh [case-name-substring]
+cd "$(dirname "$0")/.."
+
+OUT="test_output/benchmarks"
+FILTER="${1:-}"
+rm -rf "$OUT"
+fail=0
+ran=0
+
+expect_files=(
+  "figure_*.pdf" "figure_*.png" "figure_*.svg"
+  "stats_*.csv" "manifest_*.json" "methods_*.md"
+  "data_log.md" "plot_config.yaml" "session_info.txt"
+  "REPRODUCE.md" "script_*" "input_*"
+  "report.qmd" "report.html" "report_provenance.json"
+)
+
+check_bundle() {  # $1 = output root, $2 = label
+  local d
+  d="$(find "$1" -mindepth 1 -maxdepth 1 -type d | head -1)"
+  if [ -z "$d" ]; then echo "FAIL: $2 wrote no bundle"; fail=1; return 1; fi
+  local missing=0 pat
+  for pat in "${expect_files[@]}"; do
+    if ! compgen -G "$d/$pat" > /dev/null; then
+      echo "  MISSING in $2: $pat"; missing=1; fail=1
+    fi
+  done
+  [ "$missing" -eq 0 ] && echo "PASS: $2"
+}
+
+bench() {  # $1 = case name, $2 = text the methods paragraph must hold; rest = plot args
+  local name="$1" want="$2"; shift 2
+  if [ -n "$FILTER" ] && [[ "$name" != *"$FILTER"* ]]; then return; fi
+  local engine dir
+  for engine in r python; do
+    dir="$OUT/${name}_${engine}"
+    ran=$((ran + 1))
+    if ! ./cli/figkit plot --engine "$engine" "$@" --out "$dir" > "$dir.log" 2>&1; then
+      echo "FAIL: $name ($engine) exited with an error; see $dir.log"; fail=1; continue
+    fi
+    check_bundle "$dir" "$name ($engine)" || continue
+    if [ -n "$want" ] && ! grep -q -- "$want" "$dir"/*/methods_*.md; then
+      echo "  FAIL: $name ($engine) methods do not mention '$want'"; fail=1
+    fi
+  done
+}
+
+mkdir -p "$OUT"
+D=benchmarks/data
+
+echo "--- Existing recipes on public datasets ---"
+bench sleep_paired "paired t-test" --recipe paired_compare --data $D/sleep.csv --test t \
+  --x group --y extra --id ID
+bench sleep_welch "Welch" --recipe two_group_compare --data $D/sleep.csv \
+  --x group --y extra --test welch_t
+bench plant_growth_anova "one-way ANOVA" --recipe multi_group_compare --data $D/plant_growth.csv \
+  --x group --y weight
+bench insect_sprays_kruskal "Kruskal-Wallis" --recipe multi_group_compare --data $D/insect_sprays.csv \
+  --x spray --y count --test kruskal
+bench tooth_growth_twoway "2-way ANOVA" --recipe factorial_anova --data $D/tooth_growth.csv \
+  --y len --x dose --fill supp --test anova
+bench lung_km "log-rank" --recipe survival_km --data $D/lung.csv \
+  --time time --event event --x sex --xlab "Days"
+bench lung_cox "Cox" --recipe cox_forest --data $D/lung.csv \
+  --time time --event event --covariates "age,sex,ph.ecog"
+bench mtcars_correlation "Pearson" --recipe correlation --data $D/mtcars.csv \
+  --x wt --y mpg --test pearson
+bench mtcars_correlation_heatmap "" --recipe correlation_heatmap --data $D/mtcars.csv
+bench mtcars_heatmap "" --recipe heatmap --data $D/mtcars_matrix.csv \
+  --annotation $D/mtcars_annotation.csv
+bench airquality_spearman "Spearman" --recipe correlation --data $D/airquality.csv \
+  --x Temp --y Ozone --test spearman
+bench iris_pca "PERMANOVA" --recipe pca --data $D/iris.csv --group Species
+bench titanic_proportions "chi-squared" --recipe proportions --data $D/titanic.csv \
+  --x Class --y Survived --test chisq
+bench ucb_proportions "chi-squared" --recipe proportions --data $D/ucb_admissions.csv \
+  --x Gender --y Admit --test chisq
+
+echo "--- New recipes on public datasets ---"
+bench dnase_4pl "four-parameter logistic" --recipe dose_response --data $D/dnase_run1.csv \
+  --x conc --y density
+bench dnase_shared "extra-sum-of-squares" --recipe dose_response --data $D/dnase.csv \
+  --x conc --y density --group Run
+bench asah_roc "DeLong" --recipe roc_curve --data $D/asah.csv \
+  --y outcome --x s100b,ndka
+bench pefr_bland_altman "Bland and Altman" --recipe bland_altman --data $D/pefr.csv \
+  --x wright_1 --y mini_1
+bench bcg_meta "DerSimonian-Laird" --recipe forest_meta --data $D/bcg.csv \
+  --y risk_ratio --ci_low ci_low --ci_high ci_high --label trial
+bench orthodont_timecourse "mixed ANOVA" --recipe timecourse --data $D/orthodont.csv \
+  --x age --y distance --id Subject --group Sex
+bench chick_weight_timecourse "Greenhouse-Geisser" --recipe timecourse --data $D/chick_weight.csv \
+  --x Time --y weight --id Chick --group Diet
+
+echo
+if [ "$ran" -eq 0 ]; then
+  echo "NO BENCHMARK MATCHED '$FILTER'"; exit 1
+elif [ "$fail" -eq 0 ]; then
+  echo "ALL $ran BENCHMARK RUNS PASSED"
+else
+  echo "BENCHMARK RUNS FAILED"; exit 1
+fi

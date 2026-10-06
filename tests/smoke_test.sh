@@ -220,6 +220,72 @@ else
   echo "FAIL: expected the spider category column"; fail=1
 fi
 
+echo "[22] waterfall of the best change from baseline"
+./cli/figkit plot --recipe waterfall --data example/spider_response.csv \
+  --x week --y target_lesion_mm --id patient --group arm --out "$OUT/waterfall"
+check_bundle "$OUT/waterfall" "waterfall"
+if compgen -G "$OUT/waterfall/*/stats_*.csv" > /dev/null && \
+   grep -q "best_change_pct" "$OUT"/waterfall/*/stats_*.csv; then
+  echo "PASS: waterfall best change per patient"
+else
+  echo "FAIL: expected the waterfall best change column"; fail=1
+fi
+
+echo "[23] dose-response curves (expect IC50 and the shared F test)"
+./cli/figkit plot --recipe dose_response --data example/dose_response.csv \
+  --x concentration_um --y viability_pct --group compound --out "$OUT/drc"
+check_bundle "$OUT/drc" "dose_response"
+if compgen -G "$OUT/drc/*/methods_*.md" > /dev/null && \
+   grep -q "IC50" "$OUT"/drc/*/methods_*.md && grep -q "extra-sum-of-squares" "$OUT"/drc/*/methods_*.md; then
+  echo "PASS: dose-response IC50 and shared F test"
+else
+  echo "FAIL: expected the IC50 and the shared F test"; fail=1
+fi
+
+echo "[24] ROC curves (expect DeLong)"
+./cli/figkit plot --recipe roc_curve --data example/biomarker_roc.csv \
+  --y status --x marker_a,marker_b --positive disease --out "$OUT/roc"
+check_bundle "$OUT/roc" "roc_curve"
+if compgen -G "$OUT/roc/*/stats_*.csv" > /dev/null && \
+   grep -q "delong_p_vs_first" "$OUT"/roc/*/stats_*.csv && grep -q ",disease," "$OUT"/roc/*/stats_*.csv; then
+  echo "PASS: ROC with the named case level and the DeLong test"
+else
+  echo "FAIL: expected the ROC stats with the case level"; fail=1
+fi
+
+echo "[25] Bland-Altman agreement"
+./cli/figkit plot --recipe bland_altman --data example/method_agreement.csv \
+  --x new_assay --y reference_assay --out "$OUT/ba"
+check_bundle "$OUT/ba" "bland_altman"
+if compgen -G "$OUT/ba/*/stats_*.csv" > /dev/null && grep -q "loa_high" "$OUT"/ba/*/stats_*.csv && \
+   compgen -G "$OUT/ba/*/qc_normality_*.png" > /dev/null; then
+  echo "PASS: Bland-Altman limits and the QC panel of the differences"
+else
+  echo "FAIL: expected the limits of agreement and the QC panel"; fail=1
+fi
+
+echo "[26] meta-analysis forest plot (expect DerSimonian-Laird)"
+./cli/figkit plot --recipe forest_meta --data example/meta_trials.csv \
+  --y hazard_ratio --ci_low ci_low --ci_high ci_high --label trial --out "$OUT/meta"
+check_bundle "$OUT/meta" "forest_meta"
+if compgen -G "$OUT/meta/*/stats_*.csv" > /dev/null && \
+   grep -q "Random effects (DerSimonian-Laird)" "$OUT"/meta/*/stats_*.csv; then
+  echo "PASS: pooled random-effects row"
+else
+  echo "FAIL: expected the random-effects row"; fail=1
+fi
+
+echo "[27] repeated-measures time course (expect a mixed ANOVA)"
+./cli/figkit plot --recipe timecourse --data example/tumor_growth.csv \
+  --x day --y volume_mm3 --id mouse --group arm --out "$OUT/tc"
+check_bundle "$OUT/tc" "timecourse"
+if compgen -G "$OUT/tc/*/methods_*.md" > /dev/null && grep -q "mixed ANOVA" "$OUT"/tc/*/methods_*.md && \
+   grep -q "1 subject(s) without a value" "$OUT"/tc/*/methods_*.md; then
+  echo "PASS: mixed ANOVA with the incomplete mouse dropped"
+else
+  echo "FAIL: expected the mixed ANOVA and the dropped mouse"; fail=1
+fi
+
 echo "--- Python engine (all recipes) ---"
 pyc() {  # $1 = short label; rest = plot args
   local label="$1"; shift
@@ -250,6 +316,12 @@ pyc pca     --recipe pca                 --data example/pca_samples.csv      --g
 pyc rain    --recipe two_group_compare   --data example/tumor_volume.csv     --x group --y volume --geom raincloud
 pyc bargeom --recipe multi_group_compare --data example/gene_expression.csv  --x genotype --y expression --geom bar
 pyc spider  --recipe spider_response     --data example/spider_response.csv  --x week --y target_lesion_mm --id patient --group arm
+pyc waterfall --recipe waterfall         --data example/spider_response.csv  --x week --y target_lesion_mm --id patient --group arm
+pyc drc     --recipe dose_response       --data example/dose_response.csv    --x concentration_um --y viability_pct --group compound
+pyc roc     --recipe roc_curve           --data example/biomarker_roc.csv    --y status --x marker_a,marker_b --positive disease
+pyc ba      --recipe bland_altman        --data example/method_agreement.csv --x new_assay --y reference_assay
+pyc meta    --recipe forest_meta         --data example/meta_trials.csv      --y hazard_ratio --ci_low ci_low --ci_high ci_high --label trial
+pyc tc      --recipe timecourse          --data example/tumor_growth.csv     --x day --y volume_mm3 --id mouse --group arm
 
 # Engine parity on the non-parametric paths. Both engines must report the same
 # p-value and the same effect size to six significant digits.

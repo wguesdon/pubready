@@ -98,6 +98,23 @@ rm -rf "$OUT"
   --x week --y target_lesion_mm --id patient --group arm --xlab "Week" \
   --stamp spider --out "$OUT"
 
+# Recipes added in v0.5.0: waterfall, dose-response, ROC, Bland-Altman, forest, time course
+./cli/figkit plot --recipe waterfall --data example/spider_response.csv \
+  --x week --y target_lesion_mm --id patient --group arm --stamp waterfall --out "$OUT"
+./cli/figkit plot --recipe dose_response --data example/dose_response.csv \
+  --x concentration_um --y viability_pct --group compound \
+  --xlab "Concentration (uM)" --ylab "Viability (%)" --stamp drc --out "$OUT"
+./cli/figkit plot --recipe roc_curve --data example/biomarker_roc.csv \
+  --y status --x marker_a,marker_b --positive disease --stamp roc --out "$OUT"
+./cli/figkit plot --recipe bland_altman --data example/method_agreement.csv \
+  --x new_assay --y reference_assay --stamp ba --out "$OUT"
+./cli/figkit plot --recipe forest_meta --data example/meta_trials.csv \
+  --y hazard_ratio --ci_low ci_low --ci_high ci_high --label trial \
+  --xlab "Hazard ratio (95% CI, log scale)" --stamp meta --out "$OUT"
+./cli/figkit plot --recipe timecourse --data example/tumor_growth.csv \
+  --x day --y volume_mm3 --id mouse --group arm \
+  --xlab "Day" --ylab "Tumour volume (mm^3)" --stamp tc --out "$OUT"
+
 # Raincloud and bar geoms on the comparison recipes
 ./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
   --x group --y volume --ylab "Tumor volume (mm^3)" --geom raincloud --stamp raincloud --out "$OUT"
@@ -146,5 +163,20 @@ PY="--engine python"
   --x genotype --y expression --ylab "Expression (a.u.)" --geom bar --stamp bar_py --out "$OUT"
 ./cli/figkit plot $PY --recipe spider_response --data example/spider_response.csv \
   --x week --y target_lesion_mm --id patient --group arm --xlab "Week" --stamp spider_py --out "$OUT"
+./cli/figkit plot $PY --recipe waterfall --data example/spider_response.csv \
+  --x week --y target_lesion_mm --id patient --group arm --stamp waterfall_py --out "$OUT"
+./cli/figkit plot $PY --recipe dose_response --data example/dose_response.csv \
+  --x concentration_um --y viability_pct --group compound \
+  --xlab "Concentration (uM)" --ylab "Viability (%)" --stamp drc_py --out "$OUT"
+./cli/figkit plot $PY --recipe roc_curve --data example/biomarker_roc.csv \
+  --y status --x marker_a,marker_b --positive disease --stamp roc_py --out "$OUT"
+./cli/figkit plot $PY --recipe bland_altman --data example/method_agreement.csv \
+  --x new_assay --y reference_assay --stamp ba_py --out "$OUT"
+./cli/figkit plot $PY --recipe forest_meta --data example/meta_trials.csv \
+  --y hazard_ratio --ci_low ci_low --ci_high ci_high --label trial \
+  --xlab "Hazard ratio (95% CI, log scale)" --stamp meta_py --out "$OUT"
+./cli/figkit plot $PY --recipe timecourse --data example/tumor_growth.csv \
+  --x day --y volume_mm3 --id mouse --group arm \
+  --xlab "Day" --ylab "Tumour volume (mm^3)" --stamp tc_py --out "$OUT"
 
 echo "Reference bundles written under $OUT/"

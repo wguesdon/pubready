@@ -64,6 +64,11 @@ def spec_from_args(a):
             "annotation": getattr(a, "annotation", None), "covariates": covs,
             "id": getattr(a, "id", None), "group": getattr(a, "group", None),
             "label": getattr(a, "label", None),
+            "positive": getattr(a, "positive", None),
+            "se": getattr(a, "se", None),
+            "ci_low": getattr(a, "ci_low", None),
+            "ci_high": getattr(a, "ci_high", None),
+            "measure": getattr(a, "measure", None),
         },
         "test": {
             "method": getattr(a, "test", None) or "auto",

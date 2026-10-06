@@ -227,6 +227,15 @@ emit_script <- function(spec, resolved, in_name, fig_stub) {
   )
 }
 
+# A recipe returns its script builder either as a function of (in_name,
+# fig_stub) or as list(fn = <function>, args = list(...)). The list form lets a
+# recipe name a module-level emitter and its arguments instead of a closure.
+call_build_script <- function(build_script, in_name, fig_stub) {
+  if (is.function(build_script)) return(build_script(in_name, fig_stub))
+  do.call(build_script$fn, c(build_script$args,
+                             list(in_name = in_name, fig_stub = fig_stub)))
+}
+
 reproduce_md <- function(container, git_commit, script_name) {
   c(
     "# Reproduce this figure",
@@ -441,7 +450,7 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
   in_name <- sprintf("input_%s.%s", base, if (nzchar(in_ext)) in_ext else "csv")
   file.copy(raw_input_path, file.path(bdir, in_name), overwrite = TRUE)
   sums <- file_checksums(raw_input_path)
-  script_lines <- build_script(in_name, fig_stub)
+  script_lines <- call_build_script(build_script, in_name, fig_stub)
 
   # Copy any secondary input files (e.g. a heatmap annotation table) with their
   # original names so the standalone script and REPRODUCE step can find them.
