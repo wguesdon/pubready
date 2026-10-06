@@ -8,7 +8,11 @@ set -e
 cd "$(dirname "$0")/../.."
 
 export PUBREADY_CREATED="2026-07-18T00:00:00Z"
-OUT="${PUBREADY_EXPECTED_OUT:-example/expected}"
+# figkit plot stops when the repository holds an untracked file, and each new
+# bundle is one. The bundles therefore go to an ignored staging folder and move
+# into place at the end, so the tree stays clean and git_dirty stays false.
+FINAL="${PUBREADY_EXPECTED_OUT:-example/expected}"
+OUT="test_output/expected_stage"
 rm -rf "$OUT"
 
 # Parametric path -> Student's t-test
@@ -179,4 +183,6 @@ PY="--engine python"
   --x day --y volume_mm3 --id mouse --group arm \
   --xlab "Day" --ylab "Tumour volume (mm^3)" --stamp tc_py --out "$OUT"
 
-echo "Reference bundles written under $OUT/"
+rm -rf "$FINAL"
+mv "$OUT" "$FINAL"
+echo "Reference bundles written under $FINAL/"
