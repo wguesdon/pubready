@@ -40,12 +40,14 @@ def recipe_cox_forest(df, spec):
         if s.dtype == object or str(s.dtype).startswith("category") or not np.issubdtype(s.dtype, np.number):
             cats = sorted(s.astype(str).unique())
             for lvl in cats[1:]:
-                design[f"{c}[{lvl}]"] = (s.astype(str) == lvl).astype(int)
+                design[f"{c}{lvl}"] = (s.astype(str) == lvl).astype(int)
         else:
             design[c] = pd.to_numeric(s, errors="coerce")
 
     cph = CoxPHFitter()
-    cph.fit(design, duration_col=t, event_col=e)
+    # A tight precision makes lifelines converge to the estimate of survival::coxph;
+    # the default stops about 2e-6 short of it. Terms are named as R names them.
+    cph.fit(design, duration_col=t, event_col=e, fit_options={"precision": 1e-11})
     summ = cph.summary
     terms = list(summ.index)
     hr = summ["exp(coef)"].to_numpy()
@@ -135,10 +137,10 @@ for c in covs:
     s = df[c]
     if s.dtype == object or not np.issubdtype(s.dtype, np.number):
         for lvl in sorted(s.astype(str).unique())[1:]:
-            design["%s[%s]" % (c, lvl)] = (s.astype(str) == lvl).astype(int)
+            design["%s%s" % (c, lvl)] = (s.astype(str) == lvl).astype(int)
     else:
         design[c] = pd.to_numeric(s, errors="coerce")
-cph = CoxPHFitter().fit(design, "{t}", "{e}")
+cph = CoxPHFitter().fit(design, "{t}", "{e}", fit_options={{"precision": 1e-11}})
 s = cph.summary
 terms = list(s.index); hr = s["exp(coef)"].to_numpy()
 lo = s["exp(coef) lower 95%"].to_numpy(); hi = s["exp(coef) upper 95%"].to_numpy(); pv = s["p"].to_numpy()

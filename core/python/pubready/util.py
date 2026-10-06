@@ -101,6 +101,32 @@ def wilcoxon_signed_rank_r(d):
     return v, float(res.pvalue)
 
 
+def cohens_d_r(a, b, paired=False):
+    """Signed Cohen's d with the formulas of rstatix::cohens_d.
+
+    pingouin reports the magnitude only, so the sign that says which group is
+    higher is restored here. Two independent groups use the pooled standard
+    deviation; paired data use dz, the mean difference over its standard
+    deviation.
+
+    Args:
+        a: Values of the first group.
+        b: Values of the second group, paired with ``a`` when ``paired``.
+        paired: Whether the two groups are paired.
+
+    Returns:
+        float: The effect size, negative when the first group is lower.
+    """
+    a = np.asarray(a, dtype=float)
+    b = np.asarray(b, dtype=float)
+    if paired:
+        d = a - b
+        return float(d.mean() / d.std(ddof=1))
+    na, nb = len(a), len(b)
+    pooled = np.sqrt(((na - 1) * a.var(ddof=1) + (nb - 1) * b.var(ddof=1)) / (na + nb - 2))
+    return float((a.mean() - b.mean()) / pooled)
+
+
 def rank_biserial_unpaired(u, n1, n2):
     """Rank-biserial correlation from the Mann-Whitney U of the first group.
 

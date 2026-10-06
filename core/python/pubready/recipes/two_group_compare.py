@@ -10,7 +10,7 @@ from statannotations.Annotator import Annotator
 
 from ..clean import clean_xy
 from ..theme import add_dist_geom, apply_pub_style, new_fig, palette
-from ..util import (cap_first, mann_whitney_r, p_stars, rank_biserial_paired,
+from ..util import (cap_first, cohens_d_r, mann_whitney_r, p_stars, rank_biserial_paired,
                     rank_biserial_unpaired, shapiro_normal, wilcoxon_signed_rank_r)
 
 
@@ -58,7 +58,7 @@ def recipe_two_group_compare(df, spec):
     if r["family"] == "t":
         res = pg.ttest(a, b, paired=paired, correction=not r["var_equal"])
         statistic = float(res["T"].iloc[0]); pval = float(res["p_val"].iloc[0])
-        dof = float(res["dof"].iloc[0]); eff = float(res["cohen_d"].iloc[0])
+        dof = float(res["dof"].iloc[0]); eff = cohens_d_r(a, b, paired=paired)
         eff_name = "Cohen's d"
     else:
         if paired:

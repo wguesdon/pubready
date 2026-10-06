@@ -86,12 +86,15 @@ grouping arm.
 Pick the engine per figure with `--engine`. Both write the same bundle and, where
 a matching method exists, the same numbers. The two-group and paired recipes agree
 digit for digit on the t-test, the Mann-Whitney U test and the Wilcoxon signed-rank
-test, and the smoke test asserts it. Three current gaps. The aligned rank transform
-for non-parametric factorial ANOVA is R only, so `--test art --engine python` errors
-and routes you to R. The Python heatmap keeps its per-feature significance stars in
-the stats table rather than on the figure. In `multi_group_compare` the two engines
-report different columns, and an extreme Tukey p underflows to 0 in R where Python
-still prints the exponent.
+test, and the smoke test asserts it. The public benchmarks in `benchmarks/` hold
+every recipe in both engines to an independent reference value. Four gaps remain.
+The aligned rank transform for non-parametric factorial ANOVA is R only, so
+`--test art --engine python` errors and routes you to R. The Python heatmap keeps
+its per-feature significance stars in the stats table rather than on the figure.
+The Python `survival_km` table has no confidence interval for the median survival.
+In `multi_group_compare` a Tukey P value below about 1e-8 differs between the
+engines in the second or third digit, because R's `ptukey` loses relative precision
+in the far tail; both values stay far below any significance threshold.
 
 ## Read more
 

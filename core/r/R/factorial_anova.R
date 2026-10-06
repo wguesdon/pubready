@@ -58,18 +58,24 @@ recipe_factorial_anova <- function(df, spec) {
     )
     test_name <- sprintf("aligned rank transform ANOVA (%d-way)", length(factors))
   } else {
-    at <- as.data.frame(rstatix::anova_test(df, fml, type = 2))
+    # car::Anova gives the Type II table at full precision; rstatix::anova_test
+    # rounds F to three decimals and P to three significant digits. The effect
+    # size is the partial eta squared, which the Python engine also reports.
+    at <- as.data.frame(car::Anova(stats::lm(fml, data = df), type = 2))
+    terms <- setdiff(rownames(at), "Residuals")
+    ss_res <- at["Residuals", "Sum Sq"]
     eff <- data.frame(
-      effect      = at$Effect,
-      df1         = at$DFn,
-      df2         = at$DFd,
-      statistic   = at$F,
-      p_value     = at$p,
-      effect_size = at$ges,
+      effect      = gsub("`", "", terms),
+      df1         = at[terms, "Df"],
+      df2         = at["Residuals", "Df"],
+      statistic   = at[terms, "F value"],
+      p_value     = at[terms, "Pr(>F)"],
+      effect_size = at[terms, "Sum Sq"] / (at[terms, "Sum Sq"] + ss_res),
       stringsAsFactors = FALSE
     )
     test_name <- sprintf("%d-way ANOVA", length(factors))
   }
+  eff$effect_size_name <- if (use_art) NA_character_ else "partial eta squared"
   eff$significant <- eff$p_value < 0.05
 
   # Subtitle: significant effects only, interaction ":" shown as a cross.
@@ -114,7 +120,8 @@ recipe_factorial_anova <- function(df, spec) {
     p <- p + ggplot2::facet_wrap(ggplot2::vars(.data[[f3]]))
   }
 
-  stats_df <- eff[, c("effect", "df1", "df2", "statistic", "p_value", "effect_size", "significant")]
+  stats_df <- eff[, c("effect", "df1", "df2", "statistic", "p_value", "effect_size",
+                      "effect_size_name", "significant")]
 
   test_meta <- list(
     name    = test_name,
@@ -148,7 +155,7 @@ recipe_factorial_anova <- function(df, spec) {
 
 .fa_methods <- function(eff, spec, factors, use_art) {
   y_label <- spec$appearance$y_label %||% spec$data$y
-  v    <- pkg_versions(c("rstatix", "ARTool", "ggplot2"))
+  v    <- pkg_versions(c("car", "ARTool", "ggplot2"))
   rver <- paste(R.version$major, R.version$minor, sep = ".")
 
   intro <- if (use_art) {
@@ -163,10 +170,11 @@ recipe_factorial_anova <- function(df, spec) {
     sprintf("%s (F(%s, %s) = %.2f, %s)",
             gsub(":", " x ", e$effect), e$df1, e$df2, e$statistic, .fa_plab(e$p_value))
   }, character(1))
-  soft <- if (use_art) sprintf("ARTool %s", v$ARTool) else sprintf("rstatix %s", v$rstatix)
+  soft <- if (use_art) sprintf("ARTool %s", v$ARTool) else sprintf("car %s", v$car)
+  es_txt <- if (use_art) "" else " Effect sizes are partial eta squared."
 
   paste0(
-    intro, " Effects tested: ", paste(parts, collapse = "; "), ".",
+    intro, " Effects tested: ", paste(parts, collapse = "; "), ".", es_txt,
     " Significance was set at P < 0.05.",
     sprintf(" Analyses were performed in R %s with %s; figures were produced with ggplot2 %s.",
             rver, soft, v$ggplot2)

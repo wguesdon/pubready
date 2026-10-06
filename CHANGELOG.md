@@ -14,6 +14,33 @@ tag move together.
 ## [Unreleased]
 
 ### Fixed
+- The public benchmarks found five defects in the existing recipes. Each one
+  changes a number in a stats table, so a caller who compares with an older
+  bundle will see the difference.
+- `factorial_anova` in R wrote the F statistic and the P value that
+  `rstatix::anova_test` rounds to three decimals and to three significant digits.
+  On ToothGrowth the table held F = 92 where `car::Anova` gives 91.99996. The
+  parametric path now reads the Type II table from `car::Anova` at full precision.
+- The two engines reported different effect sizes in `factorial_anova`. R reported
+  the generalized eta squared, which equals the partial eta squared in a
+  between-subjects design, and Python divided by the total sum of squares. Both
+  engines now report the partial eta squared, name it in a new `effect_size_name`
+  column and state it in the methods paragraph.
+- `multi_group_compare` in R wrote the Tukey and the Games-Howell P values that
+  `rstatix` rounds to three decimals. The R engine now takes Tukey from
+  `stats::TukeyHSD`, computes Games-Howell with the formula of `rstatix` and
+  `pingouin`, and takes the omnibus tests from `stats::anova`, `stats::oneway.test`
+  and `stats::kruskal.test`. The Python table gains the `n1`, `n2` and `estimate`
+  columns of the R table, so the two tables now have the same columns.
+- The Python `two_group_compare` reported Cohen's d without its sign, because
+  `pingouin` reports the magnitude. On the `sleep` data R gave -0.832 and Python
+  0.832. The Python engine now computes the signed d with the formula of
+  `rstatix::cohens_d`, negative when the first group is lower.
+- The Python `cox_forest` stopped about 2e-6 short of the estimate of
+  `survival::coxph`, because `lifelines` uses a precision of 1e-7 by default. The
+  fit now uses 1e-11, and the hazard ratios on the NCCTG lung data match R to
+  about 1e-10. The Python terms now carry the R names, for example `sexmale` in
+  place of `sex[male]`.
 - The Python engine gave the points of the `bar` geom the colors of the wrong
   groups. `ax.bar` colors by the plotted order, which is alphabetical, while the
   seaborn call mapped the same palette to the groups in the order they appear in

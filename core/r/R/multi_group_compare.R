@@ -27,6 +27,42 @@ resolve_multi_group_method <- function(method, all_normal, equal_var) {
   )
 }
 
+# Significance stars with the cutpoints of rstatix::add_significance.
+.mg_signif <- function(p) {
+  as.character(cut(p, breaks = c(-Inf, 1e-4, 1e-3, 0.01, 0.05, Inf),
+                   labels = c("****", "***", "**", "*", "ns"), right = FALSE))
+}
+
+# Tukey's HSD from stats::TukeyHSD, in the pair order of combn(levels, 2). The
+# estimate is the mean of group2 minus the mean of group1, as rstatix reports it.
+.mg_tukey <- function(df, fml, lvls) {
+  tk <- stats::TukeyHSD(stats::aov(fml, data = df))[[1]]
+  pairs <- utils::combn(lvls, 2)
+  key <- paste(pairs[2, ], pairs[1, ], sep = "-")
+  p <- unname(tk[key, "p adj"])
+  data.frame(group1 = pairs[1, ], group2 = pairs[2, ], estimate = unname(tk[key, "diff"]),
+             p.adj = p, p.adj.signif = .mg_signif(p), stringsAsFactors = FALSE)
+}
+
+# One Games-Howell comparison: a Welch t on the pair, referred to the studentized
+# range distribution with the Welch degrees of freedom, as in rstatix and pingouin.
+.mg_gh_pair <- function(k, pairs, by_group, n_groups) {
+  a <- by_group[[pairs[1, k]]]; b <- by_group[[pairs[2, k]]]
+  va <- stats::var(a) / length(a); vb <- stats::var(b) / length(b)
+  diff <- mean(b) - mean(a)
+  tval <- abs(diff) / sqrt(va + vb)
+  dfw <- (va + vb)^2 / (va^2 / (length(a) - 1) + vb^2 / (length(b) - 1))
+  c(diff, stats::ptukey(tval * sqrt(2), n_groups, dfw, lower.tail = FALSE))
+}
+
+.mg_games_howell <- function(by_group, lvls) {
+  pairs <- utils::combn(lvls, 2)
+  res <- vapply(seq_len(ncol(pairs)), .mg_gh_pair, numeric(2), pairs = pairs,
+                by_group = by_group, n_groups = length(lvls))
+  data.frame(group1 = pairs[1, ], group2 = pairs[2, ], estimate = res[1, ],
+             p.adj = res[2, ], p.adj.signif = .mg_signif(res[2, ]), stringsAsFactors = FALSE)
+}
+
 recipe_multi_group_compare <- function(df, spec) {
   cl <- clean_tidy(df, spec)
   df <- cl$df
@@ -48,21 +84,25 @@ recipe_multi_group_compare <- function(df, spec) {
 
   resolved <- resolve_multi_group_method(spec$test$method, all_normal, equal_var)
 
-  # Omnibus test and matching post-hoc.
+  # Omnibus test and matching post-hoc. The base R functions give full precision;
+  # rstatix rounds the Tukey and Games-Howell P values to three decimals.
   if (resolved$family == "anova") {
-    at <- as.data.frame(rstatix::anova_test(df, fml))
-    omnibus <- list(statistic = at$F[1], df1 = at$DFn[1], df2 = at$DFd[1], p = at$p[1],
-                    effect_size = list(name = "generalized eta-squared", value = at$ges[1]))
-    ph <- as.data.frame(rstatix::tukey_hsd(df, fml))
+    at <- stats::anova(stats::lm(fml, data = df))
+    omnibus <- list(statistic = at[["F value"]][1], df1 = at$Df[1], df2 = at$Df[2],
+                    p = at[["Pr(>F)"]][1],
+                    effect_size = list(name = "partial eta-squared",
+                                       value = at[["Sum Sq"]][1] / sum(at[["Sum Sq"]])))
+    ph <- .mg_tukey(df, fml, lvls)
   } else if (resolved$family == "welch") {
-    wt <- as.data.frame(rstatix::welch_anova_test(df, fml))
-    omnibus <- list(statistic = wt$statistic[1], df1 = wt$DFn[1], df2 = wt$DFd[1], p = wt$p[1],
-                    effect_size = NULL)
-    ph <- as.data.frame(rstatix::games_howell_test(df, fml))
+    wt <- stats::oneway.test(fml, data = df, var.equal = FALSE)
+    omnibus <- list(statistic = unname(wt$statistic), df1 = unname(wt$parameter[1]),
+                    df2 = unname(wt$parameter[2]), p = wt$p.value, effect_size = NULL)
+    ph <- .mg_games_howell(by_group, lvls)
   } else {
-    kt <- as.data.frame(rstatix::kruskal_test(df, fml))
+    kt <- stats::kruskal.test(fml, data = df)
     ke <- tryCatch(as.data.frame(rstatix::kruskal_effsize(df, fml)), error = function(e) NULL)
-    omnibus <- list(statistic = kt$statistic[1], df1 = kt$df[1], df2 = NA_real_, p = kt$p[1],
+    omnibus <- list(statistic = unname(kt$statistic), df1 = unname(kt$parameter), df2 = NA_real_,
+                    p = kt$p.value,
                     effect_size = if (!is.null(ke)) list(name = "eta-squared (H)", value = ke$effsize[1]) else NULL)
     ph <- as.data.frame(rstatix::dunn_test(df, fml, p.adjust.method = "BH"))
   }

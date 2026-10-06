@@ -93,8 +93,14 @@ def recipe_multi_group_compare(df, spec):
     apply_pub_style(ax, ap.get("theme"))
     fig.tight_layout()
 
+    # The same columns as the R engine. The estimate is the mean of group2 minus
+    # the mean of group1 for Tukey and Games-Howell; Dunn's test has none.
+    sizes = df.groupby(x)[y].size()
+    means = df.groupby(x)[y].mean()
     stats_df = pd.DataFrame([{
-        "outcome": y, "group1": a, "group2": b, "post_hoc": posthoc_label,
+        "outcome": y, "group1": a, "group2": b,
+        "n1": int(sizes[a]), "n2": int(sizes[b]), "post_hoc": posthoc_label,
+        "estimate": float(means[b] - means[a]) if fam != "kruskal" else np.nan,
         "p_adj": p, "p_adj_signif": p_stars(p), "displayed": p < 0.05,
     } for a, b, p in pairs])
 

@@ -48,7 +48,8 @@ def recipe_factorial_anova(df, spec):
     rhs = "*".join(f"C(_f{i}_)" for i in range(len(factors)))
     model = smf.ols(f"_y_ ~ {rhs}", data=d2).fit()
     aov = sm.stats.anova_lm(model, typ=2)
-    total_ss = float(aov["sum_sq"].sum())
+    # Partial eta squared, SS_effect / (SS_effect + SS_residual), as the R engine reports.
+    ss_res = float(aov.loc["Residual", "sum_sq"])
 
     def clean_term(t):
         for i, f in enumerate(factors):
@@ -59,9 +60,11 @@ def recipe_factorial_anova(df, spec):
     for term, r in aov.iterrows():
         if term == "Residual":
             continue
-        rows.append({"effect": clean_term(term), "df1": float(r["df"]),
-                     "df2": float(aov.loc["Residual", "df"]), "statistic": float(r["F"]),
-                     "p_value": float(r["PR(>F)"]), "effect_size": float(r["sum_sq"]) / total_ss,
+        rows.append({"effect": clean_term(term), "df1": int(round(r["df"])),
+                     "df2": int(round(aov.loc["Residual", "df"])), "statistic": float(r["F"]),
+                     "p_value": float(r["PR(>F)"]),
+                     "effect_size": float(r["sum_sq"]) / (float(r["sum_sq"]) + ss_res),
+                     "effect_size_name": "partial eta squared",
                      "significant": float(r["PR(>F)"]) < 0.05})
     eff = pd.DataFrame(rows)
 
@@ -121,7 +124,7 @@ def _methods(eff, factors, spec):
         for r in eff.itertuples())
     return (
         f"{cap_first(y_label)} was analyzed by a {len(factors)}-way ANOVA (Type II sums of squares) "
-        f"with factors {', '.join(factors)}. Effects tested: {parts}."
+        f"with factors {', '.join(factors)}. Effects tested: {parts}. Effect sizes are partial eta squared."
         " Significance was set at P < 0.05."
         f" Analyses were performed in Python {platform.python_version()} with statsmodels {v('statsmodels')};"
         f" figures were produced with seaborn {v('seaborn')}."
