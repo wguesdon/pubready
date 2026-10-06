@@ -236,3 +236,14 @@ test_that("ChickWeight: the mixed ANOVA drops the incomplete chicks and corrects
   check_mixed(res, "chick_weight_timecourse", "Diet", "Time")
   expect_true(res$test_meta$correction_applied)
 })
+
+test_that("aml (Miller 1997): the swimmer arm summaries match the data", {
+  bench_skip()
+  res <- recipe_swimmer(bench_data("aml"),
+                        bench_spec("swimmer", id = "patient", time = "time", event = "status",
+                                   group = "x"))
+  expect_ref(res$test_meta$arms$Maintained$median_duration, "aml_swimmer", "median_maintained")
+  expect_ref(res$test_meta$arms$Nonmaintained$median_duration, "aml_swimmer", "median_nonmaintained")
+  expect_ref(res$test_meta$arms$Maintained$ongoing, "aml_swimmer", "ongoing_maintained")
+  expect_ref(res$test_meta$arms$Nonmaintained$ongoing, "aml_swimmer", "ongoing_nonmaintained")
+})

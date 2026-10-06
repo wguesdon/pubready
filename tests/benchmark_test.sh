@@ -98,6 +98,8 @@ bench orthodont_timecourse "mixed ANOVA" --recipe timecourse --data $D/orthodont
   --x age --y distance --id Subject --group Sex
 bench chick_weight_timecourse "Greenhouse-Geisser" --recipe timecourse --data $D/chick_weight.csv \
   --x Time --y weight --id Chick --group Diet
+bench aml_swimmer "median duration" --recipe swimmer --data $D/aml.csv \
+  --id patient --time time --event status --group x --xlab "Weeks"
 
 echo
 if [ "$ran" -eq 0 ]; then

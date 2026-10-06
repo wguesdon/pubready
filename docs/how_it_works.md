@@ -94,6 +94,7 @@ Common options:
 | `--positive LEVEL` | the case level of the `roc_curve` outcome (default: the second level in sorted order) |
 | `--ci_low`, `--ci_high`, `--se` | the 95% CI bounds, or the standard error, of each study in `forest_meta` |
 | `--measure auto\|ratio\|difference` | the pooling scale of `forest_meta` (a ratio is pooled on the log scale) |
+| `--markers "a,b"` | the columns of event times that `swimmer` draws on each bar |
 | `--xlab`, `--ylab`, `--title`, `--palette` | labels and colors |
 | `--out DIR` | output root (default `pubready_output`) |
 
@@ -124,6 +125,7 @@ engines. Pick the engine per figure with `--engine`.
 | `roc_curve` | binary outcome, numeric markers | AUC with a DeLong 95% CI; DeLong test of each marker against the first | ROC curves with the Youden point, AUCs in the legend |
 | `bland_altman` | `method_a, method_b`, one row per subject | bias and 95% limits of agreement with CIs; regression test of proportional bias | difference against mean, shaded CIs of the bias and the limits |
 | `forest_meta` | one row per study: estimate and 95% CI or SE | fixed-effect and DerSimonian-Laird pooling; Cochran's Q, I2, tau2 | forest plot with weighted squares, pooled diamonds and an estimate column |
+| `swimmer` | one row per patient: `duration[, status, arm, event times]` | descriptive (no test) | one bar per patient sorted by duration, arrows for ongoing courses, symbols for events |
 | `timecourse` | `subject, time, value[, group]` | mixed ANOVA (group between, time within) or repeated-measures ANOVA; Greenhouse-Geisser when Mauchly's test rejects sphericity | mean +/- SEM per group over time, one thin line per subject |
 
 ### Test selection
@@ -218,6 +220,10 @@ figkit plot --recipe timecourse --data growth.csv --x day --y volume --id mouse 
 
 # waterfall of the best change from baseline
 figkit plot --recipe waterfall --data lesions.csv --x week --y lesion_mm --id patient --group arm
+
+# swimmer plot of the time on treatment, with response and progression marks
+figkit plot --recipe swimmer --data patients.csv --id patient --time months --event ended \
+  --group arm --markers response_month,progression_month
 ```
 
 ## The artifact bundle

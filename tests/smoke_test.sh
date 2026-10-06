@@ -286,6 +286,18 @@ else
   echo "FAIL: expected the mixed ANOVA and the dropped mouse"; fail=1
 fi
 
+echo "[28] swimmer plot of the time on treatment"
+./cli/figkit plot --recipe swimmer --data example/swimmer_patients.csv \
+  --id patient --time months --event ended --group arm \
+  --markers response_month,progression_month --out "$OUT/swimmer"
+check_bundle "$OUT/swimmer" "swimmer"
+if compgen -G "$OUT/swimmer/*/stats_*.csv" > /dev/null && \
+   grep -q "ongoing" "$OUT"/swimmer/*/stats_*.csv && grep -q "response_month" "$OUT"/swimmer/*/stats_*.csv; then
+  echo "PASS: swimmer per-patient courses with markers"
+else
+  echo "FAIL: expected the swimmer per-patient table"; fail=1
+fi
+
 echo "--- Python engine (all recipes) ---"
 pyc() {  # $1 = short label; rest = plot args
   local label="$1"; shift
@@ -322,6 +334,7 @@ pyc roc     --recipe roc_curve           --data example/biomarker_roc.csv    --y
 pyc ba      --recipe bland_altman        --data example/method_agreement.csv --x new_assay --y reference_assay
 pyc meta    --recipe forest_meta         --data example/meta_trials.csv      --y hazard_ratio --ci_low ci_low --ci_high ci_high --label trial
 pyc tc      --recipe timecourse          --data example/tumor_growth.csv     --x day --y volume_mm3 --id mouse --group arm
+pyc swimmer --recipe swimmer             --data example/swimmer_patients.csv --id patient --time months --event ended --group arm --markers response_month,progression_month
 
 # Engine parity on the non-parametric paths. Both engines must report the same
 # p-value and the same effect size to six significant digits.

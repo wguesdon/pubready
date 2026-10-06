@@ -164,6 +164,9 @@ These recipes show structure rather than run an inferential test:
 - `waterfall` draws the best change from baseline of each patient as one sorted
   bar, with the same RECIST reference lines and the same categories as
   `spider_response`. It also accepts one precomputed change per patient.
+- `swimmer` draws the time on treatment of each patient as one sorted bar, with an
+  arrow for a course that is still ongoing and a symbol for each event time named
+  in `--markers`. The stats table gives the median duration of each arm.
 
 ## Multiple comparisons
 Correct whenever there is more than one comparison. The multi-group post-hoc tests

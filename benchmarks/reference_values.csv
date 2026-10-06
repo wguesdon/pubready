@@ -82,3 +82,7 @@
 "chick_weight_timecourse","p_interaction",9.34105130571e-11,1e-06,"stats::aov(Error())"
 "chick_weight_timecourse","gg_epsilon",0.114145014135,1e-06,"car::Anova(idesign)"
 "chick_weight_timecourse","mauchly_p",1.03260946101e-251,1e-06,"car::Anova(idesign)"
+"aml_swimmer","median_maintained",28,1e-06,"stats::median()"
+"aml_swimmer","ongoing_maintained",4,1e-06,"count of status 0"
+"aml_swimmer","median_nonmaintained",19.5,1e-06,"stats::median()"
+"aml_swimmer","ongoing_nonmaintained",1,1e-06,"count of status 0"

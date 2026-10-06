@@ -32,7 +32,9 @@ Common plot options:
   --agent-harness-version VERSION         agent harness version in the report
   --x, --y                                 axis columns (tidy data)
   --fill, --facet                          extra factors (factorial_anova)
-  --time, --event                          survival columns (1 = event, 0 = censored)
+  --time, --event                          survival columns (1 = event, 0 = censored);
+                                           swimmer duration and status (0 = ongoing)
+  --markers "a,b"                          event-time columns drawn on the bars (swimmer)
   --covariates "a,b,c"                     Cox model covariates
   --annotation FILE                        heatmap column annotation CSV
   --id COL                                 subject column (paired_compare, spider_response,
@@ -65,7 +67,7 @@ Recipes: two_group_compare, multi_group_compare, factorial_anova,
          correlation_heatmap, upset, volcano, enrichment_dot,
          paired_compare, proportions, pca, spider_response,
          dose_response, roc_curve, bland_altman, forest_meta,
-         timecourse, waterfall
+         timecourse, waterfall, swimmer
 EOF
 }
 

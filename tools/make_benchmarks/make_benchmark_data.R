@@ -291,6 +291,20 @@ add_ref("chick_weight_timecourse", "n_complete_chicks", length(complete_chicks),
 mixed_refs("chick_weight_timecourse", cw_df[cw_df$Chick %in% complete_chicks, ],
            "Chick", "Diet", "Time", "weight")
 
+# 17. aml: acute myelogenous leukaemia, maintenance chemotherapy or not, Miller
+# (1997). status 1 = the event, 0 = censored, which is the swimmer convention of
+# 1 = the course ended and 0 = ongoing.
+aml <- as.data.frame(survival::aml)
+aml$patient <- sprintf("AML-%02d", seq_len(nrow(aml)))
+aml_df <- write_data(aml[, c("patient", "x", "time", "status")], "aml")
+for (arm in sort(unique(aml_df$x))) {
+  key <- tolower(arm)
+  add_ref("aml_swimmer", paste0("median_", key), stats::median(aml_df$time[aml_df$x == arm]),
+          "stats::median()")
+  add_ref("aml_swimmer", paste0("ongoing_", key), sum(aml_df$status[aml_df$x == arm] == 0),
+          "count of status 0")
+}
+
 ref_df <- do.call(rbind, refs)
 utils::write.csv(ref_df, file.path("benchmarks", "reference_values.csv"), row.names = FALSE)
 cat(sprintf("Wrote %d datasets and %d reference values.\n",

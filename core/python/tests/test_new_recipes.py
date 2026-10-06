@@ -11,6 +11,7 @@ from pubready.recipes.bland_altman import recipe_bland_altman
 from pubready.recipes.dose_response import fpl, recipe_dose_response
 from pubready.recipes.forest_meta import recipe_forest_meta
 from pubready.recipes.roc_curve import recipe_roc_curve
+from pubready.recipes.swimmer import recipe_swimmer
 from pubready.recipes.timecourse import recipe_timecourse
 from pubready.recipes.waterfall import recipe_waterfall
 from pubready.spec import spec_from_args
@@ -164,3 +165,19 @@ def test_waterfall_without_time_refuses_two_rows_for_one_patient():
     df = pd.DataFrame({"patient": ["p1", "p1"], "best": [-45, 25]})
     with pytest.raises(ValueError, match="one row per patient"):
         recipe_waterfall(df, new_spec("waterfall", y="best", id="patient"))
+
+
+def test_swimmer_sorts_the_courses_and_counts_ongoing_and_markers():
+    df = pd.DataFrame({"pt": ["a", "b", "c"], "months": [3, 10, 6], "ended": [1, 0, 1],
+                       "response": [np.nan, 2, 4]})
+    res = recipe_swimmer(df, new_spec("swimmer", id="pt", time="months", event="ended",
+                                      markers="response"))
+    assert list(res["stats"]["patient"]) == ["b", "c", "a"]
+    assert res["test_meta"]["n_ongoing"] == 1
+    assert res["test_meta"]["markers"]["response"] == 2
+
+
+def test_swimmer_refuses_a_status_not_coded_one_or_zero():
+    df = pd.DataFrame({"pt": ["a", "b"], "months": [3, 10], "ended": [1, 2]})
+    with pytest.raises(ValueError, match="1 = the course ended"):
+        recipe_swimmer(df, new_spec("swimmer", id="pt", time="months", event="ended"))

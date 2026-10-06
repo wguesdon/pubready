@@ -24,6 +24,7 @@ from pubready.recipes.pca import recipe_pca
 from pubready.recipes.proportions import recipe_proportions
 from pubready.recipes.roc_curve import recipe_roc_curve
 from pubready.recipes.survival_km import recipe_survival_km
+from pubready.recipes.swimmer import recipe_swimmer
 from pubready.recipes.timecourse import recipe_timecourse
 from pubready.recipes.two_group_compare import recipe_two_group_compare
 from pubready.spec import spec_from_args
@@ -280,3 +281,13 @@ def test_chick_weight_mixed_anova_drops_incomplete_chicks():
     expect_ref(res["test_meta"]["n_subjects"], "chick_weight_timecourse", "n_complete_chicks")
     check_mixed(res, "chick_weight_timecourse", "Diet", "Time")
     assert res["test_meta"]["correction_applied"] is True
+
+
+def test_aml_swimmer_arm_summaries():
+    res = recipe_swimmer(bench_data("aml"), bench_spec(
+        "swimmer", id="patient", time="time", event="status", group="x"))
+    arms = res["test_meta"]["arms"]
+    expect_ref(arms["Maintained"]["median_duration"], "aml_swimmer", "median_maintained")
+    expect_ref(arms["Nonmaintained"]["median_duration"], "aml_swimmer", "median_nonmaintained")
+    expect_ref(arms["Maintained"]["ongoing"], "aml_swimmer", "ongoing_maintained")
+    expect_ref(arms["Nonmaintained"]["ongoing"], "aml_swimmer", "ongoing_nonmaintained")

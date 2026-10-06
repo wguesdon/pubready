@@ -25,6 +25,7 @@ def main():
     p.add_argument("--positive")
     p.add_argument("--se"); p.add_argument("--ci_low"); p.add_argument("--ci_high")
     p.add_argument("--measure")
+    p.add_argument("--markers")
     p.add_argument("--test", default="auto")
     p.add_argument("--paired", action="store_true")
     p.add_argument("--p_adjust", default="none")

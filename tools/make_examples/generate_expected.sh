@@ -118,6 +118,10 @@ rm -rf "$OUT"
 ./cli/figkit plot --recipe timecourse --data example/tumor_growth.csv \
   --x day --y volume_mm3 --id mouse --group arm \
   --xlab "Day" --ylab "Tumour volume (mm^3)" --stamp tc --out "$OUT"
+./cli/figkit plot --recipe swimmer --data example/swimmer_patients.csv \
+  --id patient --time months --event ended --group arm \
+  --markers response_month,progression_month --xlab "Months on treatment" \
+  --stamp swimmer --out "$OUT"
 
 # Raincloud and bar geoms on the comparison recipes
 ./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
@@ -182,6 +186,10 @@ PY="--engine python"
 ./cli/figkit plot $PY --recipe timecourse --data example/tumor_growth.csv \
   --x day --y volume_mm3 --id mouse --group arm \
   --xlab "Day" --ylab "Tumour volume (mm^3)" --stamp tc_py --out "$OUT"
+./cli/figkit plot $PY --recipe swimmer --data example/swimmer_patients.csv \
+  --id patient --time months --event ended --group arm \
+  --markers response_month,progression_month --xlab "Months on treatment" \
+  --stamp swimmer_py --out "$OUT"
 
 rm -rf "$FINAL"
 mv "$OUT" "$FINAL"

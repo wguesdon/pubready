@@ -56,6 +56,7 @@ podman run --rm -v "$PWD":/work -w /work localhost/pubready:<version> \
 | `bcg_meta` | `bcg.csv` | `forest_meta` | `metafor::rma(method = "DL")` and `"FE"` |
 | `orthodont_timecourse` | `orthodont.csv` | `timecourse` | `stats::aov` with `Error()`, `car::Anova(idesign)` |
 | `chick_weight_timecourse` | `chick_weight.csv` | `timecourse` | `stats::aov` with `Error()`, `car::Anova(idesign)` |
+| `aml_swimmer` | `aml.csv` | `swimmer` | `stats::median` and the count of censored courses for each arm |
 
 ## Tolerances
 
@@ -117,3 +118,4 @@ license of that package applies to the data.
 | `bcg.csv` | metadat | Colditz, G. A. et al. (1994) Efficacy of BCG vaccine in the prevention of tuberculosis: meta-analysis of the published literature. JAMA 271(9), 698-702. |
 | `orthodont.csv` | nlme | Potthoff, R. F. and Roy, S. N. (1964) A generalized multivariate analysis of variance model useful especially for growth curve problems. Biometrika 51, 313-326. |
 | `chick_weight.csv` | datasets | Crowder, M. and Hand, D. (1990) Analysis of Repeated Measures. Chapman and Hall, example 5.3. |
+| `aml.csv` | survival | Miller, R. G. (1997) Survival Analysis. John Wiley and Sons. |

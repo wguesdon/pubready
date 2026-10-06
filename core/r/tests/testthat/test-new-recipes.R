@@ -131,3 +131,19 @@ test_that("waterfall without --x refuses two rows for one patient", {
   expect_error(recipe_waterfall(df, new_spec("waterfall", y = "best", id = "patient")),
                "one row per patient")
 })
+
+test_that("swimmer sorts the courses, counts the ongoing ones and the markers", {
+  df <- data.frame(pt = c("a", "b", "c"), months = c(3, 10, 6), ended = c(1, 0, 1),
+                   response = c(NA, 2, 4))
+  res <- recipe_swimmer(df, new_spec("swimmer", id = "pt", time = "months", event = "ended",
+                                     markers = "response"))
+  expect_equal(res$stats$patient, c("b", "c", "a"))
+  expect_equal(res$test_meta$n_ongoing, 1)
+  expect_equal(res$test_meta$markers$response, 2)
+})
+
+test_that("swimmer refuses a status that is not coded 1 or 0", {
+  df <- data.frame(pt = c("a", "b"), months = c(3, 10), ended = c(1, 2))
+  expect_error(recipe_swimmer(df, new_spec("swimmer", id = "pt", time = "months", event = "ended")),
+               "1 = the course ended")
+})

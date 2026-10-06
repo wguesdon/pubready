@@ -49,6 +49,9 @@ spec_from_opt <- function(opt) {
                   positive = opt$positive, se = opt$se,
                   ci_low = opt$ci_low, ci_high = opt$ci_high,
                   measure = opt$measure,
+                  markers = if (!is.null(opt$markers)) {
+                    trimws(strsplit(opt$markers, ",")[[1]])
+                  } else NULL,
                   covariates = if (!is.null(opt$covariates)) {
                     trimws(strsplit(opt$covariates, ",")[[1]])
                   } else NULL),

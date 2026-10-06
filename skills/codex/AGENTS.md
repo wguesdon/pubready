@@ -68,6 +68,7 @@ If a command reports the image is missing, run `figkit build` first.
 | `bland_altman` | method A, method B (one row per subject) | `--x --y` | bias and 95% limits of agreement with CIs, proportional bias test |
 | `forest_meta` | one row per study: estimate and 95% CI or SE | `--y --ci_low --ci_high [--se --label --measure]` | fixed-effect and DerSimonian-Laird pooling, Q, I2, tau2 |
 | `timecourse` | subject, time, value[, group] | `--x --y --id [--group]` | mixed (or repeated-measures) ANOVA, Greenhouse-Geisser when Mauchly rejects |
+| `swimmer` | one row per patient: duration[, status, arm, event times] | `--id --time [--event --group --markers "a,b"]` | descriptive bar per patient, arrows for ongoing courses (no test) |
 
 Common options: `--engine r|python` (default r), `--geom box|violin|bar|raincloud`,
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
@@ -75,7 +76,8 @@ Common options: `--engine r|python` (default r), `--geom box|violin|bar|rainclou
 `gg|uncorrected`), `--scale`/`--cluster` (heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n`
 (volcano), `--id --group --label`, `--positive LEVEL` (roc_curve case level),
 `--ci_low --ci_high --se --measure ratio|difference` (forest_meta),
-`--pd_threshold --pr_threshold` (spider_response, waterfall),
+`--pd_threshold --pr_threshold` (spider_response, waterfall), `--markers "a,b"`
+(swimmer event-time columns),
 `--theme pubready_house|prism`, `--xlab --ylab --title --palette`, `--out DIR`.
 
 For `roc_curve`, confirm the case level with the scientist: by default it is the

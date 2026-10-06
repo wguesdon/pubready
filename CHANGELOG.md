@@ -14,7 +14,7 @@ tag move together.
 ## [Unreleased]
 
 ### Added
-- Six recipes, in both engines, which take the catalog from 15 to 21:
+- Seven recipes, in both engines, which take the catalog from 15 to 22:
   - `dose_response` fits a four-parameter logistic curve to each curve and
     reports the EC50, or the IC50 of a falling curve, with a 95% CI. With two or
     more curves, an extra-sum-of-squares F test asks whether one shared midpoint
@@ -38,13 +38,17 @@ tag move together.
     time. `--test gg | uncorrected` forces the choice.
   - `waterfall` draws the best change from baseline of each patient as sorted
     bars with the RECIST lines, from one row per visit or one row per patient.
+  - `swimmer` draws the time on treatment of each patient as one sorted bar,
+    with an arrow for an ongoing course. The new `--markers` option names the
+    columns of event times, such as a response or a progression, that the bars
+    carry as symbols.
 - Example datasets for the new recipes: `dose_response.csv`, `biomarker_roc.csv`,
-  `method_agreement.csv`, `meta_trials.csv` and `tumor_growth.csv`, each from a
-  seeded generator in `tools/make_examples/`.
-- Public benchmarks. `benchmarks/` holds 19 published datasets and 83 reference
+  `method_agreement.csv`, `meta_trials.csv`, `tumor_growth.csv` and
+  `swimmer_patients.csv`, each from a seeded generator in `tools/make_examples/`.
+- Public benchmarks. `benchmarks/` holds 20 published datasets and 87 reference
   values from the canonical R functions. `figkit test` now mounts the folder, and
   both unit suites compare every recipe with these values. `tests/benchmark_test.sh`
-  runs the 21 cases end to end through `figkit plot` with both engines.
+  runs the 22 cases end to end through `figkit plot` with both engines.
 - The image adds pROC and metafor in a late layer.
 
 ### Fixed
