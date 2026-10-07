@@ -1,6 +1,6 @@
 {
-  "pubready_version": "0.4.1",
-  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "volcano",
@@ -29,9 +29,9 @@
     "n_significant": 150
   },
   "container": {
-    "image": "localhost/pubready:0.4.1",
-    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
-    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
+    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -57,7 +57,7 @@
     {
       "file": "figure_de_results_volcano.pdf",
       "bytes": 47044,
-      "sha256": "2a17f944982a1087b0a1605773142f8cc3ce3b596ad2dcc12aa318d160ab8bda"
+      "sha256": "2345d64d5b017aca111262d4f7f5d254935739757639ff1d9c66c76e3c39ada5"
     },
     {
       "file": "figure_de_results_volcano.png",
@@ -76,18 +76,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3607,
-      "sha256": "6962316c76e9b441fbcb4c49a26d15e3cced7e0365232941be05e737cf2848c7"
+      "bytes": 3606,
+      "sha256": "e283d1d89fa324e839a7fd41666c57204c7212fbcd9d69c38fa9900901835816"
     },
     {
       "file": "report.html",
-      "bytes": 1464814,
-      "sha256": "3341c7f0bfdbbaf5227e856a25637e81e3e88f58eb8a8a1a3ce71f2f0b0e5000"
+      "bytes": 1464813,
+      "sha256": "106479ed3c50112aacf4e0241768aa4ad942c3c399f6bbc2cede83f4f925859a"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1936,
-      "sha256": "ab829b22e1bb7bf7437e58e58be746c855a9a591639b0e15332b00ca9ae43d36"
+      "bytes": 1935,
+      "sha256": "f51227e06026945cdaacc03e8289353529fb03be25c23f269274c2801035c119"
     }
   ]
 }

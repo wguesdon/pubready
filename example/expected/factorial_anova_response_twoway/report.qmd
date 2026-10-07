@@ -41,15 +41,15 @@ The complete plot configuration is in `plot_config.yaml`.
 | field | value |
 | --- | --- |
 | repository | pubready |
-| repository_version | 0.4.1 |
-| git_commit | f82215f4b833c9d70432f64150af9bc357a8d5e4 |
-| git_dirty | FALSE |
+| repository_version | 1.0.0 |
+| git_commit | f66e11ade8775d5c33ce81c38926927708b194cb |
+| git_dirty | TRUE |
 | llm_provider | none |
 | llm_model | none |
 | agent_harness | manual |
 | agent_harness_version | not_recorded |
-| container_image | localhost/pubready:0.4.1 |
-| container_digest | sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4 |
+| container_image | localhost/pubready:1.0.0 |
+| container_digest | sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e |
 | input | {"file":"input_response.csv","md5":"dba50f83c02a1cd007bc013dd062a9b0","sha256":"e7d2443929aced46222aa951eb52064fade5b9ab5ceed25f6ebf447676bc8ff4"} |
 | command | figkit plot --recipe factorial_anova |
 | analysis_options | {"engine":"r","recipe":"factorial_anova","data":{"file":"twoway_response.csv","x":"genotype","y":"response","fill":"treatment","facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":"Response (a.u.)","title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |

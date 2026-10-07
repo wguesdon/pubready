@@ -1,6 +1,6 @@
 {
-  "pubready_version": "0.4.1",
-  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "spider_response",
@@ -32,9 +32,9 @@
     "progressive_disease": 5
   },
   "container": {
-    "image": "localhost/pubready:0.4.1",
-    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
-    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
+    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -60,7 +60,7 @@
     {
       "file": "figure_target_lesion_mm_spider.pdf",
       "bytes": 9795,
-      "sha256": "94c977a97b01d11c7955e734d326810c2af30b2b49a9ece789af07a35a7c0d4f"
+      "sha256": "4ffb2876431432ec7bf205e6b72e1ce963013142c78db709cf7dc28bf34984e7"
     },
     {
       "file": "figure_target_lesion_mm_spider.png",
@@ -79,18 +79,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 5164,
-      "sha256": "e2b2584a7111c7c586d9170f9e7344f37c4ea6da31767cd3acbdf7e057a0ad7e"
+      "bytes": 5163,
+      "sha256": "f7cb8ca75a272ac1680b17c624721a86df0077a2880a91cd516d7099be445a51"
     },
     {
       "file": "report.html",
-      "bytes": 1504775,
-      "sha256": "d5a35b141021b86729d925704f40f0467e6e734b5df1dcb48bff1de51e2b0609"
+      "bytes": 1504774,
+      "sha256": "52fbc94d91468668ef9763a6e996686bd712c21b2c817fabf8cacd13355a4ba6"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1970,
-      "sha256": "c910718793fb245cc7b7a1e5369005d0f0ef2d278e2c39e34d1213d5b1478d4f"
+      "bytes": 1969,
+      "sha256": "2b44ea82efdcdbf3951947a4c5869b34bca13dfa8cba6b6117a22c38add4ff50"
     }
   ]
 }

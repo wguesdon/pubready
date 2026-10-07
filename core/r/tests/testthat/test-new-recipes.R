@@ -1,4 +1,4 @@
-# Behaviour of the six recipes added in v0.5.0 on small synthetic inputs. The
+# Behaviour of the six recipes added in v1.0.0 on small synthetic inputs. The
 # numbers themselves are checked against public benchmarks in test-benchmarks.R.
 
 new_spec <- function(recipe, ...) {

@@ -39,15 +39,15 @@ The complete plot configuration is in `plot_config.yaml`.
 | field | value |
 | --- | --- |
 | repository | pubready |
-| repository_version | 0.4.1 |
-| git_commit | f82215f4b833c9d70432f64150af9bc357a8d5e4 |
-| git_dirty | False |
+| repository_version | 1.0.0 |
+| git_commit | f66e11ade8775d5c33ce81c38926927708b194cb |
+| git_dirty | True |
 | llm_provider | none |
 | llm_model | none |
 | agent_harness | manual |
 | agent_harness_version | not_recorded |
-| container_image | localhost/pubready:0.4.1 |
-| container_digest | sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4 |
+| container_image | localhost/pubready:1.0.0 |
+| container_digest | sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e |
 | input | {"file": "input_concentration.csv", "md5": "71253c2a457715e5eb78ba8b5da99b7b", "sha256": "b4591b64add603dd5d4d265e4d7ddb417b65359ca5c76a169152e8d01041413c"} |
 | command | figkit plot --recipe two_group_compare |
 | analysis_options | {"engine": "python", "recipe": "two_group_compare", "data": {"file": "cytokine_pg_ml.csv", "x": "group", "y": "concentration", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": null, "group": null, "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": "Group", "y_label": "IL-6 (pg/mL)", "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |

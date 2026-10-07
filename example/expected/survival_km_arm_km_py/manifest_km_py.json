@@ -1,6 +1,6 @@
 {
-  "pubready_version": "0.4.1",
-  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "survival_km",
@@ -44,9 +44,9 @@
     ]
   },
   "container": {
-    "image": "localhost/pubready:0.4.1",
-    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
-    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
+    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -75,7 +75,7 @@
     {
       "file": "figure_arm_km_py.pdf",
       "bytes": 17320,
-      "sha256": "20f87ef2b8f5c07409ae336bf330212183442b63544c8c09439b3eef82b18a5a"
+      "sha256": "5fbc3789d90e71f26fd28b43a3bca74c8c04a4cff025e901eecfedf621bf3019"
     },
     {
       "file": "figure_arm_km_py.png",
@@ -85,7 +85,7 @@
     {
       "file": "figure_arm_km_py.svg",
       "bytes": 44079,
-      "sha256": "d8552de71bc8833d3f7b43e0a84c58457cbebc9c4e91d90f364b30e355a9b664"
+      "sha256": "9b30988c4e2cfefad75890a339a502fab4cfba578da15b7e73a388869e5eb8db"
     },
     {
       "file": "packages_km_py.txt",
@@ -94,18 +94,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 2817,
-      "sha256": "42018de9711bbd966dfd0c1ba65f44998c102bc4086ccafba1fdb41aedd7c9c4"
+      "bytes": 2816,
+      "sha256": "316cec3a84ef76f8a9fa3bdd0d2de4e02028f07f30af8c90758585ea56965c85"
     },
     {
       "file": "report.html",
-      "bytes": 1332649,
-      "sha256": "3d0824eecd1cd978e20305da36093d1b14ef9b9413bd4f9e5caf9bf7ca6cc9f1"
+      "bytes": 1332648,
+      "sha256": "1807192f9aa03567b164d030faf4c123de01028dce32b2464828cd1df9f3143b"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1944,
-      "sha256": "dd7dd7a57a9f7d9469fb0ce1fc4fc95e7f72f05b6f4ef92fc8613f4e3a5f88d5"
+      "bytes": 1943,
+      "sha256": "f6a70b6170d2fca6015312e1e9b0007d6a9cc4def68844e47cb9f230d6aa6c26"
     }
   ]
 }

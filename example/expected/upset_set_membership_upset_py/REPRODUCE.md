@@ -5,9 +5,9 @@ environment it was made in:
 
 ## 1. Get the pinned environment
 
-- Container image: `localhost/pubready:0.4.1`
-- Image id: `be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8`
-- pubready commit: `f82215f4b833c9d70432f64150af9bc357a8d5e4`
+- Container image: `localhost/pubready:1.0.0`
+- Image id: `adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a`
+- pubready commit: `f66e11ade8775d5c33ce81c38926927708b194cb`
 
 ## 2. Run the standalone script
 
@@ -15,7 +15,7 @@ From inside this folder:
 
 ```bash
 podman run --rm -v "$PWD":/work -w /work \
-  localhost/pubready:0.4.1 python3 script_upset_py.py
+  localhost/pubready:1.0.0 python3 script_upset_py.py
 ```
 
 The script reads the bundled input copy, reruns the analysis, and redraws

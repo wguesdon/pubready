@@ -1,6 +1,6 @@
 {
-  "pubready_version": "0.4.1",
-  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "correlation_heatmap",
@@ -30,9 +30,9 @@
     "n_significant": 15
   },
   "container": {
-    "image": "localhost/pubready:0.4.1",
-    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
-    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
+    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -61,7 +61,7 @@
     {
       "file": "figure_correlation_vars_corrhm_py.pdf",
       "bytes": 16316,
-      "sha256": "3634f7225998e246951013112f015a066440959db1248d0bdd575df59199ad04"
+      "sha256": "6945dd80c436555a7a3a0aa42d5b0fb9637c27be56a33f9d816af9ddfb80163e"
     },
     {
       "file": "figure_correlation_vars_corrhm_py.png",
@@ -71,7 +71,7 @@
     {
       "file": "figure_correlation_vars_corrhm_py.svg",
       "bytes": 75281,
-      "sha256": "11884d52ad6083e7546bbc3c5c2590f3c06f51229c823626b3d005ef3a5184b9"
+      "sha256": "fd8a54d1d10cbfc6928a7b9ebb4bd0187bb7b20b284dc984201f106dd93d89c1"
     },
     {
       "file": "packages_corrhm_py.txt",
@@ -80,18 +80,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 5270,
-      "sha256": "6afe34eb267ca42667577106aaed40929c4bf257095f811474fb05bcc055cdfb"
+      "bytes": 5269,
+      "sha256": "216a8b25261416e3d8adfce8712d30edf75b5b9bf2dfa7f6e3be105e38514c96"
     },
     {
       "file": "report.html",
-      "bytes": 1430043,
-      "sha256": "f066e98801203e44337a35dc7f387de72be8d962c9c8e1d31e31651c2ea9af73"
+      "bytes": 1430042,
+      "sha256": "a12d7afe54e1cb0847a872d77de648dfe4edbcfde2e2083118ffd1f51bf93fd9"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1965,
-      "sha256": "cba394030c1cc5db275bf68d695fdf30b0eda6b1b3f4587c12bbed0f9a94504b"
+      "bytes": 1964,
+      "sha256": "20a48ae645240c8f19f340fde17fa2fac83756f9c74ed7c05ee94a98850f45a7"
     }
   ]
 }

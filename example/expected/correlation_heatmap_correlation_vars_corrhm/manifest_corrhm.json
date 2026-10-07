@@ -1,6 +1,6 @@
 {
-  "pubready_version": "0.4.1",
-  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "correlation_heatmap",
@@ -28,9 +28,9 @@
     "n_significant": 15
   },
   "container": {
-    "image": "localhost/pubready:0.4.1",
-    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
-    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
+    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -56,7 +56,7 @@
     {
       "file": "figure_correlation_vars_corrhm.pdf",
       "bytes": 11982,
-      "sha256": "849175b728c24b28a48c03b6db510df82f57521691faef2d2fc8aa79cd681bbc"
+      "sha256": "29bac63a8b99990dcec7d7ba80e7804cdb6af61b6abd9afd17c2f3d2a9578fb3"
     },
     {
       "file": "figure_correlation_vars_corrhm.png",
@@ -75,18 +75,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 5055,
-      "sha256": "b775a0c9cae3948038e6817a73f1fa6dcd303fbbc1645b0e44d7e2421614e710"
+      "bytes": 5054,
+      "sha256": "a57214ebaa214a076d79cb6d818ad89aab8faa423bdc8737951b193af1446a58"
     },
     {
       "file": "report.html",
-      "bytes": 1372591,
-      "sha256": "de4ea647d42da0c573879ddd38a74566c2ede7074878e6684e6111b71cd1670b"
+      "bytes": 1372590,
+      "sha256": "5c8f874cb18a2e0ef93212d9fa0086421f53baa42a7ff267c787b0177221acfc"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1955,
-      "sha256": "0fe7639a5a9e4e6e1f07d2ae546b1141f57ea2afebf3c704d8a63ab7b65405b8"
+      "bytes": 1954,
+      "sha256": "cfc03cc2620447f8a033e4711ae808d9de003f3d92afeb965479b99efd32cbff"
     }
   ]
 }

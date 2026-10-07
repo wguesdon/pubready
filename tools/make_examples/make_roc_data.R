@@ -4,7 +4,7 @@
 # markers. marker_a separates the groups well and marker_b less so. The outcome
 # levels sort with "healthy" second, so the example passes --positive disease.
 # Run once inside the pubready container from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:0.5.0 \
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:1.0.0 \
 #     Rscript tools/make_examples/make_roc_data.R
 set.seed(34)
 

@@ -3,7 +3,7 @@
 # row per patient, with the months on treatment, whether the treatment is still
 # ongoing at the data cut-off, the month of the first response and the month of
 # progression. Run once inside the pubready container from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:0.5.0 \
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:1.0.0 \
 #     Rscript tools/make_examples/make_swimmer_data.R
 set.seed(77)
 

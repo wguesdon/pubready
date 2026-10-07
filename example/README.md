@@ -503,7 +503,7 @@ Paired comparison, proportions, and the raincloud geom:
 ![py proportions](expected/proportions_response_prop_py/figure_response_prop_py.png)
 ![py raincloud](expected/two_group_compare_volume_raincloud_py/figure_volume_raincloud_py.png)
 
-The recipes added in v0.5.0, drawn by the Python engine:
+The recipes added in v1.0.0, drawn by the Python engine:
 
 ![py waterfall](expected/waterfall_target_lesion_mm_waterfall_py/figure_target_lesion_mm_waterfall_py.png)
 ![py dose-response](expected/dose_response_viability_pct_drc_py/figure_viability_pct_drc_py.png)

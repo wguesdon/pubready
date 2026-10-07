@@ -3,7 +3,7 @@
 # eight 3-fold concentrations and three replicate wells each. Viability falls with
 # the dose, so each curve reports an IC50. Run once inside the pubready container
 # from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:0.5.0 \
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:1.0.0 \
 #     Rscript tools/make_examples/make_dose_response_data.R
 set.seed(21)
 

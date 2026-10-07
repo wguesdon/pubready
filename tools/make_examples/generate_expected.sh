@@ -102,7 +102,7 @@ rm -rf "$OUT"
   --x week --y target_lesion_mm --id patient --group arm --xlab "Week" \
   --stamp spider --out "$OUT"
 
-# Recipes added in v0.5.0: waterfall, dose-response, ROC, Bland-Altman, forest, time course
+# Recipes added in v1.0.0: waterfall, dose-response, ROC, Bland-Altman, forest, time course
 ./cli/figkit plot --recipe waterfall --data example/spider_response.csv \
   --x week --y target_lesion_mm --id patient --group arm --stamp waterfall --out "$OUT"
 ./cli/figkit plot --recipe dose_response --data example/dose_response.csv \

@@ -1,6 +1,6 @@
 {
-  "pubready_version": "0.4.1",
-  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "two_group_compare",
@@ -43,9 +43,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:0.4.1",
-    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
-    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
+    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -75,18 +75,18 @@
   "output_checksums": [
     {
       "file": "figure_volume_prism_py.pdf",
-      "bytes": 14673,
-      "sha256": "ad78211fe20308d743cd4a5bf6d706cd24c0f22077295288fce464c620217437"
+      "bytes": 14670,
+      "sha256": "73448dfb606bf03d76b1ca0eb487b8246e4eb326c9650cec7013c1531e0cda5d"
     },
     {
       "file": "figure_volume_prism_py.png",
-      "bytes": 67792,
-      "sha256": "83f9c7352ebc2328feaf801ca412cd33c8737f9cc4fc62c21c928726b8a2840d"
+      "bytes": 67863,
+      "sha256": "f3d64fb36da4fd24ccdb0d7c11e5eba7bdf440276c79c05e881519b3528c28cd"
     },
     {
       "file": "figure_volume_prism_py.svg",
-      "bytes": 28706,
-      "sha256": "5a95c6ff350f7983aec58c5c08319a84658360bba74bd2a623a8c067f5660132"
+      "bytes": 28710,
+      "sha256": "3dcf89f5659522dfedeb1346c3316dc99fd7e551716446bc0a445182333fe4e7"
     },
     {
       "file": "packages_prism_py.txt",
@@ -101,22 +101,22 @@
     {
       "file": "qc_normality_prism_py.pdf",
       "bytes": 25226,
-      "sha256": "b89b2a4dc05fcc32ab7208f69806a20efe58b2b04461339dc32f3e88b2822276"
+      "sha256": "b2b49a95918de0d93b0f06befe470d3d9bf3454fbbeef950aa4608313674028b"
     },
     {
       "file": "report.qmd",
-      "bytes": 3207,
-      "sha256": "ef55c554e182f2bb6f7abc5064aba91ec40b52c137965e6dac9f2fec1d12918e"
+      "bytes": 3206,
+      "sha256": "f9fbc44c01fe74d5c0e0fee5ffab0093363fe41acf7d21887e2a0d1ea2c113dc"
     },
     {
       "file": "report.html",
-      "bytes": 1283618,
-      "sha256": "7a4bb5373a6ecbce01f1f3920430c8ce9bc63902b1ba6d9e3ebaf63a8a3efa6b"
+      "bytes": 1283709,
+      "sha256": "a24430f032ce718b4de4756068104d9c0979735dea9e48915c8442f2c8d3fdd1"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1965,
-      "sha256": "481c8d7f63589836f54cbe9fd4e4d94ebe38a8a412a35184d87ae587d980f32d"
+      "bytes": 1964,
+      "sha256": "744259a9cd6e3251b42df2f32761e0ce1c1a232688e320c4f234296b884ad424"
     }
   ]
 }

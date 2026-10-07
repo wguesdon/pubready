@@ -1,6 +1,6 @@
 {
-  "pubready_version": "0.4.1",
-  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "heatmap",
@@ -29,9 +29,9 @@
     "n_significant": 20
   },
   "container": {
-    "image": "localhost/pubready:0.4.1",
-    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
-    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
+    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -57,7 +57,7 @@
     {
       "file": "figure_expression_matrix_demo.pdf",
       "bytes": 18290,
-      "sha256": "26638d1aa304a1dadf4672a81727a9623a492c0072980e5c2d66bd8ebc9a5d9d"
+      "sha256": "fc7a4d1691dd3c51aff82d73c5b0ee30099767a069a0619b848049d37f837fd9"
     },
     {
       "file": "figure_expression_matrix_demo.png",
@@ -76,18 +76,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 5078,
-      "sha256": "96fb736f850a6cca49da777b89d0fe9fd16edf644e30191c872ae455bbcfb312"
+      "bytes": 5077,
+      "sha256": "1687a831ba14e86c837108a304cfa799e44a7914afd83b7c131b1d7ae53269ae"
     },
     {
       "file": "report.html",
-      "bytes": 1403438,
-      "sha256": "c94ee66c85da655bd24b258cb17edb3b35858cc4269e4587d39a854b249c8444"
+      "bytes": 1403437,
+      "sha256": "2bf195a58568990c8882f356655eccf0c3515416046edaf343f8de2fe0e44730"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1964,
-      "sha256": "26ec80b008d30874380189297499e5924b37e367e7b409980b49bddc83d05ae3"
+      "bytes": 1963,
+      "sha256": "abc4b7f6120900ef9521198eb74c0a76eebb5de18e7001a672f1381d23a9ac49"
     }
   ]
 }

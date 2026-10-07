@@ -3,7 +3,7 @@
 # measured with a reference assay and a new assay. The new assay reads about 3%
 # high plus a constant 2 units, so the plot shows a small proportional bias. Run
 # once inside the pubready container from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:0.5.0 \
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:1.0.0 \
 #     Rscript tools/make_examples/make_agreement_data.R
 set.seed(55)
 

@@ -3,7 +3,7 @@
 # report a hazard ratio with its 95% CI, as a paper reports them. The true log
 # hazard ratio is -0.25 with a between-trial SD of 0.12. Run once inside the
 # pubready container from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:0.5.0 \
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:1.0.0 \
 #     Rscript tools/make_examples/make_meta_data.R
 set.seed(89)
 

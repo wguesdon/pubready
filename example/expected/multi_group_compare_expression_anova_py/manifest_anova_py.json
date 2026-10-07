@@ -1,6 +1,6 @@
 {
-  "pubready_version": "0.4.1",
-  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "multi_group_compare",
@@ -48,9 +48,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:0.4.1",
-    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
-    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
+    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -80,18 +80,18 @@
   "output_checksums": [
     {
       "file": "figure_expression_anova_py.pdf",
-      "bytes": 16721,
-      "sha256": "bfe831ce43503e72f23243a527706a29820fc75a8ef3b4802e3abf6349bf7168"
+      "bytes": 16724,
+      "sha256": "da989ede0b89254f0c06986eaba0be7913e1139b8c1eba791e5006684f92dc20"
     },
     {
       "file": "figure_expression_anova_py.png",
-      "bytes": 101388,
-      "sha256": "9de1f904e194539ca29331dbbd68e3e98cbd43b53008898447158ddd918e94fc"
+      "bytes": 101437,
+      "sha256": "4f68f9f33a81462680b71eea074e381a178068df0eaaa96d2e2b469938205cef"
     },
     {
       "file": "figure_expression_anova_py.svg",
-      "bytes": 43325,
-      "sha256": "02ee13178f58aa196b7e4cb26e50363eeb2e153797b301496f4d770c7dc06ab9"
+      "bytes": 43323,
+      "sha256": "c1b1b1e1ebf910dc88185dd3cad387cfb547776d630a86895898758c7946ea13"
     },
     {
       "file": "packages_anova_py.txt",
@@ -106,22 +106,22 @@
     {
       "file": "qc_normality_anova_py.pdf",
       "bytes": 26691,
-      "sha256": "deab3446f4bc98b0239f5a724713bd02774eddac06089f114d34f1074c91fda5"
+      "sha256": "931d0abed5154990a9e3b0197f99e36e884fe771f8f85dff1d77b456e42dccd6"
     },
     {
       "file": "report.qmd",
-      "bytes": 3623,
-      "sha256": "f090cd46fb2af1da2c076ff6e2d3f322fdf9f7160208adb18de5b0faa1d16283"
+      "bytes": 3622,
+      "sha256": "0f8511989d315b694a4c8a3b817b5d945fe86924fdaacdea83a7c4622da26f7e"
     },
     {
       "file": "report.html",
-      "bytes": 1329136,
-      "sha256": "e6f2362d661bde02d7bab1f5a151a196c73acdac08e3b550eb1945d8e7d13f86"
+      "bytes": 1329203,
+      "sha256": "9a13799778432e86c8847d27ab2641b0eb5f359feb84b7482665f8ac7e0b8617"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1993,
-      "sha256": "f897b8a47972109bd9bf86ef8d7cb4793220b95f0fb5b39a87ded310337632f4"
+      "bytes": 1992,
+      "sha256": "147492c1f2ae8bc23e71b7e0b441abd1da8864b07f698e492a2a7b0a7f137d94"
     }
   ]
 }

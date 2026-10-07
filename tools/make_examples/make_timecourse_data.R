@@ -4,7 +4,7 @@
 # fastest. One vehicle mouse is removed after day 17, so the file carries the
 # missing visit that a study always has. Run once inside the pubready container
 # from the repo root:
-#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:0.5.0 \
+#   podman run --rm -v "$PWD":/work -w /work localhost/pubready:1.0.0 \
 #     Rscript tools/make_examples/make_timecourse_data.R
 set.seed(13)
 

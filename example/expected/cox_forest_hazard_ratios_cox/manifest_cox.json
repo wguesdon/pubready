@@ -1,6 +1,6 @@
 {
-  "pubready_version": "0.4.1",
-  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "cox_forest",
@@ -72,9 +72,9 @@
     ]
   },
   "container": {
-    "image": "localhost/pubready:0.4.1",
-    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
-    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
+    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -100,7 +100,7 @@
     {
       "file": "figure_hazard_ratios_cox.pdf",
       "bytes": 16654,
-      "sha256": "a3385f484108b3a5e1db5ba89f3e375f6f902237326e5bec3cf0be4e7aa4644b"
+      "sha256": "f26b834aabeb7a76730a598fa8a5f63322db755510e47f786f8b64ba4733007a"
     },
     {
       "file": "figure_hazard_ratios_cox.png",
@@ -119,18 +119,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3240,
-      "sha256": "93ac984e040d911fb51e29e871f7b903161127afe87cd778d39b3d40b2e69824"
+      "bytes": 3239,
+      "sha256": "c84c4db99c2f301169baa890d8ab466895283dafb5f914ae59e4c3a52a19cd8f"
     },
     {
       "file": "report.html",
-      "bytes": 1288266,
-      "sha256": "72354991048c7b4baede98c6e1f5c0e3152810945ddaa9971527fcc9e2c70a8d"
+      "bytes": 1288265,
+      "sha256": "f6b6e5fdcdc2fe72262307b891a9ffeba6fed9a912585fab2a0244b5721d0e49"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1963,
-      "sha256": "1efc4e80c4e4844eafeec44876856b5c41f4291190119152c54d2d538f312ad1"
+      "bytes": 1962,
+      "sha256": "e367434630b1428df9a1ab220bc05f8de542fff4c380f177c16c615b24f91d0a"
     }
   ]
 }

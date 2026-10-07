@@ -90,7 +90,7 @@ RUN install2.r --error --skipinstalled testthat \
  && rm -rf /tmp/downloaded_packages
 RUN VIRTUAL_ENV=/opt/pubready/venv uv pip install --no-cache "pytest>=7"
 
-# CRAN packages added in v0.5.0: pROC for the roc_curve recipe (AUC, DeLong
+# CRAN packages added in v1.0.0: pROC for the roc_curve recipe (AUC, DeLong
 # confidence interval and test) and metafor for the forest_meta recipe (pooled
 # fixed and random effects). Both also hold public benchmark datasets that
 # tools/make_benchmarks exports (aSAH and dat.bcg). A late layer so the heavy
@@ -110,6 +110,10 @@ RUN R -q -e 'BiocManager::install("GO.db", update=FALSE, ask=FALSE)' \
 RUN mkdir -p /opt/pubready/core
 
 ARG PUBREADY_VERSION=0.0.0
+# Podman keys a LABEL step on its text, not on the build-arg value, so a bump of
+# VERSION alone reused the old image and its old label. A RUN step records the
+# value in its cache key, so this step and the LABEL below rebuild on each bump.
+RUN echo "${PUBREADY_VERSION}" > /opt/pubready/VERSION
 LABEL org.opencontainers.image.title="pubready" \
       org.opencontainers.image.version="${PUBREADY_VERSION}" \
       org.opencontainers.image.description="R and Python environment for reproducible publication-ready figures"
