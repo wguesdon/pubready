@@ -12,6 +12,8 @@ suppressPackageStartupMessages({
   library(survival)
   library(pROC)
   library(metafor)
+  library(DESeq2)
+  library(org.Hs.eg.db)
 })
 
 out_dir <- file.path("benchmarks", "data")
@@ -32,6 +34,12 @@ write_data <- function(df, name) {
   # Read back, so each reference is computed on exactly the bytes the recipes read.
   utils::read.csv(file.path(out_dir, paste0(name, ".csv")), check.names = FALSE,
                   stringsAsFactors = FALSE)
+}
+
+# Jaccard index between a candidate gene set and an already chosen set.
+jaccard_with <- function(id, genes, members) {
+  other <- members[[id]]
+  length(intersect(genes, other)) / length(union(genes, other))
 }
 
 # Expand a contingency table into one row per observation.
@@ -304,6 +312,152 @@ for (arm in sort(unique(aml_df$x))) {
   add_ref("aml_swimmer", paste0("ongoing_", key), sum(aml_df$status[aml_df$x == arm] == 0),
           "count of status 0")
 }
+
+# 18. airway: Himes et al. (2014), GSE52778. Airway smooth muscle cells from four
+# donors, treated with dexamethasone or not. DESeq2 blocks the donor and tests
+# treated against untreated. The table keeps the genes that DESeq2 tested (an
+# adjusted p exists) with a mean count of 50 or more, so the file stays small.
+data("airway", package = "airway")
+air <- airway
+air$dex <- stats::relevel(air$dex, "untrt")
+dds <- DESeqDataSet(air, design = ~ cell + dex)
+dds <- dds[rowSums(counts(dds)) > 1, ]
+dds <- DESeq(dds, quiet = TRUE)
+res <- as.data.frame(results(dds, contrast = c("dex", "trt", "untrt")))
+res$ensembl <- rownames(res)
+sym <- AnnotationDbi::mapIds(org.Hs.eg.db, keys = res$ensembl, column = "SYMBOL",
+                             keytype = "ENSEMBL", multiVals = "first")
+res$gene <- ifelse(is.na(sym), res$ensembl, sym)
+res <- res[!is.na(res$padj) & res$baseMean >= 50, ]
+res <- res[order(res$padj, res$ensembl), ]
+de_df <- write_data(data.frame(gene = res$gene, log2FoldChange = signif(res$log2FoldChange, 5),
+                               pvalue = signif(res$pvalue, 5), padj = signif(res$padj, 5)),
+                    "airway_de")
+add_ref("airway_volcano", "n_up", sum(de_df$log2FoldChange >= 1 & de_df$padj <= 0.05),
+        "DESeq2 results, padj <= 0.05 and log2FC >= 1")
+add_ref("airway_volcano", "n_down", sum(de_df$log2FoldChange <= -1 & de_df$padj <= 0.05),
+        "DESeq2 results, padj <= 0.05 and log2FC <= -1")
+add_ref("airway_volcano", "n_total", nrow(de_df), "DESeq2 results, rows tested")
+
+# The variance-stabilised counts give the heatmap of the 40 strongest
+# differentially expressed genes and the PCA of the 500 most variable genes.
+vsd <- assay(vst(dds, blind = FALSE))
+ann <- data.frame(sample = colnames(vsd), dex = as.character(air$dex), cell = as.character(air$cell))
+ann_df <- write_data(ann, "airway_annotation")
+top40 <- res$ensembl[abs(res$log2FoldChange) >= 1][1:40]
+hm <- data.frame(feature = make.unique(res$gene[match(top40, res$ensembl)]),
+                 round(vsd[top40, ], 4), check.names = FALSE)
+hm_df <- write_data(hm, "airway_heatmap")
+for (i in 1:5) {
+  v <- as.numeric(hm_df[i, -1])
+  g <- ann_df$dex[match(names(hm_df)[-1], ann_df$sample)]
+  add_ref("airway_heatmap", paste0("p_", hm_df$feature[i]),
+          stats::t.test(v[g == "untrt"], v[g == "trt"])$p.value, "stats::t.test(var.equal = FALSE)")
+}
+var_rank <- order(-apply(vsd, 1, stats::var), rownames(vsd))[1:500]
+pcx <- t(round(vsd[var_rank, ], 4))
+colnames(pcx) <- make.unique(ifelse(is.na(sym[rownames(vsd)[var_rank]]), rownames(vsd)[var_rank],
+                                    sym[rownames(vsd)[var_rank]]))
+pca_df <- write_data(data.frame(sample = rownames(pcx), dex = ann$dex, cell = ann$cell, pcx,
+                                check.names = FALSE), "airway_pca")
+pca_air <- stats::prcomp(pca_df[, -(1:3)], center = TRUE, scale. = TRUE)
+ve_air <- pca_air$sdev^2 / sum(pca_air$sdev^2) * 100
+add_ref("airway_pca", "pc1_variance_pct", ve_air[1], "stats::prcomp(scale. = TRUE)")
+add_ref("airway_pca", "pc2_variance_pct", ve_air[2], "stats::prcomp(scale. = TRUE)")
+
+# GO biological-process over-representation of the differentially expressed genes
+# (padj < 0.05 and |log2FC| >= 1) against the tested genes, by the hypergeometric
+# test with Benjamini-Hochberg adjustment, in the layout of clusterProfiler.
+go <- suppressMessages(AnnotationDbi::select(org.Hs.eg.db, keys = res$ensembl,
+                                             columns = c("GOALL", "ONTOLOGYALL"), keytype = "ENSEMBL"))
+go <- unique(go[!is.na(go$GOALL) & go$ONTOLOGYALL == "BP", c("ENSEMBL", "GOALL")])
+universe <- unique(go$ENSEMBL)
+de_genes <- intersect(res$ensembl[res$padj < 0.05 & abs(res$log2FoldChange) >= 1], universe)
+term_size <- table(go$GOALL)
+term_hits <- table(go$GOALL[go$ENSEMBL %in% de_genes])
+terms <- names(term_size)[term_size >= 15 & term_size <= 500]
+hits <- as.integer(term_hits[terms]); hits[is.na(hits)] <- 0L
+size <- as.integer(term_size[terms])
+pv <- stats::phyper(hits - 1, size, length(universe) - size, length(de_genes), lower.tail = FALSE)
+ora <- data.frame(ID = terms, Count = hits, size = size, pvalue = pv,
+                  p.adjust = stats::p.adjust(pv, "BH"), stringsAsFactors = FALSE)
+ora <- ora[ora$Count > 0, ]
+ora <- ora[order(ora$p.adjust, ora$pvalue, ora$ID), ]
+ora$Description <- AnnotationDbi::Term(GO.db::GOTERM[ora$ID])
+ora$GeneRatio <- sprintf("%d/%d", ora$Count, length(de_genes))
+ora$BgRatio <- sprintf("%d/%d", ora$size, length(universe))
+enr_df <- write_data(data.frame(ID = ora$ID, Description = ora$Description, GeneRatio = ora$GeneRatio,
+                                BgRatio = ora$BgRatio, pvalue = signif(ora$pvalue, 5),
+                                p.adjust = signif(ora$p.adjust, 5), Count = ora$Count)[1:30, ],
+                     "airway_enrichment")
+add_ref("airway_enrichment", "top_count", enr_df$Count[1], "stats::phyper(), top term")
+add_ref("airway_enrichment", "top_p_adjust", enr_df$p.adjust[1], "stats::p.adjust(BH), top term")
+add_ref("airway_enrichment", "top_gene_ratio", enr_df$Count[1] / length(de_genes), "Count / DE genes")
+
+# Gene-set membership of the DE genes in five enriched GO terms, chosen down the
+# ranking and skipping a term whose genes overlap an already chosen term by a
+# Jaccard index of 0.5 or more, so that the UpSet plot shows distinct sets.
+members <- split(go$ENSEMBL[go$ENSEMBL %in% de_genes], go$GOALL[go$ENSEMBL %in% de_genes])
+chosen <- character(0)
+for (id in ora$ID) {
+  overlap <- vapply(chosen, jaccard_with, numeric(1), genes = members[[id]], members = members)
+  if (all(overlap < 0.5)) chosen <- c(chosen, id)
+  if (length(chosen) == 5) break
+}
+in_any <- sort(unique(unlist(members[chosen])))
+up <- data.frame(gene = make.unique(ifelse(is.na(sym[in_any]), in_any, sym[in_any])),
+                 check.names = FALSE)
+for (id in chosen) up[[AnnotationDbi::Term(GO.db::GOTERM[[id]])]] <- as.integer(in_any %in% members[[id]])
+up_df <- write_data(up, "airway_upset")
+codes <- apply(as.matrix(up_df[, -1]), 1, paste, collapse = "")
+add_ref("airway_upset", "n_elements", nrow(up_df), "genes in at least one set")
+add_ref("airway_upset", "largest_intersection", max(table(codes)), "base::table() of membership patterns")
+add_ref("airway_upset", "n_intersections", length(unique(codes)), "distinct membership patterns")
+
+# 19. anorexia: Hand et al. (1993), weight of young women before and after
+# family therapy (the FT group of MASS::anorexia), in long form with a subject id.
+an <- MASS::anorexia[MASS::anorexia$Treat == "FT", ]
+an_long <- data.frame(subject = rep(sprintf("FT%02d", seq_len(nrow(an))), 2),
+                      condition = rep(c("pre", "post"), each = nrow(an)),
+                      weight_lbs = c(an$Prewt, an$Postwt))
+an_df <- write_data(an_long, "anorexia_ft")
+an_t <- stats::t.test(an_df$weight_lbs[an_df$condition == "post"],
+                      an_df$weight_lbs[an_df$condition == "pre"], paired = TRUE)
+add_ref("anorexia_paired", "statistic", an_t$statistic, "stats::t.test(paired = TRUE)")
+add_ref("anorexia_paired", "p_value", an_t$p.value, "stats::t.test(paired = TRUE)")
+
+# 20. veteran: the Veterans' Administration lung cancer trial, Kalbfleisch and
+# Prentice (1980). status is already 1 = dead, 0 = censored; trt is relabelled.
+vet <- survival::veteran
+vet$trt <- ifelse(vet$trt == 1, "standard", "test")
+vet_df <- write_data(vet, "veteran")
+vsd_lr <- survival::survdiff(Surv(time, status) ~ celltype, data = vet_df)
+add_ref("veteran_km", "log_rank_chisq", vsd_lr$chisq, "survival::survdiff()")
+add_ref("veteran_km", "log_rank_p",
+        stats::pchisq(vsd_lr$chisq, length(vsd_lr$n) - 1, lower.tail = FALSE), "survival::survdiff()")
+vcx <- summary(survival::coxph(Surv(time, status) ~ trt + celltype + karno + age, data = vet_df))$coefficients
+for (term in rownames(vcx)) {
+  add_ref("veteran_cox", paste0("HR_", term), vcx[term, "exp(coef)"], "survival::coxph()")
+  add_ref("veteran_cox", paste0("p_", term), vcx[term, "Pr(>|z|)"], "survival::coxph()")
+}
+
+# 21. state.x77: facts about the 50 US states, U.S. Department of Commerce (1977).
+# Two column names hold a space ("Life Exp", "HS Grad"), as R distributes them.
+st_df <- write_data(data.frame(state = rownames(datasets::state.x77), datasets::state.x77,
+                               check.names = FALSE), "state_x77")
+st_num <- st_df[, -1]
+st_p <- NULL
+for (i in 1:(ncol(st_num) - 1)) for (j in (i + 1):ncol(st_num)) {
+  st_p <- rbind(st_p, data.frame(a = names(st_num)[i], b = names(st_num)[j],
+                                 p = stats::cor.test(st_num[[i]], st_num[[j]])$p.value))
+}
+st_p$padj <- stats::p.adjust(st_p$p, "BH")
+add_ref("state_correlation_heatmap", "r_murder_life_exp", stats::cor(st_num$Murder, st_num$`Life Exp`),
+        "stats::cor()")
+add_ref("state_correlation_heatmap", "padj_murder_life_exp",
+        st_p$padj[st_p$a == "Life Exp" & st_p$b == "Murder"], "stats::cor.test(), p.adjust(BH)")
+add_ref("state_correlation_heatmap", "r_illiteracy_frost", stats::cor(st_num$Illiteracy, st_num$Frost),
+        "stats::cor()")
 
 ref_df <- do.call(rbind, refs)
 utils::write.csv(ref_df, file.path("benchmarks", "reference_values.csv"), row.names = FALSE)

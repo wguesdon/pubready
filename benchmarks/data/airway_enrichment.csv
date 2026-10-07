@@ -1,0 +1,31 @@
+"ID","Description","GeneRatio","BgRatio","pvalue","p.adjust","Count"
+"GO:0044057","regulation of system process","53/596","292/10472",2.5122e-14,1.0282e-10,53
+"GO:0003013","circulatory system process","54/596","323/10472",4.7033e-13,9.6253e-10,54
+"GO:0008015","blood circulation","48/596","272/10472",1.3147e-12,1.7936e-09,48
+"GO:0003012","muscle system process","44/596","248/10472",9.8085e-12,1.0037e-08,44
+"GO:0001568","blood vessel development","67/596","493/10472",1.4364e-11,1.1758e-08,67
+"GO:0030198","extracellular matrix organization","40/596","225/10472",8.3307e-11,4.3618e-08,40
+"GO:0043062","extracellular structure organization","40/596","225/10472",8.3307e-11,4.3618e-08,40
+"GO:0007411","axon guidance","29/596","128/10472",9.2568e-11,4.3618e-08,29
+"GO:0045229","external encapsulating structure organization","40/596","226/10472",9.591e-11,4.3618e-08,40
+"GO:0097485","neuron projection guidance","29/596","129/10472",1.1313e-10,4.5631e-08,29
+"GO:0048514","blood vessel morphogenesis","59/596","426/10472",1.2264e-10,4.5631e-08,59
+"GO:0001525","angiogenesis","53/596","367/10472",2.4457e-10,7.7753e-08,53
+"GO:1903522","regulation of blood circulation","29/596","133/10472",2.4696e-10,7.7753e-08,29
+"GO:2000027","regulation of animal organ morphogenesis","16/596","48/10472",4.0693e-09,1.1897e-06,16
+"GO:0001503","ossification","45/596","309/10472",4.534e-09,1.2372e-06,45
+"GO:0030155","regulation of cell adhesion","61/596","495/10472",6.4128e-09,1.6405e-06,61
+"GO:0030335","positive regulation of cell migration","51/596","384/10472",1.0215e-08,2.4594e-06,51
+"GO:0048729","tissue morphogenesis","51/596","394/10472",2.4266e-08,5.2274e-06,51
+"GO:2000147","positive regulation of cell motility","51/596","394/10472",2.4266e-08,5.2274e-06,51
+"GO:0034762","regulation of transmembrane transport","38/596","251/10472",2.5997e-08,5.3203e-06,38
+"GO:0060047","heart contraction","26/596","134/10472",2.8085e-08,5.4739e-06,26
+"GO:0008016","regulation of heart contraction","23/596","109/10472",3.4822e-08,6.4784e-06,23
+"GO:0032970","regulation of actin filament-based process","40/596","277/10472",4.2734e-08,7.6048e-06,40
+"GO:0040017","positive regulation of locomotion","51/596","403/10472",5.1179e-08,8.5631e-06,51
+"GO:0043269","regulation of monoatomic ion transport","35/596","226/10472",5.2303e-08,8.5631e-06,35
+"GO:2000146","negative regulation of cell motility","34/596","219/10472",7.6488e-08,1.2041e-05,34
+"GO:0003015","heart process","26/596","141/10472",8.3037e-08,1.2588e-05,26
+"GO:0048589","developmental growth","54/596","446/10472",9.1404e-08,1.3361e-05,54
+"GO:0030855","epithelial cell differentiation","49/596","389/10472",1.097e-07,1.5482e-05,49
+"GO:0090257","regulation of muscle system process","25/596","136/10472",1.57e-07,2.142e-05,25

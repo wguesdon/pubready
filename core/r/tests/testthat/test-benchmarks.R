@@ -247,3 +247,86 @@ test_that("aml (Miller 1997): the swimmer arm summaries match the data", {
   expect_ref(res$test_meta$arms$Maintained$ongoing, "aml_swimmer", "ongoing_maintained")
   expect_ref(res$test_meta$arms$Nonmaintained$ongoing, "aml_swimmer", "ongoing_nonmaintained")
 })
+
+test_that("airway (Himes 2014): the volcano counts match the DESeq2 results", {
+  bench_skip()
+  res <- recipe_volcano(bench_data("airway_de"), bench_spec("volcano", y = "padj"))
+  for (q in c("n_up", "n_down", "n_total")) expect_ref(res$test_meta[[q]], "airway_volcano", q)
+})
+
+test_that("airway: the per-gene Welch tests of the heatmap match stats::t.test", {
+  bench_skip()
+  spec <- bench_spec("heatmap", annotation = file.path(bench_dir(), "data", "airway_annotation.csv"))
+  res <- recipe_heatmap(bench_data("airway_heatmap"), spec)
+  for (g in c("SPARCL1", "CACNB2", "DUSP1", "SAMHD1", "MAOA")) {
+    expect_ref(res$stats$p_value[res$stats$feature == g], "airway_heatmap", paste0("p_", g))
+  }
+})
+
+test_that("airway: the PCA variance matches stats::prcomp and the PERMANOVA is exact", {
+  bench_skip()
+  res <- recipe_pca(bench_data("airway_pca"), bench_spec("pca", group = "dex"))
+  expect_ref(res$test_meta$pc1_variance_pct, "airway_pca", "pc1_variance_pct")
+  expect_ref(res$test_meta$pc2_variance_pct, "airway_pca", "pc2_variance_pct")
+  # Eight samples in two groups of four give 70 labelings, so the test is exact.
+  # The observed split and its mirror are the two most extreme labelings: p = 2/70.
+  expect_equal(res$test_meta$permanova$method, "exact")
+  expect_equal(res$test_meta$permanova$p_value, 2 / 70)
+})
+
+test_that("airway: the top GO term of the enrichment dot plot matches phyper", {
+  bench_skip()
+  res <- recipe_enrichment_dot(bench_data("airway_enrichment"), bench_spec("enrichment_dot"))
+  expect_ref(res$stats$count[1], "airway_enrichment", "top_count")
+  expect_ref(res$stats$p_adjust[1], "airway_enrichment", "top_p_adjust")
+  expect_ref(res$stats$gene_ratio[1], "airway_enrichment", "top_gene_ratio")
+})
+
+test_that("airway: the UpSet intersections match the membership patterns", {
+  bench_skip()
+  res <- recipe_upset(bench_data("airway_upset"), bench_spec("upset"))
+  for (q in c("n_elements", "largest_intersection", "n_intersections")) {
+    expect_ref(res$test_meta[[q]], "airway_upset", q)
+  }
+})
+
+test_that("anorexia (Hand 1994): the family therapy paired t-test matches stats::t.test", {
+  bench_skip()
+  res <- recipe_paired_compare(bench_data("anorexia_ft"),
+                               bench_spec("paired_compare", x = "condition", y = "weight_lbs",
+                                          id = "subject", test = "t"))
+  expect_ref(res$stats$statistic, "anorexia_paired", "statistic")
+  expect_ref(res$stats$p_value, "anorexia_paired", "p_value")
+})
+
+test_that("veteran: the log-rank test by cell type matches survival::survdiff", {
+  bench_skip()
+  res <- recipe_survival_km(bench_data("veteran"),
+                            bench_spec("survival_km", time = "time", event = "status", x = "celltype"))
+  expect_ref(res$test_meta$log_rank$chisq, "veteran_km", "log_rank_chisq")
+  expect_ref(res$test_meta$log_rank$p_value, "veteran_km", "log_rank_p")
+})
+
+test_that("veteran: the Cox hazard ratios match survival::coxph", {
+  bench_skip()
+  grDevices::pdf(NULL)
+  on.exit(grDevices::dev.off(), add = TRUE)
+  res <- recipe_cox_forest(bench_data("veteran"),
+                           bench_spec("cox_forest", time = "time", event = "status",
+                                      covariates = "trt,celltype,karno,age"))
+  for (term in c("trttest", "celltypelarge", "celltypesmallcell", "celltypesquamous", "karno", "age")) {
+    r <- res$stats[res$stats$term == term, ]
+    expect_ref(r$HR, "veteran_cox", paste0("HR_", term))
+    expect_ref(r$p_value, "veteran_cox", paste0("p_", term))
+  }
+})
+
+test_that("state.x77: the correlation matrix keeps the column names with a space", {
+  bench_skip()
+  res <- recipe_correlation_heatmap(bench_data("state_x77"), bench_spec("correlation_heatmap"))
+  lm <- var_pair_row(res$stats, "Murder", "Life Exp")
+  expect_ref(lm$r, "state_correlation_heatmap", "r_murder_life_exp")
+  expect_ref(lm$p_adj, "state_correlation_heatmap", "padj_murder_life_exp")
+  expect_ref(var_pair_row(res$stats, "Illiteracy", "Frost")$r, "state_correlation_heatmap",
+             "r_illiteracy_frost")
+})

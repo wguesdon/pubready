@@ -15,6 +15,7 @@ from pubready.recipes.correlation import recipe_correlation
 from pubready.recipes.correlation_heatmap import recipe_correlation_heatmap
 from pubready.recipes.cox_forest import recipe_cox_forest
 from pubready.recipes.dose_response import recipe_dose_response
+from pubready.recipes.enrichment_dot import recipe_enrichment_dot
 from pubready.recipes.factorial_anova import recipe_factorial_anova
 from pubready.recipes.forest_meta import recipe_forest_meta
 from pubready.recipes.heatmap import recipe_heatmap
@@ -27,6 +28,8 @@ from pubready.recipes.survival_km import recipe_survival_km
 from pubready.recipes.swimmer import recipe_swimmer
 from pubready.recipes.timecourse import recipe_timecourse
 from pubready.recipes.two_group_compare import recipe_two_group_compare
+from pubready.recipes.upset import recipe_upset
+from pubready.recipes.volcano import recipe_volcano
 from pubready.spec import spec_from_args
 
 BENCH = os.environ.get("PUBREADY_BENCHMARKS", "")
@@ -291,3 +294,76 @@ def test_aml_swimmer_arm_summaries():
     expect_ref(arms["Nonmaintained"]["median_duration"], "aml_swimmer", "median_nonmaintained")
     expect_ref(arms["Maintained"]["ongoing"], "aml_swimmer", "ongoing_maintained")
     expect_ref(arms["Nonmaintained"]["ongoing"], "aml_swimmer", "ongoing_nonmaintained")
+
+
+def test_airway_volcano_counts_match_deseq2():
+    res = recipe_volcano(bench_data("airway_de"), bench_spec("volcano", y="padj"))
+    for q in ("n_up", "n_down", "n_total"):
+        expect_ref(res["test_meta"][q], "airway_volcano", q)
+
+
+def test_airway_heatmap_welch_tests():
+    spec = bench_spec("heatmap", annotation=os.path.join(BENCH, "data", "airway_annotation.csv"))
+    res = recipe_heatmap(bench_data("airway_heatmap"), spec)
+    st = res["stats"].set_index("feature")
+    for g in ("SPARCL1", "CACNB2", "DUSP1", "SAMHD1", "MAOA"):
+        expect_ref(st.loc[g, "p_value"], "airway_heatmap", f"p_{g}")
+
+
+def test_airway_pca_variance_and_exact_permanova():
+    res = recipe_pca(bench_data("airway_pca"), bench_spec("pca", group="dex"))
+    expect_ref(res["test_meta"]["pc1_variance_pct"], "airway_pca", "pc1_variance_pct")
+    expect_ref(res["test_meta"]["pc2_variance_pct"], "airway_pca", "pc2_variance_pct")
+    # Eight samples in two groups of four give 70 labelings, so the test is exact.
+    # The observed split and its mirror are the two most extreme labelings: p = 2/70.
+    perm = res["test_meta"]["permanova"]
+    assert perm["method"] == "exact"
+    assert perm["p_value"] == pytest.approx(2 / 70)
+
+
+def test_airway_enrichment_top_term():
+    res = recipe_enrichment_dot(bench_data("airway_enrichment"), bench_spec("enrichment_dot"))
+    top = res["stats"].iloc[0]
+    expect_ref(top["count"], "airway_enrichment", "top_count")
+    expect_ref(top["p_adjust"], "airway_enrichment", "top_p_adjust")
+    expect_ref(top["gene_ratio"], "airway_enrichment", "top_gene_ratio")
+
+
+def test_airway_upset_intersections():
+    res = recipe_upset(bench_data("airway_upset"), bench_spec("upset"))
+    for q in ("n_elements", "largest_intersection", "n_intersections"):
+        expect_ref(res["test_meta"][q], "airway_upset", q)
+
+
+def test_anorexia_family_therapy_paired_t():
+    res = recipe_paired_compare(bench_data("anorexia_ft"), bench_spec(
+        "paired_compare", x="condition", y="weight_lbs", id="subject", test="t"))
+    s = res["stats"].iloc[0]
+    expect_ref(s["statistic"], "anorexia_paired", "statistic")
+    expect_ref(s["p_value"], "anorexia_paired", "p_value")
+
+
+def test_veteran_log_rank_by_cell_type():
+    res = recipe_survival_km(bench_data("veteran"), bench_spec(
+        "survival_km", time="time", event="status", x="celltype"))
+    expect_ref(res["test_meta"]["log_rank"]["chisq"], "veteran_km", "log_rank_chisq")
+    expect_ref(res["test_meta"]["log_rank"]["p_value"], "veteran_km", "log_rank_p")
+
+
+def test_veteran_cox_hazard_ratios():
+    res = recipe_cox_forest(bench_data("veteran"), bench_spec(
+        "cox_forest", time="time", event="status", covariates="trt,celltype,karno,age"))
+    st = res["stats"].set_index("term")
+    for term in ("trttest", "celltypelarge", "celltypesmallcell", "celltypesquamous",
+                 "karno", "age"):
+        expect_ref(st.loc[term, "HR"], "veteran_cox", f"HR_{term}")
+        expect_ref(st.loc[term, "p_value"], "veteran_cox", f"p_{term}")
+
+
+def test_state_x77_correlation_matrix_keeps_spaced_names():
+    res = recipe_correlation_heatmap(bench_data("state_x77"), bench_spec("correlation_heatmap"))
+    lm = pair_row(res["stats"], "Murder", "Life Exp", "var1", "var2")
+    expect_ref(lm["r"], "state_correlation_heatmap", "r_murder_life_exp")
+    expect_ref(lm["p_adj"], "state_correlation_heatmap", "padj_murder_life_exp")
+    expect_ref(pair_row(res["stats"], "Illiteracy", "Frost", "var1", "var2")["r"],
+               "state_correlation_heatmap", "r_illiteracy_frost")

@@ -45,11 +45,19 @@ tag move together.
 - Example datasets for the new recipes: `dose_response.csv`, `biomarker_roc.csv`,
   `method_agreement.csv`, `meta_trials.csv`, `tumor_growth.csv` and
   `swimmer_patients.csv`, each from a seeded generator in `tools/make_examples/`.
-- Public benchmarks. `benchmarks/` holds 20 published datasets and 87 reference
+- Public benchmarks. `benchmarks/` holds 29 dataset files and 122 reference
   values from the canonical R functions. `figkit test` now mounts the folder, and
   both unit suites compare every recipe with these values. `tests/benchmark_test.sh`
-  runs the 22 cases end to end through `figkit plot` with both engines.
-- The image adds pROC and metafor in a late layer.
+  runs the 31 cases end to end through `figkit plot` with both engines.
+- Nine of these cases use real research data. The airway RNA-seq study of Himes
+  et al. (2014) gives a DESeq2 table for `volcano`, a gene heatmap, a gene PCA, a
+  GO over-representation table for `enrichment_dot` and a GO gene-set matrix for
+  `upset`. Before these cases, `volcano`, `enrichment_dot` and `upset` had no
+  benchmark. `MASS::anorexia` gives a paired design, `survival::veteran` gives a
+  Kaplan-Meier and a Cox case with a four-level factor, and `state.x77` gives a
+  correlation matrix with a space in two column names.
+- The image adds pROC and metafor in a late layer, and GO.db in a later layer.
+  Only the benchmark exporter uses GO.db.
 
 ### Fixed
 - The public benchmarks found five defects in the existing recipes. Each one

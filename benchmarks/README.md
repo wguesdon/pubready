@@ -57,6 +57,15 @@ podman run --rm -v "$PWD":/work -w /work localhost/pubready:<version> \
 | `orthodont_timecourse` | `orthodont.csv` | `timecourse` | `stats::aov` with `Error()`, `car::Anova(idesign)` |
 | `chick_weight_timecourse` | `chick_weight.csv` | `timecourse` | `stats::aov` with `Error()`, `car::Anova(idesign)` |
 | `aml_swimmer` | `aml.csv` | `swimmer` | `stats::median` and the count of censored courses for each arm |
+| `airway_volcano` | `airway_de.csv` | `volcano --y padj` | the DESeq2 genes at padj of 0.05 or less and an absolute log2FC of 1 or more |
+| `airway_heatmap` | `airway_heatmap.csv`, `airway_annotation.csv` | `heatmap` | `stats::t.test` for each gene |
+| `airway_pca` | `airway_pca.csv` | `pca --group dex` | `stats::prcomp(scale. = TRUE)` |
+| `airway_enrichment` | `airway_enrichment.csv` | `enrichment_dot` | `stats::phyper`, `stats::p.adjust(method = "BH")` |
+| `airway_upset` | `airway_upset.csv` | `upset` | `base::table` of the membership patterns |
+| `anorexia_paired` | `anorexia_ft.csv` | `paired_compare --test t` | `stats::t.test(paired = TRUE)` |
+| `veteran_km` | `veteran.csv` | `survival_km --x celltype` | `survival::survdiff` |
+| `veteran_cox` | `veteran.csv` | `cox_forest` | `survival::coxph` |
+| `state_correlation_heatmap` | `state_x77.csv` | `correlation_heatmap` | `stats::cor`, `stats::cor.test`, `stats::p.adjust(method = "BH")` |
 
 ## Tolerances
 
@@ -94,6 +103,28 @@ below make a dataset readable by a recipe. Each change is in
 - **`chick_weight.csv`.** Five chicks died before day 21. The file keeps them,
   and the `timecourse` recipe drops them, because a repeated-measures ANOVA needs
   complete subjects.
+- **`airway_de.csv`.** The exporter runs DESeq2 on the `airway` data with the
+  design `~ cell + dex`, so the test blocks the donor. The file keeps the 12,625
+  genes that have an adjusted p and a mean count of 50 or more. This limit keeps
+  the file at 444 KB.
+- **`airway_heatmap.csv` and `airway_pca.csv`.** These files hold the
+  variance-stabilised counts of `DESeq2::vst`. The heatmap file holds the 40 genes
+  with the smallest adjusted p and an absolute log2FC of 1 or more. The PCA file
+  holds the 500 most variable genes, one row for each sample.
+- **`airway_enrichment.csv`.** The exporter tests each GO biological-process
+  term of 15 to 500 genes for over-representation of the 596 annotated DE genes,
+  with the hypergeometric test and the Benjamini-Hochberg adjustment. The file
+  keeps the 30 strongest terms in the layout of clusterProfiler.
+- **`airway_upset.csv`.** This file holds the DE genes of five enriched terms.
+  The exporter goes down the ranking and skips a term that overlaps a chosen term
+  with a Jaccard index of 0.5 or more, so the five sets are distinct.
+- **`anorexia_ft.csv`.** This file holds the 17 patients of the family-therapy
+  group of `MASS::anorexia`, in long form with a subject id. The weights are in
+  pounds. The original source states kilograms in error.
+- **`veteran.csv`.** The survival package codes `status` as 1 = dead, which is
+  the pubready code. The exporter writes `trt` as `standard` and `test`.
+- **`state_x77.csv`.** The file keeps the column names `Life Exp` and `HS Grad`
+  as R distributes them. The case therefore also tests a column name with a space.
 
 ## Sources
 
@@ -119,3 +150,7 @@ license of that package applies to the data.
 | `orthodont.csv` | nlme | Potthoff, R. F. and Roy, S. N. (1964) A generalized multivariate analysis of variance model useful especially for growth curve problems. Biometrika 51, 313-326. |
 | `chick_weight.csv` | datasets | Crowder, M. and Hand, D. (1990) Analysis of Repeated Measures. Chapman and Hall, example 5.3. |
 | `aml.csv` | survival | Miller, R. G. (1997) Survival Analysis. John Wiley and Sons. |
+| `airway_*.csv` | airway, DESeq2, org.Hs.eg.db, GO.db | Himes, B. E. et al. (2014) RNA-Seq transcriptome profiling identifies CRISPLD2 as a glucocorticoid responsive gene that modulates cytokine function in airway smooth muscle cells. PLoS ONE 9(6), e99625. GEO GSE52778. The gene symbols and the GO annotation come from org.Hs.eg.db 3.20.0 and GO.db 3.20.0. |
+| `anorexia_ft.csv` | MASS | Hand, D. J., Daly, F., McConway, K., Lunn, D. and Ostrowski, E. eds (1993) A Handbook of Small Data Sets. Chapman and Hall, data set 285. |
+| `veteran.csv` | survival | Kalbfleisch, J. D. and Prentice, R. L. (1980) The Statistical Analysis of Failure Time Data. Wiley. |
+| `state_x77.csv` | datasets | U.S. Department of Commerce, Bureau of the Census (1977) Statistical Abstract of the United States. |

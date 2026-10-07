@@ -101,6 +101,22 @@ bench chick_weight_timecourse "Greenhouse-Geisser" --recipe timecourse --data $D
 bench aml_swimmer "median duration" --recipe swimmer --data $D/aml.csv \
   --id patient --time time --event status --group x --xlab "Weeks"
 
+echo "--- Real omics and clinical datasets ---"
+bench airway_volcano "volcano" --recipe volcano --data $D/airway_de.csv --y padj
+bench airway_heatmap "Welch" --recipe heatmap --data $D/airway_heatmap.csv \
+  --annotation $D/airway_annotation.csv
+bench airway_pca "exact" --recipe pca --data $D/airway_pca.csv --group dex
+bench airway_enrichment "over-representation" --recipe enrichment_dot \
+  --data $D/airway_enrichment.csv
+bench airway_upset "UpSet" --recipe upset --data $D/airway_upset.csv
+bench anorexia_paired "paired t-test" --recipe paired_compare --data $D/anorexia_ft.csv \
+  --x condition --y weight_lbs --id subject --test t
+bench veteran_km "log-rank" --recipe survival_km --data $D/veteran.csv \
+  --time time --event status --x celltype --xlab "Days"
+bench veteran_cox "Cox" --recipe cox_forest --data $D/veteran.csv \
+  --time time --event status --covariates "trt,celltype,karno,age"
+bench state_correlation_heatmap "" --recipe correlation_heatmap --data $D/state_x77.csv
+
 echo
 if [ "$ran" -eq 0 ]; then
   echo "NO BENCHMARK MATCHED '$FILTER'"; exit 1
