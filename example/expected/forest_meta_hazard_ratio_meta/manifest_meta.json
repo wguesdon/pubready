@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "forest_meta",
@@ -45,8 +45,8 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
-    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
+    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -72,7 +72,7 @@
     {
       "file": "figure_hazard_ratio_meta.pdf",
       "bytes": 15461,
-      "sha256": "af1b775af856cdd9a03af8897ad5633b3c120afbd70d1c4d57281950eebe21a3"
+      "sha256": "2e00e5b98db81968605f8aee3f70470b6f276b968146af982709575b96d91af5"
     },
     {
       "file": "figure_hazard_ratio_meta.png",
@@ -86,23 +86,23 @@
     },
     {
       "file": "packages_meta.txt",
-      "bytes": 3477,
-      "sha256": "7e196e2e4fc8356b6d781191e70a131edb430bfba1007393612b9d2372c57123"
+      "bytes": 3491,
+      "sha256": "bb7b5bf24d1934ddb2c0f48d4312c049075af453a2bb033fc55e9810069936f4"
     },
     {
       "file": "report.qmd",
       "bytes": 4959,
-      "sha256": "1c11d813559bfb304549ce5395ac22d8e7cc4bfed3b03da4e86a2912dd22d9af"
+      "sha256": "378a6160edd21b49b5363038a129bdcae9849287a53f694a64d0a3f35702c632"
     },
     {
       "file": "report.html",
       "bytes": 1421122,
-      "sha256": "13b14ad02046cdbc2edf1fdc9a59c40477cfda6b4ca6d27e9fded3ea39df7d05"
+      "sha256": "aa7ad643f53289747f8582671a93e9dec305e73c75ccfef8783cb5f723c0fc22"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2012,
-      "sha256": "339e7c687cf9dca38fa6672cc757be4eaeb1b53e341db681a37b1d2ebbc3c3ae"
+      "sha256": "8b240ee977526b046d5516180282f2492514df1ed88b471d68f7c051582064a0"
     }
   ]
 }

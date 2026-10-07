@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "proportions",
@@ -34,8 +34,8 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
-    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
+    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -64,7 +64,7 @@
     {
       "file": "figure_response_prop_py.pdf",
       "bytes": 13474,
-      "sha256": "5ae5c93f6a84f5c654722e85230d62eac7e7db1971a0ce943e895a2dc751102f"
+      "sha256": "60d003d6f46f577a74ee67da58c602e4bcfec1a9634db36265432f344c88e8e4"
     },
     {
       "file": "figure_response_prop_py.png",
@@ -74,7 +74,7 @@
     {
       "file": "figure_response_prop_py.svg",
       "bytes": 29833,
-      "sha256": "f993588857b9f4a623bf9210d1c26178937c97e0c356d38deff32f00ba15ad7b"
+      "sha256": "eb6c4b347116e54dbd2579ee572dad3e4dd737866edda7ab9857cb43c25d9e03"
     },
     {
       "file": "packages_prop_py.txt",
@@ -84,17 +84,17 @@
     {
       "file": "report.qmd",
       "bytes": 2811,
-      "sha256": "76ac10b91cb8f460a8532bd3e8edfd34ec88f2ab0cc94875f7806098b76a9691"
+      "sha256": "291193211a9796b2fb6c83da9ad40e88c892eb1ce2889bff87db6d49114025a5"
     },
     {
       "file": "report.html",
       "bytes": 1316238,
-      "sha256": "54f2d29c424d15f009c089950088a483dd0dba7d249142f9d4efbe366e1e9539"
+      "sha256": "3431809847ae2e40ae9136d8ebcdee9542e4b668655086a43aa4a3a4b3e7a430"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1947,
-      "sha256": "ab400d5388b6443222f5a86cce12f25a2b62b22d4a4a9972061acb3a6a0896de"
+      "sha256": "0397468536686cda59a61a1f345b57c86737c1f0ce48582f11ab9d18922091b2"
     }
   ]
 }

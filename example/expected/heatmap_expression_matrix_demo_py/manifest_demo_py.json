@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "heatmap",
@@ -24,6 +24,7 @@
   "statistical_test": {
     "name": "Clustered heatmap",
     "engine_lib": "PyComplexHeatmap",
+    "fallback_reason": null,
     "scale": "row",
     "clustering": "both",
     "n_features": 30,
@@ -33,8 +34,8 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
-    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
+    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -62,18 +63,18 @@
   "output_checksums": [
     {
       "file": "figure_expression_matrix_demo_py.pdf",
-      "bytes": 29986,
-      "sha256": "75ecacfec899b351a254b3be158d25861ec75f0723a549e02b22333d3b74c9c0"
+      "bytes": 32911,
+      "sha256": "6b12943d8a3a31de5f6cd5508705c458ba2f22223953f1c163cec1f73a4439e8"
     },
     {
       "file": "figure_expression_matrix_demo_py.png",
-      "bytes": 203969,
-      "sha256": "57fc321b83b2c9c95f88fdc42f06a5f8eb885b5c60857505816c78a05601d0c0"
+      "bytes": 191005,
+      "sha256": "417f2a839fc12dc92fb58439e04b394da2de49d55310323de0662ab2048f0e5c"
     },
     {
       "file": "figure_expression_matrix_demo_py.svg",
-      "bytes": 175316,
-      "sha256": "419123e32d78cb742b7b2269743d788940e7c821a37835c103691df3d0ec7a5b"
+      "bytes": 187883,
+      "sha256": "992ea64b642c927ace7f090d438bcf8ec692d3372ba902780ad1e45a0b5d980e"
     },
     {
       "file": "packages_demo_py.txt",
@@ -83,17 +84,17 @@
     {
       "file": "report.qmd",
       "bytes": 5699,
-      "sha256": "6cbb84fa71844c37f7d676c9a5275290d3e446e1a6a9ca9577d685d708a5dec7"
+      "sha256": "272235126fc5e2710d407d0b3c442874c4a98eb27f87c246a3f6e7e4a281f59f"
     },
     {
       "file": "report.html",
-      "bytes": 1469208,
-      "sha256": "06acc6290f446c9e89d9203fab491994efec80352c1d3e19df7d514a5157cf5f"
+      "bytes": 1451924,
+      "sha256": "98795990d1d852b4c06264f821e9eb1ee8009534e339aff0ea8f2ef73343c007"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1974,
-      "sha256": "0808b0822a5bc1318c0434c7385d1ea0d71111b0a8b492a0482063440a081985"
+      "sha256": "29409e3923e066709a500cece10b1c197c3262346e42680df58952a2e9cc7a5c"
     }
   ]
 }

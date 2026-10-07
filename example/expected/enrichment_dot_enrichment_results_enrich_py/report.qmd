@@ -24,25 +24,25 @@ The report records the selected recipe and does not claim a new statistical meth
 
 | term | gene_ratio | p_adjust | count |
 | --- | --- | --- | --- |
-| T cell receptor signaling | 0.02 | 2.04e-07 | 8 |
-| Apoptotic process | 0.02 | 6.38e-07 | 8 |
-| p53 signaling pathway | 0.0225 | 5.71e-05 | 9 |
-| Interferon gamma response | 0.025 | 2.39e-07 | 10 |
-| Fatty acid metabolism | 0.05 | 2.79e-06 | 20 |
-| Complement activation | 0.0575 | 4.53e-07 | 23 |
-| DNA repair | 0.0625 | 8.28e-05 | 25 |
-| Extracellular matrix organization | 0.0675 | 1.38e-05 | 27 |
-| Oxidative phosphorylation | 0.09 | 9.9e-07 | 36 |
-| Glycolysis | 0.095 | 1.09e-05 | 38 |
 | Cytokine signaling in immune system | 0.1175 | 3.18e-08 | 47 |
-| Wnt signaling | 0.12 | 2.45e-05 | 48 |
-| Angiogenesis | 0.1225 | 1.7e-05 | 49 |
-| Cell cycle checkpoint | 0.125 | 9.28e-07 | 50 |
 | Inflammatory response | 0.1475 | 3.3e-08 | 59 |
+| T cell receptor signaling | 0.02 | 2.04e-07 | 8 |
+| Interferon gamma response | 0.025 | 2.39e-07 | 10 |
+| Complement activation | 0.0575 | 4.53e-07 | 23 |
+| Apoptotic process | 0.02 | 6.38e-07 | 8 |
+| Cell cycle checkpoint | 0.125 | 9.28e-07 | 50 |
+| Oxidative phosphorylation | 0.09 | 9.9e-07 | 36 |
+| Fatty acid metabolism | 0.05 | 2.79e-06 | 20 |
+| Glycolysis | 0.095 | 1.09e-05 | 38 |
+| Extracellular matrix organization | 0.0675 | 1.38e-05 | 27 |
+| Angiogenesis | 0.1225 | 1.7e-05 | 49 |
+| Wnt signaling | 0.12 | 2.45e-05 | 48 |
+| p53 signaling pathway | 0.0225 | 5.71e-05 | 9 |
+| DNA repair | 0.0625 | 8.28e-05 | 25 |
 
 ## Methods
 
-The top 15 of 20 enriched terms from a over-representation (ORA) analysis were shown as a dot plot. The x-axis is gene ratio, dot color the adjusted p-value, and dot size the gene count. The enrichment analysis was performed upstream; this figure summarises its output. Drawn in Python 3.10.12 with matplotlib 3.10.9.
+The top 15 of 20 enriched terms from a over-representation (ORA) analysis were shown as a dot plot. The x-axis is gene ratio, dot color the -log10 of the adjusted p-value, and dot size the gene count. The enrichment analysis was performed upstream; this figure summarises its output. Drawn in Python 3.10.12 with matplotlib 3.10.9.
 
 ## Plot configuration
 
@@ -54,14 +54,14 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 0.4.1 |
-| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_commit | f82215f4b833c9d70432f64150af9bc357a8d5e4 |
 | git_dirty | False |
 | llm_provider | none |
 | llm_model | none |
 | agent_harness | manual |
 | agent_harness_version | not_recorded |
 | container_image | localhost/pubready:0.4.1 |
-| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| container_digest | sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4 |
 | input | {"file": "input_enrichment_results.csv", "md5": "7292703ccf5170ec7811de3a431c33ee", "sha256": "3265457a2c00ffc902d1848a14b7ff6de77284a6cf42715c6d61b56d779178e8"} |
 | command | figkit plot --recipe enrichment_dot |
 | analysis_options | {"engine": "python", "recipe": "enrichment_dot", "data": {"file": "enrichment_results.csv", "x": null, "y": null, "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": null, "group": null, "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": null, "y_label": null, "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |

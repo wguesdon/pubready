@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "swimmer",
@@ -44,8 +44,8 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
-    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
+    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -74,7 +74,7 @@
     {
       "file": "figure_months_swimmer_py.pdf",
       "bytes": 16647,
-      "sha256": "c0954d960624d5d8aed1449ef938eb7dabb87942b12d4fdfef91617326c15508"
+      "sha256": "1b7e4c9995e833114225128726395ff0b6ce6aa80d2b3956bf13d15aed34b624"
     },
     {
       "file": "figure_months_swimmer_py.png",
@@ -84,7 +84,7 @@
     {
       "file": "figure_months_swimmer_py.svg",
       "bytes": 56361,
-      "sha256": "2fac97bb1f577c0491790672f2ec183f8a64828ad7ff0d1b60be7bc5a97db9a7"
+      "sha256": "cd6278ede432fb4c7039d0fb4eb23147616ac5af25020806474f4866619e7bf7"
     },
     {
       "file": "packages_swimmer_py.txt",
@@ -94,17 +94,17 @@
     {
       "file": "report.qmd",
       "bytes": 4055,
-      "sha256": "6bfa77230c4d026425b9c742fbff7242117600bf14b581892ccaa85c02eea506"
+      "sha256": "6006ab012ddcffb82c4200532b2971c87de9b89f788afdf2d6d32030b4fc8bde"
     },
     {
       "file": "report.html",
       "bytes": 1376976,
-      "sha256": "7d1bbacac5f7f15864ba87a6a53d2b4100e42b90a4c1d052148dee89ee5d2bab"
+      "sha256": "3d1faee943b7c3d4b8fa911d9d655b0ecf2957fa071474a7263027be2cefc6c4"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2020,
-      "sha256": "2362994461217a46e26e0bbf72d255d3dce6c3237149ca09c7cdba44bc4677b6"
+      "sha256": "d0bfdfb26d180a55b512a82b99990e58936eeba38a644b0132f13d71d1d01cc4"
     }
   ]
 }

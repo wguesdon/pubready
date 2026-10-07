@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "waterfall",
@@ -40,8 +40,8 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
-    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
+    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -67,7 +67,7 @@
     {
       "file": "figure_target_lesion_mm_waterfall.pdf",
       "bytes": 7894,
-      "sha256": "0dc002a1cf820f87982cb097384a9f6ba8c3683b75ac1a037f5ddaa3b4593cfc"
+      "sha256": "fd39bad8ca599581835a4b77b7fd666f6c11f543d665d1541323ccac66e020d3"
     },
     {
       "file": "figure_target_lesion_mm_waterfall.png",
@@ -81,23 +81,23 @@
     },
     {
       "file": "packages_waterfall.txt",
-      "bytes": 3477,
-      "sha256": "d608ef5a44ae5d7ff6b84ffbfb5ee9b8ce1d2c1a0aeb220065e7d20c1b865f91"
+      "bytes": 3491,
+      "sha256": "aeed76a83e42be373e44d208d6bc0a0c18edb9cd9e32f51b40c1af911945ba9c"
     },
     {
       "file": "report.qmd",
       "bytes": 4482,
-      "sha256": "56fc708c7cdcd92ac74c2b03ac3029a17dce6c710c549e2a64e080d48dcce201"
+      "sha256": "93d3ee70e280f86681dad83b67770304e532e16d72986656e3e8cf667dec1ef7"
     },
     {
       "file": "report.html",
       "bytes": 1293308,
-      "sha256": "59ffea01f90c7f426bd03a2ce49e23d1c6a1f09b7e58ca171a5cd7a9636cc2d2"
+      "sha256": "6f4f4a63a28c0354dc70a23339593f00a3dc75baf19bbea2bda119bdb4b2826b"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1956,
-      "sha256": "335a86b8df920bcb427b3ecb5eca896e78bf1b1074d6c1857a070817a153dde9"
+      "sha256": "24a679a76483f67024e3b1022a28a9a5389acdd98176cc873f387fe55261f9e5"
     }
   ]
 }

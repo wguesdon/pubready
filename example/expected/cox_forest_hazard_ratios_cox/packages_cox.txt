@@ -93,6 +93,7 @@ ggsignif==0.6.4
 ggtext==0.1.2
 GlobalOptions==0.1.2
 glue==1.8.0
+GO.db==3.20.0
 graphics==4.4.1
 grDevices==4.4.1
 grid==4.4.1

@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "proportions",
@@ -32,8 +32,8 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
-    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
+    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -59,7 +59,7 @@
     {
       "file": "figure_response_prop.pdf",
       "bytes": 6913,
-      "sha256": "9b3155fda89661c0fcf486f5f56c3dcc71b319b989a59ee2dc1b8842cdd60239"
+      "sha256": "66f28a0ab79a3b4341c3db1ad726e1e38f327f1b8d38ab02fb619dcbbc107dd6"
     },
     {
       "file": "figure_response_prop.png",
@@ -73,23 +73,23 @@
     },
     {
       "file": "packages_prop.txt",
-      "bytes": 3491,
-      "sha256": "c33789f49ac710220421ecfb9962c55668b948672d78a8135211b68d0977181a"
+      "bytes": 3505,
+      "sha256": "7f5c2a8db16274b62f48edf1599cd2d655ae6a53d08625a223119e14b526ed07"
     },
     {
       "file": "report.qmd",
       "bytes": 2624,
-      "sha256": "0bea51e08efcd7af987281ff790b876658ff4274e4bbaec694de13c6b97c3d7f"
+      "sha256": "5b570d3b19bad520b5254daa3e571e73f81957d5c40b7aaea1c0eea1a493e5c6"
     },
     {
       "file": "report.html",
       "bytes": 1283514,
-      "sha256": "fa353587cea5287cbd9e6b35e70b8a6babaf1076ae870060aba3f5b1e8aac0b0"
+      "sha256": "15bdd52f6e1b9d853c1757fcd7cd3de4fa766475cf6e68e872b13f3ea5171edb"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1937,
-      "sha256": "1c9eecb4bb9437365dd5f914cdf8876a2f1c2670a2c56aa96149dd3f6695e256"
+      "sha256": "cb9af0a1599a5002ee75c72efe9d24a0f856400ce4627bb94b006f49f066330f"
     }
   ]
 }

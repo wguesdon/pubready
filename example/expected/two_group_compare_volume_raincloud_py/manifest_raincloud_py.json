@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "two_group_compare",
@@ -44,8 +44,8 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
-    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
+    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -76,7 +76,7 @@
     {
       "file": "figure_volume_raincloud_py.pdf",
       "bytes": 15952,
-      "sha256": "b3d9a48f06289061f263c6596ab1658576529d38828fc573cbc4afee496b492b"
+      "sha256": "fe30cc41f890bf2917c0bb8b4aa6d58ee70e475c8e6b1095546265d1989818c9"
     },
     {
       "file": "figure_volume_raincloud_py.png",
@@ -86,7 +86,7 @@
     {
       "file": "figure_volume_raincloud_py.svg",
       "bytes": 37735,
-      "sha256": "e3ac2f9fbd0b3e8a25d7a88a8c2e755b329d6c5bdc866e58088af838369f618e"
+      "sha256": "91e7d665b3abf83434ec67133c017b124b92deb37792c5f3800b8a80e1a72d67"
     },
     {
       "file": "packages_raincloud_py.txt",
@@ -101,22 +101,22 @@
     {
       "file": "qc_normality_raincloud_py.pdf",
       "bytes": 25226,
-      "sha256": "c268b1274370f4f8acfb73303797137ed717ae8bb1094836e07b249cb0894df9"
+      "sha256": "f56efc38b8bac768fbc4a8733df7bf13d6ab64635f51806030b2b13bd3dff085"
     },
     {
       "file": "report.qmd",
       "bytes": 3223,
-      "sha256": "d2d111d4c92ccf7dcc34efaf964885c5586f7af6ef7bdf2f01063187250d58e5"
+      "sha256": "f23e7db936b8e07769be925459acdbe3eedcc48a1318aabf725a87645a3990a1"
     },
     {
       "file": "report.html",
       "bytes": 1281794,
-      "sha256": "fcc02ed8a198433fd8e1cc18c46589cd6b6164e43b687cefe37635c9e39ea89e"
+      "sha256": "29246087909fd2143399ac91baa7ae26b5fbb647bc47a7eba3efdb2d1514beec"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1977,
-      "sha256": "fec88ce0ccda6f92c2e2768ad16e52c0c1303eda1f2a8cc77f623b063e962139"
+      "sha256": "2e43bdb10a3893fb8153302d2da739e6a82c04c6eecdac0c2ce4dfcf497d7fdc"
     }
   ]
 }

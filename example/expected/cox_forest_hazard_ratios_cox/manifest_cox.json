@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "cox_forest",
@@ -73,8 +73,8 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
-    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
+    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -100,7 +100,7 @@
     {
       "file": "figure_hazard_ratios_cox.pdf",
       "bytes": 16654,
-      "sha256": "9cab1e53017ec0c960f4f1db3a09d9323ea21e62365c8c9166a0dbbb32b2d7fb"
+      "sha256": "a3385f484108b3a5e1db5ba89f3e375f6f902237326e5bec3cf0be4e7aa4644b"
     },
     {
       "file": "figure_hazard_ratios_cox.png",
@@ -114,23 +114,23 @@
     },
     {
       "file": "packages_cox.txt",
-      "bytes": 3508,
-      "sha256": "bb92591c8b7dc1d636f0cfd8ef0768d300ae8baaae4da4d1cf6ced69748f51ee"
+      "bytes": 3522,
+      "sha256": "e32536ac9373463e15733eed7289caa301485942b1ac4780dd59b5ee15b008c4"
     },
     {
       "file": "report.qmd",
       "bytes": 3240,
-      "sha256": "4f6d22281004a3b9d3ca1fa334726e3a5d0f85042377bf59556ef97e0809d8d9"
+      "sha256": "93ac984e040d911fb51e29e871f7b903161127afe87cd778d39b3d40b2e69824"
     },
     {
       "file": "report.html",
       "bytes": 1288266,
-      "sha256": "b308bc7d72f2c063c02d1b1ec20971d2f78391a7647507c4c5f53c87b6457b08"
+      "sha256": "72354991048c7b4baede98c6e1f5c0e3152810945ddaa9971527fcc9e2c70a8d"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1963,
-      "sha256": "613fcbb05d855deca74162d724302e7ce5c39c705bf87e5f977a5e3d88894c3b"
+      "sha256": "1efc4e80c4e4844eafeec44876856b5c41f4291190119152c54d2d538f312ad1"
     }
   ]
 }

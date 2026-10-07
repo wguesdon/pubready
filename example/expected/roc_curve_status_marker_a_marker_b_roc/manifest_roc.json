@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "roc_curve",
@@ -50,8 +50,8 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
-    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
+    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -77,7 +77,7 @@
     {
       "file": "figure_status_marker_a_marker_b_roc.pdf",
       "bytes": 17341,
-      "sha256": "04c396728190ec693a5ba045034d7674924b6d42904e046a1730b6bd4481bb5a"
+      "sha256": "25ca1b97f0d55a765136dcf91dd0f3cf0e81ffe3218cfe27c5dba0b92a9bf578"
     },
     {
       "file": "figure_status_marker_a_marker_b_roc.png",
@@ -91,23 +91,23 @@
     },
     {
       "file": "packages_roc.txt",
-      "bytes": 3490,
-      "sha256": "937f7aa6e3b0da4a08c0de6ac39c357cd8b73d37b60b1e6d22d36020b516a206"
+      "bytes": 3504,
+      "sha256": "936ab8a747ecb8b4b49db46063ffa707b7f00d3b7d60d718dbcb089abbe7af26"
     },
     {
       "file": "report.qmd",
       "bytes": 3550,
-      "sha256": "9b0428094022a9fecb71fca775b5deb267e31402e6564078d3e7e62b9f829783"
+      "sha256": "e1dfe60a8d2dee2afa7df11908f9061aa9ea2ae3715c2d74d34b715f3f0b2048"
     },
     {
       "file": "report.html",
       "bytes": 1316331,
-      "sha256": "b1cc27cba841e5d577cdf4de19ef828c8624357270456b276ef28daf7a793257"
+      "sha256": "be6c5296316c7cdc45b244cb31e2be6c3379526456186b562d06c716a166322c"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1964,
-      "sha256": "629591eb1c2530d88346ff9e5e249328f3e7ea515fa2afa9e775d6e4a0d24f33"
+      "sha256": "837d57473353cd232267e4da7d870fb5785cc4e42ede799631506bf0b1af4f2b"
     }
   ]
 }

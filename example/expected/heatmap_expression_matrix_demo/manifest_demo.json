@@ -1,6 +1,6 @@
 {
   "pubready_version": "0.4.1",
-  "pubready_git_commit": "e8f923bef415cd1719ad862c56f1043770302fc8",
+  "pubready_git_commit": "f82215f4b833c9d70432f64150af9bc357a8d5e4",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "heatmap",
@@ -30,8 +30,8 @@
   },
   "container": {
     "image": "localhost/pubready:0.4.1",
-    "image_id": "b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b",
-    "digest": "sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17",
+    "image_id": "be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8",
+    "digest": "sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -57,7 +57,7 @@
     {
       "file": "figure_expression_matrix_demo.pdf",
       "bytes": 18290,
-      "sha256": "78ce059c7abc9a493ee9de7f5e12580b8114a666db9a2a9070ad88f7a0009dcb"
+      "sha256": "26638d1aa304a1dadf4672a81727a9623a492c0072980e5c2d66bd8ebc9a5d9d"
     },
     {
       "file": "figure_expression_matrix_demo.png",
@@ -71,23 +71,23 @@
     },
     {
       "file": "packages_demo.txt",
-      "bytes": 3502,
-      "sha256": "3ab312069ecd57dbbb8649859cf857000e00b2417655dc7145099a933cf0ab88"
+      "bytes": 3516,
+      "sha256": "f2c8af4820d82f49d82397f932ad642f9c1a6a1be784734cfc4f3936a5021a8f"
     },
     {
       "file": "report.qmd",
       "bytes": 5078,
-      "sha256": "5ad827dffd2a653437676e9b5319f8d8d230d7232f5c650159076727b68376a0"
+      "sha256": "96fb736f850a6cca49da777b89d0fe9fd16edf644e30191c872ae455bbcfb312"
     },
     {
       "file": "report.html",
       "bytes": 1403438,
-      "sha256": "32fd10fd74180752a3391e5d6672f0946a45a8b77b01403f74b75da91d178ba9"
+      "sha256": "c94ee66c85da655bd24b258cb17edb3b35858cc4269e4587d39a854b249c8444"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1964,
-      "sha256": "d78cd4a9d1de5d129152d7a043d0ee3938f70e9979f7bd0a1cce76c7471648f9"
+      "sha256": "26ec80b008d30874380189297499e5924b37e367e7b409980b49bddc83d05ae3"
     }
   ]
 }

@@ -59,14 +59,14 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 0.4.1 |
-| git_commit | e8f923bef415cd1719ad862c56f1043770302fc8 |
+| git_commit | f82215f4b833c9d70432f64150af9bc357a8d5e4 |
 | git_dirty | False |
 | llm_provider | none |
 | llm_model | none |
 | agent_harness | manual |
 | agent_harness_version | not_recorded |
 | container_image | localhost/pubready:0.4.1 |
-| container_digest | sha256:097c136b375dd40cd790ef1528d70d748ab67d06fc44e73c70de82b4a4782d17 |
+| container_digest | sha256:339bf57d4f33cf35d6ffa492d0e2faccd3ab5e0a435e20512b201d2c5fffd9e4 |
 | input | {"file": "input_target_lesion_mm.csv", "md5": "d3ceaf1a40e01ce2639a76cda972d28e", "sha256": "97ca47b3a60d61efa8b26f77be4c7169722126bb8198f60c17acef4d6f04d23c"} |
 | command | figkit plot --recipe spider_response |
 | analysis_options | {"engine": "python", "recipe": "spider_response", "data": {"file": "spider_response.csv", "x": "week", "y": "target_lesion_mm", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": "patient", "group": "arm", "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": "Week", "y_label": null, "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |

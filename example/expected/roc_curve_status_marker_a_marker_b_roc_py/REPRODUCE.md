@@ -6,8 +6,8 @@ environment it was made in:
 ## 1. Get the pinned environment
 
 - Container image: `localhost/pubready:0.4.1`
-- Image id: `b893dd6f1d130c5b6dd3a3e82750620f264f759546b7cb415512e8231a8ae02b`
-- pubready commit: `e8f923bef415cd1719ad862c56f1043770302fc8`
+- Image id: `be5dbb7703261c36a854ae80ed11cfc2a61dc669053a2c0cd63fffc3aa0a1bf8`
+- pubready commit: `f82215f4b833c9d70432f64150af9bc357a8d5e4`
 
 ## 2. Run the standalone script
 
