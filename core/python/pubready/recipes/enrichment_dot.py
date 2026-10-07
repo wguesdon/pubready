@@ -1,6 +1,6 @@
 """Recipe: dot plot of GSEA / ORA enrichment results, clusterProfiler style.
 Mirrors the R recipe. An NES column -> GSEA dot plot (x = NES); otherwise an ORA
-dot plot (x = gene ratio). Color = adjusted p, size = gene count. Descriptive; no
+dot plot (x = gene ratio). Color = -log10 adjusted p, size = gene count. Descriptive; no
 test is run here, the enrichment is computed upstream."""
 import os
 
@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from ..bundle import slugify
-from ..theme import apply_pub_style
+from ..theme import apply_pub_style, significance_cmap
 
 _TERM = ["Description", "ID", "pathway", "term", "Term", "NAME"]
 _PADJ = ["p.adjust", "padj", "qvalue", "q_value", "FDR", "pvalue", "p_value"]
@@ -72,10 +72,13 @@ def recipe_enrichment_dot(df, spec):
 
     ap = spec["appearance"]
     topn = int(ap.get("top_n", 15))
-    idx = np.argsort(padj)[:topn]
-    t, x, pj, ct = term[idx], xval[idx], padj[idx], count[idx]
-    yo = np.argsort(x)
-    t, x, pj, ct = t[yo], x[yo], pj[yo], ct[yo]
+    # Stable sorts break ties in the row order, as the R engine does.
+    idx = np.argsort(padj, kind="stable")[:topn]
+    # The stats table keeps the p.adjust order of the R engine; the plot runs
+    # from the smallest x at the bottom to the largest at the top.
+    top = {"term": term[idx], "x": xval[idx], "p_adjust": padj[idx], "count": count[idx]}
+    yo = np.argsort(top["x"], kind="stable")
+    t, x, pj, ct = top["term"][yo], top["x"][yo], top["p_adjust"][yo], top["count"][yo]
     has_size = not np.all(np.isnan(ct))
 
     w = 7.2
@@ -87,7 +90,9 @@ def recipe_enrichment_dot(df, spec):
         sizes = 30 + 200 * ((ct - np.nanmin(ct)) / rng if rng else np.zeros_like(ct))
     else:
         sizes = 70
-    sc = ax.scatter(x, ypos, c=pj, s=sizes, cmap="coolwarm_r", edgecolors="none")
+    # Colour by -log10 of the adjusted p: the values span orders of magnitude, so a
+    # linear scale would paint almost every term the same colour.
+    sc = ax.scatter(x, ypos, c=-np.log10(pj), s=sizes, cmap=significance_cmap(), edgecolors="none")
     ax.set_yticks(ypos); ax.set_yticklabels(t, fontsize=9)
     ax.set_xlabel(ap.get("x_label") or xlab)
     if gsea:
@@ -95,7 +100,7 @@ def recipe_enrichment_dot(df, spec):
     if ap.get("title"):
         ax.set_title(ap["title"], fontweight="bold")
     apply_pub_style(ax, ap.get("theme"))
-    fig.colorbar(sc, ax=ax, label="p.adjust", fraction=0.046, pad=0.04)
+    fig.colorbar(sc, ax=ax, label="-log10 p.adjust", fraction=0.046, pad=0.04)
     if has_size:
         handles, labels = sc.legend_elements(prop="sizes", num=3, alpha=0.6,
                                              func=lambda s: (s - 30) / 200 * rng + np.nanmin(ct))
@@ -103,8 +108,9 @@ def recipe_enrichment_dot(df, spec):
     fig.tight_layout()
 
     stats_df = pd.DataFrame({
-        "term": t, ("NES" if gsea else "gene_ratio" if ratio_col else "neg_log10_padj"): x,
-        "p_adjust": pj, "count": ct})
+        "term": top["term"],
+        ("NES" if gsea else "gene_ratio" if ratio_col else "neg_log10_padj"): top["x"],
+        "p_adjust": top["p_adjust"], "count": top["count"]})
     test_meta = {"name": "GSEA dot plot" if gsea else "ORA dot plot",
                  "n_terms_total": len(term), "n_terms_shown": len(t), "x_axis": xlab}
     methods = _methods(gsea, len(term), len(t), xlab)
@@ -123,8 +129,9 @@ def _methods(gsea, n_total, n_shown, xlab):
     kind = "GSEA" if gsea else "over-representation (ORA)"
     return (
         f"The top {n_shown} of {n_total} enriched terms from a {kind} analysis were shown as a "
-        f"dot plot. The x-axis is {xlab}, dot color the adjusted p-value, and dot size the gene "
-        "count. The enrichment analysis was performed upstream; this figure summarises its output. "
+        f"dot plot. The x-axis is {xlab}, dot color the -log10 of the adjusted p-value, and "
+        "dot size the gene count. The enrichment analysis was performed upstream; this figure "
+        "summarises its output. "
         f"Drawn in Python {platform.python_version()} with matplotlib {v('matplotlib')}."
     )
 
@@ -151,15 +158,15 @@ term = raw["{term_col}"].astype(str).to_numpy()
 padj = pd.to_numeric(raw["{padj_col}"], errors="coerce").to_numpy()
 {count_line}
 {xline}
-idx = np.argsort(padj)[:{topn}]
+idx = np.argsort(padj, kind="stable")[:{topn}]
 t, x, pj, ct = term[idx], x[idx], padj[idx], ct[idx]
-yo = np.argsort(x); t, x, pj, ct = t[yo], x[yo], pj[yo], ct[yo]
+yo = np.argsort(x, kind="stable"); t, x, pj, ct = t[yo], x[yo], pj[yo], ct[yo]
 fig, ax = plt.subplots(figsize=(7.2, max(4.0, 0.34*len(t)+1.6)))
-sc = ax.scatter(x, np.arange(len(t)), c=pj, s=70, cmap="coolwarm_r", edgecolors="none")
+sc = ax.scatter(x, np.arange(len(t)), c=-np.log10(pj), s=70, cmap="coolwarm", edgecolors="none")
 ax.set_yticks(np.arange(len(t))); ax.set_yticklabels(t)
 ax.set_xlabel(xlab)
 for s in ("top", "right"): ax.spines[s].set_visible(False)
-fig.colorbar(sc, ax=ax, label="p.adjust", fraction=0.046, pad=0.04)
+fig.colorbar(sc, ax=ax, label="-log10 p.adjust", fraction=0.046, pad=0.04)
 fig.tight_layout(); fig.savefig("{fig_stub}.pdf")
 print("Reproduced figure.")
 '''

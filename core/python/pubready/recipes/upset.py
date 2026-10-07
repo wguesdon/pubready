@@ -48,6 +48,10 @@ def recipe_upset(df, spec):
     fig = plt.figure(figsize=(w, h))
     upsetplot.UpSet(data, subset_size="count", sort_by="cardinality",
                     show_counts=True).plot(fig=fig)
+    # upsetplot resizes the figure so that its label column fits the set names.
+    # The bundle writer sets the figure to the returned size, so return the size
+    # upsetplot chose; the starting size would squeeze long names under the bars.
+    w, h = (float(v) for v in fig.get_size_inches())
 
     set_rows = [{"type": "set", "sets": c, "degree": None, "size": int(bin_df[c].sum())}
                 for c in set_cols]

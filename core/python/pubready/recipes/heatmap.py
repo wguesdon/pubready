@@ -13,7 +13,35 @@ from statsmodels.stats.multitest import multipletests
 
 from ..bundle import slugify
 from ..io import read_tidy
-from ..theme import PALETTE
+from ..theme import PALETTE, diverging_cmap
+
+
+def color_limits(disp, scale_mode):
+    """Colour limits that match the R engine.
+
+    Args:
+        disp: The displayed matrix.
+        scale_mode: row, column or none.
+
+    Returns:
+        tuple: The lower limit, the centre and the upper limit.
+    """
+    if scale_mode == "none":
+        q = np.quantile(disp.to_numpy(), [0.02, 0.5, 0.98])
+        return float(q[0]), float(q[1]), float(q[2])
+    return -2.0, 0.0, 2.0
+
+
+def level_colours(series):
+    """House-palette colours for the sorted levels of one annotation column.
+
+    Args:
+        series: The annotation column.
+
+    Returns:
+        dict: One colour for each level, as the R engine assigns them.
+    """
+    return {lvl: PALETTE[i % len(PALETTE)] for i, lvl in enumerate(sorted(series.unique()))}
 
 
 def recipe_heatmap(df, spec):
@@ -69,43 +97,52 @@ def recipe_heatmap(df, spec):
                                  "sd": mat.std(axis=1).to_numpy()})
         test_label, n_sig = None, None
 
-    w = max(5.5, 2.2 + 0.24 * mat.shape[1])
+    w = max(6.5, 3.2 + 0.24 * mat.shape[1])
     h = max(5.0, 1.5 + 0.16 * mat.shape[0])
 
-    used_pch = True
+    # The colour scale matches the R engine: z-scores from -2 to 2 with white at
+    # zero, or the 2nd, 50th and 98th percentiles of unscaled values. Clustering
+    # is complete linkage on Euclidean distance, the ComplexHeatmap default.
+    vmin, vcenter, vmax = color_limits(disp, scale_mode)
+    used_pch, fallback_reason = True, None
     try:
         import PyComplexHeatmap as pch
         col_ha = None
         if ann is not None:
-            colors = {lvl: PALETTE[i % len(PALETTE)]
-                      for i, lvl in enumerate(sorted(ann[group_col].unique()))}
             col_ha = pch.HeatmapAnnotation(
-                **{group_col: pch.anno_simple(ann[group_col], colors=colors, add_text=False)},
+                **{c: pch.anno_simple(ann[c], colors=level_colours(ann[c]), add_text=False,
+                                      legend=True)
+                   for c in ann.columns},
                 axis=1, verbose=0)
         plt.figure(figsize=(w, h))
         pch.ClusterMapPlotter(
             data=disp, top_annotation=col_ha,
             row_cluster=cluster_rows, col_cluster=cluster_cols,
-            cmap="RdBu_r", label=legend_name,
+            row_cluster_method="complete", col_cluster_method="complete",
+            row_dendrogram=cluster_rows, col_dendrogram=cluster_cols,
+            cmap=diverging_cmap(), vmin=vmin, vmax=vmax, center=vcenter, label=legend_name,
             show_rownames=True, show_colnames=True,
+            xticklabels=True, yticklabels=True,
+            xticklabels_kws={"labelsize": 8}, yticklabels_kws={"labelsize": 8},
             row_names_side="right", col_names_side="bottom", verbose=0)
         fig = plt.gcf()
-    except Exception:
+    except Exception as err:  # noqa: BLE001 - any PyComplexHeatmap failure falls back
         plt.close("all")
         used_pch = False
+        fallback_reason = f"{type(err).__name__}: {err}"
         col_colors = None
         if ann is not None:
-            colors = {lvl: PALETTE[i % len(PALETTE)]
-                      for i, lvl in enumerate(sorted(ann[group_col].unique()))}
-            col_colors = ann[group_col].map(colors)
+            col_colors = pd.DataFrame({c: ann[c].map(level_colours(ann[c])) for c in ann.columns})
         grid = sns.clustermap(
-            disp, cmap="RdBu_r", center=0, row_cluster=cluster_rows, col_cluster=cluster_cols,
+            disp, cmap=diverging_cmap(), vmin=vmin, vmax=vmax, center=vcenter, method="complete",
+            row_cluster=cluster_rows, col_cluster=cluster_cols,
             col_colors=col_colors, figsize=(w, h), cbar_kws={"label": legend_name},
             xticklabels=True, yticklabels=True)
         fig = grid.figure
 
     test_meta = {
         "name": "Clustered heatmap", "engine_lib": "PyComplexHeatmap" if used_pch else "seaborn.clustermap",
+        "fallback_reason": fallback_reason,
         "scale": scale_mode, "clustering": cluster,
         "n_features": int(mat.shape[0]), "n_samples": int(mat.shape[1]),
         "per_feature_test": test_label, "n_significant": n_sig,

@@ -70,7 +70,7 @@ If a command reports the image is missing, run `figkit build` first.
 | `correlation_heatmap` | table of numeric variables | `--data` | pairwise correlation, clustered, BH-adjusted stars |
 | `upset` | binary membership matrix | `--data` | descriptive intersection sizes (no test) |
 | `volcano` | DE table (log2FC + p) | `--data [--x --y --label]` | EnhancedVolcano-style scatter, top hits labeled |
-| `enrichment_dot` | GSEA / ORA result table | `--data [--label]` | dot plot, size = count, color = adjusted p |
+| `enrichment_dot` | GSEA / ORA result table | `--data [--label]` | dot plot, size = count, color = -log10 adjusted p |
 | `paired_compare` | condition, value, id | `--x --y --id` | paired t-test or Wilcoxon, connecting lines |
 | `proportions` | two categoricals | `--x --y` | chi-square / Fisher, 100% stacked bar |
 | `pca` | samples × features + group | `--data --group` | PC1/PC2 scatter, 95% ellipses, PERMANOVA |
@@ -116,14 +116,18 @@ Pick the engine per figure with `--engine`. Both write the same bundle and, wher
 a matching method exists, the same numbers. The two-group and paired recipes agree
 digit for digit on the t-test, the Mann-Whitney U test and the Wilcoxon signed-rank
 test, and the smoke test asserts it. The public benchmarks in `benchmarks/` hold
-every recipe in both engines to an independent reference value. Four gaps remain.
+every recipe in both engines to an independent reference value. Five gaps remain.
 The aligned rank transform for non-parametric factorial ANOVA is R only, so
 `--test art --engine python` errors and routes you to R. The Python heatmap keeps
 its per-feature significance stars in the stats table rather than on the figure.
 The Python `survival_km` table has no confidence interval for the median survival.
 In `multi_group_compare` a Tukey P value below about 1e-8 differs between the
 engines in the second or third digit, because R's `ptukey` loses relative precision
-in the far tail; both values stay far below any significance threshold.
+in the far tail; both values stay far below any significance threshold. The `pca`
+PERMANOVA is exact, and identical in both engines, when the design has 5000
+labelings or fewer. A larger design uses 999 seeded permutations, and the two
+engines draw different permutations, so the two P values differ by the Monte Carlo
+error.
 
 ## Read more
 

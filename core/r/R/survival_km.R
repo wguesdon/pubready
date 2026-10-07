@@ -51,7 +51,7 @@ recipe_survival_km <- function(df, spec) {
   ylab <- spec$appearance$y_label %||% "Survival probability"
 
   g <- survminer::ggsurvplot(
-    fit, data = df, pval = TRUE, risk.table = TRUE, conf.int = FALSE,
+    fit, data = df, pval = FALSE, risk.table = TRUE, conf.int = FALSE,
     censor = TRUE, palette = pal[seq_along(lvls)],
     legend.title = group_col, legend.labs = lvls,
     xlab = xlab, ylab = ylab,
@@ -59,6 +59,10 @@ recipe_survival_km <- function(df, spec) {
     risk.table.fontsize = 3.2,
     tables.theme = survminer::theme_cleantable()
   )
+  # The log-rank P goes in a subtitle, where no curve can cross it. ggsurvplot
+  # draws it at a fixed spot inside the panel, on top of curves that drop early.
+  g$plot <- g$plot + ggplot2::labs(subtitle = .km_p_label(lr_p)) +
+    ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"))
   plot <- ggpubr::ggarrange(g$plot, g$table, ncol = 1, nrow = 2,
                             heights = c(0.74, 0.26), align = "v")
 
@@ -100,6 +104,10 @@ recipe_survival_km <- function(df, spec) {
        width = 5.6, height = 5.8)
 }
 
+.km_p_label <- function(p) {
+  if (p < 0.001) "Log-rank P < 0.001" else sprintf("Log-rank P = %.2g", p)
+}
+
 .km_methods <- function(stats_df, lr_p, sd, lr_df, spec, group_col) {
   v    <- pkg_versions(c("survival", "survminer"))
   rver <- paste(R.version$major, R.version$minor, sep = ".")
@@ -134,11 +142,14 @@ recipe_survival_km <- function(df, spec) {
     sprintf('df[["%s"]] <- factor(df[["%s"]])', group_col, group_col),
     sprintf('fit <- surv_fit(Surv(`%s`, `%s`) ~ `%s`, data = df)', time_col, event_col, group_col),
     "",
-    sprintf('g <- ggsurvplot(fit, data = df, pval = TRUE, risk.table = TRUE, conf.int = FALSE,'),
+    sprintf('sd <- survdiff(Surv(`%s`, `%s`) ~ `%s`, data = df)', time_col, event_col, group_col),
+    "p_lr <- pchisq(sd$chisq, length(sd$n) - 1, lower.tail = FALSE)",
+    sprintf('g <- ggsurvplot(fit, data = df, pval = FALSE, risk.table = TRUE, conf.int = FALSE,'),
     sprintf('                censor = TRUE, palette = %s, legend.title = "%s",', pal_str, group_col),
     sprintf('                legend.labs = %s, xlab = "%s", ylab = "%s",', lvls_str, xlab, ylab),
     '                ggtheme = theme_classic(base_size = 13),',
     '                tables.theme = theme_cleantable())',
+    'g$plot <- g$plot + labs(subtitle = if (p_lr < 0.001) "Log-rank P < 0.001" else sprintf("Log-rank P = %.2g", p_lr))',
     'p <- ggarrange(g$plot, g$table, ncol = 1, nrow = 2, heights = c(0.74, 0.26), align = "v")',
     "",
     sprintf('ggsave("%s.pdf", p, width = 5.6, height = 5.8)', fig_stub),

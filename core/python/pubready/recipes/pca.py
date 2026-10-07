@@ -2,6 +2,8 @@
 the R recipe: rows are samples, numeric columns are features, --group colors the
 points. Features are centered and scaled, PC1 vs PC2 is drawn with per-group
 ellipses, and a seeded one-way PERMANOVA tests group separation."""
+import itertools
+import math
 import os
 
 import matplotlib.pyplot as plt
@@ -18,35 +20,103 @@ def _scale(X):
     return (X - X.mean(0)) / X.std(0, ddof=1)
 
 
+#: Designs with this many distinct labelings or fewer are tested exactly.
+MAX_EXACT = 5000
+
+
+def pm_fstat(g, xs, levels, ss_t):
+    """Pseudo-F of a one-way PERMANOVA on Euclidean distances.
+
+    Args:
+        g: The group label of each row.
+        xs: The scaled data.
+        levels: The group levels.
+        ss_t: The total sum of squares.
+
+    Returns:
+        float: The pseudo-F statistic.
+    """
+    ssw = sum(((xs[g == lv] - xs[g == lv].mean(0)) ** 2).sum() for lv in levels if (g == lv).any())
+    return ((ss_t - ssw) / (len(levels) - 1)) / (ssw / (len(xs) - len(levels)))
+
+
+def pm_assignments(idx, sizes):
+    """Every distinct way to split the row indices into groups of the given sizes.
+
+    Args:
+        idx: The row indices still to assign.
+        sizes: The size of each remaining group.
+
+    Returns:
+        list: Each item is a list of index tuples, one tuple per group.
+    """
+    if len(sizes) == 1:
+        return [[tuple(idx)]]
+    out = []
+    for first in itertools.combinations(idx, sizes[0]):
+        rest_idx = [i for i in idx if i not in first]
+        for rest in pm_assignments(rest_idx, sizes[1:]):
+            out.append([first] + rest)
+    return out
+
+
 def _permanova(Xs, groups, nperm=999, seed=1):
-    levels = list(pd.unique(groups))
-    n, a = len(Xs), len(levels)
+    """One-way PERMANOVA, exact for small designs, as the R engine runs it.
 
-    def ssw(g):
-        return sum(((Xs[g == lv] - Xs[g == lv].mean(0)) ** 2).sum()
-                   for lv in levels if (g == lv).any())
+    A design with MAX_EXACT distinct labelings or fewer is tested by enumerating
+    every labeling, so both engines report the same P. A larger design takes
+    seeded random permutations, whose P differs between the engines.
 
-    ss_t = ((Xs - Xs.mean(0)) ** 2).sum()
+    Args:
+        Xs: The scaled data.
+        groups: The group label of each row.
+        nperm: The count of random permutations for a large design.
+        seed: The random seed.
 
-    def fstat(g):
-        w = ssw(g)
-        return ((ss_t - w) / (a - 1)) / (w / (n - a))
-
-    obs = fstat(groups)
+    Returns:
+        tuple: F, P, the method ("exact" or "monte carlo") and the count of
+        labelings or permutations.
+    """
+    levels = sorted(pd.unique(groups))
+    sizes = [int((groups == lv).sum()) for lv in levels]
+    ss_t = float(((Xs - Xs.mean(0)) ** 2).sum())
+    obs = pm_fstat(groups, Xs, levels, ss_t)
+    log_n = math.lgamma(len(groups) + 1) - sum(math.lgamma(s + 1) for s in sizes)
+    if math.exp(log_n) <= MAX_EXACT:
+        fs = []
+        for assignment in pm_assignments(list(range(len(groups))), sizes):
+            g = np.empty(len(groups), dtype=object)
+            for lv, members in zip(levels, assignment):
+                g[list(members)] = lv
+            fs.append(pm_fstat(g, Xs, levels, ss_t))
+        fs = np.asarray(fs)
+        return float(obs), float(np.mean(fs >= obs - 1e-9 * abs(obs))), "exact", len(fs)
     rng = np.random.RandomState(seed)
-    ge = sum(fstat(rng.permutation(groups)) >= obs for _ in range(nperm))
-    return float(obs), float((ge + 1) / (nperm + 1))
+    ge = sum(pm_fstat(rng.permutation(groups), Xs, levels, ss_t) >= obs for _ in range(nperm))
+    return float(obs), float((ge + 1) / (nperm + 1)), "monte carlo", nperm
 
 
 def _ellipse(ax, x, y, color, level=0.95):
-    if len(x) < 3:
+    """Draw the normal-theory ellipse of ggplot2's stat_ellipse(type = "norm").
+
+    The radius is sqrt(2 * F(level; 2, n - 1)) on the sample covariance, and a
+    group of fewer than four points gets no ellipse, as in ggplot2.
+
+    Args:
+        ax: The axes.
+        x: The PC1 scores of the group.
+        y: The PC2 scores of the group.
+        color: The edge colour.
+        level: The confidence level.
+    """
+    if len(x) < 4:
         return
     cov = np.cov(x, y)
     vals, vecs = np.linalg.eigh(cov)
     order = vals.argsort()[::-1]
     vals, vecs = vals[order], vecs[:, order]
     theta = np.degrees(np.arctan2(vecs[1, 0], vecs[0, 0]))
-    scale = np.sqrt(ss.chi2.ppf(level, 2))
+    scale = np.sqrt(2 * ss.f.ppf(level, 2, len(x) - 1))
     w, h = 2 * scale * np.sqrt(np.maximum(vals, 0))
     ax.add_patch(Ellipse((x.mean(), y.mean()), w, h, angle=theta,
                          fill=False, edgecolor=color, lw=1.0))
@@ -81,10 +151,10 @@ def recipe_pca(df, spec):
     ve = (S ** 2) / np.sum(S ** 2) * 100
     pc1, pc2 = scores[:, 0], scores[:, 1]
 
-    fstat, pval = _permanova(Xs, groups, 999, 1)
+    fstat, pval, pm_method, pm_count = _permanova(Xs, groups, 999, 1)
 
     ap = spec["appearance"]
-    levels = list(pd.unique(groups))
+    levels = sorted(pd.unique(groups))
     pal = palette(len(levels), ap.get("palette"))
     w, h = 5.2, 4.6
     fig, ax = plt.subplots(figsize=(w, h))
@@ -109,8 +179,9 @@ def recipe_pca(df, spec):
     test_meta = {"name": "PCA with PERMANOVA",
                  "pc1_variance_pct": float(ve[0]), "pc2_variance_pct": float(ve[1]),
                  "n_samples": int(X.shape[0]), "n_features": int(X.shape[1]),
-                 "permanova": {"statistic_F": fstat, "p_value": pval, "permutations": 999}}
-    methods = _methods(X.shape[0], X.shape[1], ve, fstat, pval)
+                 "permanova": {"statistic_F": fstat, "p_value": pval, "method": pm_method,
+                               "permutations": pm_count}}
+    methods = _methods(X.shape[0], X.shape[1], ve, fstat, pval, pm_method, pm_count)
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": df[keepr].reset_index(drop=True), "clean_steps": steps,
@@ -120,14 +191,30 @@ def recipe_pca(df, spec):
     }
 
 
-def _methods(n_samp, n_feat, ve, fstat, pval):
+def pm_text(method, count):
+    """Describe the PERMANOVA route for the methods paragraph.
+
+    Args:
+        method: "exact" or "monte carlo".
+        count: The count of labelings or permutations.
+
+    Returns:
+        str: The phrase, as the R engine writes it.
+    """
+    if method == "exact":
+        return f"exact test over all {count} distinct labelings"
+    return f"{count} seeded random permutations"
+
+
+def _methods(n_samp, n_feat, ve, fstat, pval, pm_method, pm_count):
     from importlib.metadata import version as v
     import platform
     return (
         f"Principal component analysis was run on {n_samp} samples by {n_feat} centered and scaled "
         f"features. PC1 and PC2 explained {ve[0]:.1f}% and {ve[1]:.1f}% of the variance and are "
-        "shown with 95% confidence ellipses per group. Group separation was tested with a one-way "
-        f"PERMANOVA on Euclidean distances (999 permutations): F = {fstat:.2f}, p = {pval:.2g}. "
+        "shown with 95% normal-theory confidence ellipses per group (drawn for groups of four "
+        "samples or more). Group separation was tested with a one-way PERMANOVA on Euclidean "
+        f"distances ({pm_text(pm_method, pm_count)}): F = {fstat:.2f}, p = {pval:.2g}. "
         f"Drawn in Python {platform.python_version()} with matplotlib {v('matplotlib')}."
     )
 

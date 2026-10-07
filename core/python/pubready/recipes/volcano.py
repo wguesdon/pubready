@@ -62,13 +62,17 @@ def recipe_volcano(df, spec):
     passp = p <= pcc
     cat = np.where(passfc & passp, "FC and p", np.where(passp, "p", np.where(passfc, "FC", "NS")))
     colors = {"NS": "grey", "FC": "#2E8B57", "p": "#3B6DB3", "FC and p": "#C1432B"}
+    # The legend and the y axis name the p column the threshold reads, as in R.
+    plab = "p" if p_col in _P else p_col
+    legend = {"NS": "NS", "FC": "FC", "p": plab, "FC and p": f"FC and {plab}"}
 
     w, h = 6.0, 5.6
     fig, ax = new_fig(w, h)
     for c in ("NS", "FC", "p", "FC and p"):
         m = cat == c
         if m.any():
-            ax.scatter(fc[m], neglog[m], s=10, alpha=0.7, c=colors[c], label=c, edgecolors="none")
+            ax.scatter(fc[m], neglog[m], s=10, alpha=0.7, c=colors[c], label=legend[c],
+                       edgecolors="none")
     ax.axvline(-fcc, ls="--", lw=0.6, color="grey")
     ax.axvline(fcc, ls="--", lw=0.6, color="grey")
     ax.axhline(-np.log10(pcc), ls="--", lw=0.6, color="grey")
@@ -87,7 +91,7 @@ def recipe_volcano(df, spec):
         pass
 
     ax.set_xlabel(ap.get("x_label") or "log2 fold change")
-    ax.set_ylabel(ap.get("y_label") or "-log10 p")
+    ax.set_ylabel(ap.get("y_label") or f"-log10 {plab}")
     if ap.get("title"):
         ax.set_title(ap["title"], fontweight="bold")
     apply_pub_style(ax, ap.get("theme"))

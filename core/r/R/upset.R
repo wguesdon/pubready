@@ -37,7 +37,12 @@ recipe_upset <- function(df, spec) {
   df_used <- data.frame(element = rownames(bin), bin, check.names = FALSE)
 
   m <- ComplexHeatmap::make_comb_mat(bin)
-  draw_fn <- function() ComplexHeatmap::draw(ComplexHeatmap::UpSet(m))
+  # Intersections sorted by size with the count on each bar, as an UpSet plot is
+  # read and as the Python engine draws it; ComplexHeatmap orders them by degree.
+  up <- ComplexHeatmap::UpSet(
+    m, comb_order = order(ComplexHeatmap::comb_size(m), decreasing = TRUE),
+    top_annotation = ComplexHeatmap::upset_top_annotation(m, add_numbers = TRUE))
+  draw_fn <- function() ComplexHeatmap::draw(up)
 
   ss <- ComplexHeatmap::set_size(m)
   cs <- ComplexHeatmap::comb_size(m)
@@ -103,7 +108,8 @@ recipe_upset <- function(df, spec) {
     "m <- make_comb_mat(bin)",
     "",
     sprintf('cairo_pdf("%s.pdf", width = 7, height = 4.5)', fig_stub),
-    "draw(UpSet(m)); dev.off()",
+    "draw(UpSet(m, comb_order = order(comb_size(m), decreasing = TRUE),",
+    "           top_annotation = upset_top_annotation(m, add_numbers = TRUE))); dev.off()",
     'cat("Reproduced figure.\\n")'
   )
 }

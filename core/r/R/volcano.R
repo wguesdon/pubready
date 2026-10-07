@@ -25,6 +25,16 @@
     })
 }
 
+# The legend and the y axis name the p column that the threshold reads, so an
+# adjusted p (padj, FDR) is not shown as "p". A raw p column keeps "p".
+.volcano_raw_p <- c("pvalue", "P.Value", "PValue", "p_value", "pval", "p.value")
+
+.volcano_p_label <- function(p_col) if (p_col %in% .volcano_raw_p) "p" else p_col
+
+.volcano_legend <- function(plab) {
+  c(NS = "NS", FC = "FC", p = plab, `FC and p` = paste("FC and", plab))
+}
+
 recipe_volcano <- function(df, spec) {
   cols <- .volcano_columns(df, spec)
   if (is.na(cols$fc)) stop("volcano: no log2 fold-change column found; set it with --x")
@@ -50,6 +60,7 @@ recipe_volcano <- function(df, spec) {
   topn <- spec$appearance$top_n %||% 15
 
   neglog <- -log10(p)
+  plab <- .volcano_p_label(cols$p)
   passfc <- abs(fc) >= fcc
   passp  <- p <= pcc
   cat <- ifelse(passfc & passp, "FC and p", ifelse(passp, "p", ifelse(passfc, "FC", "NS")))
@@ -67,17 +78,18 @@ recipe_volcano <- function(df, spec) {
 
   p_plot <- ggplot2::ggplot(pdat, ggplot2::aes(x = fc, y = neglog, colour = cat)) +
     ggplot2::geom_point(size = 1.4, alpha = 0.7) +
-    ggplot2::scale_colour_manual(values = pal, drop = FALSE, name = NULL) +
+    ggplot2::scale_colour_manual(values = pal, labels = .volcano_legend(plab), drop = FALSE,
+                                 name = NULL) +
     ggplot2::geom_vline(xintercept = c(-fcc, fcc), linetype = "dashed",
                         linewidth = 0.3, colour = "grey40") +
     ggplot2::geom_hline(yintercept = -log10(pcc), linetype = "dashed",
                         linewidth = 0.3, colour = "grey40") +
     ggrepel::geom_text_repel(data = lab_df, ggplot2::aes(label = lab),
                              size = 3, colour = "black", max.overlaps = 20,
-                             min.segment.length = 0, seed = 1) +
+                             min.segment.length = 0, point.padding = 0.3, seed = 1) +
     ggplot2::labs(
       x     = spec$appearance$x_label %||% "log2 fold change",
-      y     = spec$appearance$y_label %||% "-log10 p",
+      y     = spec$appearance$y_label %||% sprintf("-log10 %s", plab),
       title = spec$appearance$title) +
     pub_theme(spec$appearance$theme) +
     ggplot2::theme(legend.position = "bottom")

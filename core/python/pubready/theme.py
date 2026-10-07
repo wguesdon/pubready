@@ -45,6 +45,26 @@ def apply_prism_style(ax):
     return ax
 
 
+def diverging_cmap():
+    """The blue-white-red map of the R heatmaps (#3B6DB3, white, #C1432B).
+
+    Returns:
+        matplotlib.colors.LinearSegmentedColormap: The colour map.
+    """
+    from matplotlib.colors import LinearSegmentedColormap
+    return LinearSegmentedColormap.from_list("pubready_diverging", ["#3B6DB3", "#FFFFFF", "#C1432B"])
+
+
+def significance_cmap():
+    """The blue-to-red map of R's scale_colour_gradient for a significance scale.
+
+    Returns:
+        matplotlib.colors.LinearSegmentedColormap: Blue for low, red for high values.
+    """
+    from matplotlib.colors import LinearSegmentedColormap
+    return LinearSegmentedColormap.from_list("pubready_significance", ["#3B6DB3", "#C1432B"])
+
+
 def plain_tick(value, pos=None):
     """Format a log-axis tick as a plain number (0.1, 1, 10), as ggplot2 does.
 
@@ -56,6 +76,25 @@ def plain_tick(value, pos=None):
         str: The label.
     """
     return f"{value:g}"
+
+
+def log_ticks(lo, hi):
+    """Ticks of the 1-2-5 sequence that cover a positive range, for a log axis.
+
+    Args:
+        lo: The smallest value on the axis.
+        hi: The largest value on the axis.
+
+    Returns:
+        list: The tick positions, at least the two that bracket the range.
+    """
+    seq = [m * 10.0 ** k for k in range(-4, 5) for m in (1, 2, 5)]
+    inside = [v for v in seq if lo <= v <= hi]
+    below = [v for v in seq if v < lo]
+    above = [v for v in seq if v > hi]
+    if len(inside) < 2:
+        inside = ([below[-1]] if below else []) + inside + ([above[0]] if above else [])
+    return inside
 
 
 def plain_log_axis(axis):

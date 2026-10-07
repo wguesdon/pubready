@@ -52,14 +52,15 @@ def recipe_survival_km(df, spec):
 
     res = multivariate_logrank_test(df[t], df[g], df[e])
     lr_p = float(res.p_value)
-    ax.text(0.04, 0.08, f"log-rank p {'< 0.001' if lr_p < 0.001 else '= ' + format(lr_p, '.2g')}",
-            transform=ax.transAxes, fontsize=11)
+    # The log-rank P goes in a subtitle, where no curve can cross it, as in R.
+    ax.set_title("Log-rank P < 0.001" if lr_p < 0.001 else f"Log-rank P = {lr_p:.2g}",
+                 fontsize=10, color="#4d4d4d")
     ax.set_xlabel(spec["appearance"].get("x_label") or "Time")
     ax.set_ylabel(spec["appearance"].get("y_label") or "Survival probability")
     ax.set_ylim(0, 1.02)
     ax.legend(title=g, frameon=False, fontsize=10)
     apply_pub_style(ax, spec["appearance"].get("theme"))
-    add_at_risk_counts(*kmfs, ax=ax)
+    add_at_risk_counts(*kmfs, ax=ax, rows_to_show=["At risk"])
     fig.tight_layout()
 
     stats_df = pd.DataFrame(rows)
@@ -113,11 +114,11 @@ for i, grp in enumerate(order):
     kmfs.append(kmf)
 res = multivariate_logrank_test(df["{t}"], df["{g}"], df["{e}"])
 p = res.p_value
-ax.text(0.04, 0.08, "log-rank p " + ("< 0.001" if p < 0.001 else "= %.2g" % p), transform=ax.transAxes, fontsize=11)
+ax.set_title("Log-rank P < 0.001" if p < 0.001 else "Log-rank P = %.2g" % p, fontsize=10)
 ax.set_xlabel("{spec['appearance'].get('x_label') or 'Time'}"); ax.set_ylabel("{spec['appearance'].get('y_label') or 'Survival probability'}")
 ax.set_ylim(0, 1.02); ax.legend(title="{g}", frameon=False)
 for s in ("top", "right"): ax.spines[s].set_visible(False)
-add_at_risk_counts(*kmfs, ax=ax)
+add_at_risk_counts(*kmfs, ax=ax, rows_to_show=["At risk"])
 fig.tight_layout(); fig.savefig("{fig_stub}.pdf")
 print("Reproduced figure.")
 '''

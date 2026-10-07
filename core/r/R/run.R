@@ -71,24 +71,42 @@ inspect_data <- function(df) {
   list(n_rows = nrow(df), n_cols = ncol(df), columns = cols)
 }
 
+# A wide table (a matrix of genes, for example) would print one line per column
+# and a candidate list hundreds of names long. The text report shows the first
+# columns in full and summarises the rest; --format json keeps every column.
+.inspect_max_cols <- 25
+.inspect_max_names <- 20
+
+.inspect_names <- function(nms) {
+  if (length(nms) <= .inspect_max_names) return(paste(nms, collapse = ", "))
+  sprintf("%s, and %d more", paste(nms[seq_len(.inspect_max_names)], collapse = ", "),
+          length(nms) - .inspect_max_names)
+}
+
 print_inspect <- function(info) {
   cat(sprintf("Rows: %d   Columns: %d\n\n", info$n_rows, info$n_cols))
   group_like <- character(0)
   numeric_cols <- character(0)
-  for (c in info$columns) {
+  for (i in seq_along(info$columns)) {
+    c <- info$columns[[i]]
+    if (!is.null(c$levels) && c$n_unique >= 2 && c$n_unique <= 6) group_like <- c(group_like, c$name)
+    if (!is.null(c$mean)) numeric_cols <- c(numeric_cols, c$name)
+    if (i > .inspect_max_cols) next
     line <- sprintf("  %-20s %-10s  missing=%d  unique=%d",
                     c$name, c$type, c$n_missing, c$n_unique)
     if (!is.null(c$levels)) {
       line <- paste0(line, "  levels: ", paste(unlist(c$levels), collapse = ", "))
-      if (c$n_unique >= 2 && c$n_unique <= 6) group_like <- c(group_like, c$name)
     }
     if (!is.null(c$mean)) {
       line <- paste0(line, sprintf("  [%.3g .. %.3g, mean %.3g]", c$min, c$max, c$mean))
-      numeric_cols <- c(numeric_cols, c$name)
     }
     cat(line, "\n")
   }
+  hidden <- length(info$columns) - .inspect_max_cols
+  if (hidden > 0) {
+    cat(sprintf("  ... and %d more column(s); use --format json for every column.\n", hidden))
+  }
   cat("\n")
-  if (length(group_like)) cat("Candidate grouping columns (x): ", paste(group_like, collapse = ", "), "\n")
-  if (length(numeric_cols)) cat("Candidate outcome columns  (y): ", paste(numeric_cols, collapse = ", "), "\n")
+  if (length(group_like)) cat("Candidate grouping columns (x): ", .inspect_names(group_like), "\n")
+  if (length(numeric_cols)) cat("Candidate outcome columns  (y): ", .inspect_names(numeric_cols), "\n")
 }

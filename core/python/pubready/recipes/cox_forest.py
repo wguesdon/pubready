@@ -6,8 +6,28 @@ import numpy as np
 import pandas as pd
 from lifelines import CoxPHFitter
 
-from ..theme import apply_pub_style
+from ..theme import apply_pub_style, log_ticks, plain_log_axis
 from ..util import format_p
+
+
+def forest_stars(p):
+    """The significance stars of survminer::ggforest, which the R engine draws.
+
+    ggforest stops at three stars, so a P below 1e-4 keeps "***" here as well.
+
+    Args:
+        p: The P value of one term.
+
+    Returns:
+        str: "***", "**", "*" or an empty string.
+    """
+    if p < 0.001:
+        return "***"
+    if p < 0.01:
+        return "**"
+    if p < 0.05:
+        return "*"
+    return ""
 
 
 def recipe_cox_forest(df, spec):
@@ -35,12 +55,14 @@ def recipe_cox_forest(df, spec):
 
     # Build a numeric design matrix; one-hot encode categoricals (drop first = reference).
     design = df[[t, e]].copy()
+    display = {}
     for c in covs:
         s = df[c]
         if s.dtype == object or str(s.dtype).startswith("category") or not np.issubdtype(s.dtype, np.number):
             cats = sorted(s.astype(str).unique())
             for lvl in cats[1:]:
                 design[f"{c}{lvl}"] = (s.astype(str) == lvl).astype(int)
+                display[f"{c}{lvl}"] = f"{c}: {lvl}"
         else:
             design[c] = pd.to_numeric(s, errors="coerce")
 
@@ -71,12 +93,15 @@ def recipe_cox_forest(df, spec):
                 capsize=3, ms=6, lw=1.0)
     ax.axvline(1.0, ls=":", color="grey")
     ax.set_xscale("log")
+    ax.set_xticks(log_ticks(float(np.min(lo)), float(np.max(hi))))
+    plain_log_axis(ax.xaxis)
     ax.set_yticks(yy)
-    ax.set_yticklabels(terms)
+    ax.set_yticklabels([display.get(term, term) for term in terms])
     ax.set_ylim(-0.6, n - 0.4)
     ax.set_xlabel("Hazard ratio (95% CI)")
     for y_, h_, l_, u_, p_ in zip(yy, hr, lo, hi, pv):
-        star = " *" if p_ < 0.05 else ""
+        star = forest_stars(p_)
+        star = " " + star if star else ""
         ax.annotate(f"{h_:.2f} ({l_:.2f}–{u_:.2f})   P {format_p(p_) if p_ < 0.001 else '= ' + format(p_, '.2g')}{star}",
                     xy=(1.02, y_), xycoords=("axes fraction", "data"), va="center", fontsize=8)
     ax.set_title("Hazard ratio", fontweight="bold")

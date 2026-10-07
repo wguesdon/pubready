@@ -1,7 +1,7 @@
 # Recipe: dot plot of GSEA / ORA enrichment results, clusterProfiler style.
 # Input is an enrichment table; common column names are auto-detected. When an
 # NES column is present the plot is a GSEA dot plot (x = NES); otherwise an ORA
-# dot plot (x = gene ratio). Dot color encodes the adjusted p, size the gene
+# dot plot (x = gene ratio). Dot color encodes -log10 of the adjusted p, size the gene
 # count. Descriptive: no test is run here, the enrichment is computed upstream.
 
 .enrich_columns <- function(df, spec) {
@@ -58,12 +58,14 @@ recipe_enrichment_dot <- function(df, spec) {
 
   p <- ggplot2::ggplot(pd, ggplot2::aes(x = x, y = term))
   p <- if (has_size) {
-    p + ggplot2::geom_point(ggplot2::aes(size = count, colour = padj))
+    p + ggplot2::geom_point(ggplot2::aes(size = count, colour = -log10(padj)))
   } else {
-    p + ggplot2::geom_point(ggplot2::aes(colour = padj), size = 3)
+    p + ggplot2::geom_point(ggplot2::aes(colour = -log10(padj)), size = 3)
   }
   p <- p +
-    ggplot2::scale_colour_gradient(low = "#C1432B", high = "#3B6DB3", name = "p.adjust") +
+    # Colour by -log10 of the adjusted p: the values span orders of magnitude, so
+    # a linear scale would paint almost every term the same colour.
+    ggplot2::scale_colour_gradient(low = "#3B6DB3", high = "#C1432B", name = "-log10 p.adjust") +
     ggplot2::scale_size_continuous(name = "count") +
     ggplot2::labs(x = spec$appearance$x_label %||% xlab_default, y = NULL,
                   title = spec$appearance$title) +
@@ -99,7 +101,8 @@ recipe_enrichment_dot <- function(df, spec) {
   paste0(
     sprintf("The top %d of %d enriched terms from a %s analysis were shown as a dot plot. ",
             n_shown, n_total, kind),
-    sprintf("The x-axis is %s, dot color the adjusted p-value, and dot size the gene count. ", xlab),
+    sprintf(paste("The x-axis is %s, dot color the -log10 of the adjusted p-value, and dot size",
+                  "the gene count. "), xlab),
     "The enrichment analysis was performed upstream; this figure summarises its output. ",
     sprintf("Drawn in R %s with ggplot2 %s.", rver, v$ggplot2))
 }
@@ -125,8 +128,8 @@ recipe_enrichment_dot <- function(df, spec) {
     xline,
     sprintf('d <- d[order(d$padj), ][seq_len(min(%d, nrow(d))), ]', topn),
     "d$term <- factor(d$term, levels = d$term[order(d$x)])",
-    'p <- ggplot(d, aes(x, term)) + geom_point(aes(size = count, colour = padj)) +',
-    '  scale_colour_gradient(low = "#C1432B", high = "#3B6DB3") + labs(x = xlab, y = NULL) + theme_classic()',
+    'p <- ggplot(d, aes(x, term)) + geom_point(aes(size = count, colour = -log10(padj))) +',
+    '  scale_colour_gradient(low = "#3B6DB3", high = "#C1432B", name = "-log10 p.adjust") + labs(x = xlab, y = NULL) + theme_classic()',
     paste0("p <- p", vline),
     sprintf('ggsave("%s.pdf", p, width = 7.2, height = 6)', fig_stub),
     'cat("Reproduced figure.\\n")'

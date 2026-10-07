@@ -91,6 +91,56 @@ tag move together.
   hold, so the call failed and the guard wrote `NA`. The rank-biserial
   correlation is now computed from the U statistic in both engines, with the
   sign that says which group ranks lower.
+- A review of the figures of the nine real-data cases found the defects below.
+  Each one changes a figure, and some also change a stats table or a methods
+  paragraph.
+- The Python `heatmap` put white at the middle of the data range and not at zero.
+  On the airway genes, white fell at z = 0.19. The figure also showed only the
+  first annotation column, drew no dendrogram, hid part of the gene names and
+  clustered with average linkage, while R uses complete linkage. The Python
+  figure now uses the R colors and the R limits of -2 and 2 on the z-score, every
+  annotation column with a legend, both dendrograms, complete linkage and every
+  row label. When PyComplexHeatmap fails and seaborn draws the figure, the
+  manifest records the reason in `fallback_reason`.
+- The Python `correlation_heatmap` clustered with average linkage, which is the
+  seaborn default, so the two engines could order the variables differently.
+  Python now uses complete linkage and the R colors.
+- `enrichment_dot` colored the dots by the adjusted p on a linear scale. The
+  values span orders of magnitude, so almost every term had the same color. Both
+  engines now color by -log10 of the adjusted p, and the methods paragraph says
+  so. The Python stats table listed the terms in the plot order; it now lists
+  them in the order of the adjusted p, as R does. Ties keep the row order in both
+  engines.
+- `volcano` labelled the legend and the y axis with "p" when the y column held an
+  adjusted p, such as `padj`. The legend and the axis now name the column, for
+  example "FC and padj" and "-log10 padj".
+- The two engines drew different `pca` figures. R drew the multivariate t ellipse
+  of `stat_ellipse`, and Python drew a chi-squared ellipse. Both engines now draw
+  the normal-theory ellipse of `stat_ellipse(type = "norm")` for each group of
+  four samples or more. R sorted the groups by the locale and Python kept the
+  order of the file. Both engines now sort the groups by code point, so a group
+  keeps one color.
+- The `pca` PERMANOVA drew 999 random labelings even when the design has fewer
+  distinct labelings, for example 70 for two groups of four. The test is now
+  exact when there are 5000 labelings or fewer, and the methods paragraph names
+  the form that ran. On the airway samples both engines give p = 2/70 = 0.029.
+- The log-rank P of `survival_km` sat inside the plot panel, where a curve could
+  cross it. Both engines now put it in a subtitle. The Python number-at-risk table
+  also showed the censored and the event counts, which is three rows for each
+  group where R shows one. It now shows the number at risk only.
+- The Python `cox_forest` labelled its log axis in powers of ten, named each term
+  by its model name, such as `celltypelarge`, and gave one star to every P below
+  0.05. It now labels the axis with plain numbers such as 0.5 and 2, writes
+  `celltype: large`, and grades the stars as survminer's `ggforest` does in R,
+  up to three stars.
+- The R `upset` sorted the intersections by degree and printed no count on the
+  bars. It now sorts them by size and prints each count, as the Python engine
+  does. The Python figure cut the set names on the left, because the bundle
+  writer reset the figure to its starting size after upsetplot had widened it.
+- `figkit inspect` printed one line for every column of a wide table, which was
+  508 lines for the airway PCA matrix. The text report now shows the first 25
+  columns and counts the rest, and each candidate list stops at 20 names.
+  `--format json` still gives every column.
 
 ### Changed
 - The two engines report the same numbers on the two-group and paired recipes.

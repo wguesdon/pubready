@@ -153,8 +153,10 @@ These recipes show structure rather than run an inferential test:
   clustered, with Benjamini-Hochberg-adjusted significance stars.
 - `volcano`, `enrichment_dot`, `upset` — descriptive; any differential or
   enrichment test is upstream of the figure.
-- `pca` — PCA scatter with 95% ellipses; group separation is tested with a seeded
-  PERMANOVA and its p is reported.
+- `pca` — PCA scatter with 95% normal-theory ellipses for each group of four
+  samples or more. Group separation is tested with a PERMANOVA. The test is exact
+  when the design has 5000 labelings or fewer, and it uses 999 seeded permutations
+  otherwise.
 - `spider_response` — the change from baseline of each patient over time, one
   line per patient, with the RECIST 1.1 reference lines at +20% and -30%. The
   stats table carries the best and the worst change of each patient and the

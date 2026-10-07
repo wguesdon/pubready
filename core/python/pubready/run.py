@@ -40,21 +40,55 @@ def inspect_data(df):
     return {"n_rows": int(len(df)), "n_cols": int(df.shape[1]), "columns": cols}
 
 
+#: A wide table shows this many columns in full in the text report.
+INSPECT_MAX_COLS = 25
+#: A candidate list shows this many names before it counts the rest.
+INSPECT_MAX_NAMES = 20
+
+
+def inspect_names(names):
+    """Join column names, and count the ones past the display limit.
+
+    Args:
+        names: The column names.
+
+    Returns:
+        str: The joined names, as the R engine prints them.
+    """
+    if len(names) <= INSPECT_MAX_NAMES:
+        return ", ".join(names)
+    return f"{', '.join(names[:INSPECT_MAX_NAMES])}, and {len(names) - INSPECT_MAX_NAMES} more"
+
+
 def print_inspect(info):
+    """Print the text report of figkit inspect.
+
+    A wide table shows its first columns in full and summarises the rest, so a
+    gene matrix does not print hundreds of lines; --format json keeps every column.
+
+    Args:
+        info: The inspection result of inspect_data.
+    """
     print(f"Rows: {info['n_rows']}   Columns: {info['n_cols']}\n")
     groups, nums = [], []
-    for c in info["columns"]:
+    for i, c in enumerate(info["columns"]):
+        if "levels" in c and 2 <= c["n_unique"] <= 6:
+            groups.append(c["name"])
+        if "mean" in c:
+            nums.append(c["name"])
+        if i >= INSPECT_MAX_COLS:
+            continue
         line = f"  {c['name']:<20} {c['type']:<10}  missing={c['n_missing']}  unique={c['n_unique']}"
         if "levels" in c:
             line += "  levels: " + ", ".join(c["levels"])
-            if 2 <= c["n_unique"] <= 6:
-                groups.append(c["name"])
         if "mean" in c:
             line += f"  [{c['min']:.3g} .. {c['max']:.3g}, mean {c['mean']:.3g}]"
-            nums.append(c["name"])
         print(line)
+    hidden = len(info["columns"]) - INSPECT_MAX_COLS
+    if hidden > 0:
+        print(f"  ... and {hidden} more column(s); use --format json for every column.")
     print()
     if groups:
-        print("Candidate grouping columns (x): ", ", ".join(groups))
+        print("Candidate grouping columns (x): ", inspect_names(groups))
     if nums:
-        print("Candidate outcome columns  (y): ", ", ".join(nums))
+        print("Candidate outcome columns  (y): ", inspect_names(nums))

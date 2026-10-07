@@ -12,6 +12,7 @@ from scipy import stats as ss
 from statsmodels.stats.multitest import multipletests
 
 from ..bundle import slugify
+from ..theme import diverging_cmap
 
 
 def recipe_correlation_heatmap(df, spec):
@@ -75,7 +76,7 @@ def recipe_correlation_heatmap(df, spec):
     h = max(4.5, 1.2 + 0.55 * k)
 
     grid = sns.clustermap(
-        M, cmap="RdBu_r", center=0, vmin=-1, vmax=1,
+        M, cmap=diverging_cmap(), center=0, vmin=-1, vmax=1, method="complete",
         row_cluster=row_c, col_cluster=col_c,
         annot=labels, fmt="", annot_kws={"size": 7},
         figsize=(w, h), cbar_kws={"label": "correlation"},
