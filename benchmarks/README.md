@@ -66,6 +66,9 @@ podman run --rm -v "$PWD":/work -w /work localhost/pubready:<version> \
 | `veteran_km` | `veteran.csv` | `survival_km --x celltype` | `survival::survdiff` |
 | `veteran_cox` | `veteran.csv` | `cox_forest` | `survival::coxph` |
 | `state_correlation_heatmap` | `state_x77.csv` | `correlation_heatmap` | `stats::cor`, `stats::cor.test`, `stats::p.adjust(method = "BH")` |
+| `faithful_distribution` | `faithful.csv` | `distribution --y eruptions` | `stats::shapiro.test`, `mean`, `stats::sd`, `stats::bw.nrd0`, `stats::IQR` |
+| `tooth_growth_distribution` | `tooth_growth.csv` | `distribution --x supp --y len` | `stats::shapiro.test`, `mean`, `stats::sd`, `stats::bw.nrd0` for each supplement |
+| `housing_composition` | `housing.csv` | `composition --id sample --x Sat --y Freq --group Cont` | `stats::wilcox.test` for each satisfaction level, `stats::p.adjust(method = "BH")` |
 
 ## Tolerances
 
@@ -125,6 +128,16 @@ below make a dataset readable by a recipe. Each change is in
   the pubready code. The exporter writes `trt` as `standard` and `test`.
 - **`state_x77.csv`.** The file keeps the column names `Life Exp` and `HS Grad`
   as R distributes them. The case therefore also tests a column name with a space.
+- **`faithful.csv`.** The file keeps the 272 eruptions of `datasets::faithful`
+  as R distributes them. The `distribution` case uses the bimodal `eruptions`
+  column.
+- **`tooth_growth.csv`.** The `tooth_growth_distribution` case reads the file of
+  the factorial case. It describes `len` within each level of `supp`.
+- **`housing.csv`.** The exporter writes the 72 rows of `MASS::housing` with a
+  `sample` column. A sample is one combination of `Infl`, `Type` and `Cont`, so
+  the file holds 24 samples. The categories are the `Sat` levels, the counts are
+  `Freq`, and the group is `Cont`. The reference proportions are `Freq` divided
+  by the sample total.
 
 ## Sources
 
@@ -154,3 +167,5 @@ license of that package applies to the data.
 | `anorexia_ft.csv` | MASS | Hand, D. J., Daly, F., McConway, K., Lunn, D. and Ostrowski, E. eds (1993) A Handbook of Small Data Sets. Chapman and Hall, data set 285. |
 | `veteran.csv` | survival | Kalbfleisch, J. D. and Prentice, R. L. (1980) The Statistical Analysis of Failure Time Data. Wiley. |
 | `state_x77.csv` | datasets | U.S. Department of Commerce, Bureau of the Census (1977) Statistical Abstract of the United States. |
+| `faithful.csv` | datasets | Azzalini, A. and Bowman, A. W. (1990) A look at some data on the Old Faithful geyser. Applied Statistics 39, 357-365. |
+| `housing.csv` | MASS | Madsen, M. (1976) Statistical analysis of multiple contingency tables. Two examples. Scandinavian Journal of Statistics 3, 97-106. |

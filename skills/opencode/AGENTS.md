@@ -69,8 +69,10 @@ If a command reports the image is missing, run `figkit build` first.
 | `forest_meta` | one row per study: estimate and 95% CI or SE | `--y --ci_low --ci_high [--se --label --measure]` | fixed-effect and DerSimonian-Laird pooling, Q, I2, tau2 |
 | `timecourse` | subject, time, value[, group] | `--x --y --id [--group]` | mixed (or repeated-measures) ANOVA, Greenhouse-Geisser when Mauchly rejects |
 | `swimmer` | one row per patient: duration[, status, arm, event times] | `--id --time [--event --group --markers "a,b"]` | descriptive bar per patient, arrows for ongoing courses (no test) |
+| `distribution` | one numeric variable[, group] | `--y [--x]` | descriptive histogram, kernel density and normal fit per group, Shapiro-Wilk (no comparison) |
+| `composition` | sample, category[, count, condition] | `--id --x [--y --group]` | 100% stacked bar per sample, per-category Mann-Whitney or Kruskal-Wallis, BH-adjusted (exploratory) |
 
-Common options: `--engine r|python` (default r), `--geom box|violin|bar|raincloud`,
+Common options: `--engine r|python` (default r), `--geom box|violin|bar|raincloud|interaction` (interaction: `factorial_anova` only),
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
 `pearson|spearman|kendall`; proportions: `chisq|fisher`; timecourse:
 `gg|uncorrected`), `--scale`/`--cluster` (heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n`

@@ -11,9 +11,11 @@ import pytest
 
 from pubready.io import read_tidy
 from pubready.recipes.bland_altman import recipe_bland_altman
+from pubready.recipes.composition import recipe_composition
 from pubready.recipes.correlation import recipe_correlation
 from pubready.recipes.correlation_heatmap import recipe_correlation_heatmap
 from pubready.recipes.cox_forest import recipe_cox_forest
+from pubready.recipes.distribution import recipe_distribution
 from pubready.recipes.dose_response import recipe_dose_response
 from pubready.recipes.enrichment_dot import recipe_enrichment_dot
 from pubready.recipes.factorial_anova import recipe_factorial_anova
@@ -367,3 +369,28 @@ def test_state_x77_correlation_matrix_keeps_spaced_names():
     expect_ref(lm["p_adj"], "state_correlation_heatmap", "padj_murder_life_exp")
     expect_ref(pair_row(res["stats"], "Illiteracy", "Frost", "var1", "var2")["r"],
                "state_correlation_heatmap", "r_illiteracy_frost")
+
+
+def test_faithful_eruption_distribution():
+    res = recipe_distribution(bench_data("faithful"), bench_spec("distribution", y="eruptions"))
+    row = res["stats"].iloc[0]
+    for q in ("shapiro_w", "shapiro_p", "mean", "sd", "bandwidth", "bin_width"):
+        expect_ref(row[q], "faithful_distribution", q)
+
+
+def test_tooth_growth_distribution_by_supplement():
+    res = recipe_distribution(bench_data("tooth_growth"), bench_spec("distribution", x="supp", y="len"))
+    st = res["stats"].set_index("group")
+    for s in ("OJ", "VC"):
+        for q in ("shapiro_w", "shapiro_p", "mean", "sd", "bandwidth"):
+            expect_ref(st.loc[s, q], "tooth_growth_distribution", f"{q}_{s}")
+
+
+def test_housing_composition_mann_whitney_and_bh():
+    res = recipe_composition(bench_data("housing"), bench_spec(
+        "composition", id="sample", x="Sat", y="Freq", group="Cont"))
+    st = res["stats"].drop_duplicates("category").set_index("category")
+    for s in ("Low", "Medium", "High"):
+        expect_ref(st.loc[s, "statistic"], "housing_composition", f"W_{s}")
+        expect_ref(st.loc[s, "p_value"], "housing_composition", f"p_{s}")
+        expect_ref(st.loc[s, "p_adj"], "housing_composition", f"p_adj_{s}")

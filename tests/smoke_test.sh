@@ -298,6 +298,41 @@ else
   echo "FAIL: expected the swimmer per-patient table"; fail=1
 fi
 
+echo "[29] distribution of one variable per group (expect Shapiro-Wilk, no comparison)"
+./cli/figkit plot --recipe distribution --data example/distribution.csv \
+  --x condition --y cell_area_um2 --xlab "Cell area (um^2)" --out "$OUT/dist"
+check_bundle "$OUT/dist" "distribution"
+if compgen -G "$OUT/dist/*/stats_*.csv" > /dev/null && grep -q "shapiro_p" "$OUT"/dist/*/stats_*.csv && \
+   grep -q "Freedman-Diaconis" "$OUT"/dist/*/methods_*.md && grep -q "No test compared the groups" "$OUT"/dist/*/methods_*.md; then
+  echo "PASS: distribution with Freedman-Diaconis bins and Shapiro-Wilk per group"
+else
+  echo "FAIL: expected the distribution summary"; fail=1
+fi
+
+echo "[30] composition of each sample (expect Mann-Whitney per category, BH-adjusted)"
+./cli/figkit plot --recipe composition --data example/composition.csv \
+  --id sample --x cell_type --y n_cells --group condition --out "$OUT/comp"
+check_bundle "$OUT/comp" "composition"
+if compgen -G "$OUT/comp/*/stats_*.csv" > /dev/null && grep -q "Mann-Whitney U test" "$OUT"/comp/*/stats_*.csv && \
+   grep -q "compositional" "$OUT"/comp/*/methods_*.md; then
+  echo "PASS: composition with a per-category Mann-Whitney test"
+else
+  echo "FAIL: expected the per-category Mann-Whitney test"; fail=1
+fi
+
+echo "[31] factorial ANOVA interaction geom (expect the same effects as the box geom)"
+./cli/figkit plot --recipe factorial_anova --data example/twoway_response.csv \
+  --y response --x genotype --fill treatment --ylab "Response (a.u.)" --geom interaction \
+  --out "$OUT/fa_interaction"
+check_bundle "$OUT/fa_interaction" "factorial interaction"
+if compgen -G "$OUT/fa_interaction/*/stats_*.csv" > /dev/null && \
+   grep -q "genotype:treatment" "$OUT"/fa_interaction/*/stats_*.csv && \
+   grep -q "position_dodge(width = 0.25)" "$OUT"/fa_interaction/*/script_*.R; then
+  echo "PASS: interaction plot with the interaction term"
+else
+  echo "FAIL: expected the interaction plot and term"; fail=1
+fi
+
 echo "--- Python engine (all recipes) ---"
 pyc() {  # $1 = short label; rest = plot args
   local label="$1"; shift
@@ -335,6 +370,9 @@ pyc ba      --recipe bland_altman        --data example/method_agreement.csv --x
 pyc meta    --recipe forest_meta         --data example/meta_trials.csv      --y hazard_ratio --ci_low ci_low --ci_high ci_high --label trial
 pyc tc      --recipe timecourse          --data example/tumor_growth.csv     --x day --y volume_mm3 --id mouse --group arm
 pyc swimmer --recipe swimmer             --data example/swimmer_patients.csv --id patient --time months --event ended --group arm --markers response_month,progression_month
+pyc dist    --recipe distribution        --data example/distribution.csv     --x condition --y cell_area_um2
+pyc comp    --recipe composition         --data example/composition.csv      --id sample --x cell_type --y n_cells --group condition
+pyc faint   --recipe factorial_anova     --data example/twoway_response.csv  --y response --x genotype --fill treatment --geom interaction
 
 # Engine parity on the non-parametric paths. Both engines must report the same
 # p-value and the same effect size to six significant digits.
@@ -367,6 +405,8 @@ parity_case mwu --recipe two_group_compare --data example/cytokine_pg_ml.csv \
   --x group --y concentration
 parity_case signed_rank --recipe paired_compare --data example/paired_response.csv \
   --x condition --y value --id subject --test wilcoxon
+parity_case composition --recipe composition --data example/composition.csv \
+  --id sample --x cell_type --y n_cells --group condition
 
 echo
 if [ "$fail" -eq 0 ]; then

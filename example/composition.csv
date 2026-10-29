@@ -1,0 +1,97 @@
+"sample","condition","cell_type","n_cells"
+"ctrl_01","control","CD4 T",972
+"ctrl_01","control","CD8 T",639
+"ctrl_01","control","B",611
+"ctrl_01","control","NK",465
+"ctrl_01","control","classical monocyte",617
+"ctrl_01","control","non-classical monocyte",70
+"ctrl_01","control","cDC",185
+"ctrl_01","control","pDC",41
+"ctrl_02","control","CD4 T",1807
+"ctrl_02","control","CD8 T",900
+"ctrl_02","control","B",752
+"ctrl_02","control","NK",470
+"ctrl_02","control","classical monocyte",1243
+"ctrl_02","control","non-classical monocyte",188
+"ctrl_02","control","cDC",313
+"ctrl_02","control","pDC",6
+"ctrl_03","control","CD4 T",1836
+"ctrl_03","control","CD8 T",428
+"ctrl_03","control","B",485
+"ctrl_03","control","NK",399
+"ctrl_03","control","classical monocyte",901
+"ctrl_03","control","non-classical monocyte",258
+"ctrl_03","control","cDC",147
+"ctrl_03","control","pDC",37
+"ctrl_04","control","CD4 T",1975
+"ctrl_04","control","CD8 T",737
+"ctrl_04","control","B",664
+"ctrl_04","control","NK",323
+"ctrl_04","control","classical monocyte",572
+"ctrl_04","control","non-classical monocyte",331
+"ctrl_04","control","cDC",541
+"ctrl_04","control","pDC",283
+"ctrl_05","control","CD4 T",780
+"ctrl_05","control","CD8 T",626
+"ctrl_05","control","B",653
+"ctrl_05","control","NK",193
+"ctrl_05","control","classical monocyte",559
+"ctrl_05","control","non-classical monocyte",204
+"ctrl_05","control","cDC",216
+"ctrl_05","control","pDC",46
+"ctrl_06","control","CD4 T",1353
+"ctrl_06","control","CD8 T",263
+"ctrl_06","control","B",369
+"ctrl_06","control","NK",253
+"ctrl_06","control","classical monocyte",549
+"ctrl_06","control","non-classical monocyte",376
+"ctrl_06","control","cDC",228
+"ctrl_06","control","pDC",41
+"trt_01","treated","CD4 T",1301
+"trt_01","treated","CD8 T",705
+"trt_01","treated","B",302
+"trt_01","treated","NK",479
+"trt_01","treated","classical monocyte",836
+"trt_01","treated","non-classical monocyte",120
+"trt_01","treated","cDC",42
+"trt_01","treated","pDC",88
+"trt_02","treated","CD4 T",2099
+"trt_02","treated","CD8 T",1885
+"trt_02","treated","B",172
+"trt_02","treated","NK",244
+"trt_02","treated","classical monocyte",860
+"trt_02","treated","non-classical monocyte",442
+"trt_02","treated","cDC",187
+"trt_02","treated","pDC",60
+"trt_03","treated","CD4 T",1052
+"trt_03","treated","CD8 T",552
+"trt_03","treated","B",68
+"trt_03","treated","NK",440
+"trt_03","treated","classical monocyte",590
+"trt_03","treated","non-classical monocyte",130
+"trt_03","treated","cDC",126
+"trt_03","treated","pDC",55
+"trt_04","treated","CD4 T",1459
+"trt_04","treated","CD8 T",1076
+"trt_04","treated","B",427
+"trt_04","treated","NK",521
+"trt_04","treated","classical monocyte",603
+"trt_04","treated","non-classical monocyte",338
+"trt_04","treated","cDC",115
+"trt_04","treated","pDC",481
+"trt_05","treated","CD4 T",1149
+"trt_05","treated","CD8 T",1283
+"trt_05","treated","B",392
+"trt_05","treated","NK",776
+"trt_05","treated","classical monocyte",1032
+"trt_05","treated","non-classical monocyte",541
+"trt_05","treated","cDC",171
+"trt_05","treated","pDC",6
+"trt_06","treated","CD4 T",954
+"trt_06","treated","CD8 T",1195
+"trt_06","treated","B",249
+"trt_06","treated","NK",392
+"trt_06","treated","classical monocyte",631
+"trt_06","treated","non-classical monocyte",184
+"trt_06","treated","cDC",35
+"trt_06","treated","pDC",38

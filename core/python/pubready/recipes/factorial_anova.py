@@ -1,7 +1,12 @@
 """Recipe: two-way / three-way factorial ANOVA (parametric, statsmodels Type II).
 The Python engine has no standard aligned rank transform, so unlike the R engine
 this path is parametric only. Grouped box, faceted by the third factor, with each
-effect's p-value shown on top."""
+effect's p-value shown on top. ``--geom interaction`` draws the interaction plot
+of the same ANOVA instead: the mean +/- SEM of each cell, one line per --fill
+level."""
+import functools
+import textwrap
+
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,18 +14,135 @@ import pandas as pd
 import seaborn as sns
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+from matplotlib.lines import Line2D
+from matplotlib.ticker import MaxNLocator
 
 from ..theme import apply_pub_style, palette
 from ..util import cap_first
 
+# The dodge width of the interaction plot, as position_dodge(0.25) in R.
+INT_DODGE = 0.25
+
 
 def _plab(p):
+    """Format a P value for the subtitle and the methods.
+
+    Args:
+        p: The P value.
+
+    Returns:
+        str: The label.
+    """
     if p is None or (isinstance(p, float) and np.isnan(p)):
         return "P = NA"
     return "P < 0.001" if p < 0.001 else f"P = {p:.2g}"
 
 
+def _clean_term(t, factors):
+    """Turn a statsmodels term such as C(_f0_):C(_f1_) back into column names.
+
+    Args:
+        t: The term.
+        factors: The factor columns, in model order.
+
+    Returns:
+        str: The term with the column names.
+    """
+    for i, f in enumerate(factors):
+        t = t.replace(f"C(_f{i}_)", f)
+    return t
+
+
+def wrap_x(label):
+    """Wrap an --x level on spaces at 12 characters, the lines of the R engine.
+
+    Args:
+        label: The level.
+
+    Returns:
+        str: The wrapped level.
+    """
+    return textwrap.fill(str(label), 12, break_on_hyphens=False, break_long_words=False)
+
+
+def needs_wrap(levels):
+    """Whether any --x level is longer than 12 characters.
+
+    Args:
+        levels: The levels.
+
+    Returns:
+        bool: True when the labels are wrapped.
+    """
+    return any(len(str(lv)) > 12 for lv in levels)
+
+
+def fig_size(x_lv, fill_lv, fill_name, n_facet, has_facet):
+    """The figure size, with the rule of the R engine.
+
+    The width holds every --x level times every --fill level in each panel and
+    the legend, and is never below 5.2 (6.8 with a facet) inches. A wrapped
+    label adds a line of height.
+
+    Args:
+        x_lv: The --x levels.
+        fill_lv: The --fill levels.
+        fill_name: The --fill column, the legend title.
+        n_facet: The number of panels.
+        has_facet: Whether there is a --facet column.
+
+    Returns:
+        tuple: The width and the height in inches.
+    """
+    slot = 0.3 * len(fill_lv) + 0.35
+    legend_w = 0.5 + 0.08 * max(len(str(s)) for s in list(fill_lv) + [fill_name])
+    w = max(6.8 if has_facet else 5.2, 0.9 + n_facet * len(x_lv) * slot + legend_w)
+    lines = max(wrap_x(s).count("\n") + 1 for s in x_lv)
+    h = 4.4 + (0.18 * (lines - 1) if needs_wrap(x_lv) else 0.0)
+    return w, h
+
+
+def _interaction_panel(ax, sub, y, f1, f2, f1_lv, f2_lv, pal):
+    """Draw the interaction plot of one panel: mean +/- SEM per cell.
+
+    Args:
+        ax: The axes.
+        sub: The rows of the panel.
+        y: The outcome column.
+        f1: The --x column.
+        f2: The --fill column.
+        f1_lv: The --x levels.
+        f2_lv: The --fill levels.
+        pal: The colour of each --fill level.
+    """
+    k = len(f2_lv)
+    base = np.arange(len(f1_lv), dtype=float)
+    for i, lv in enumerate(f2_lv):
+        g = sub[sub[f2] == lv].groupby(f1)[y]
+        means = g.mean().reindex(f1_lv).to_numpy(dtype=float)
+        sems = (g.std(ddof=1) / np.sqrt(g.size())).reindex(f1_lv).to_numpy(dtype=float)
+        # The offset of position_dodge(width): (i + 0.5 - k / 2) * width / k.
+        x = base + (i + 0.5 - k / 2) * INT_DODGE / k
+        ok = np.isfinite(means)
+        ax.plot(x[ok], means[ok], color=pal[i], lw=1.6, zorder=2)
+        ax.errorbar(x[ok], means[ok], yerr=np.nan_to_num(sems[ok]), fmt="none", ecolor=pal[i],
+                    elinewidth=1.1, capsize=3, zorder=2)
+        ax.scatter(x[ok], means[ok], s=36, color=pal[i], zorder=3)
+    ax.set_xticks(base)
+    ax.set_xlim(-0.6, len(f1_lv) - 0.4)
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=6, steps=[1, 2, 2.5, 3, 5, 10]))
+
+
 def recipe_factorial_anova(df, spec):
+    """Run a two-way or three-way Type II ANOVA and draw the grouped figure.
+
+    Args:
+        df: The tidy data.
+        spec: The figure specification.
+
+    Returns:
+        dict: The recipe result for the bundle writer.
+    """
     y = spec["data"]["y"]
     f1, f2, f3 = spec["data"]["x"], spec["data"]["fill"], spec["data"].get("facet")
     if not f2:
@@ -51,16 +173,11 @@ def recipe_factorial_anova(df, spec):
     # Partial eta squared, SS_effect / (SS_effect + SS_residual), as the R engine reports.
     ss_res = float(aov.loc["Residual", "sum_sq"])
 
-    def clean_term(t):
-        for i, f in enumerate(factors):
-            t = t.replace(f"C(_f{i}_)", f)
-        return t
-
     rows = []
     for term, r in aov.iterrows():
         if term == "Residual":
             continue
-        rows.append({"effect": clean_term(term), "df1": int(round(r["df"])),
+        rows.append({"effect": _clean_term(term, factors), "df1": int(round(r["df"])),
                      "df2": int(round(aov.loc["Residual", "df"])), "statistic": float(r["F"]),
                      "p_value": float(r["PR(>F)"]),
                      "effect_size": float(r["sum_sq"]) / (float(r["sum_sq"]) + ss_res),
@@ -77,23 +194,34 @@ def recipe_factorial_anova(df, spec):
     f1_lv = sorted(df[f1].unique()); f2_lv = sorted(df[f2].unique())
     pal = palette(len(f2_lv), ap.get("palette"))
     facet_lv = sorted(df[f3].unique()) if f3 else [None]
-    w = (6.8 if f3 else 5.2); h = 4.4
+    geom = ap.get("geom") or "box"
+    w, h = fig_size(f1_lv, f2_lv, f2, len(facet_lv), bool(f3))
+    wrap = needs_wrap(f1_lv)
     fig, axes = plt.subplots(1, len(facet_lv), figsize=(w, h), sharey=True, squeeze=False)
     axes = axes[0]
     for ax, fl in zip(axes, facet_lv):
         sub = df if fl is None else df[df[f3] == fl]
-        sns.boxplot(data=sub, x=f1, y=y, hue=f2, order=f1_lv, hue_order=f2_lv,
-                    palette=pal, ax=ax, width=0.7, fliersize=0, legend=False)
-        if ap.get("show_points", True):
-            sns.stripplot(data=sub, x=f1, y=y, hue=f2, order=f1_lv, hue_order=f2_lv,
-                          dodge=True, palette=pal, ax=ax, size=3, alpha=0.6,
-                          edgecolor="black", linewidth=0.3, legend=False)
+        if geom == "interaction":
+            _interaction_panel(ax, sub, y, f1, f2, f1_lv, f2_lv, pal)
+        else:
+            sns.boxplot(data=sub, x=f1, y=y, hue=f2, order=f1_lv, hue_order=f2_lv,
+                        palette=pal, ax=ax, width=0.7, fliersize=0, legend=False)
+            if ap.get("show_points", True):
+                sns.stripplot(data=sub, x=f1, y=y, hue=f2, order=f1_lv, hue_order=f2_lv,
+                              dodge=True, palette=pal, ax=ax, size=3, alpha=0.6,
+                              edgecolor="black", linewidth=0.3, legend=False)
+        if wrap or geom == "interaction":
+            ax.set_xticklabels([wrap_x(s) if wrap else str(s) for s in f1_lv])
         if fl is not None:
             ax.set_title(str(fl), fontsize=11)
         ax.set_xlabel(ap.get("x_label") or f1)
         ax.set_ylabel(ap.get("y_label") or y if ax is axes[0] else "")
         apply_pub_style(ax, ap.get("theme"))
-    handles = [mpatches.Patch(color=pal[i], label=lvl) for i, lvl in enumerate(f2_lv)]
+    if geom == "interaction":
+        handles = [Line2D([0], [0], color=pal[i], lw=1.6, marker="o", ms=6, label=lvl)
+                   for i, lvl in enumerate(f2_lv)]
+    else:
+        handles = [mpatches.Patch(color=pal[i], label=lvl) for i, lvl in enumerate(f2_lv)]
     axes[-1].legend(handles=handles, title=f2, loc="center left",
                     bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=9)
     fig.suptitle(subtitle, fontsize=9.5, color="#4d4d4d")
@@ -111,11 +239,21 @@ def recipe_factorial_anova(df, spec):
         "fig": fig, "stats": eff, "test_meta": test_meta, "methods": methods,
         "df_used": df, "clean_steps": clean_steps, "width": w, "height": h,
         "qc": {"quantity": "model residuals", "panels": {"residuals": model.resid.to_numpy()}},
-        "build_script": lambda in_name, fig_stub: _script(spec, factors, f1_lv, f2_lv, facet_lv, pal, in_name, fig_stub),
+        "build_script": functools.partial(_script, spec, factors, f1_lv, f2_lv, facet_lv, pal, w, h),
     }
 
 
 def _methods(eff, factors, spec):
+    """Write the methods paragraph.
+
+    Args:
+        eff: The effects table.
+        factors: The factor columns.
+        spec: The figure specification.
+
+    Returns:
+        str: The paragraph.
+    """
     from importlib.metadata import version as v
     import platform
     y_label = spec["appearance"].get("y_label") or spec["data"]["y"]
@@ -132,14 +270,47 @@ def _methods(eff, factors, spec):
     )
 
 
-def _script(spec, factors, f1_lv, f2_lv, facet_lv, pal, in_name, fig_stub):
+def _script(spec, factors, f1_lv, f2_lv, facet_lv, pal, w, h, in_name, fig_stub):
+    """Write the standalone reproduction script.
+
+    Args:
+        spec: The figure specification.
+        factors: The factor columns.
+        f1_lv: The --x levels.
+        f2_lv: The --fill levels.
+        facet_lv: The --facet levels, or [None].
+        pal: The colour of each --fill level.
+        w: The figure width in inches.
+        h: The figure height in inches.
+        in_name: The bundled input file name.
+        fig_stub: The figure file stem.
+
+    Returns:
+        str: The script.
+    """
     y = spec["data"]["y"]; f1, f2 = factors[0], factors[1]
     f3 = factors[2] if len(factors) >= 3 else None
     ap = spec["appearance"]
     facet_line = (f'facet_lv = sorted(df["{f3}"].unique())' if f3 else "facet_lv = [None]")
+    wrap_line = ('\n    ax.set_xticks(range(len(f1_lv))); ax.set_xticklabels([textwrap.fill(s, 12, break_on_hyphens=False) for s in f1_lv])'
+                 if needs_wrap(f1_lv) else "")
+    if (ap.get("geom") or "box") == "interaction":
+        draw = f'''    k = len(f2_lv)
+    for i, lv in enumerate(f2_lv):
+        g = sub[sub["{f2}"] == lv].groupby("{f1}")["{y}"]
+        m = g.mean().reindex(f1_lv); se = (g.std() / g.size() ** 0.5).reindex(f1_lv)
+        x = [j + (i + 0.5 - k / 2) * 0.25 / k for j in range(len(f1_lv))]
+        ax.errorbar(x, m, yerr=se, color={pal}[i], marker="o", capsize=3, label=lv)
+    ax.set_xticks(range(len(f1_lv))); ax.set_xticklabels(f1_lv)'''
+        legend = f'axes[-1].legend(title="{f2}", loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)'
+    else:
+        draw = f'''    sns.boxplot(data=sub, x="{f1}", y="{y}", hue="{f2}", order=f1_lv, hue_order=f2_lv, palette={pal}, ax=ax, width=0.7, fliersize=0, legend=False)
+    sns.stripplot(data=sub, x="{f1}", y="{y}", hue="{f2}", order=f1_lv, hue_order=f2_lv, dodge=True, palette={pal}, ax=ax, size=3, alpha=0.6, edgecolor="black", linewidth=0.3, legend=False)'''
+        legend = f'axes[-1].legend(handles=[mpatches.Patch(color={pal}[i], label=l) for i, l in enumerate(f2_lv)], title="{f2}", loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)'
+    imports = "import textwrap\n" if needs_wrap(f1_lv) else ""
     return f'''#!/usr/bin/env python3
 # Standalone reproduction (parametric ANOVA). Run inside the pinned container.
-import matplotlib; matplotlib.use("Agg")
+{imports}import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt, matplotlib.patches as mpatches
 import pandas as pd, seaborn as sns
 import statsmodels.api as sm, statsmodels.formula.api as smf
@@ -160,16 +331,15 @@ subtitle = "\\n".join("%s: %s" % (t.replace(":", " × "), plab(p)) for t, p in s
 
 f1_lv, f2_lv = {f1_lv}, {f2_lv}
 {facet_line}
-fig, axes = plt.subplots(1, len(facet_lv), figsize=({6.8 if f3 else 5.2}, 4.4), sharey=True, squeeze=False)
+fig, axes = plt.subplots(1, len(facet_lv), figsize=({w:g}, {h:g}), sharey=True, squeeze=False)
 axes = axes[0]
 for ax, fl in zip(axes, facet_lv):
     sub = df if fl is None else df[df["{f3}"] == fl]
-    sns.boxplot(data=sub, x="{f1}", y="{y}", hue="{f2}", order=f1_lv, hue_order=f2_lv, palette={pal}, ax=ax, width=0.7, fliersize=0, legend=False)
-    sns.stripplot(data=sub, x="{f1}", y="{y}", hue="{f2}", order=f1_lv, hue_order=f2_lv, dodge=True, palette={pal}, ax=ax, size=3, alpha=0.6, edgecolor="black", linewidth=0.3, legend=False)
+{draw}{wrap_line}
     if fl is not None: ax.set_title(str(fl))
     ax.set_xlabel("{ap.get('x_label') or f1}"); ax.set_ylabel("{ap.get('y_label') or y}" if ax is axes[0] else "")
     for s in ("top", "right"): ax.spines[s].set_visible(False)
-axes[-1].legend(handles=[mpatches.Patch(color={pal}[i], label=l) for i, l in enumerate(f2_lv)], title="{f2}", loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
+{legend}
 fig.suptitle(subtitle, fontsize=9.5, color="#4d4d4d")
 fig.tight_layout(rect=(0, 0, 1, 0.97)); fig.savefig("{fig_stub}.pdf")
 print("Reproduced figure.")

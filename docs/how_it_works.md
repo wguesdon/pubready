@@ -87,7 +87,7 @@ Common options:
 | `--annotation FILE` | heatmap column annotation CSV |
 | `--test` | force a test instead of `auto` |
 | `--paired` | paired design |
-| `--geom box\|violin\|bar\|raincloud` | figure geometry |
+| `--geom box\|violin\|bar\|raincloud\|interaction` | figure geometry; `interaction` is the interaction plot of `factorial_anova` |
 | `--scale`, `--cluster` | heatmap scaling and clustering |
 | `--id`, `--group`, `--label` | the subject, the grouping and the label columns of the recipes that use them |
 | `--pd_threshold`, `--pr_threshold` | the two RECIST reference lines of `spider_response` and `waterfall`, +20 and -30 by default |
@@ -127,6 +127,8 @@ engines. Pick the engine per figure with `--engine`.
 | `forest_meta` | one row per study: estimate and 95% CI or SE | fixed-effect and DerSimonian-Laird pooling; Cochran's Q, I2, tau2 | forest plot with weighted squares, pooled diamonds and an estimate column |
 | `swimmer` | one row per patient: `duration[, status, arm, event times]` | descriptive (no test) | one bar per patient sorted by duration, arrows for ongoing courses, symbols for events |
 | `timecourse` | `subject, time, value[, group]` | mixed ANOVA (group between, time within) or repeated-measures ANOVA; Greenhouse-Geisser when Mauchly's test rejects sphericity | mean +/- SEM per group over time, one thin line per subject |
+| `distribution` | `value[, group]` | descriptive: moments, quantiles and the Shapiro-Wilk test of each group, no comparison | histogram with Freedman-Diaconis bins, kernel density and normal fit, one panel per group |
+| `composition` | `sample, category[, count, condition]` | Mann-Whitney U or Kruskal-Wallis test of each category on the per-sample proportions, BH-adjusted | one 100% stacked bar per sample, one strip per condition |
 
 ### Test selection
 
@@ -224,7 +226,67 @@ figkit plot --recipe waterfall --data lesions.csv --x week --y lesion_mm --id pa
 # swimmer plot of the time on treatment, with response and progression marks
 figkit plot --recipe swimmer --data patients.csv --id patient --time months --event ended \
   --group arm --markers response_month,progression_month
+
+# the shape of one variable in each group: histogram, kernel density and normal fit
+figkit plot --recipe distribution --data cells.csv --y cell_area_um2 --x condition
+
+# the cell-type composition of each sample, compared between two conditions
+figkit plot --recipe composition --data counts.csv --id sample --x cell_type --y n_cells \
+  --group condition
+
+# the interaction plot of a two-way ANOVA
+figkit plot --recipe factorial_anova --data data.csv --y response --x genotype --fill treatment \
+  --geom interaction
 ```
+
+### The distribution recipe
+
+The `distribution` recipe uses one set of bins for all the groups. The bin width
+comes from the Freedman-Diaconis rule on the pooled values, 2 x IQR x n^(-1/3),
+with type-7 quantiles. When the IQR is zero, the recipe uses the Sturges rule.
+When the rule gives more than 200 bins, the recipe makes the bins wider so that
+200 bins cover the range. The first bin starts at floor(min / width) x width, and
+each bin includes its left edge.
+
+The solid curve is a Gaussian kernel density with the bandwidth of
+`stats::bw.nrd0`. Both engines sum the kernels directly on 512 points from
+min - 3 bw to max + 3 bw. The dashed curve is a normal distribution with the
+sample mean and SD. Both curves show counts, that is the density x n x bin width.
+A panel with 500 values or fewer also shows a rug.
+
+The horizontal axis shows the variable. `--xlab` names it, and `--ylab` names it
+when `--xlab` is absent. The Shapiro-Wilk test runs on 3 to 5000 values. The
+recipe does not compare the groups. Use `two_group_compare` or
+`multi_group_compare` to test a difference.
+
+### The composition recipe
+
+The `composition` recipe sums the counts of each sample and category. Then it
+divides each count by the sample total. Without `--y`, each row counts as one
+observation. A sample must belong to one group. The figure sorts the samples by
+group and then by name, and a trailing number sorts as a number.
+
+With two groups, the recipe compares each category with the Mann-Whitney U test
+on the per-sample proportions. With three or more groups, it uses the
+Kruskal-Wallis test. The Benjamini-Hochberg method adjusts the P values across
+the categories. Stars in the legend mark each category with an adjusted P below
+0.05.
+
+Proportions are compositional, because they sum to one in each sample. A rise in
+one category therefore forces the other categories down. The tests are thus not
+independent, and the methods paragraph calls them exploratory.
+
+### The interaction geom
+
+`--geom interaction` is a geom of `factorial_anova`. It draws the mean +/- SEM of
+each cell, with one line for each `--fill` level across the `--x` levels. The
+lines are dodged by 0.25, so the error bars do not overlap. A `--facet` factor
+gives one panel for each level. The ANOVA, the subtitle and the stats table do not
+change.
+
+For every geom of `factorial_anova`, an `--x` level longer than 12 characters
+wraps on the spaces. The figure width grows with the number of `--x` levels
+multiplied by the number of `--fill` levels.
 
 ## The artifact bundle
 
@@ -280,6 +342,8 @@ the same numbers. The manifest records which engine drew the figure.
 | ROC / DeLong | pROC | the rules of pROC, restated with numpy |
 | meta-analysis | metafor `rma` | statsmodels `combine_effects` |
 | mixed ANOVA | split-plot sums of squares, the GG epsilon and Mauchly's test of car | the same formulas with numpy |
+| histogram and density | Freedman-Diaconis bins, `stats::bw.nrd0`, a direct Gaussian kernel sum | the same bins, bandwidth and kernel sum with numpy |
+| composition tests | `stats::wilcox.test`, `stats::kruskal.test`, `stats::p.adjust` | the `wilcox.test` p-value rule restated, `scipy.stats.kruskal`, the BH rule restated |
 
 Where Python has no faithful equivalent, pubready routes you to R rather than
 running something different. The one current case is the aligned rank transform

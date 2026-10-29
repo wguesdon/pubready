@@ -330,3 +330,34 @@ test_that("state.x77: the correlation matrix keeps the column names with a space
   expect_ref(var_pair_row(res$stats, "Illiteracy", "Frost")$r, "state_correlation_heatmap",
              "r_illiteracy_frost")
 })
+
+test_that("faithful: the eruption summary matches shapiro.test, sd, bw.nrd0 and the FD width", {
+  bench_skip()
+  res <- recipe_distribution(bench_data("faithful"), bench_spec("distribution", y = "eruptions"))
+  for (q in c("shapiro_w", "shapiro_p", "mean", "sd", "bandwidth", "bin_width")) {
+    expect_ref(res$stats[[q]], "faithful_distribution", q)
+  }
+})
+
+test_that("ToothGrowth: the length within each supplement matches shapiro.test and bw.nrd0", {
+  bench_skip()
+  res <- recipe_distribution(bench_data("tooth_growth"), bench_spec("distribution", x = "supp", y = "len"))
+  for (s in c("OJ", "VC")) {
+    r <- res$stats[res$stats$group == s, ]
+    for (q in c("shapiro_w", "shapiro_p", "mean", "sd", "bandwidth")) {
+      expect_ref(r[[q]], "tooth_growth_distribution", paste0(q, "_", s))
+    }
+  }
+})
+
+test_that("housing (Madsen 1976): the per-category Mann-Whitney tests match wilcox.test and p.adjust", {
+  bench_skip()
+  res <- recipe_composition(bench_data("housing"),
+                            bench_spec("composition", id = "sample", x = "Sat", y = "Freq", group = "Cont"))
+  for (s in c("Low", "Medium", "High")) {
+    r <- res$stats[res$stats$category == s, ][1, ]
+    expect_ref(r$statistic, "housing_composition", paste0("W_", s))
+    expect_ref(r$p_value, "housing_composition", paste0("p_", s))
+    expect_ref(r$p_adj, "housing_composition", paste0("p_adj_", s))
+  }
+})
