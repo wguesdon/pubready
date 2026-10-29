@@ -2,6 +2,7 @@
 Mirrors the R recipe: correlation matrix drawn as a seaborn clustermap with
 dendrograms, each cell showing the coefficient and BH-adjusted stars. Pearson by
 default; --test spearman|kendall."""
+import inspect
 import os
 
 import matplotlib.pyplot as plt
@@ -9,11 +10,13 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy import stats as ss
+from scipy.cluster import hierarchy
 from statsmodels.stats.multitest import multipletests
 
 from ..bundle import slugify
 from ..theme import diverging_cmap
 from ..util import cap_first
+from .heatmap import ordered_linkage
 
 
 def recipe_correlation_heatmap(df, spec):
@@ -75,10 +78,19 @@ def recipe_correlation_heatmap(df, spec):
     col_c = cluster in ("both", "columns")
     w = max(4.8, 1.4 + 0.55 * k)
     h = max(4.5, 1.2 + 0.55 * k)
+    # The leaf rule of heatmap (ordered_linkage): complete linkage on the Euclidean
+    # distance of the matrix rows, and at each merge the branch with the higher
+    # mean correlation first; on a tie, the branch with the earlier input variable.
+    mv = M.to_numpy()
+    row_z = ordered_linkage(mv, mv.mean(axis=1)) if row_c and k > 1 else None
+    col_z = ordered_linkage(mv.T, mv.mean(axis=0)) if col_c and k > 1 else None
+    row_order = [varlist[i] for i in hierarchy.leaves_list(row_z)] if row_z is not None else varlist
+    col_order = [varlist[i] for i in hierarchy.leaves_list(col_z)] if col_z is not None else varlist
 
     grid = sns.clustermap(
         M, cmap=diverging_cmap(), center=0, vmin=-1, vmax=1, method="complete",
-        row_cluster=row_c, col_cluster=col_c,
+        row_cluster=row_z is not None, col_cluster=col_z is not None,
+        row_linkage=row_z, col_linkage=col_z,
         annot=labels, fmt="", annot_kws={"size": 7},
         figsize=(w, h), cbar_kws={"label": "correlation"},
         linewidths=0.5, linecolor="white")
@@ -95,6 +107,7 @@ def recipe_correlation_heatmap(df, spec):
         "name": f"Clustered {method} correlation heatmap (seaborn.clustermap)",
         "method": method, "clustering": cluster,
         "n_variables": k, "n_pairs": len(p_ut), "n_significant": n_sig,
+        "row_order": [str(v) for v in row_order], "column_order": [str(v) for v in col_order],
     }
     methods = _methods(method, cluster, k, n_sig)
     return {
@@ -129,13 +142,25 @@ def _script(in_name, fig_stub, method, row_c, col_c):
 # (see REPRODUCE.md) from this bundle folder.
 import matplotlib
 matplotlib.use("Agg")
+import numpy as np
 import pandas as pd, seaborn as sns
+from scipy.cluster import hierarchy
+
+
+{inspect.getsource(ordered_linkage)}
 
 raw = pd.read_csv("{in_name}")
 num = raw.select_dtypes(include="number")
 M = num.corr(method="{method}")
+# The leaf order of the figure: complete linkage on the Euclidean distance of
+# the matrix rows, and at each merge the branch with the higher mean correlation
+# first. On a tie, the branch with the earlier input variable.
+mv = M.to_numpy()
+row_z = ordered_linkage(mv, mv.mean(axis=1)) if {row_c} and len(mv) > 1 else None
+col_z = ordered_linkage(mv.T, mv.mean(axis=0)) if {col_c} and len(mv) > 1 else None
 g = sns.clustermap(M, cmap="RdBu_r", center=0, vmin=-1, vmax=1,
-                   row_cluster={row_c}, col_cluster={col_c},
+                   row_cluster=row_z is not None, col_cluster=col_z is not None,
+                   row_linkage=row_z, col_linkage=col_z,
                    annot=True, fmt=".2f", annot_kws={{"size": 7}},
                    cbar_kws={{"label": "correlation"}}, linewidths=0.5, linecolor="white")
 g.figure.savefig("{fig_stub}.pdf")

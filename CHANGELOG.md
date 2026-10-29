@@ -58,6 +58,11 @@ tag move together.
   longer than the width estimate of PyComplexHeatmap, for example the `cell`
   legend of the `airway` benchmark. The legends now draw in full, and the saved
   figure includes them.
+- `correlation_heatmap` ordered the variables differently in the two engines,
+  for example carb, hp, wt in R and wt, cyl, disp in Python on `mtcars`. It now
+  uses the leaf rule of `heatmap` in both engines, with the mean correlation of
+  each variable as the weight. `test_meta` records the order, the emitted
+  scripts carry the rule, and the smoke test checks that the engines agree.
 
 ### Fixed
 - `paired_compare` wrote "The test was chosen from the Shapiro-Wilk normality

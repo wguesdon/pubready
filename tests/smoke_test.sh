@@ -582,27 +582,31 @@ else
 fi
 
 # Both engines build the same tree and order each branch by the mean of the
-# unscaled values, so the rows and the columns of the heatmap come in one order.
-echo "[parity] R against Python on the heatmap row and column order"
-./cli/figkit plot --recipe heatmap --data example/expression_matrix.csv \
-  --annotation example/expression_annotation.csv --out "$OUT/par_hm_r" > /dev/null 2>&1
-./cli/figkit plot --engine python --recipe heatmap --data example/expression_matrix.csv \
-  --annotation example/expression_annotation.csv --out "$OUT/par_hm_py" > /dev/null 2>&1
-hm_rf="$(find "$OUT/par_hm_r" -name 'manifest_*.json' | head -1)"
-hm_pf="$(find "$OUT/par_hm_py" -name 'manifest_*.json' | head -1)"
-if [ -z "$hm_rf" ] || [ -z "$hm_pf" ]; then
-  echo "FAIL: parity heatmap wrote no manifest"; fail=1
-else
-  hm_ok=1
+# unscaled values (heatmap) or by the mean correlation (correlation_heatmap), so
+# the rows and the columns come in one order.
+order_parity() {  # $1 = label; rest = plot args
+  local label="$1"; shift
+  ./cli/figkit plot "$@" --out "$OUT/par_${label}_r" > /dev/null 2>&1
+  ./cli/figkit plot --engine python "$@" --out "$OUT/par_${label}_py" > /dev/null 2>&1
+  local rf pf key ok=1
+  rf="$(find "$OUT/par_${label}_r" -name 'manifest_*.json' | head -1)"
+  pf="$(find "$OUT/par_${label}_py" -name 'manifest_*.json' | head -1)"
+  if [ -z "$rf" ] || [ -z "$pf" ]; then
+    echo "FAIL: parity $label wrote no manifest"; fail=1; return
+  fi
   for key in row_order column_order; do
-    if [ -z "$(json_array "$hm_rf" "$key")" ] || \
-       [ "$(json_array "$hm_rf" "$key")" != "$(json_array "$hm_pf" "$key")" ]; then
-      echo "  MISMATCH: $key differs between R and Python"
-      hm_ok=0; fail=1
+    if [ -z "$(json_array "$rf" "$key")" ] || \
+       [ "$(json_array "$rf" "$key")" != "$(json_array "$pf" "$key")" ]; then
+      echo "  MISMATCH: $label $key differs between R and Python"
+      ok=0; fail=1
     fi
   done
-  [ "$hm_ok" -eq 1 ] && echo "PASS: parity heatmap row and column order"
-fi
+  [ "$ok" -eq 1 ] && echo "PASS: parity $label row and column order"
+}
+echo "[parity] R against Python on the heatmap row and column order"
+order_parity heatmap --recipe heatmap --data example/expression_matrix.csv \
+  --annotation example/expression_annotation.csv
+order_parity correlation_heatmap --recipe correlation_heatmap --data example/correlation_vars.csv
 
 echo
 if [ "$fail" -eq 0 ]; then

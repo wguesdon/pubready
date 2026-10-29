@@ -47,6 +47,13 @@ recipe_correlation_heatmap <- function(df, spec) {
   cluster <- spec$appearance$cluster %||% "both"
   cluster_rows <- cluster %in% c("both", "rows")
   cluster_cols <- cluster %in% c("both", "columns")
+  # The leaf rule of heatmap (.hm_tree): complete linkage on the Euclidean
+  # distance of the matrix rows, and at each merge the branch with the higher mean
+  # correlation first; on a tie, the branch with the earlier input variable.
+  row_tree <- if (cluster_rows && k > 1) .hm_tree(M, rowMeans(M)) else NULL
+  col_tree <- if (cluster_cols && k > 1) .hm_tree(t(M), colMeans(M)) else NULL
+  row_order <- if (is.null(row_tree)) seq_len(k) else row_tree$order
+  col_order <- if (is.null(col_tree)) seq_len(k) else col_tree$order
 
   col_fun <- circlize::colorRamp2(c(-1, 0, 1), c("#3B6DB3", "white", "#C1432B"))
   star_of <- function(p) {
@@ -60,7 +67,8 @@ recipe_correlation_heatmap <- function(df, spec) {
 
   ht <- ComplexHeatmap::Heatmap(
     M, name = "correlation", col = col_fun,
-    cluster_rows = cluster_rows, cluster_columns = cluster_cols,
+    cluster_rows = if (is.null(row_tree)) FALSE else stats::as.dendrogram(row_tree),
+    cluster_columns = if (is.null(col_tree)) FALSE else stats::as.dendrogram(col_tree),
     rect_gp = grid::gpar(col = "white", lwd = 1),
     cell_fun = cell_fun,
     row_names_gp = grid::gpar(fontsize = 9),
@@ -80,7 +88,8 @@ recipe_correlation_heatmap <- function(df, spec) {
   test_meta <- list(
     name = sprintf("Clustered %s correlation heatmap (ComplexHeatmap)", method),
     method = method, clustering = cluster,
-    n_variables = k, n_pairs = length(P_ut), n_significant = n_sig)
+    n_variables = k, n_pairs = length(P_ut), n_significant = n_sig,
+    row_order = as.list(vars[row_order]), column_order = as.list(vars[col_order]))
 
   resolved <- list(family = "correlation_heatmap",
                    label = sprintf("%s correlation heatmap", method))
@@ -125,11 +134,18 @@ recipe_correlation_heatmap <- function(df, spec) {
     sprintf('raw <- read.csv("%s", check.names = FALSE)', in_name),
     "mat <- as.matrix(raw[, sapply(raw, is.numeric), drop = FALSE])",
     sprintf('M <- cor(mat, method = "%s", use = "pairwise.complete.obs")', method),
+    "# The leaf order of the figure: complete linkage on the Euclidean distance of",
+    "# the matrix rows, and at each merge the branch with the higher mean correlation",
+    "# first. On a tie, the branch with the earlier input variable.",
+    .hm_fn_lines(".hm_branch", .hm_branch),
+    .hm_fn_lines(".hm_order_tree", .hm_order_tree),
+    .hm_fn_lines(".hm_leaf_order", .hm_leaf_order),
+    if (cluster_rows) 'rows <- as.dendrogram(.hm_order_tree(hclust(dist(M), "complete"), rowMeans(M)))' else "rows <- FALSE",
+    if (cluster_cols) 'cols <- as.dendrogram(.hm_order_tree(hclust(dist(t(M)), "complete"), colMeans(M)))' else "cols <- FALSE",
     'col_fun <- colorRamp2(c(-1, 0, 1), c("#3B6DB3", "white", "#C1432B"))',
     "cell_fun <- function(j, i, x, y, w, h, fill)",
     '  grid::grid.text(sprintf("%.2f", M[i, j]), x, y, gp = grid::gpar(fontsize = 7))',
-    sprintf('ht <- Heatmap(M, name = "correlation", col = col_fun, cluster_rows = %s, cluster_columns = %s, cell_fun = cell_fun, rect_gp = grid::gpar(col = "white", lwd = 1))',
-            if (cluster_rows) "TRUE" else "FALSE", if (cluster_cols) "TRUE" else "FALSE"),
+    'ht <- Heatmap(M, name = "correlation", col = col_fun, cluster_rows = rows, cluster_columns = cols, cell_fun = cell_fun, rect_gp = grid::gpar(col = "white", lwd = 1))',
     "",
     sprintf('cairo_pdf("%s.pdf", width = 6, height = 6)', fig_stub),
     "draw(ht, merge_legends = TRUE); dev.off()",
