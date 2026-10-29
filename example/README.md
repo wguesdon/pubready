@@ -775,7 +775,7 @@ The recipes added in v1.0.0, drawn by the Python engine:
 ![py swimmer](expected/swimmer_months_swimmer_py/figure_months_swimmer_py.png)
 
 The Python engine also draws the spider plot, the interaction geom and the
-recipes that came after v1.0.0:
+recipes added in v2.0.0:
 
 ![py spider](expected/spider_response_target_lesion_mm_spider_py/figure_target_lesion_mm_spider_py.png)
 ![py interaction](expected/factorial_anova_response_interaction_py/figure_response_interaction_py.png)

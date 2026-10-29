@@ -290,7 +290,7 @@ tc_arms <- c("vehicle", "drug 1 mg/kg", "drug 3 mg/kg", "drug 10 mg/kg")
 tc <- do.call(rbind, lapply(seq_len(32), tumour_mouse, arms = tc_arms, days = tc_days))
 write_csv(tc, "timecourse_four_arms.csv")
 
-# The datasets below stress the recipes added after v1.0.0.
+# The datasets below stress the recipes added in v2.0.0.
 
 # Five Michaelis-Menten curves with long condition names, in duplicate.
 mm_s <- c(0.5, 1, 2, 5, 10, 20, 50, 100, 200)

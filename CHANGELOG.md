@@ -13,6 +13,13 @@ tag move together.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-29
+
+The fixes below change figure output in both engines, and the rule at the top of
+this file calls for a major version for such changes. The release also adds 12
+recipes, the interaction geom, the uv install, `figkit doctor` and the
+`sankey --levels` option.
+
 ### Added
 - pubready installs with uv from its Git URL, as a uv tool or as a dependency
   of a uv project. The root `pyproject.toml` builds a package whose `figkit`
@@ -115,6 +122,8 @@ tag move together.
   `iris_embedding`. The `airway_de.csv` file now holds the `baseMean` column.
 
 ### Changed
+- The default image tag is `localhost/pubready:2.0.0`. Run `figkit build` once
+  after the upgrade. The README installs the `v2.0.0` tag with uv.
 - `factorial_anova` wraps an `--x` level longer than 12 characters, and the
   figure width grows with the number of `--x` levels multiplied by the number of
   `--fill` levels. A design that fitted the old size keeps it.
@@ -619,7 +628,8 @@ top of this file calls for a major version for each of these changes.
   stats table, input copy, manifest, methods paragraph, and `REPRODUCE.md`.
 - Host adapters for Claude Code, Codex, and opencode on one shared core.
 
-[Unreleased]: https://github.com/wguesdon/pubready/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/wguesdon/pubready/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/wguesdon/pubready/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/wguesdon/pubready/compare/v0.4.1...v1.0.0
 [0.4.1]: https://github.com/wguesdon/pubready/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/wguesdon/pubready/compare/v0.3.0...v0.4.0

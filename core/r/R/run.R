@@ -2,7 +2,7 @@
 
 container_info <- function() {
   list(
-    image          = Sys.getenv("PUBREADY_IMAGE", "localhost/pubready:1.0.0"),
+    image          = Sys.getenv("PUBREADY_IMAGE", "localhost/pubready:2.0.0"),
     image_id       = Sys.getenv("PUBREADY_IMAGE_ID", ""),
     digest         = Sys.getenv("PUBREADY_IMAGE_DIGEST", ""),
     podman_version = Sys.getenv("PUBREADY_PODMAN_VERSION", "")

@@ -1,4 +1,4 @@
 # pubready version, recorded in every manifest. Single source for the Python
 # package version (read by pyproject.toml). Kept in lockstep with the root
 # VERSION file, core/r/DESCRIPTION, and the container image tag.
-PUBREADY_VERSION = "1.0.0"
+PUBREADY_VERSION = "2.0.0"

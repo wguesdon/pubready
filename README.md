@@ -15,8 +15,8 @@ image, and each bundle records the commit of the code that drew the figure.
 
 | Way | Command | Use it when |
 |---|---|---|
-| uv tool | `uv tool install "pubready @ git+https://github.com/wguesdon/pubready@main"` | You want `figkit` in each folder of your machine. |
-| uv project | `uv add "pubready @ git+https://github.com/wguesdon/pubready@main"` | You want pubready pinned in the `pyproject.toml` of an analysis project. |
+| uv tool | `uv tool install "pubready @ git+https://github.com/wguesdon/pubready@v2.0.0"` | You want `figkit` in each folder of your machine. |
+| uv project | `uv add "pubready @ git+https://github.com/wguesdon/pubready@v2.0.0"` | You want pubready pinned in the `pyproject.toml` of an analysis project. |
 | git clone | `git clone https://github.com/wguesdon/pubready.git` | You want to change pubready, or to run its tests and examples. |
 
 Step 2 below gives the details of each way.
@@ -97,7 +97,7 @@ mounts into the image, and `figkit build` builds the image from them.
 Install `figkit` as a uv tool to use it in each folder of your machine:
 
 ```bash
-uv tool install "pubready @ git+https://github.com/wguesdon/pubready@main"
+uv tool install "pubready @ git+https://github.com/wguesdon/pubready@v2.0.0"
 figkit build
 ```
 
@@ -105,12 +105,14 @@ Add pubready to a uv project to pin it with the other dependencies of the
 analysis. In the project, run `figkit` through `uv run`:
 
 ```bash
-uv add "pubready @ git+https://github.com/wguesdon/pubready@main"
+uv add "pubready @ git+https://github.com/wguesdon/pubready@v2.0.0"
 uv run figkit build
 ```
 
-To pin a release, replace `main` with the tag of that release. Release 1.0.0 and
-the releases before it do not have the uv install.
+These commands install release 2.0.0. To install a later release, replace
+`v2.0.0` with the tag of that release. To follow the development version,
+replace it with `main`. Release 1.0.0 and the releases before it do not have the
+uv install.
 
 uv records the installed commit, and `figkit` writes that commit into each
 bundle. An install from a local folder records no commit, so `figkit plot` stops

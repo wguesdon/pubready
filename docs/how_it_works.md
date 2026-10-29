@@ -599,7 +599,7 @@ values differ by the Monte Carlo error.
 pubready needs Podman and one built image.
 
 ```bash
-figkit build          # builds localhost/pubready:1.0.0 from container/Containerfile
+figkit build          # builds localhost/pubready:2.0.0 from container/Containerfile
 ```
 
 The image carries R (ggpubr, rstatix, ggprism, ggrepel, ggdist, survival,

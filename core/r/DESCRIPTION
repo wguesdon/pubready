@@ -1,6 +1,6 @@
 Package: pubready
 Title: Publication-Ready Figures with Statistics, R Engine
-Version: 1.0.0
+Version: 2.0.0
 Authors@R:
     person("William", "Guesdon", email = "wguesdon@gmail.com", role = c("aut", "cre"))
 Description: The R engine for pubready. A curated library of parameterized recipe

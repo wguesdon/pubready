@@ -106,7 +106,7 @@ RUN R -q -e 'BiocManager::install("GO.db", update=FALSE, ask=FALSE)' \
  && R -q -e 'stopifnot(requireNamespace("GO.db", quietly=TRUE))' \
  && rm -rf /tmp/downloaded_packages
 
-# CRAN packages added after v1.0.0. cmprsk gives the cumulative incidence and
+# CRAN packages added in v2.0.0. cmprsk gives the cumulative incidence and
 # Gray's test of the cumulative_incidence recipe. ResourceSelection (the
 # Hosmer-Lemeshow test) and qqman (the gwasResults dataset) are used only by the
 # benchmark exporter, as independent references. A late layer so the layers
