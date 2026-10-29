@@ -220,3 +220,17 @@ def test_swimmer_refuses_a_status_not_coded_one_or_zero():
     df = pd.DataFrame({"pt": ["a", "b"], "months": [3, 10], "ended": [1, 2]})
     with pytest.raises(ValueError, match="1 = the course ended"):
         recipe_swimmer(df, new_spec("swimmer", id="pt", time="months", event="ended"))
+
+
+def test_timecourse_groups_share_one_dodge_width_as_in_r():
+    rng = np.random.RandomState(2)
+    rows = [{"id": f"{g}{s}", "group": g, "time": t, "y": rng.normal(t, 1)}
+            for g in "abcd" for s in range(4) for t in (0, 10, 20)]
+    a = SimpleNamespace(recipe="timecourse", data="t.csv", x="time", y="y", id="id",
+                        group="group", test="auto")
+    from pubready.spec import spec_from_args
+    res = recipe_timecourse(pd.DataFrame(rows), spec_from_args(a))
+    ax = res["fig"].axes[0]
+    first_x = sorted(line.get_xdata()[0] for line in ax.lines if line.get_marker() == "o")
+    # position_dodge(width = 0.012 * 20) over 4 groups: steps of 0.06, spread 0.18.
+    assert first_x[-1] - first_x[0] == pytest.approx(0.012 * 20 * 3 / 4)

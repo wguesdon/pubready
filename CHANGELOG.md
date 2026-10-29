@@ -45,6 +45,9 @@ tag move together.
 - The Python stats tables wrote a count or a df as a float, for example 16470.0
   and 2.0, when the column also held a missing value. They now write 16470 and
   2, as the R tables do.
+- The Python `timecourse` spread the group means at each time point k times
+  wider than R, because each group took a full dodge step. The groups now
+  share one dodge width, as `position_dodge` does in R.
 
 ### Fixed
 - `paired_compare` wrote "The test was chosen from the Shapiro-Wilk normality

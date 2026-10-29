@@ -250,7 +250,10 @@ def _plot(ymat, g, g_lv, t_lv, time_numeric, stats_df, has_group, spec, x, y, gr
             for row in yg:
                 ax.plot(pos, row, color=pal[i], alpha=0.18, lw=0.5)
         sem = yg.std(axis=0, ddof=1) / np.sqrt(len(yg)) if len(yg) > 1 else np.full(len(pos), np.nan)
-        off = (i - (len(g_lv) - 1) / 2) * 0.012 * span if len(g_lv) > 1 else 0.0
+        # position_dodge(width = 0.012 * span) of the R engine: the k groups share
+        # the width, so each step is the width over k.
+        k = len(g_lv)
+        off = (i - (k - 1) / 2) * 0.012 * span / k if k > 1 else 0.0
         ax.errorbar(pos + off, yg.mean(axis=0), yerr=sem, color=pal[i], lw=1.6, marker="o",
                     ms=5, elinewidth=1.0, capsize=0, label=str(lv))
     sub = "; ".join(f"{r['effect']}: {p_label(r['p_reported'])}"
