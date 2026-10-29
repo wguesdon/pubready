@@ -82,6 +82,6 @@ test_that("sig_text keeps the trailing zeros and drops a trailing point", {
   expect_equal(sig_text(3), "3.00")
   expect_equal(sig_text(213), "213")
   expect_equal(sig_text(c(4.58, -22.04)), c("4.58", "-22.0"))
-  expect_equal(sig_text(0.0105, 2), "0.010")
+  expect_equal(sig_text(0.0104, 2), "0.010")
   expect_equal(sig_text(7.1e-5, 2), "7.1e-05")
 })

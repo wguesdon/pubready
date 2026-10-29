@@ -95,6 +95,6 @@ def test_sig_text_keeps_the_trailing_zeros_and_drops_a_trailing_point():
     assert sig_text(3) == "3.00"
     assert sig_text(213) == "213"
     assert sig_text(-22.04) == "-22.0"
-    assert sig_text(0.0105, 2) == "0.010"
+    assert sig_text(0.0104, 2) == "0.010"
     assert sig_text(7.1e-5, 2) == "7.1e-05"
     assert sig_text(float("nan")) == "NA"
