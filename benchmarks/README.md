@@ -66,11 +66,14 @@ podman run --rm -v "$PWD":/work -w /work localhost/pubready:<version> \
 | `veteran_km` | `veteran.csv` | `survival_km --x celltype` | `survival::survdiff` |
 | `veteran_cox` | `veteran.csv` | `cox_forest` | `survival::coxph` |
 | `state_correlation_heatmap` | `state_x77.csv` | `correlation_heatmap` | `stats::cor`, `stats::cor.test`, `stats::p.adjust(method = "BH")` |
+| `chickwts_estimation` | `chickwts.csv` | `estimation_plot --ref casein` | the mean difference, `stats::t.test(var.equal = FALSE)` for each feed |
+| `puromycin_kinetics` | `puromycin.csv` | `enzyme_kinetics --group state` | `stats::nls` for each state, `stats::anova` of the shared-K and the shared-Vm model |
+| `dnase_standard_curve` | `dnase_standard_curve.csv` | `standard_curve --id sample` | the inverse of the `stats::nls` fit with `SSfpl` to the run 1 standards |
 
 ## Tolerances
 
-Most reference values carry a relative tolerance of 1e-6. Two cases are wider,
-and the reason follows:
+Most reference values carry a relative tolerance of 1e-6. The cases below are
+wider, and the reason follows:
 
 - **The 4PL parameters of `dnase_4pl` and `dnase_shared`.** Two optimisers stop
   at their own convergence criteria on a flat optimum. The fitted parameters
@@ -78,6 +81,9 @@ and the reason follows:
   residual sum of squares stays at 1e-6.
 - **The published PEFR values.** The paper rounds the bias to -2.1 and the SD to
   38.8, so these two checks carry the tolerance of the rounding.
+- **The interpolated concentrations of `dnase_standard_curve`.** Each value is
+  read off a 4PL fit, so it carries the 1e-4 of the `dnase_4pl` parameters. The
+  counts of the unknowns in range, below range and above range stay at 1e-6.
 
 ## Data preparation
 
@@ -125,6 +131,15 @@ below make a dataset readable by a recipe. Each change is in
   the pubready code. The exporter writes `trt` as `standard` and `test`.
 - **`state_x77.csv`.** The file keeps the column names `Life Exp` and `HS Grad`
   as R distributes them. The case therefore also tests a column name with a space.
+- **`chickwts.csv`.** The file keeps the `feed` and `weight` columns. Casein sorts
+  first, but the command names it with `--ref casein`, so the case also tests
+  the option.
+- **`puromycin.csv`.** The file keeps `conc`, `rate` and `state`. The reference
+  fits use a convergence tolerance of 1e-8, so each reference value is the
+  optimum and not a point near it.
+- **`dnase_standard_curve.csv`.** Run 1 of `DNase` gives the 16 standards. The
+  16 densities of run 2, with an empty concentration, are the unknowns. The
+  `sample` column names each row.
 
 ## Sources
 
@@ -154,3 +169,6 @@ license of that package applies to the data.
 | `anorexia_ft.csv` | MASS | Hand, D. J., Daly, F., McConway, K., Lunn, D. and Ostrowski, E. eds (1993) A Handbook of Small Data Sets. Chapman and Hall, data set 285. |
 | `veteran.csv` | survival | Kalbfleisch, J. D. and Prentice, R. L. (1980) The Statistical Analysis of Failure Time Data. Wiley. |
 | `state_x77.csv` | datasets | U.S. Department of Commerce, Bureau of the Census (1977) Statistical Abstract of the United States. |
+| `chickwts.csv` | datasets | Anonymous (1948) Biometrika 35, 214. McNeil, D. R. (1977) Interactive Data Analysis. Wiley. |
+| `puromycin.csv` | datasets | Treloar, M. A. (1974) Effects of Puromycin on Galactosyltransferase in Golgi Membranes. M.Sc. Thesis, University of Toronto. Bates, D. M. and Watts, D. G. (1988) Nonlinear Regression Analysis and Its Applications. Wiley. |
+| `dnase_standard_curve.csv` | datasets | Davidian, M. and Giltinan, D. M. (1995) Nonlinear Models for Repeated Measurement Data. Chapman and Hall, section 5.2.4. |

@@ -459,6 +459,77 @@ add_ref("state_correlation_heatmap", "padj_murder_life_exp",
 add_ref("state_correlation_heatmap", "r_illiteracy_frost", stats::cor(st_num$Illiteracy, st_num$Frost),
         "stats::cor()")
 
+# 22. chickwts: chick weight after six weeks on six feed supplements, Anonymous
+# (1948), in datasets. Each feed is compared with casein, the estimation_plot
+# reference: the mean difference and the Welch two-sample t-test.
+cw_feed <- write_data(datasets::chickwts[, c("feed", "weight")], "chickwts")
+casein <- cw_feed$weight[cw_feed$feed == "casein"]
+for (fd in setdiff(sort(unique(cw_feed$feed)), "casein")) {
+  v <- cw_feed$weight[cw_feed$feed == fd]
+  wt <- stats::t.test(v, casein, var.equal = FALSE)
+  add_ref("chickwts_estimation", paste0("mean_diff_", fd), mean(v) - mean(casein), "mean difference")
+  add_ref("chickwts_estimation", paste0("statistic_", fd), wt$statistic, "stats::t.test(var.equal = FALSE)")
+  add_ref("chickwts_estimation", paste0("p_", fd), wt$p.value, "stats::t.test(var.equal = FALSE)")
+}
+
+# 23. Puromycin: the rate of an enzymatic reaction in cells treated or not with
+# puromycin, Treloar (1974), in datasets. Michaelis-Menten fits per state, and
+# the nested shared-K and shared-Vm models against the separate fits by anova().
+# The fits use a tight convergence tolerance, so the reference is the optimum.
+pu <- write_data(datasets::Puromycin, "puromycin")
+pu_ctrl <- stats::nls.control(maxiter = 200, tol = 1e-8, minFactor = 1e-10)
+for (st in c("treated", "untreated")) {
+  fp <- stats::nls(rate ~ Vm * conc / (K + conc), data = pu[pu$state == st, ],
+                   start = list(Vm = 200, K = 0.1), control = pu_ctrl)
+  cs <- summary(fp)$coefficients
+  add_ref("puromycin_kinetics", paste0("vmax_", st), cs["Vm", "Estimate"], "stats::nls()")
+  add_ref("puromycin_kinetics", paste0("vmax_se_", st), cs["Vm", "Std. Error"], "stats::nls()")
+  add_ref("puromycin_kinetics", paste0("km_", st), cs["K", "Estimate"], "stats::nls()")
+  add_ref("puromycin_kinetics", paste0("km_se_", st), cs["K", "Std. Error"], "stats::nls()")
+}
+pu$si <- match(pu$state, c("treated", "untreated"))
+pu_sep <- stats::nls(rate ~ Vm[si] * conc / (K[si] + conc), data = pu,
+                     start = list(Vm = c(200, 160), K = c(0.1, 0.1)), control = pu_ctrl)
+pu_shk <- stats::nls(rate ~ Vm[si] * conc / (K + conc), data = pu,
+                     start = list(Vm = c(200, 160), K = 0.1), control = pu_ctrl)
+pu_shv <- stats::nls(rate ~ Vm * conc / (K[si] + conc), data = pu,
+                     start = list(Vm = 200, K = c(0.1, 0.1)), control = pu_ctrl)
+ak <- stats::anova(pu_shk, pu_sep)
+av <- stats::anova(pu_shv, pu_sep)
+add_ref("puromycin_kinetics", "shared_km_F", ak$`F value`[2], "stats::anova(nls)")
+add_ref("puromycin_kinetics", "shared_km_p", ak$`Pr(>F)`[2], "stats::anova(nls)")
+add_ref("puromycin_kinetics", "shared_vmax_F", av$`F value`[2], "stats::anova(nls)")
+add_ref("puromycin_kinetics", "shared_vmax_p", av$`Pr(>F)`[2], "stats::anova(nls)")
+
+# 24. DNase as a standard curve: run 1 (conc, density) is the set of standards,
+# and the densities of run 2, with the concentration removed, are the unknowns.
+# The reference curve is the self-starting SSfpl fit to the standards, and each
+# unknown is the inverse of that curve when its density lies within the curve's
+# range over the standards. Two optimisers stop at their own tolerance, so the
+# concentrations carry the 1e-4 of dnase_4pl.
+r1 <- dn[dn$Run == 1, ]; r2 <- dn[dn$Run == 2, ]
+sc_df <- write_data(rbind(
+  data.frame(sample = sprintf("run1_%02d", seq_len(nrow(r1))), conc = r1$conc, density = r1$density),
+  data.frame(sample = sprintf("run2_%02d", seq_len(nrow(r2))), conc = NA, density = r2$density)),
+  "dnase_standard_curve")
+sc_std <- sc_df[!is.na(sc_df$conc), ]
+sc_unk <- sc_df[is.na(sc_df$conc), ]
+sc_fit <- stats::coef(stats::nls(density ~ SSfpl(log(conc), A, B, xmid, scal), data = sc_std))
+sc_f <- sc_fit[["A"]] + (sc_fit[["B"]] - sc_fit[["A"]]) /
+  (1 + exp((sc_fit[["xmid"]] - log(range(sc_std$conc))) / sc_fit[["scal"]]))
+sc_in <- sc_unk$density >= min(sc_f) & sc_unk$density <= max(sc_f)
+sc_conc <- exp(sc_fit[["xmid"]] - sc_fit[["scal"]] *
+                 log((sc_fit[["B"]] - sc_fit[["A"]]) / (sc_unk$density - sc_fit[["A"]]) - 1))
+add_ref("dnase_standard_curve", "n_in_range", sum(sc_in), "inverse of stats::nls(SSfpl)")
+add_ref("dnase_standard_curve", "n_below", sum(!sc_in & sc_unk$density < min(sc_f)),
+        "inverse of stats::nls(SSfpl)")
+add_ref("dnase_standard_curve", "n_above", sum(!sc_in & sc_unk$density > max(sc_f)),
+        "inverse of stats::nls(SSfpl)")
+for (i in which(sc_in)[c(1, ceiling(sum(sc_in) / 2), sum(sc_in))]) {
+  add_ref("dnase_standard_curve", paste0("conc_", sc_unk$sample[i]), sc_conc[i],
+          "inverse of stats::nls(SSfpl)", rel_tol = 1e-4)
+}
+
 ref_df <- do.call(rbind, refs)
 utils::write.csv(ref_df, file.path("benchmarks", "reference_values.csv"), row.names = FALSE)
 cat(sprintf("Wrote %d datasets and %d reference values.\n",

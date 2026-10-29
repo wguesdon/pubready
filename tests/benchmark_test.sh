@@ -117,6 +117,14 @@ bench veteran_cox "Cox" --recipe cox_forest --data $D/veteran.csv \
   --time time --event status --covariates "trt,celltype,karno,age"
 bench state_correlation_heatmap "" --recipe correlation_heatmap --data $D/state_x77.csv
 
+echo "--- Bench assay recipes on public datasets ---"
+bench chickwts_estimation "Park-Miller" --recipe estimation_plot --data $D/chickwts.csv \
+  --x feed --y weight --ref casein
+bench puromycin_kinetics "Michaelis-Menten" --recipe enzyme_kinetics --data $D/puromycin.csv \
+  --x conc --y rate --group state
+bench dnase_standard_curve "four-parameter logistic" --recipe standard_curve \
+  --data $D/dnase_standard_curve.csv --x conc --y density --id sample
+
 echo
 if [ "$ran" -eq 0 ]; then
   echo "NO BENCHMARK MATCHED '$FILTER'"; exit 1
