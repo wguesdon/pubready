@@ -27,6 +27,39 @@ theme_pubready <- function(base_size = 13) {
     )
 }
 
+# Wrap one label at the spaces so that no line is longer than `width`
+# characters. A word longer than `width` stays whole on its own line. The Python
+# engine has the same greedy rule (theme.wrap_label), so both engines break a
+# label at the same places.
+wrap_label <- function(s, width = 12) {
+  s <- as.character(s)
+  if (is.na(s) || nchar(s) <= width) return(s)
+  words <- strsplit(s, " ", fixed = TRUE)[[1]]
+  words <- words[nzchar(words)]
+  if (length(words) == 0) return(s)
+  lines <- character(0)
+  cur <- words[1]
+  for (w in words[-1]) {
+    if (nchar(cur) + 1 + nchar(w) <= width) {
+      cur <- paste(cur, w)
+    } else {
+      lines <- c(lines, cur)
+      cur <- w
+    }
+  }
+  paste(c(lines, cur), collapse = "\n")
+}
+
+# Vectorised wrap_label, for the category labels of an axis or a legend.
+wrap_labels <- function(x, width = 12) {
+  vapply(as.character(x), wrap_label, character(1), width = width, USE.NAMES = FALSE)
+}
+
+# The length in characters of the longest line of a wrapped label.
+longest_line <- function(s) {
+  max(nchar(strsplit(as.character(s), "\n", fixed = TRUE)[[1]]), 0L)
+}
+
 # Log-axis ticks of the 1-2-5 sequence for a plot with a reference line `ref`
 # (the null value of a ratio, 1). The ticks inside the data range are kept. When
 # the data reach past `ref` on one side but no tick lies on that side, the next

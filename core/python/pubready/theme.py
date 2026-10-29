@@ -133,6 +133,61 @@ def log_ticks_ref(lo, hi, ref=1.0):
     return sorted(set(ticks))
 
 
+def wrap_label(s, width=12):
+    """Wrap one label at the spaces so that no line is longer than ``width``.
+
+    A word longer than ``width`` stays whole on its own line. The R engine has
+    the same greedy rule (wrap_label), so both engines break a label at the same
+    places. ``textwrap`` is not used because it treats whitespace differently.
+
+    Args:
+        s: The label.
+        width: The largest count of characters on one line.
+
+    Returns:
+        str: The label with a newline at each break.
+    """
+    s = str(s)
+    if len(s) <= width:
+        return s
+    words = [w for w in s.split(" ") if w]
+    if not words:
+        return s
+    lines, cur = [], words[0]
+    for w in words[1:]:
+        if len(cur) + 1 + len(w) <= width:
+            cur = f"{cur} {w}"
+        else:
+            lines.append(cur)
+            cur = w
+    return "\n".join(lines + [cur])
+
+
+def wrap_labels(labels, width=12):
+    """Wrap each label of a list with wrap_label.
+
+    Args:
+        labels: The labels.
+        width: The largest count of characters on one line.
+
+    Returns:
+        list: The wrapped labels.
+    """
+    return [wrap_label(s, width) for s in labels]
+
+
+def longest_line(s):
+    """The length in characters of the longest line of a wrapped label.
+
+    Args:
+        s: The label.
+
+    Returns:
+        int: The length.
+    """
+    return max((len(part) for part in str(s).split("\n")), default=0)
+
+
 def plain_log_axis(axis):
     """Label a log-scaled matplotlib axis with plain numbers.
 
