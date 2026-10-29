@@ -107,6 +107,7 @@ for (term in rownames(cs)) {
   add_ref("lung_cox", paste0("HR_", term), cs[term, "exp(coef)"], "survival::coxph()")
   add_ref("lung_cox", paste0("p_", term), cs[term, "Pr(>|z|)"], "survival::coxph()")
 }
+add_ref("lung_cox", "ph_global_p", survival::cox.zph(cx)$table["GLOBAL", "p"], "survival::cox.zph()")
 
 # 6. mtcars: Henderson and Velleman (1981), Motor Trend 1974.
 mt <- cbind(car = rownames(datasets::mtcars), datasets::mtcars)
@@ -448,11 +449,13 @@ vsd_lr <- survival::survdiff(Surv(time, status) ~ celltype, data = vet_df)
 add_ref("veteran_km", "log_rank_chisq", vsd_lr$chisq, "survival::survdiff()")
 add_ref("veteran_km", "log_rank_p",
         stats::pchisq(vsd_lr$chisq, length(vsd_lr$n) - 1, lower.tail = FALSE), "survival::survdiff()")
-vcx <- summary(survival::coxph(Surv(time, status) ~ trt + celltype + karno + age, data = vet_df))$coefficients
+vfit <- survival::coxph(Surv(time, status) ~ trt + celltype + karno + age, data = vet_df)
+vcx <- summary(vfit)$coefficients
 for (term in rownames(vcx)) {
   add_ref("veteran_cox", paste0("HR_", term), vcx[term, "exp(coef)"], "survival::coxph()")
   add_ref("veteran_cox", paste0("p_", term), vcx[term, "Pr(>|z|)"], "survival::coxph()")
 }
+add_ref("veteran_cox", "ph_global_p", survival::cox.zph(vfit)$table["GLOBAL", "p"], "survival::cox.zph()")
 
 # 21. state.x77: facts about the 50 US states, U.S. Department of Commerce (1977).
 # Two column names hold a space ("Life Exp", "HS Grad"), as R distributes them.

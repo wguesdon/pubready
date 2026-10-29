@@ -105,6 +105,7 @@ test_that("lung: the Cox hazard ratios match survival::coxph", {
     expect_ref(r$HR, "lung_cox", paste0("HR_", term))
     expect_ref(r$p_value, "lung_cox", paste0("p_", term))
   }
+  expect_ref(res$test_meta$proportional_hazards$p_value, "lung_cox", "ph_global_p")
 })
 
 test_that("mtcars: the Pearson correlation and the correlation matrix match stats::cor", {
@@ -319,6 +320,7 @@ test_that("veteran: the Cox hazard ratios match survival::coxph", {
     expect_ref(r$HR, "veteran_cox", paste0("HR_", term))
     expect_ref(r$p_value, "veteran_cox", paste0("p_", term))
   }
+  expect_ref(res$test_meta$proportional_hazards$p_value, "veteran_cox", "ph_global_p")
 })
 
 test_that("state.x77: the correlation matrix keeps the column names with a space", {

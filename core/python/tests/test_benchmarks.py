@@ -169,6 +169,7 @@ def test_lung_cox_hazard_ratios():
     for term in ("age", "sexmale", "ph.ecog"):
         expect_ref(st.loc[term, "HR"], "lung_cox", f"HR_{term}")
         expect_ref(st.loc[term, "p_value"], "lung_cox", f"p_{term}")
+    expect_ref(res["test_meta"]["proportional_hazards"]["p_value"], "lung_cox", "ph_global_p")
 
 
 def test_mtcars_correlation_and_matrix():
@@ -370,6 +371,7 @@ def test_veteran_cox_hazard_ratios():
                  "karno", "age"):
         expect_ref(st.loc[term, "HR"], "veteran_cox", f"HR_{term}")
         expect_ref(st.loc[term, "p_value"], "veteran_cox", f"p_{term}")
+    expect_ref(res["test_meta"]["proportional_hazards"]["p_value"], "veteran_cox", "ph_global_p")
 
 
 def test_state_x77_correlation_matrix_keeps_spaced_names():

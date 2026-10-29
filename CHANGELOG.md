@@ -69,6 +69,12 @@ tag move together.
   uses the leaf rule of `heatmap` in both engines, with the mean correlation of
   each variable as the weight. `test_meta` records the order, the emitted
   scripts carry the rule, and the smoke test checks that the engines agree.
+- The Python `cox_forest` checked the proportional-hazards assumption with the
+  smallest per-covariate P of lifelines on the rank transform, where R uses the
+  global `cox.zph` test. Python now computes the global `cox.zph` test with the
+  "km" transform, as the C routine of the survival package does. On the `lung`
+  benchmark the Python P was 0.13 and is now 0.2156, the R value. The benchmarks
+  check the new `ph_global_p` reference of `lung_cox` and `veteran_cox`.
 
 ### Fixed
 - `paired_compare` wrote "The test was chosen from the Shapiro-Wilk normality

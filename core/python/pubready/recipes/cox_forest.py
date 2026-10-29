@@ -112,6 +112,97 @@ def label_inches(labels):
     return 0.3 + 0.085 * max([len(s) for s in labels] + [4])
 
 
+def left_km(times, events):
+    """The Kaplan-Meier survival just before each time, S(t-).
+
+    survival::cox.zph reads the left-continuous curve of survfitKM for its "km"
+    transform: the product of (1 - d / n) over the event times below t.
+
+    Args:
+        times: The follow-up times.
+        events: 1 for an event, 0 for a censored subject.
+
+    Returns:
+        numpy.ndarray: S(t-) for each subject.
+    """
+    times = np.asarray(times, dtype=float)
+    events = np.asarray(events, dtype=float)
+    event_times = np.unique(times[events == 1])
+    steps = np.ones(len(event_times) + 1)
+    for i, u in enumerate(event_times):
+        n_risk = np.sum(times >= u)
+        d = np.sum((times == u) & (events == 1))
+        steps[i + 1] = steps[i] * (1 - d / n_risk)
+    return steps[np.searchsorted(event_times, times, side="left")]
+
+
+def cox_zph_global(times, events, X, beta):
+    """The global test of survival::cox.zph with the default "km" transform.
+
+    The score test of beta(t) = beta + theta g(t) at theta = 0, with g(t) one
+    minus the left-continuous Kaplan-Meier curve, centred on the event times.
+    The sums follow the C routine zph1 of the survival package with Efron ties:
+    the score u and the information of the 2p parameters, then u' I^-1 u on p
+    degrees of freedom with the first p entries of u set to zero.
+
+    Args:
+        times: The follow-up times.
+        events: 1 for an event, 0 for a censored subject.
+        X: The design matrix of the model, one column per coefficient.
+        beta: The fitted coefficients, in the column order of X.
+
+    Returns:
+        tuple: The chi-square statistic, its degrees of freedom and the P value.
+    """
+    from scipy import stats
+
+    times = np.asarray(times, dtype=float)
+    events = np.asarray(events, dtype=float)
+    X = np.asarray(X, dtype=float)
+    n, p = X.shape
+    eta = X @ np.asarray(beta, dtype=float)
+    risk = np.exp(eta - eta.max())  # a common factor cancels in every ratio
+    ttimes = 1 - left_km(times, events)
+    gt = ttimes - ttimes[events == 1].mean()
+    xc = X - X.mean(axis=0)
+    u = np.zeros(2 * p)
+    imat = np.zeros((2 * p, 2 * p))
+    a = np.zeros(p)
+    cmat = np.zeros((p, p))
+    denom = 0.0
+    for tval in np.unique(times)[::-1]:
+        idx = np.where(times == tval)[0]
+        dead = idx[events[idx] == 1]
+        for i in idx[events[idx] == 0]:
+            denom += risk[i]
+            a += risk[i] * xc[i]
+            cmat += risk[i] * np.outer(xc[i], xc[i])
+        nd = len(dead)
+        if nd == 0:
+            continue
+        timewt = gt[idx[0]]
+        denom2 = risk[dead].sum()
+        a2 = (risk[dead, None] * xc[dead]).sum(axis=0)
+        cmat2 = (risk[dead, None, None] * np.einsum("ki,kj->kij", xc[dead], xc[dead])).sum(axis=0)
+        u[:p] += xc[dead].sum(axis=0)
+        u[p:] += timewt * xc[dead].sum(axis=0)
+        for _ in range(nd):
+            denom += denom2 / nd
+            a += a2 / nd
+            cmat += cmat2 / nd
+            mean = a / denom
+            u[:p] -= mean
+            u[p:] -= timewt * mean
+            v = (cmat - np.outer(mean, a)) / denom
+            imat[:p, :p] += v
+            imat[:p, p:] += timewt * v
+            imat[p:, p:] += timewt * timewt * v
+    imat[p:, :p] = imat[:p, p:].T
+    score = np.concatenate([np.zeros(p), u[p:]])
+    chisq = float(score @ np.linalg.solve(imat, score))
+    return chisq, p, float(stats.chi2.sf(chisq, p))
+
+
 def design_and_rows(df, t, e, covs):
     """Build the numeric design matrix and the display rows of the forest plot.
 
@@ -297,12 +388,13 @@ def recipe_cox_forest(df, spec):
     hi = summ["exp(coef) upper 95%"].to_numpy()
     pv = summ["p"].to_numpy()
 
+    # The global test of survival::cox.zph, as the R engine reports it.
     ph_p = np.nan
     try:
-        from lifelines.statistics import proportional_hazard_test
-        ph = proportional_hazard_test(cph, design, time_transform="rank")
-        ph_p = float(ph.summary["p"].min())
-    except Exception:
+        coef = cph.params_
+        ph_p = cox_zph_global(design[t].to_numpy(), design[e].to_numpy(),
+                              design[list(coef.index)].to_numpy(), coef.to_numpy())[2]
+    except (np.linalg.LinAlgError, ValueError):
         pass
 
     stats_df = pd.DataFrame({"term": terms, "HR": hr, "ci_low": lo, "ci_high": hi,
@@ -313,7 +405,7 @@ def recipe_cox_forest(df, spec):
     test_meta = {
         "name": "Cox proportional-hazards model",
         "n": n_subj, "events": n_events, "covariates": covs,
-        "proportional_hazards": {"test": "proportional_hazard_test (min p)", "p_value": ph_p},
+        "proportional_hazards": {"test": "cox.zph global", "p_value": ph_p},
         "hazard_ratios": [{"term": tt, "HR": float(h_), "ci_low": float(l_),
                            "ci_high": float(u_), "p_value": float(p_)}
                           for tt, h_, l_, u_, p_ in zip(terms, hr, lo, hi, pv)],
@@ -340,7 +432,7 @@ def _methods(stats_df, ph_p, covs, n, events):
         sig_txt = " No individual predictor reached significance."
     ph_txt = "" if np.isnan(ph_p) else (
         f" The proportional-hazards assumption was {'violated' if ph_p < 0.05 else 'not violated'}"
-        f" (minimum covariate cox.zph {p_phrase(ph_p)}).")
+        f" (global cox.zph {p_phrase(ph_p)}).")
     return (
         f"Hazard ratios were estimated with a Cox proportional-hazards model ({n} subjects, {events} events) "
         f"including {', '.join(covs)}." + sig_txt + ph_txt +

@@ -41,7 +41,7 @@ podman run --rm --security-opt label=disable -v "$PWD":/work -w /work localhost/
 | `insect_sprays_kruskal` | `insect_sprays.csv` | `multi_group_compare --test kruskal` | `stats::kruskal.test` |
 | `tooth_growth_twoway` | `tooth_growth.csv` | `factorial_anova --test anova` | `car::Anova(type = 2)` |
 | `lung_km` | `lung.csv` | `survival_km` | `survival::survdiff` |
-| `lung_cox` | `lung.csv` | `cox_forest` | `survival::coxph` |
+| `lung_cox` | `lung.csv` | `cox_forest` | `survival::coxph`, `survival::cox.zph` |
 | `mtcars_correlation` | `mtcars.csv` | `correlation --test pearson` | `stats::cor.test` |
 | `mtcars_correlation_heatmap` | `mtcars.csv` | `correlation_heatmap` | `stats::cor` |
 | `mtcars_heatmap` | `mtcars_matrix.csv`, `mtcars_annotation.csv` | `heatmap` | `stats::t.test` for each feature |
@@ -64,7 +64,7 @@ podman run --rm --security-opt label=disable -v "$PWD":/work -w /work localhost/
 | `airway_upset` | `airway_upset.csv` | `upset` | `base::table` of the membership patterns |
 | `anorexia_paired` | `anorexia_ft.csv` | `paired_compare --test t` | `stats::t.test(paired = TRUE)` |
 | `veteran_km` | `veteran.csv` | `survival_km --x celltype` | `survival::survdiff` |
-| `veteran_cox` | `veteran.csv` | `cox_forest` | `survival::coxph` |
+| `veteran_cox` | `veteran.csv` | `cox_forest` | `survival::coxph`, `survival::cox.zph` |
 | `state_correlation_heatmap` | `state_x77.csv` | `correlation_heatmap` | `stats::cor`, `stats::cor.test`, `stats::p.adjust(method = "BH")` |
 | `faithful_distribution` | `faithful.csv` | `distribution --y eruptions` | `stats::shapiro.test`, `mean`, `stats::sd`, `stats::bw.nrd0`, `stats::IQR` |
 | `tooth_growth_distribution` | `tooth_growth.csv` | `distribution --x supp --y len` | `stats::shapiro.test`, `mean`, `stats::sd`, `stats::bw.nrd0` for each supplement |
