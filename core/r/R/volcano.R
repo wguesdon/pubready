@@ -113,7 +113,7 @@ recipe_volcano <- function(df, spec) {
     n_total = length(fc), n_up = n_up, n_down = n_down, n_significant = n_up + n_down)
 
   resolved <- list(family = "volcano", label = "volcano plot")
-  methods  <- .volcano_methods(length(fc), fcc, pcc, n_up, n_down)
+  methods  <- .volcano_methods(length(fc), fcc, pcc, n_up, n_down, plab, nrow(lab_df))
   build_script <- function(in_name, fig_stub) {
     .volcano_emit_script(in_name, fig_stub, cols, fcc, pcc, topn)
   }
@@ -124,13 +124,18 @@ recipe_volcano <- function(df, spec) {
        df_used = df_used, clean_steps = clean_steps, width = 6.0, height = 5.6)
 }
 
-.volcano_methods <- function(n, fcc, pcc, n_up, n_down) {
+.volcano_methods <- function(n, fcc, pcc, n_up, n_down, plab, n_lab) {
   v    <- pkg_versions(c("ggplot2", "ggrepel"))
   rver <- paste(R.version$major, R.version$minor, sep = ".")
+  lab_txt <- if (n_up + n_down > 0) {
+    sprintf("The %d significant features with the largest product of |log2 fold change| and -log10 %s are labelled. ",
+            n_lab, plab)
+  } else sprintf("No feature was significant, so the %d features with the smallest %s are labelled. ", n_lab, plab)
   paste0(
     sprintf("Differential-expression results for %d features were shown as a volcano plot. ", n),
-    sprintf("Features with |log2 fold change| >= %s and p <= %s were called significant; ", fcc, pcc),
+    sprintf("Features with |log2 fold change| >= %g and %s <= %g were called significant; ", fcc, plab, pcc),
     sprintf("%d were up-regulated and %d down-regulated. ", n_up, n_down),
+    lab_txt,
     "The differential test itself was performed upstream; this figure summarises its output. ",
     sprintf("Drawn in R %s with ggplot2 %s and ggrepel %s.", rver, v$ggplot2, v$ggrepel))
 }

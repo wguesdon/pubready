@@ -46,3 +46,14 @@ def test_volcano_legend_skips_empty_classes_and_labels_do_not_overlap():
     for i, b1 in enumerate(boxes):
         for b2 in boxes[i + 1:]:
             assert not b1.overlaps(b2)
+
+
+def test_volcano_methods_name_the_p_column_and_the_label_rule():
+    df = pd.DataFrame({"gene": [f"g{i}" for i in range(6)],
+                       "log2FoldChange": [3.0, -3.0, 0.1, 2.5, -0.2, 0.0],
+                       "padj": [1e-8, 1e-9, 0.5, 1e-6, 0.3, 0.9]})
+    a = SimpleNamespace(recipe="volcano", data="de.csv", x=None, y="padj", label=None,
+                        fc_cutoff=None, p_cutoff=None, top_n=15)
+    res = recipe_volcano(df, spec_from_args(a))
+    assert "|log2 fold change| >= 1 and padj <= 0.05" in res["methods"]
+    assert "The 3 significant features with the largest product" in res["methods"]

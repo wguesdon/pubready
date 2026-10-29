@@ -139,7 +139,7 @@ def recipe_volcano(df, spec):
     test_meta = {"name": "Volcano plot", "fc_cutoff": fcc, "p_cutoff": pcc,
                  "n_total": len(fc), "n_up": n_up, "n_down": n_down,
                  "n_significant": n_up + n_down}
-    methods = _methods(len(fc), fcc, pcc, n_up, n_down)
+    methods = _methods(len(fc), fcc, pcc, n_up, n_down, plab, len(top))
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": df_used, "clean_steps": clean_steps,
@@ -149,13 +149,20 @@ def recipe_volcano(df, spec):
     }
 
 
-def _methods(n, fcc, pcc, n_up, n_down):
+def _methods(n, fcc, pcc, n_up, n_down, plab, n_lab):
     from importlib.metadata import version as v
     import platform
+    if n_up + n_down > 0:
+        lab_txt = (f"The {n_lab} significant features with the largest product of "
+                   f"|log2 fold change| and -log10 {plab} are labelled. ")
+    else:
+        lab_txt = (f"No feature was significant, so the {n_lab} features with the smallest "
+                   f"{plab} are labelled. ")
     return (
         f"Differential-expression results for {n} features were shown as a volcano plot. "
-        f"Features with |log2 fold change| >= {fcc} and p <= {pcc} were called significant; "
-        f"{n_up} were up-regulated and {n_down} down-regulated. The differential test itself "
+        f"Features with |log2 fold change| >= {float(fcc):g} and {plab} <= {float(pcc):g} were called "
+        f"significant; {n_up} were up-regulated and {n_down} down-regulated. {lab_txt}"
+        "The differential test itself "
         "was performed upstream; this figure summarises its output. "
         f"Drawn in Python {platform.python_version()} with matplotlib {v('matplotlib')} and adjustText {v('adjustText')}."
     )

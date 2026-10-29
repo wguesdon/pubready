@@ -23,6 +23,11 @@ tag move together.
   methods paragraph. It now writes the clause only when Q is below its degrees
   of freedom, which is the only condition that truncates tau2. On the `bcg`
   benchmark, tau2 is 0.309, and the old text read as a truncation.
+- The `volcano` methods paragraph wrote "p <= 0.05" also when the cutoff read
+  an adjusted p column such as `padj`. It now names the column, as the axis and
+  the legend do. It also states the label rule: the significant features with
+  the largest product of the absolute log2 fold change and -log10 p are
+  labelled. The R and the Python text now print the cutoffs in the same form.
 
 ## [2.0.0] - 2026-10-29
 
