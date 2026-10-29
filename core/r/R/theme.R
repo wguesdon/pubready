@@ -60,6 +60,38 @@ longest_line <- function(s) {
   max(nchar(strsplit(as.character(s), "\n", fixed = TRUE)[[1]]), 0L)
 }
 
+# The figure width of a category axis: 1.1 in per group plus 1 in for the axis,
+# and never less than `min_width`. A wrapped label whose longest line (a long
+# word) is wider than the slot widens every slot to 0.085 in per character.
+# Python uses the same formula.
+category_width <- function(n, labels = NULL, min_width = 4.2) {
+  chars <- if (length(labels)) max(vapply(labels, longest_line, integer(1))) else 0L
+  max(min_width, max(1.1, 0.085 * chars) * n + 1.0)
+}
+
+# The width of a legend right of the panel: the key plus 0.075 in per character
+# of its longest line or of its title. Python uses the same formula.
+legend_width <- function(labels, title = "") {
+  chars <- max(vapply(as.character(labels), longest_line, integer(1)), nchar(title), 0L)
+  0.55 + 0.075 * chars
+}
+
+# Format axis breaks as plain numbers with a comma between the thousands, never
+# in scientific notation. The count of decimals is the smallest one that shows
+# every break exactly (at most 6). Python has the same rule in
+# theme.PlainNumberFormatter.
+plain_number_labels <- function(x) {
+  fin <- x[is.finite(x)]
+  digits <- 0L
+  while (digits < 6L && length(fin) > 0 &&
+         any(abs(round(fin, digits) - fin) > 1e-9 * pmax(1, abs(fin)))) {
+    digits <- digits + 1L
+  }
+  out <- formatC(x + 0, format = "f", digits = digits, big.mark = ",")
+  out[!is.finite(x)] <- NA_character_
+  out
+}
+
 # Log-axis ticks of the 1-2-5 sequence for a plot with a reference line `ref`
 # (the null value of a ratio, 1). The ticks inside the data range are kept. When
 # the data reach past `ref` on one side but no tick lies on that side, the next

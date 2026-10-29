@@ -73,6 +73,8 @@ recipe_paired_compare <- function(df, spec) {
                        linewidth = 0.4, alpha = 0.8) +
     ggplot2::geom_point(ggplot2::aes(colour = cond), size = 2.4, alpha = 0.9) +
     ggplot2::scale_colour_manual(values = pal) +
+    ggplot2::scale_x_discrete(labels = stats::setNames(wrap_labels(lv), lv)) +
+    ggplot2::scale_y_continuous(labels = plain_number_labels) +
     ggpubr::geom_bracket(xmin = lv[1], xmax = lv[2], y.position = ypos,
                          label = brk, tip.length = 0.02) +
     ggplot2::labs(x = spec$appearance$x_label %||% x,

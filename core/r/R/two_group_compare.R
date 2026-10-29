@@ -96,6 +96,8 @@ recipe_two_group_compare <- function(df, spec) {
   p <- add_dist_geom(p, x, geom, spec$appearance$show_points)
   p <- p +
     ggplot2::scale_fill_manual(values = pal) +
+    ggplot2::scale_x_discrete(labels = stats::setNames(wrap_labels(lvls), lvls)) +
+    ggplot2::scale_y_continuous(labels = plain_number_labels) +
     ggpubr::stat_pvalue_manual(stat, label = label_col, tip.length = 0.01,
                                bracket.size = 0.4) +
     ggplot2::labs(

@@ -2,6 +2,7 @@
 import matplotlib
 matplotlib.use("Agg")  # headless container
 import matplotlib.pyplot as plt
+from matplotlib.ticker import Formatter
 
 # The first six colours are the house palette. The fourteen after them keep a
 # figure with up to twenty groups distinct; palette() cycles past twenty.
@@ -186,6 +187,97 @@ def longest_line(s):
         int: The length.
     """
     return max((len(part) for part in str(s).split("\n")), default=0)
+
+
+def category_width(n, labels=None, min_width=4.2):
+    """The figure width of a category axis, as the R engine computes it.
+
+    A wrapped label whose longest line (a long word) is wider than the slot
+    widens every slot to 0.085 in per character.
+
+    Args:
+        n: The count of categories.
+        labels: The wrapped labels, or None.
+        min_width: The smallest width in inches.
+
+    Returns:
+        float: 1.1 in per category plus 1 in, and never less than ``min_width``.
+    """
+    chars = max((longest_line(s) for s in labels), default=0) if labels else 0
+    return max(min_width, max(1.1, 0.085 * chars) * n + 1.0)
+
+
+def legend_width(labels, title=""):
+    """The width of a legend right of the panel, as legend_width() of the R engine.
+
+    Args:
+        labels: The legend labels.
+        title: The legend title.
+
+    Returns:
+        float: The key plus 0.075 in per character of the longest line or title.
+    """
+    chars = max([longest_line(s) for s in labels] + [len(str(title)), 0])
+    return 0.55 + 0.075 * chars
+
+
+def plain_number_labels(values):
+    """Format axis breaks as plain numbers with a comma between the thousands.
+
+    The count of decimals is the smallest one that shows every break exactly (at
+    most 6), never in scientific notation, as plain_number_labels() of the R
+    engine does.
+
+    Args:
+        values: The break values.
+
+    Returns:
+        list: The labels.
+    """
+    import numpy as np
+    vals = np.asarray(values, dtype=float)
+    fin = vals[np.isfinite(vals)]
+    digits = 0
+    while digits < 6 and len(fin) and np.any(
+            np.abs(np.round(fin, digits) - fin) > 1e-9 * np.maximum(1, np.abs(fin))):
+        digits += 1
+    return [f"{v + 0.0:,.{digits}f}" if np.isfinite(v) else "" for v in vals]
+
+
+class PlainNumberFormatter(Formatter):
+    """A matplotlib tick formatter that applies plain_number_labels to all ticks."""
+
+    def __init__(self):
+        self.locs = []
+
+    def set_locs(self, locs):
+        """Store the tick positions, so every label uses the same decimals.
+
+        Args:
+            locs: The tick positions.
+        """
+        self.locs = list(locs)
+
+    def __call__(self, x, pos=None):
+        """Format one tick.
+
+        Args:
+            x: The tick value.
+            pos: The tick index, unused.
+
+        Returns:
+            str: The label.
+        """
+        return plain_number_labels(list(self.locs) + [x])[-1]
+
+
+def plain_number_axis(axis):
+    """Label a linear matplotlib axis with plain numbers and thousands separators.
+
+    Args:
+        axis: The axis, for example ``ax.yaxis``.
+    """
+    axis.set_major_formatter(PlainNumberFormatter())
 
 
 def plain_log_axis(axis):
