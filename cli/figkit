@@ -53,7 +53,7 @@ Common plot options:
   --scale row|column|none                  heatmap value scaling
   --cluster both|rows|columns|none         heatmap / correlation clustering
   --fc_cutoff N, --p_cutoff N              volcano thresholds (default 1, 0.05)
-  --top_n N                                labels / terms to show (volcano, enrichment_dot)
+  --top_n N                                labels / terms / intersections to show (volcano, enrichment_dot, upset)
   --test auto|welch_t|wilcoxon|anova|kruskal|art   choose or force the test
                                            (correlation: auto|pearson|spearman|kendall;
                                             proportions: auto|chisq|fisher;

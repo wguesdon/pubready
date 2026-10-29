@@ -95,6 +95,7 @@ Common options:
 | `--ci_low`, `--ci_high`, `--se` | the 95% CI bounds, or the standard error, of each study in `forest_meta` |
 | `--measure auto\|ratio\|difference` | the pooling scale of `forest_meta` (a ratio is pooled on the log scale) |
 | `--markers "a,b"` | the columns of event times that `swimmer` draws on each bar |
+| `--top_n N` | the number of labels in `volcano`, of terms in `enrichment_dot` and of intersections in `upset`, 15 by default. The `upset` title states how many intersections it hides. |
 | `--xlab`, `--ylab`, `--title`, `--palette` | labels and colors |
 | `--out DIR` | output root (default `pubready_output`) |
 
@@ -113,7 +114,7 @@ engines. Pick the engine per figure with `--engine`.
 | `heatmap` | matrix CSV + annotation CSV | per-feature Welch t-test when the annotation has two groups | clustered heatmap, z-scored, group annotation bar |
 | `correlation` | `x, y` (two numeric columns) | Pearson / Spearman / Kendall, chosen from normality | scatter with a linear fit, CI band, r and p annotated |
 | `correlation_heatmap` | table of numeric variables | pairwise correlation, BH-adjusted | clustered correlation matrix, coefficients + significance stars |
-| `upset` | binary membership matrix | descriptive (intersection sizes, no test) | UpSet plot of set intersections |
+| `upset` | binary membership matrix | descriptive (intersection sizes, no test) | UpSet plot of the largest set intersections, 15 by default |
 | `volcano` | DE table (log2FC + p) | thresholds on fold change and p (test is upstream) | EnhancedVolcano-style four-color scatter, top hits labeled |
 | `enrichment_dot` | GSEA / ORA result table | descriptive (enrichment is upstream) | dot plot, size = count, color = -log10 adjusted p |
 | `paired_compare` | `condition, value, id` | paired t-test or Wilcoxon signed-rank | before/after points with connecting lines and a bracket |
@@ -271,7 +272,7 @@ the same numbers. The manifest records which engine drew the figure.
 | heatmap | ComplexHeatmap | PyComplexHeatmap (seaborn clustermap fallback) |
 | correlation | ggplot2 + ggpubr `stat_cor` | seaborn `regplot` |
 | correlation heatmap | ComplexHeatmap | seaborn `clustermap` |
-| UpSet | ComplexHeatmap `UpSet` | `upsetplot` |
+| UpSet | ComplexHeatmap `UpSet` | matplotlib, in the ComplexHeatmap layout |
 | Prism style (`--theme prism`) | ggprism `theme_prism` | matched matplotlib style |
 | volcano / labels | ggplot2 + ggrepel | matplotlib + adjustText |
 | raincloud geom | ggdist half-eye | matplotlib half-violin |

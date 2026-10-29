@@ -68,7 +68,7 @@ If a command reports the image is missing, run `figkit build` first.
 | `heatmap` | matrix CSV + annotation CSV | `--data --annotation` | per-feature Welch t-test when the annotation has two groups |
 | `correlation` | x, y (two numeric columns) | `--x --y` | Pearson / Spearman / Kendall, chosen from normality |
 | `correlation_heatmap` | table of numeric variables | `--data` | pairwise correlation, clustered, BH-adjusted stars |
-| `upset` | binary membership matrix | `--data` | descriptive intersection sizes (no test) |
+| `upset` | binary membership matrix | `--data [--top_n]` | descriptive intersection sizes, the 15 largest drawn by default (no test) |
 | `volcano` | DE table (log2FC + p) | `--data [--x --y --label]` | EnhancedVolcano-style scatter, top hits labeled |
 | `enrichment_dot` | GSEA / ORA result table | `--data [--label]` | dot plot, size = count, color = -log10 adjusted p |
 | `paired_compare` | condition, value, id | `--x --y --id` | paired t-test or Wilcoxon, connecting lines |
@@ -87,7 +87,8 @@ Common options: `--engine r|python` (default r), `--geom box|violin|bar|rainclou
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
 `pearson|spearman|kendall`; proportions: `chisq|fisher`; timecourse:
 `gg|uncorrected`), `--scale`/`--cluster` (heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n`
-(volcano), `--id --group --label`, `--positive LEVEL` (roc_curve case level),
+(volcano; `--top_n` also sets the terms of enrichment_dot and the intersections
+of upset), `--id --group --label`, `--positive LEVEL` (roc_curve case level),
 `--ci_low --ci_high --se --measure ratio|difference` (forest_meta),
 `--pd_threshold --pr_threshold` (spider_response, waterfall), `--markers "a,b"`
 (swimmer event-time columns),

@@ -30,6 +30,19 @@ tag move together.
 - The Python `heatmap` did not draw the significance stars that R draws when the
   annotation has two groups. It now writes them between the heatmap and the row
   names, with the same BH-adjusted Welch t thresholds as R.
+- `upset` drew every intersection. Seven sets gave 89 bars in a figure too wide
+  to read. Both engines now draw the 15 largest intersections, and `--top_n`
+  sets the number. The title states how many intersections are not shown. The
+  stats table still lists every intersection, and `n_intersections_shown` in the
+  manifest gives the number drawn.
+- The two `upset` engines did not agree on the layout. R rotated the counts over
+  the bars by 45 degrees and the set-size axis labels by 90 degrees, and it gave
+  no set-size numbers. Python put the set sizes on the left, where the numbers
+  overlapped the bars, and it sorted tied intersections in a different order.
+  Python now draws the plot with matplotlib in the layout of ComplexHeatmap,
+  with the set sizes on the right. Both engines write horizontal counts and
+  set-size numbers. Both sort the intersections by size, then by degree, then by
+  set name, and the stats table uses the same order.
 
 ## [1.0.0] - 2026-10-07
 

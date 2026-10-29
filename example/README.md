@@ -483,7 +483,7 @@ Clustered correlation heatmap (seaborn clustermap):
 
 ![py correlation heatmap](expected/correlation_heatmap_correlation_vars_corrhm_py/figure_correlation_vars_corrhm_py.png)
 
-UpSet plot (upsetplot):
+UpSet plot (matplotlib, in the layout of ComplexHeatmap):
 
 ![py UpSet](expected/upset_set_membership_upset_py/figure_set_membership_upset_py.png)
 
