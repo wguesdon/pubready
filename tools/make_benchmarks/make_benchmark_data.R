@@ -459,6 +459,75 @@ add_ref("state_correlation_heatmap", "padj_murder_life_exp",
 add_ref("state_correlation_heatmap", "r_illiteracy_frost", stats::cor(st_num$Illiteracy, st_num$Frost),
         "stats::cor()")
 
+# 22. mgus2: monoclonal gammopathy of undetermined significance, Kyle et al.
+# (2002). Competing risks of progression to a plasma cell malignancy (event 1)
+# and death without progression (event 2), as in the survival vignette "compete".
+mg <- survival::mgus2
+mg$etime <- ifelse(mg$pstat == 0, mg$futime, mg$ptime)
+mg$event <- ifelse(mg$pstat == 0, 2 * mg$death, 1)
+mg$sex <- as.character(mg$sex)
+mg <- mg[stats::complete.cases(mg[, c("etime", "event", "sex")]), ]
+mg_df <- write_data(mg[, c("id", "age", "sex", "etime", "event")], "mgus2")
+mg_fit <- cmprsk::cuminc(mg_df$etime, mg_df$event, mg_df$sex)
+for (cause in c("1", "2")) {
+  add_ref("mgus2_cif", paste0("gray_stat_", cause), mg_fit$Tests[cause, "stat"], "cmprsk::cuminc()$Tests")
+  add_ref("mgus2_cif", paste0("gray_p_", cause), mg_fit$Tests[cause, "pv"], "cmprsk::cuminc()$Tests")
+}
+mg_tp <- cmprsk::timepoints(mg_fit, c(120, 240))$est
+for (curve in rownames(mg_tp)) {
+  for (tt in colnames(mg_tp)) {
+    add_ref("mgus2_cif", sprintf("cif_%s_%s", gsub(" ", "_", curve), tt), mg_tp[curve, tt],
+            "cmprsk::timepoints()")
+  }
+}
+
+# 23. Pima.tr and Pima.te: diabetes in Pima Indian women, Smith et al. (1988).
+# A logistic model fitted on Pima.tr predicts the risk of each woman in Pima.te,
+# which is then the validation set of the calibration recipe.
+pima_fit <- stats::glm(type ~ npreg + glu + bmi + ped + age, family = stats::binomial(),
+                       data = MASS::Pima.tr)
+pima_te <- MASS::Pima.te
+pima_te$type <- as.character(pima_te$type)
+pima_te$predicted <- stats::predict(pima_fit, newdata = MASS::Pima.te, type = "response")
+pima_df <- write_data(pima_te, "pima_te")
+pima_y <- as.integer(pima_df$type == "Yes")
+pima_p <- pima_df$predicted
+pima_hl <- ResourceSelection::hoslem.test(pima_y, pima_p, g = 10)
+add_ref("pima_calibration", "hl_statistic", pima_hl$statistic, "ResourceSelection::hoslem.test(g = 10)")
+add_ref("pima_calibration", "hl_df", pima_hl$parameter, "ResourceSelection::hoslem.test(g = 10)")
+add_ref("pima_calibration", "hl_p", pima_hl$p.value, "ResourceSelection::hoslem.test(g = 10)")
+add_ref("pima_calibration", "brier", mean((pima_p - pima_y)^2), "mean((p - y)^2)")
+pima_lp <- stats::qlogis(pima_p)
+add_ref("pima_calibration", "slope",
+        stats::coef(stats::glm(pima_y ~ pima_lp, family = stats::binomial()))[["pima_lp"]],
+        "stats::glm(y ~ logit(p))")
+add_ref("pima_calibration", "intercept",
+        stats::coef(stats::glm(pima_y ~ 1 + offset(pima_lp), family = stats::binomial()))[[1]],
+        "stats::glm(y ~ 1 + offset(logit(p)))")
+
+# 24. pbcseq: the Mayo Clinic primary biliary cholangitis trial with repeated
+# visits, Murtaugh et al. (1994). Edema at the first visit and at the visit
+# closest to day 730 among the visits between day 365 and day 1095.
+pbs <- survival::pbcseq
+pbs <- pbs[order(pbs$id, pbs$day), ]
+pb_first <- pbs[!duplicated(pbs$id), c("id", "day", "edema")]
+pb_win <- pbs[pbs$day >= 365 & pbs$day <= 1095, c("id", "day", "edema")]
+pb_win <- pb_win[order(pb_win$id, abs(pb_win$day - 730), pb_win$day), ]
+pb_second <- pb_win[!duplicated(pb_win$id), ]
+pb_long <- rbind(data.frame(id = pb_first$id, year = 0, day = pb_first$day, edema = pb_first$edema),
+                 data.frame(id = pb_second$id, year = 2, day = pb_second$day, edema = pb_second$edema))
+pb_df <- write_data(pb_long[order(pb_long$id, pb_long$year), ], "pbcseq_edema")
+pb_pair <- merge(pb_df[pb_df$year == 0, ], pb_df[pb_df$year == 2, ], by = "id")
+pb_lv <- sort(unique(c(pb_pair$edema.x, pb_pair$edema.y)))
+pb_tab <- table(factor(pb_pair$edema.x, levels = pb_lv), factor(pb_pair$edema.y, levels = pb_lv))
+pb_mt <- stats::mcnemar.test(pb_tab, correct = FALSE)
+add_ref("pbcseq_sankey", "statistic", pb_mt$statistic, "stats::mcnemar.test(correct = FALSE)")
+add_ref("pbcseq_sankey", "df", pb_mt$parameter, "stats::mcnemar.test(correct = FALSE)")
+add_ref("pbcseq_sankey", "p_value", pb_mt$p.value, "stats::mcnemar.test(correct = FALSE)")
+add_ref("pbcseq_sankey", "n_paired", nrow(pb_pair), "patients with both visits")
+add_ref("pbcseq_sankey", "n_0_to_0.5", pb_tab["0", "0.5"], "base::table()")
+add_ref("pbcseq_sankey", "n_0.5_to_0", pb_tab["0.5", "0"], "base::table()")
+
 ref_df <- do.call(rbind, refs)
 utils::write.csv(ref_df, file.path("benchmarks", "reference_values.csv"), row.names = FALSE)
 cat(sprintf("Wrote %d datasets and %d reference values.\n",

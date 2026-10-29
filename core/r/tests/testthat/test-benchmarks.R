@@ -330,3 +330,48 @@ test_that("state.x77: the correlation matrix keeps the column names with a space
   expect_ref(var_pair_row(res$stats, "Illiteracy", "Frost")$r, "state_correlation_heatmap",
              "r_illiteracy_frost")
 })
+
+test_that("mgus2 (Kyle 2002): Gray's test and the cumulative incidence match cmprsk", {
+  bench_skip()
+  # ggpubr::ggarrange measures the plots on the open device; the test mount is
+  # read-only, so a null device stands in for Rplots.pdf.
+  grDevices::pdf(NULL)
+  on.exit(grDevices::dev.off(), add = TRUE)
+  res <- recipe_cumulative_incidence(bench_data("mgus2"),
+                                     bench_spec("cumulative_incidence", time = "etime",
+                                                event = "event", x = "sex"))
+  for (cause in c("1", "2")) {
+    r <- res$stats[res$stats$cause == cause, ]
+    expect_ref(r$gray_statistic[1], "mgus2_cif", paste0("gray_stat_", cause))
+    expect_ref(r$gray_p[1], "mgus2_cif", paste0("gray_p_", cause))
+    for (g in c("F", "M")) {
+      cv <- res$curves[res$curves$cause == cause & res$curves$group == g, ]
+      for (tt in c(120, 240)) {
+        expect_ref(.cif_value_at(tt, cv$time, cv$est), "mgus2_cif",
+                   sprintf("cif_%s_%s_%d", g, cause, tt))
+      }
+    }
+  }
+})
+
+test_that("Pima.te (Smith 1988): the calibration statistics match hoslem.test and glm", {
+  bench_skip()
+  res <- recipe_calibration(bench_data("pima_te"),
+                            bench_spec("calibration", y = "type", x = "predicted", positive = "Yes"))
+  for (q in c("hl_statistic", "hl_df", "hl_p", "brier", "slope", "intercept")) {
+    expect_ref(res$stats[[q]], "pima_calibration", q)
+  }
+})
+
+test_that("pbcseq (Murtaugh 1994): Bowker's test of edema matches stats::mcnemar.test", {
+  bench_skip()
+  res <- recipe_sankey(bench_data("pbcseq_edema"),
+                       bench_spec("sankey", id = "id", x = "year", y = "edema"))
+  expect_equal(res$test_meta$name, "Bowker's test of symmetry")
+  for (q in c("statistic", "df", "p_value", "n_paired")) {
+    expect_ref(res$test_meta[[q]], "pbcseq_sankey", q)
+  }
+  st <- res$stats
+  expect_ref(st$n[st$from_state == "0" & st$to_state == "0.5"], "pbcseq_sankey", "n_0_to_0.5")
+  expect_ref(st$n[st$from_state == "0.5" & st$to_state == "0"], "pbcseq_sankey", "n_0.5_to_0")
+})
