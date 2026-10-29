@@ -152,7 +152,7 @@ test_that("feature_panel reports the Kruskal eta-squared (H) of rstatix", {
                    f1 = c(1:8, (1:8) + 3, (1:8) + 6), f2 = c(8:1, 1:8, c(2, 4, 1, 7, 3, 8, 5, 6)))
   res <- recipe_feature_panel(df, omics_spec("feature_panel", x = "group", test = "kruskal"))
   long <- data.frame(group = df$group, v = df$f1)
-  ref <- rstatix::kruskal_effsize(long, v ~ group)$effsize
+  ref <- unname(rstatix::kruskal_effsize(long, v ~ group)$effsize)
   expect_equal(res$stats$effect_size[res$stats$feature == "f1"], ref, tolerance = 1e-10)
   expect_equal(unique(res$stats$effect_size_name), "eta-squared (H)")
 })
