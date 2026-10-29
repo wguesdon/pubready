@@ -4,6 +4,54 @@
 # is the sample id. By default rows are z-scored and both axes are clustered.
 # When the primary annotation column has exactly two groups, each feature gets a
 # Welch t-test (BH-adjusted) and significance stars are drawn beside it.
+#
+# Both engines draw the same leaf order (.hm_tree): a complete-linkage tree on
+# the Euclidean distance of the drawn values, and at each merge the branch with
+# the higher mean of the unscaled values first. On a tie, the branch that holds
+# the earlier input row or column comes first. ComplexHeatmap would reorder by
+# the means of the drawn values, which are rounding noise after a row z-score.
+
+# The tree of one heatmap axis. `disp` has one row per leaf; `w` is the weight of
+# each leaf, the mean of its unscaled values.
+.hm_tree <- function(disp, w) {
+  .hm_order_tree(stats::hclust(stats::dist(disp), method = "complete"), w)
+}
+
+# The summed weight, the size and the first input index of a merge entry: a
+# negative entry is a leaf, a positive one an earlier merge.
+.hm_branch <- function(k, w, sum_w, size, first) {
+  if (k < 0) c(w[-k], 1, -k) else c(sum_w[k], size[k], first[k])
+}
+
+# Swap the two branches of each merge so that the branch with the higher mean
+# weight comes first, or on a tie the branch with the earlier input index.
+# as.dendrogram() draws the first entry of a merge row on the left.
+.hm_order_tree <- function(hc, w) {
+  m <- hc$merge
+  nm <- nrow(m)
+  sum_w <- numeric(nm); size <- numeric(nm); first <- numeric(nm)
+  for (i in seq_len(nm)) {
+    a <- .hm_branch(m[i, 1], w, sum_w, size, first)
+    b <- .hm_branch(m[i, 2], w, sum_w, size, first)
+    ma <- a[1] / a[2]; mb <- b[1] / b[2]
+    if (mb > ma || (mb == ma && b[3] < a[3])) m[i, ] <- m[i, 2:1]
+    sum_w[i] <- a[1] + b[1]; size[i] <- a[2] + b[2]; first[i] <- min(a[3], b[3])
+  }
+  hc$merge <- m
+  hc$order <- .hm_leaf_order(m)
+  hc
+}
+
+# The leaves of a merge matrix from left to right.
+.hm_leaf_order <- function(m) {
+  out <- integer(0)
+  stack <- nrow(m)
+  while (length(stack) > 0) {
+    k <- stack[1]; stack <- stack[-1]
+    if (k < 0) out <- c(out, -k) else stack <- c(m[k, 1], m[k, 2], stack)
+  }
+  out
+}
 
 recipe_heatmap <- function(df, spec) {
   feat <- as.character(df[[1]])
@@ -32,6 +80,10 @@ recipe_heatmap <- function(df, spec) {
 
   cluster_rows <- cluster %in% c("both", "rows")
   cluster_cols <- cluster %in% c("both", "columns")
+  row_tree <- if (cluster_rows && nrow(disp) > 1) .hm_tree(disp, rowMeans(mat)) else NULL
+  col_tree <- if (cluster_cols && ncol(disp) > 1) .hm_tree(t(disp), colMeans(mat)) else NULL
+  row_order <- if (is.null(row_tree)) seq_len(nrow(disp)) else row_tree$order
+  col_order <- if (is.null(col_tree)) seq_len(ncol(disp)) else col_tree$order
 
   # Optional column annotation.
   top_anno <- NULL; ann <- NULL; group_col <- NULL
@@ -90,7 +142,8 @@ recipe_heatmap <- function(df, spec) {
 
   ht <- ComplexHeatmap::Heatmap(
     disp, name = legend_name, col = col_fun,
-    cluster_rows = cluster_rows, cluster_columns = cluster_cols,
+    cluster_rows = if (is.null(row_tree)) FALSE else stats::as.dendrogram(row_tree),
+    cluster_columns = if (is.null(col_tree)) FALSE else stats::as.dendrogram(col_tree),
     top_annotation = top_anno, right_annotation = right_anno,
     row_names_gp = grid::gpar(fontsize = 8),
     column_names_gp = grid::gpar(fontsize = 8),
@@ -101,7 +154,9 @@ recipe_heatmap <- function(df, spec) {
     name = "Clustered heatmap (ComplexHeatmap)",
     scale = scale_mode, clustering = cluster,
     n_features = nrow(mat), n_samples = ncol(mat),
-    per_feature_test = test_label, n_significant = n_sig)
+    per_feature_test = test_label, n_significant = n_sig,
+    row_order = as.list(rownames(disp)[row_order]),
+    column_order = as.list(colnames(disp)[col_order]))
 
   resolved <- list(family = "heatmap", label = "heatmap")
   methods  <- .hm_methods(scale_mode, cluster, nrow(mat), ncol(mat), test_label, n_sig)
@@ -130,6 +185,9 @@ recipe_heatmap <- function(df, spec) {
     rows = "Rows were hierarchically clustered; column order was preserved.",
     columns = "Columns were hierarchically clustered; row order was preserved.",
     "No clustering was applied.")
+  if (cluster %in% c("both", "rows", "columns")) {
+    clust_txt <- paste(clust_txt, "Clustering used complete linkage on the Euclidean distance of the displayed values, and at each merge the branch with the higher mean of the unscaled values was drawn first.")
+  }
   test_txt <- if (!is.null(test_label)) {
     sprintf(" A %s was applied per feature; %d feature(s) were significant (adjusted P < 0.05) and are marked with stars.",
             test_label, n_sig)
@@ -140,6 +198,12 @@ recipe_heatmap <- function(df, spec) {
     scale_txt, " ", clust_txt, test_txt,
     sprintf(" Rendered in R %s with ComplexHeatmap %s and circlize %s.",
             rver, v$ComplexHeatmap, v$circlize))
+}
+
+# The source of a function as script lines that define it under its name.
+.hm_fn_lines <- function(name, fn) {
+  src <- deparse(fn)
+  c(paste(name, "<-", src[1]), src[-1], "")
 }
 
 .hm_emit_script <- function(spec, in_name, fig_stub, scale_mode, cluster_rows, cluster_cols, legend_name) {
@@ -155,6 +219,12 @@ recipe_heatmap <- function(df, spec) {
     "ann <- ann[colnames(mat), , drop = FALSE]",
     "top <- HeatmapAnnotation(df = ann)"
   ) else "top <- NULL"
+  row_line <- if (cluster_rows) {
+    'rows <- if (nrow(disp) > 1) as.dendrogram(.hm_order_tree(hclust(dist(disp), "complete"), rowMeans(mat))) else FALSE'
+  } else "rows <- FALSE"
+  col_line <- if (cluster_cols) {
+    'cols <- if (ncol(disp) > 1) as.dendrogram(.hm_order_tree(hclust(dist(t(disp)), "complete"), colMeans(mat))) else FALSE'
+  } else "cols <- FALSE"
 
   c(
     "#!/usr/bin/env Rscript",
@@ -162,6 +232,12 @@ recipe_heatmap <- function(df, spec) {
     "# (see REPRODUCE.md) from this bundle folder.",
     "suppressPackageStartupMessages({ library(ComplexHeatmap); library(circlize) })",
     "",
+    "# The leaf order of the figure: complete linkage on the Euclidean distance of",
+    "# the drawn values, and at each merge the branch with the higher mean of the",
+    "# unscaled values first. On a tie, the branch with the earlier input index.",
+    .hm_fn_lines(".hm_branch", .hm_branch),
+    .hm_fn_lines(".hm_order_tree", .hm_order_tree),
+    .hm_fn_lines(".hm_leaf_order", .hm_leaf_order),
     sprintf('raw <- read.csv("%s", check.names = FALSE, row.names = 1)', in_name),
     "mat <- as.matrix(raw); storage.mode(mat) <- \"double\"",
     "keep <- apply(mat, 1, function(r) all(is.finite(r)) && sd(r) > 0); mat <- mat[keep, ]",
@@ -169,8 +245,10 @@ recipe_heatmap <- function(df, spec) {
     "disp[!is.finite(disp)] <- 0",
     ann_lines,
     sprintf('col_fun <- colorRamp2(c(-2, 0, 2), c("#3B6DB3", "white", "#C1432B"))'),
-    sprintf('ht <- Heatmap(disp, name = "%s", col = col_fun, cluster_rows = %s, cluster_columns = %s, top_annotation = top)',
-            legend_name, if (cluster_rows) "TRUE" else "FALSE", if (cluster_cols) "TRUE" else "FALSE"),
+    row_line,
+    col_line,
+    sprintf('ht <- Heatmap(disp, name = "%s", col = col_fun, cluster_rows = rows, cluster_columns = cols, top_annotation = top)',
+            legend_name),
     "",
     sprintf('cairo_pdf("%s.pdf", width = 7, height = 7)', fig_stub),
     "draw(ht, merge_legends = TRUE); dev.off()",

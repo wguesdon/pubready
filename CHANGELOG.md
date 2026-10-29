@@ -153,6 +153,14 @@ tag move together.
   Podman that does not answer now points to `figkit doctor`. Only a missing image
   gives the hint `figkit build`. `figkit version` prints "podman: not found" in
   place of an empty version.
+- The `heatmap` row order differed between the engines. ComplexHeatmap
+  reordered each branch by the row means of the drawn values, which are
+  rounding noise after a row z-score, and PyComplexHeatmap kept the scipy
+  order. Both engines now build the same complete-linkage tree and put the
+  branch with the higher mean of the unscaled values first, with the earlier
+  input row or column first on a tie. `test_meta` records `row_order` and
+  `column_order`, and the smoke test checks that they agree. The Python emitted
+  script used the average linkage of seaborn, and it now uses the same tree.
 - The emitted scripts of `two_group_compare` and `multi_group_compare` drew a
   box for the bar and the raincloud geoms, in both engines. Each script now
   draws the geom of the figure, with the same layer settings, and it leaves out

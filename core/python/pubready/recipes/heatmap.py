@@ -2,8 +2,14 @@
 PyComplexHeatmap (to mirror the R ComplexHeatmap output); falls back to a seaborn
 clustermap if PyComplexHeatmap raises. Row z-score and clustering by default;
 a per-feature Welch t-test (BH) is computed when the annotation has two groups,
-and its stars are drawn between the heatmap and the row names, as in R."""
+and its stars are drawn between the heatmap and the row names, as in R.
+
+Both engines draw the same leaf order (ordered_linkage): a complete-linkage tree
+on the Euclidean distance of the drawn values, and at each merge the branch with
+the higher mean of the unscaled values first. On a tie, the branch that holds the
+earlier input row or column comes first."""
 import functools
+import inspect
 import os
 
 import matplotlib.pyplot as plt
@@ -11,11 +17,44 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy import stats
+from scipy.cluster import hierarchy
 from statsmodels.stats.multitest import multipletests
 
 from ..bundle import slugify
 from ..io import read_tidy
 from ..theme import PALETTE, diverging_cmap
+
+
+def ordered_linkage(values, weights):
+    """Build the tree of one heatmap axis with the leaf order of the R engine.
+
+    The tree is complete linkage on the Euclidean distance of the rows of values.
+    At each merge the branch with the higher mean weight comes first, and on a
+    tie the branch that holds the earlier input index. scipy draws the first
+    column of a linkage row on the left, so the swap sets the drawn order, as
+    .hm_order_tree() does on the merge matrix in R.
+
+    Args:
+        values: The drawn values, one row per leaf.
+        weights: The weight of each leaf, the mean of its unscaled values.
+
+    Returns:
+        numpy.ndarray: The linkage matrix.
+    """
+    z = hierarchy.linkage(np.asarray(values, dtype=float), method="complete", metric="euclidean")
+    n = len(weights)
+    sum_w = np.concatenate([np.asarray(weights, dtype=float), np.zeros(n - 1)])
+    size = np.concatenate([np.ones(n), np.zeros(n - 1)])
+    first = np.concatenate([np.arange(n, dtype=float), np.zeros(n - 1)])
+    for i in range(n - 1):
+        a, b = int(z[i, 0]), int(z[i, 1])
+        ma, mb = sum_w[a] / size[a], sum_w[b] / size[b]
+        if mb > ma or (mb == ma and first[b] < first[a]):
+            z[i, 0], z[i, 1] = b, a
+        sum_w[n + i] = sum_w[a] + sum_w[b]
+        size[n + i] = size[a] + size[b]
+        first[n + i] = min(first[a], first[b])
+    return z
 
 
 def color_limits(disp, scale_mode):
@@ -166,6 +205,14 @@ def recipe_heatmap(df, spec):
     legend_name = "value" if scale_mode == "none" else "z-score"
     cluster_rows = cluster in ("both", "rows")
     cluster_cols = cluster in ("both", "columns")
+    row_z = (ordered_linkage(disp.to_numpy(), mat.mean(axis=1).to_numpy())
+             if cluster_rows and disp.shape[0] > 1 else None)
+    col_z = (ordered_linkage(disp.to_numpy().T, mat.mean(axis=0).to_numpy())
+             if cluster_cols and disp.shape[1] > 1 else None)
+    row_order = (list(disp.index[hierarchy.leaves_list(row_z)]) if row_z is not None
+                 else list(disp.index))
+    col_order = (list(disp.columns[hierarchy.leaves_list(col_z)]) if col_z is not None
+                 else list(disp.columns))
 
     ann, group_col = None, None
     if spec["data"].get("annotation"):
@@ -220,9 +267,10 @@ def recipe_heatmap(df, spec):
         # puts the legends on top of them.
         plotter = pch.ClusterMapPlotter(
             data=disp, top_annotation=col_ha,
-            row_cluster=cluster_rows, col_cluster=cluster_cols,
+            row_cluster=row_z is not None, col_cluster=col_z is not None,
             row_cluster_method="complete", col_cluster_method="complete",
-            row_dendrogram=cluster_rows, col_dendrogram=cluster_cols,
+            row_dendrogram=row_z is not None, col_dendrogram=col_z is not None,
+            row_dendrogram_kws={"linkage": row_z}, col_dendrogram_kws={"linkage": col_z},
             cmap=diverging_cmap(), vmin=vmin, vmax=vmax, center=vcenter, label=legend_name,
             show_rownames=True, show_colnames=True,
             xticklabels=True, yticklabels=True,
@@ -245,7 +293,8 @@ def recipe_heatmap(df, spec):
             col_colors = pd.DataFrame({c: ann[c].map(level_colours(ann[c])) for c in ann.columns})
         grid = sns.clustermap(
             disp, cmap=diverging_cmap(), vmin=vmin, vmax=vmax, center=vcenter, method="complete",
-            row_cluster=cluster_rows, col_cluster=cluster_cols,
+            row_cluster=row_z is not None, col_cluster=col_z is not None,
+            row_linkage=row_z, col_linkage=col_z,
             col_colors=col_colors, figsize=(w, h), cbar_kws={"label": legend_name},
             xticklabels=True, yticklabels=True)
         fig = grid.figure
@@ -258,6 +307,7 @@ def recipe_heatmap(df, spec):
         "scale": scale_mode, "clustering": cluster,
         "n_features": int(mat.shape[0]), "n_samples": int(mat.shape[1]),
         "per_feature_test": test_label, "n_significant": n_sig,
+        "row_order": [str(v) for v in row_order], "column_order": [str(v) for v in col_order],
     }
     methods = _methods(scale_mode, cluster, mat.shape[0], mat.shape[1], test_label, n_sig, used_pch)
     return {
@@ -280,9 +330,13 @@ def _methods(scale_mode, cluster, n_feat, n_samp, test_label, n_sig, used_pch):
                  "column": "Values were z-scored within each sample (column scaling).",
                  "none": "Raw values were shown without scaling."}.get(scale_mode)
     clust_txt = {"both": "Rows and columns were hierarchically clustered.",
-                 "rows": "Rows were hierarchically clustered.",
-                 "columns": "Columns were hierarchically clustered.",
-                 "none": "No clustering was applied."}.get(cluster)
+                 "rows": "Rows were hierarchically clustered; column order was preserved.",
+                 "columns": "Columns were hierarchically clustered; row order was preserved.",
+                 }.get(cluster, "No clustering was applied.")
+    if cluster in ("both", "rows", "columns"):
+        clust_txt += (" Clustering used complete linkage on the Euclidean distance of the displayed "
+                      "values, and at each merge the branch with the higher mean of the unscaled "
+                      "values was drawn first.")
     test_txt = (f" A {test_label} was applied per feature; {n_sig} feature(s) were significant "
                 "(adjusted P < 0.05) and are marked with stars." if test_label else "")
     return (
@@ -302,17 +356,29 @@ def _script(spec, scale_mode, cluster_rows, cluster_cols, legend_name, in_name, 
                  f'gc = ann.columns[0]\n'
                  f'colors = {{lvl: c for lvl, c in zip(sorted(ann[gc].unique()), ["#3B6DB3", "#C1432B", "#2E8B57"])}}\n'
                  f'col_colors = ann[gc].map(colors)') if ann_name else "col_colors = None"
+    row_line = ("row_z = ordered_linkage(disp.to_numpy(), mat.mean(axis=1).to_numpy()) "
+                "if len(disp) > 1 else None" if cluster_rows else "row_z = None")
+    col_line = ("col_z = ordered_linkage(disp.to_numpy().T, mat.mean(axis=0).to_numpy()) "
+                "if disp.shape[1] > 1 else None" if cluster_cols else "col_z = None")
     return f'''#!/usr/bin/env python3
 # Standalone reproduction (seaborn clustermap). Run inside the pinned container.
 import matplotlib; matplotlib.use("Agg")
+import numpy as np
 import pandas as pd, seaborn as sns
+from scipy.cluster import hierarchy
+
+
+{inspect.getsource(ordered_linkage)}
 
 raw = pd.read_csv("{in_name}", index_col=0)
 mat = raw.apply(pd.to_numeric, errors="coerce")
 mat = mat[mat.notna().all(axis=1) & (mat.std(axis=1) > 0)]
 {disp_line}
 {ann_lines}
-g = sns.clustermap(disp, cmap="RdBu_r", center=0, row_cluster={cluster_rows}, col_cluster={cluster_cols},
+{row_line}
+{col_line}
+g = sns.clustermap(disp, cmap="RdBu_r", center=0, row_cluster=row_z is not None,
+                   col_cluster=col_z is not None, row_linkage=row_z, col_linkage=col_z,
                    col_colors=col_colors, cbar_kws={{"label": "{legend_name}"}},
                    xticklabels=True, yticklabels=True)
 g.figure.savefig("{fig_stub}.pdf")

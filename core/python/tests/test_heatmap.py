@@ -1,3 +1,5 @@
+import subprocess
+import sys
 from types import SimpleNamespace
 
 import numpy as np
@@ -43,3 +45,66 @@ def test_heatmap_draws_stars_and_keeps_legends_clear_of_the_row_names(tmp_path):
                and (ax.get_legend() is not None or ax.collections or ax.images)]
     assert legends, "no legend axes to the right of the heatmap"
     assert min(legends) > names_right
+
+
+# The heatmap leaf order is the same in both engines. The R suite
+# (test-heatmap.R) uses the same matrix and expects the same order. g1 and g3
+# form one branch and g2 and g4 the other. The branch g2, g4 has the higher
+# mean, and inside each branch the gene with the higher mean comes first. The
+# columns s1 and s3 are equal, as are s2 and s4, so the order inside each column
+# branch falls to the tie rule: the earlier input column first.
+def hm_matrix():
+    """The four-gene matrix of the R suite.
+
+    Returns:
+        pandas.DataFrame: The matrix, with the gene names in the first column.
+    """
+    return pd.DataFrame({"gene": ["g1", "g2", "g3", "g4"],
+                         "s1": [1, 10, 1.5, 10.2], "s2": [2, 11, 2.5, 11.2],
+                         "s3": [1, 10, 1.5, 10.2], "s4": [2, 11, 2.5, 11.2]})
+
+
+def hm_spec(cluster="both"):
+    """A heatmap spec with unscaled values.
+
+    Args:
+        cluster: both, rows, columns or none.
+
+    Returns:
+        dict: The spec.
+    """
+    return spec_from_args(SimpleNamespace(recipe="heatmap", data="m.csv", x=None, y=None,
+                                          scale="none", cluster=cluster))
+
+
+def test_heatmap_orders_each_branch_by_the_mean_of_its_unscaled_values():
+    res = recipe_heatmap(hm_matrix(), hm_spec())
+    assert res["test_meta"]["row_order"] == ["g4", "g2", "g3", "g1"]
+    assert res["test_meta"]["column_order"] == ["s2", "s4", "s1", "s3"]
+    fig = res["fig"]
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    heat = [ax for ax in fig.axes if any(t.get_text() == "g1" for t in ax.get_yticklabels())]
+    assert len(heat) == 1
+    top_down = sorted((t for t in heat[0].get_yticklabels() if t.get_text()),
+                      key=lambda t: -t.get_window_extent(renderer).y0)
+    assert [t.get_text() for t in top_down] == ["g4", "g2", "g3", "g1"]
+
+
+def test_an_axis_that_is_not_clustered_keeps_the_input_order():
+    res = recipe_heatmap(hm_matrix(), hm_spec("rows"))
+    assert res["test_meta"]["row_order"] == ["g4", "g2", "g3", "g1"]
+    assert res["test_meta"]["column_order"] == ["s1", "s2", "s3", "s4"]
+
+
+def test_the_emitted_script_carries_the_order_rule_and_runs(tmp_path):
+    df = hm_matrix()
+    res = recipe_heatmap(df, hm_spec())
+    script = res["build_script"]("input.csv", "figure")
+    assert "def ordered_linkage(" in script
+    df.to_csv(tmp_path / "input.csv", index=False)
+    (tmp_path / "script.py").write_text(script)
+    run = subprocess.run([sys.executable, "script.py"], cwd=tmp_path, capture_output=True,
+                         text=True, check=False)
+    assert run.returncode == 0, run.stderr
+    assert (tmp_path / "figure.pdf").exists()
