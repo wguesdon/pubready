@@ -17,7 +17,7 @@ from matplotlib import transforms
 from matplotlib.ticker import NullLocator
 
 from ..theme import apply_pub_style, palette, plain_log_axis
-from ..util import format_p
+from ..util import format_p, p_phrase
 
 # Tick sequences of the hazard-ratio axis, from coarse to fine (mantissas per decade).
 TICK_SETS = [(1, 2, 5), (1, 1.5, 2, 3, 5, 7), (1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8)]
@@ -312,14 +312,14 @@ def _methods(stats_df, ph_p, covs, n, events):
     import platform
     sig = stats_df[stats_df["p_value"] < 0.05]
     if len(sig):
-        parts = "; ".join(f"{r.term} (HR = {r.HR:.2f}, 95% CI {r.ci_low:.2f}-{r.ci_high:.2f}, P = {format_p(r.p_value)})"
+        parts = "; ".join(f"{r.term} (HR = {r.HR:.2f}, 95% CI {r.ci_low:.2f}-{r.ci_high:.2f}, {p_phrase(r.p_value)})"
                           for r in sig.itertuples())
         sig_txt = f" Significant predictors: {parts}."
     else:
         sig_txt = " No individual predictor reached significance."
     ph_txt = "" if np.isnan(ph_p) else (
         f" The proportional-hazards assumption was {'violated' if ph_p < 0.05 else 'not violated'}"
-        f" (minimum covariate cox.zph P = {format_p(ph_p)}).")
+        f" (minimum covariate cox.zph {p_phrase(ph_p)}).")
     return (
         f"Hazard ratios were estimated with a Cox proportional-hazards model ({n} subjects, {events} events) "
         f"including {', '.join(covs)}." + sig_txt + ph_txt +

@@ -11,7 +11,7 @@ from lifelines.statistics import multivariate_logrank_test
 from matplotlib.lines import Line2D
 
 from ..theme import apply_pub_style, longest_line, palette, wrap_labels
-from ..util import format_p
+from ..util import p_phrase
 
 LEGEND_WRAP = 24
 """The legend labels wrap at this many characters, as in the R engine."""
@@ -255,7 +255,7 @@ def _methods(rows, res, lr_df, lr_p, g):
     return (
         "Survival was estimated by the Kaplan-Meier method and compared between "
         f"groups of {g} with the log-rank test (chi-square({lr_df}) = {res.test_statistic:.2f}, "
-        f"P = {format_p(lr_p)})."
+        f"{p_phrase(lr_p)})."
         f" Median survival by group: {med}."
         " Censoring is marked with ticks and the number at risk is tabulated below the curves;"
         " it counts the subjects whose time is at or after each time point."

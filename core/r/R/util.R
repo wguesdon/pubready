@@ -154,3 +154,10 @@ cap_first <- function(s) {
   if (length(s) == 0 || is.na(s) || nchar(s) == 0) return(s)
   paste0(toupper(substring(s, 1, 1)), substring(s, 2))
 }
+
+# The P value as a phrase for a methods sentence: "P < 0.001" below 0.001, else
+# "P = " and two significant digits. A table cell keeps the bare value.
+p_phrase <- function(p) {
+  if (is.na(p)) return("P = NA")
+  if (p < 0.001) "P < 0.001" else paste("P =", trimws(formatC(p, format = "g", digits = 2)))
+}

@@ -232,14 +232,14 @@ recipe_cox_forest <- function(df, spec) {
   sig <- stats_df[which(stats_df$p_value < 0.05), , drop = FALSE]
   sig_txt <- if (nrow(sig) > 0) {
     paste0(" Significant predictors: ",
-           paste(sprintf("%s (HR = %.2f, 95%% CI %.2f-%.2f, P = %s)",
+           paste(sprintf("%s (HR = %.2f, 95%% CI %.2f-%.2f, %s)",
                          sig$term, sig$HR, sig$ci_low, sig$ci_high,
-                         vapply(sig$p_value, .cox_pfmt, character(1))), collapse = "; "),
+                         vapply(sig$p_value, p_phrase, character(1))), collapse = "; "),
            ".")
   } else " No individual predictor reached significance."
   ph_txt <- if (is.na(ph_p)) "" else {
-    sprintf(" The proportional-hazards assumption was %s (global cox.zph P = %s).",
-            if (ph_p < 0.05) "violated" else "not violated", .cox_pfmt(ph_p))
+    sprintf(" The proportional-hazards assumption was %s (global cox.zph %s).",
+            if (ph_p < 0.05) "violated" else "not violated", p_phrase(ph_p))
   }
 
   paste0(

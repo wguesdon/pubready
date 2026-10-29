@@ -198,10 +198,6 @@ km_width <- function(leg_labs, title) {
   if (p < 0.001) "Log-rank P < 0.001" else sprintf("Log-rank P = %.2g", p)
 }
 
-.km_p_text <- function(p) {
-  if (is.na(p)) "NA" else if (p < 0.001) "< 0.001" else formatC(p, format = "g", digits = 2)
-}
-
 .km_median_text <- function(m) {
   if (is.na(m) || !is.finite(m)) "not reached" else formatC(m, format = "g", digits = 3)
 }
@@ -214,7 +210,7 @@ km_width <- function(leg_labs, title) {
   paste0(
     "Survival was estimated by the Kaplan-Meier method and compared between ",
     sprintf("groups of %s with the log-rank test ", group_col),
-    sprintf("(chi-square(%d) = %.2f, P = %s).", lr_df, sd$chisq, .km_p_text(lr_p)),
+    sprintf("(chi-square(%d) = %.2f, %s).", lr_df, sd$chisq, p_phrase(lr_p)),
     sprintf(" Median survival by group: %s.", med),
     " Censoring is marked with ticks and the number at risk is tabulated below the curves;",
     " it counts the subjects whose time is at or after each time point.",

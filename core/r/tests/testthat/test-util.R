@@ -69,3 +69,10 @@ test_that("p_stars mirrors util.p_stars of the Python engine", {
   expect_equal(p_stars(1e-4), "***")
   expect_equal(p_stars(0.05), "ns")
 })
+
+test_that("p_phrase writes P < 0.001 without an equals sign", {
+  expect_equal(p_phrase(1e-5), "P < 0.001")
+  expect_equal(p_phrase(0.0091), "P = 0.0091")
+  expect_equal(p_phrase(0.22), "P = 0.22")
+  expect_equal(p_phrase(NA_real_), "P = NA")
+})

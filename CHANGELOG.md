@@ -39,6 +39,9 @@ tag move together.
   38 feature(s)"). It is rewritten, and it now says that the Welch test treats
   the samples as independent, so a reader sees the assumption for a paired
   design.
+- The `cox_forest` and `survival_km` methods paragraphs wrote "P = < 0.001".
+  They now write "P < 0.001". A new `p_phrase()` helper in each engine writes
+  the P value of a methods sentence.
 
 ## [2.0.0] - 2026-10-29
 

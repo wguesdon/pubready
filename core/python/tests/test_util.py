@@ -79,3 +79,11 @@ def test_rank_biserial_covers_both_designs():
 def test_p_stars_boundaries_match_the_r_engine():
     assert p_stars(1e-4) == "***"
     assert p_stars(0.05) == "ns"
+
+
+def test_p_phrase_writes_p_below_0001_without_an_equals_sign():
+    from pubready.util import p_phrase
+    assert p_phrase(1e-5) == "P < 0.001"
+    assert p_phrase(0.0091) == "P = 0.0091"
+    assert p_phrase(0.22) == "P = 0.22"
+    assert p_phrase(float("nan")) == "P = NA"

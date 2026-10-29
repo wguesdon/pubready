@@ -229,3 +229,18 @@ def rank_biserial_paired(d):
         return np.nan
     rk = stats.rankdata(np.abs(nz))
     return float((rk[nz > 0].sum() - rk[nz < 0].sum()) / rk.sum())
+
+
+def p_phrase(p, digits=2):
+    """Write a P value as a phrase for a methods sentence.
+
+    Args:
+        p: The P value.
+        digits: The count of significant digits.
+
+    Returns:
+        str: "P < 0.001" below 0.001, else "P = " and the value. A table cell
+        keeps the bare value of format_p.
+    """
+    text = format_p(p, digits)
+    return f"P {text}" if text.startswith("<") else f"P = {text}"
