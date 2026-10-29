@@ -147,9 +147,9 @@ recipe_enrichment_dot <- function(df, spec) {
 .enrich_methods <- function(gsea_mode, n_total, n_shown, xlab) {
   v    <- pkg_versions("ggplot2")
   rver <- paste(R.version$major, R.version$minor, sep = ".")
-  kind <- if (gsea_mode) "GSEA" else "over-representation (ORA)"
+  kind <- if (gsea_mode) "a GSEA" else "an over-representation (ORA)"
   paste0(
-    sprintf("The top %d of %d enriched terms from a %s analysis were shown as a dot plot. ",
+    sprintf("The top %d of %d enriched terms from %s analysis were shown as a dot plot. ",
             n_shown, n_total, kind),
     sprintf(paste("The x-axis is %s, dot color the -log10 of the adjusted p-value, and dot size",
                   "the gene count. "), xlab),

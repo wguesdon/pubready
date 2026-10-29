@@ -50,6 +50,10 @@ tag move together.
   example "EC50 = 3.7 (95% CI 3 to 4.58)" and "P = 0.01". A new `sig_text()`
   helper in each engine keeps a fixed count of significant digits, so the text
   now reads "EC50 = 3.70 (95% CI 3.00 to 4.58)" and "P = 0.010".
+- Three methods templates had wording errors: `correlation` wrote "The
+  association between Wt and mpg" with a capital in mid-sentence,
+  `correlation_heatmap` wrote "pearson" in lower case, and `enrichment_dot` wrote
+  "a over-representation".
 
 ## [2.0.0] - 2026-10-29
 

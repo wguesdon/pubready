@@ -13,6 +13,7 @@ from statsmodels.stats.multitest import multipletests
 
 from ..bundle import slugify
 from ..theme import diverging_cmap
+from ..util import cap_first
 
 
 def recipe_correlation_heatmap(df, spec):
@@ -114,7 +115,7 @@ def _methods(method, cluster, k, n_sig):
                  "columns": "Columns were hierarchically clustered.",
                  "none": "No clustering was applied."}.get(cluster, "")
     return (
-        f"Pairwise {method} correlations among {k} variables were computed and drawn as a "
+        f"Pairwise {cap_first(method)} correlations among {k} variables were computed and drawn as a "
         f"clustered heatmap with seaborn. {clust_txt} Each cell shows the coefficient with "
         f"Benjamini-Hochberg adjusted significance stars ({n_sig} of the {comb(k, 2)} pairs "
         "were significant at adjusted P < 0.05)."

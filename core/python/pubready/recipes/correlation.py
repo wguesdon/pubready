@@ -11,7 +11,7 @@ from scipy import stats
 
 from ..bundle import slugify
 from ..theme import R_POINT_PT, apply_pub_style, new_fig, palette
-from ..util import cap_first, shapiro_normal
+from ..util import shapiro_normal
 
 
 def lm_band(x, y, n=80):
@@ -172,7 +172,7 @@ def _methods(r, stats_df, spec):
     est = f"{stats_df['estimate'].iloc[0]:.2f}"
     pv = f"{float(stats_df['p_value'].iloc[0]):.2g}"
     return (
-        f"The association between {cap_first(x_lab)} and {y_lab} was assessed with a "
+        f"The association between {x_lab} and {y_lab} was assessed with a "
         f"{r['label']} (n = {int(stats_df['n'].iloc[0])})." + auto_txt +
         f" The correlation was {r['estimate_name']} = {est} (P = {pv}), with a linear fit and "
         "95% confidence band shown. Significance was set at P < 0.05."

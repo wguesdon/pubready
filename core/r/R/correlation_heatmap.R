@@ -106,7 +106,7 @@ recipe_correlation_heatmap <- function(df, spec) {
     "No clustering was applied.")
   paste0(
     sprintf("Pairwise %s correlations among %d variables were computed and drawn as a heatmap with ComplexHeatmap. ",
-            method, k),
+            cap_first(method), k),
     clust_txt,
     " Each cell shows the coefficient with Benjamini-Hochberg adjusted significance stars",
     sprintf(" (%d of the %d pairs were significant at adjusted P < 0.05).",

@@ -137,7 +137,7 @@ recipe_correlation <- function(df, spec) {
   pv  <- sprintf("%.2g", stats_df$p_value[1])
   paste0(
     sprintf("The association between %s and %s was assessed with a %s (n = %d).",
-            cap_first(x_lab), y_lab, resolved$label, stats_df$n[1]),
+            x_lab, y_lab, resolved$label, stats_df$n[1]),
     auto_txt,
     sprintf(" The correlation was %s = %s (P = %s), with a linear fit and 95%% confidence band shown.",
             resolved$estimate_name, est, pv),

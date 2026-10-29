@@ -252,9 +252,9 @@ def recipe_enrichment_dot(df, spec):
 def _methods(gsea, n_total, n_shown, xlab):
     from importlib.metadata import version as v
     import platform
-    kind = "GSEA" if gsea else "over-representation (ORA)"
+    kind = "a GSEA" if gsea else "an over-representation (ORA)"
     return (
-        f"The top {n_shown} of {n_total} enriched terms from a {kind} analysis were shown as a "
+        f"The top {n_shown} of {n_total} enriched terms from {kind} analysis were shown as a "
         f"dot plot. The x-axis is {xlab}, dot color the -log10 of the adjusted p-value, and "
         "dot size the gene count. The enrichment analysis was performed upstream; this figure "
         "summarises its output. "
