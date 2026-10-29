@@ -14,7 +14,7 @@
 
 .enz_mean_at <- function(u, s, v) mean(v[s == u])
 
-.enz_control <- function() stats::nls.control(maxiter = 1000, tol = 1e-10, minFactor = 1e-12)
+.enz_control <- function() stats::nls.control(maxiter = 1000, tol = 1e-8, minFactor = 1e-12)
 
 # Starting values: Vmax0 is the largest rate, and Km0 is the positive substrate
 # concentration whose mean rate is nearest Vmax0 / 2.
@@ -292,7 +292,7 @@ recipe_enzyme_kinetics <- function(df, spec) {
     paste0("  ", start_lines, c(rep(",", length(start_lines) - 1), "")),
     ")",
     sprintf("algos <- c(%s)", paste(sprintf('"%s" = "%s"', names(algos), unlist(algos)), collapse = ", ")),
-    "ctrl <- nls.control(maxiter = 1000, tol = 1e-10, minFactor = 1e-12)",
+    "ctrl <- nls.control(maxiter = 1000, tol = 1e-8, minFactor = 1e-12)",
     "curves <- NULL",
     "for (g in names(starts)) {",
     "  fit <- nls(v ~ vmax * s / (km + s), data = d[d$group == g, ], start = starts[[g]],",
