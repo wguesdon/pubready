@@ -80,6 +80,31 @@ def _markdown_value(value):
     return str(value).replace("|", r"\|").replace("\n", " ")
 
 
+def integer_columns(frame):
+    """Write each float column that holds only whole numbers as integers.
+
+    pandas stores a count or a df column as float when the column holds a
+    missing value, and to_csv then writes 16470.0 where R writes 16470. The
+    nullable Int64 type keeps the missing value and drops the ".0".
+
+    Args:
+        frame: The stats table.
+
+    Returns:
+        pandas.DataFrame: A copy with the whole-number float columns as Int64.
+    """
+    out = frame.copy()
+    for col in out.columns:
+        values = out[col]
+        if values.dtype.kind != "f":
+            continue
+        present = values.dropna().to_numpy()
+        if (len(present) and np.all(np.isfinite(present)) and np.all(np.abs(present) < 1e15)
+                and np.all(present == np.round(present))):
+            out[col] = values.astype("Int64")
+    return out
+
+
 def dataframe_markdown(frame, limit=100):
     """Convert a data frame to a small Markdown table.
 
@@ -436,7 +461,7 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
         qfig.savefig(os.path.join(bdir, f"qc_normality_{ts}.pdf"), facecolor="white")
         plt.close(qfig)
 
-    result["stats"].to_csv(os.path.join(bdir, f"stats_{ts}.csv"), index=False)
+    integer_columns(result["stats"]).to_csv(os.path.join(bdir, f"stats_{ts}.csv"), index=False)
 
     ext = os.path.splitext(raw_input)[1].lstrip(".") or "csv"
     in_name = f"input_{base}.{ext}"

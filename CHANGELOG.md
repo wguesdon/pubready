@@ -37,6 +37,9 @@ tag move together.
 - The `proportions` methods paragraph now gives the chi-square statistic and
   its df, and it names the direction of the odds ratio, for example "The odds
   ratio of Admitted for Male versus Female was 1.84".
+- The Python stats tables wrote a count or a df as a float, for example 16470.0
+  and 2.0, when the column also held a missing value. They now write 16470 and
+  2, as the R tables do.
 
 ### Fixed
 - `paired_compare` wrote "The test was chosen from the Shapiro-Wilk normality

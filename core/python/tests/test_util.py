@@ -98,3 +98,13 @@ def test_sig_text_keeps_the_trailing_zeros_and_drops_a_trailing_point():
     assert sig_text(0.0104, 2) == "0.010"
     assert sig_text(7.1e-5, 2) == "7.1e-05"
     assert sig_text(float("nan")) == "NA"
+
+
+def test_integer_columns_drops_the_trailing_zero_of_whole_numbers():
+    import pandas as pd
+    from pubready.bundle import integer_columns
+    frame = pd.DataFrame({"n": [16470.0, np.nan], "df": [2.0, 147.0], "p": [0.5, np.nan],
+                          "label": ["a", "b"]})
+    out = integer_columns(frame)
+    assert out.to_csv(index=False).splitlines() == ["n,df,p,label", "16470,2,0.5,a", ",147,,b"]
+    assert frame["n"].dtype.kind == "f"
