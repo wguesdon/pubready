@@ -115,8 +115,8 @@ recipe_multi_group_compare <- function(df, spec) {
     outcome      = y,
     group1       = ph$group1,
     group2       = ph$group2,
-    n1           = vapply(ph$group1, function(g) length(by_group[[g]]), integer(1)),
-    n2           = vapply(ph$group2, function(g) length(by_group[[g]]), integer(1)),
+    n1           = vapply(ph$group1, .mg_group_n, integer(1), by_group = by_group),
+    n2           = vapply(ph$group2, .mg_group_n, integer(1), by_group = by_group),
     post_hoc     = resolved$posthoc_label,
     estimate     = estimate,
     p_adj        = ph$p.adj,
@@ -125,24 +125,26 @@ recipe_multi_group_compare <- function(df, spec) {
     stringsAsFactors = FALSE
   )
 
-  # Significant comparisons only, stacked above the data.
+  # Significant comparisons only. Up to .mg_max_brackets() of them get a
+  # bracket each, on its own level; more than that would stack too many lines,
+  # so the figure shows a compact letter display instead.
   sig <- ph[which(ph$p.adj < 0.05), , drop = FALSE]
+  display <- if (nrow(sig) > .mg_max_brackets()) "compact letter display" else "brackets"
   bracket_label <- spec$appearance$bracket$label %||% "p.signif"
-  if (nrow(sig) > 0) {
-    ymax <- max(df[[y]], na.rm = TRUE)
-    rng  <- diff(range(df[[y]], na.rm = TRUE))
-    if (!is.finite(rng) || rng == 0) rng <- max(abs(ymax), 1)
-    sig$y.position <- ymax + rng * (0.07 + 0.09 * (seq_len(nrow(sig)) - 1))
-    sig$lab <- if (identical(bracket_label, "p.format")) {
-      paste0("p = ", formatC(sig$p.adj, format = "g", digits = 2))
-    } else {
-      sig$p.adj.signif
-    }
-  }
 
   pal  <- spec$appearance$palette %||% pubready_palette
   pal  <- rep(pal, length.out = length(lvls))
   geom <- spec$appearance$geom %||% "box"
+
+  # The brackets and the letters start above the drawn geom. The spacing is a
+  # share of the span of the drawn axis (from 0 for a bar), so a label never
+  # reaches the next line.
+  tops <- vapply(lvls, .mg_group_top, numeric(1), by_group = by_group, geom = geom)
+  ylo <- min(df[[y]], na.rm = TRUE)
+  if (identical(geom, "bar")) ylo <- min(ylo, 0)
+  top_all <- max(tops)
+  span <- top_all - ylo
+  if (!is.finite(span) || span <= 0) span <- max(abs(top_all), 1)
 
   p <- ggplot2::ggplot(df, ggplot2::aes(x = .data[[x]], y = .data[[y]]))
   p <- add_dist_geom(p, x, geom, spec$appearance$show_points)
@@ -150,14 +152,29 @@ recipe_multi_group_compare <- function(df, spec) {
                       formatC(omnibus$p, format = "g", digits = 2))
   p <- p +
     ggplot2::scale_fill_manual(values = pal) +
+    ggplot2::scale_x_discrete(labels = stats::setNames(wrap_labels(lvls), lvls)) +
+    ggplot2::scale_y_continuous(labels = plain_number_labels) +
     ggplot2::labs(x = spec$appearance$x_label %||% x,
                   y = spec$appearance$y_label %||% y,
                   title = spec$appearance$title,
                   subtitle = omni_lab) +
     pub_theme(spec$appearance$theme) +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"))
-  if (nrow(sig) > 0) {
-    p <- p + ggpubr::stat_pvalue_manual(sig, label = "lab", tip.length = 0.01, bracket.size = 0.4)
+  cld <- NULL
+  if (display == "brackets" && nrow(sig) > 0) {
+    sig <- .mg_bracket_rows(sig, lvls, top_all, span, bracket_label)
+    p <- p +
+      ggpubr::stat_pvalue_manual(sig, label = "lab", tip.length = 0.01, bracket.size = 0.4,
+                                 label.size = 3.6, vjust = 0) +
+      ggplot2::expand_limits(y = max(sig$y.position) + 0.10 * span)
+  } else if (display == "compact letter display") {
+    cld <- cld_letters(lvls, ph$group1, ph$group2, ph$p.adj)
+    lab_df <- data.frame(xg = factor(lvls, levels = lvls), yv = tops + 0.04 * span,
+                         lab = unname(cld), stringsAsFactors = FALSE)
+    p <- p +
+      ggplot2::geom_text(data = lab_df, ggplot2::aes(x = .data$xg, y = .data$yv, label = .data$lab),
+                         inherit.aes = FALSE, vjust = 0, size = 3.6) +
+      ggplot2::expand_limits(y = top_all + 0.14 * span)
   }
 
   ylim <- spec$appearance$y_limits
@@ -174,6 +191,8 @@ recipe_multi_group_compare <- function(df, spec) {
     post_hoc = resolved$posthoc_label,
     n_comparisons = nrow(ph),
     n_significant = sum(ph$p.adj < 0.05, na.rm = TRUE),
+    display = display,
+    letters = if (!is.null(cld)) as.list(cld) else NULL,
     assumptions = list(
       normality      = list(test = "shapiro-wilk", all_normal = all_normal),
       equal_variance = list(test = "Levene", p = lev_p)
@@ -181,36 +200,65 @@ recipe_multi_group_compare <- function(df, spec) {
   )
 
   n_by_group <- vapply(by_group, length, integer(1))
-  methods <- .mg_methods(resolved, omnibus, spec, n_by_group)
-  build_script <- function(in_name, fig_stub) {
-    .mg_emit_script(spec, resolved, pal[seq_len(length(lvls))], in_name, fig_stub)
-  }
+  methods <- .mg_methods(resolved, omnibus, spec, n_by_group, display, nrow(sig))
+  build_script <- list(fn = .mg_emit_script,
+                       args = list(spec = spec, resolved = resolved,
+                                   pal = pal[seq_len(length(lvls))], cld = cld,
+                                   width = category_width(length(lvls), wrap_labels(lvls))))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
        df_used = df, clean_steps = cl$steps,
-       qc = list(quantity = "group values", panels = by_group))
+       qc = list(quantity = "group values", panels = by_group),
+       width = category_width(length(lvls), wrap_labels(lvls)), height = 4.2)
 }
 
-.mg_methods <- function(resolved, omnibus, spec, n_by_group) {
+# More significant pairs than this switch the figure to a compact letter display.
+.mg_max_brackets <- function() 6
+
+.mg_group_top <- function(g, by_group, geom) geom_top(by_group[[g]], geom)
+
+.mg_group_n <- function(g, by_group) length(by_group[[g]])
+
+# One level per bracket, the narrowest pairs lowest, from 8% of the span above
+# the tallest geom, 13% of the span apart. The Python engine uses the same rule.
+.mg_bracket_rows <- function(sig, lvls, top_all, span, bracket_label) {
+  i1 <- match(sig$group1, lvls); i2 <- match(sig$group2, lvls)
+  sig <- sig[order(abs(i2 - i1), pmin(i1, i2)), , drop = FALSE]
+  sig$y.position <- top_all + span * (0.08 + 0.13 * (seq_len(nrow(sig)) - 1))
+  sig$lab <- if (identical(bracket_label, "p.format")) {
+    paste0("p = ", formatC(sig$p.adj, format = "g", digits = 2))
+  } else {
+    p_stars(sig$p.adj)
+  }
+  sig
+}
+
+.mg_p_text <- function(p) formatC(p, format = "g", digits = 2)
+
+.mg_methods <- function(resolved, omnibus, spec, n_by_group, display, n_sig) {
   y_label <- spec$appearance$y_label %||% spec$data$y
   v    <- pkg_versions(c("rstatix", "ggpubr", "ggprism"))
   rver <- paste(R.version$major, R.version$minor, sep = ".")
-  pfmt <- function(p) formatC(p, format = "g", digits = 2)
 
   omni <- if (resolved$family == "kruskal") {
     sprintf("a Kruskal-Wallis test (H(%s) = %.2f, P = %s)",
-            omnibus$df1, omnibus$statistic, pfmt(omnibus$p))
+            omnibus$df1, omnibus$statistic, .mg_p_text(omnibus$p))
   } else {
     sprintf("%s%s (F(%s, %s) = %.2f, P = %s)",
             resolved$article, resolved$label,
-            omnibus$df1, omnibus$df2, omnibus$statistic, pfmt(omnibus$p))
+            omnibus$df1, omnibus$df2, omnibus$statistic, .mg_p_text(omnibus$p))
   }
   eff <- if (!is.null(omnibus$effect_size)) {
     sprintf(" The effect size was %s = %.2f.", omnibus$effect_size$name, omnibus$effect_size$value)
   } else ""
-  ph_txt <- sprintf(" Pairwise comparisons used %s; only comparisons reaching significance (adjusted P < 0.05) are annotated on the figure.",
-                    resolved$posthoc_label)
+  ph_txt <- if (identical(display, "compact letter display")) {
+    sprintf(" Pairwise comparisons used %s. Because %d pairs differed (adjusted P < 0.05), the figure shows a compact letter display (the insert-and-absorb algorithm of Piepho, 2004) instead of brackets: groups that share a letter do not differ significantly.",
+            resolved$posthoc_label, n_sig)
+  } else {
+    sprintf(" Pairwise comparisons used %s; only comparisons reaching significance (adjusted P < 0.05) are annotated on the figure with brackets.",
+            resolved$posthoc_label)
+  }
   ns <- paste(sprintf("%s (n = %d)", names(n_by_group), n_by_group), collapse = ", ")
 
   paste0(
@@ -223,7 +271,7 @@ recipe_multi_group_compare <- function(df, spec) {
   )
 }
 
-.mg_emit_script <- function(spec, resolved, pal, in_name, fig_stub) {
+.mg_emit_script <- function(spec, resolved, pal, cld, width, in_name, fig_stub) {
   x <- spec$data$x; y <- spec$data$y
   pal_str <- paste0("c(", paste(sprintf('"%s"', pal), collapse = ", "), ")")
   geom <- spec$appearance$geom %||% "box"
@@ -248,6 +296,24 @@ recipe_multi_group_compare <- function(df, spec) {
   } else {
     "sig$lab <- sig$p.adj.signif"
   }
+  # With more than six significant pairs the figure shows letters, not brackets.
+  annot_lines <- if (!is.null(cld)) {
+    c("# Compact letter display (Piepho 2004), as computed by pubready.",
+      sprintf("cld <- c(%s)", paste(sprintf('"%s" = "%s"', names(cld), unname(cld)), collapse = ", ")),
+      sprintf('tops <- tapply(df[["%s"]], df[["%s"]], max)', y, x),
+      sprintf('lab <- data.frame(g = factor(names(cld), levels = names(cld)), lab = unname(cld), y = tops[names(cld)] + 0.04 * diff(range(df[["%s"]])))', y),
+      'p <- p + geom_text(data = lab, aes(x = g, y = y, label = lab), inherit.aes = FALSE, vjust = 0)')
+  } else {
+    c("if (nrow(sig) > 0) {",
+      sprintf('  ymax <- max(df[["%s"]], na.rm = TRUE); rng <- diff(range(df[["%s"]], na.rm = TRUE))', y, y),
+      "  if (!is.finite(rng) || rng == 0) rng <- max(abs(ymax), 1)",
+      sprintf('  lv <- levels(df[["%s"]]); i1 <- match(sig$group1, lv); i2 <- match(sig$group2, lv)', x),
+      "  sig <- sig[order(abs(i2 - i1), pmin(i1, i2)), , drop = FALSE]",
+      "  sig$y.position <- ymax + rng * (0.08 + 0.13 * (seq_len(nrow(sig)) - 1))",
+      sprintf("  %s", lab_line),
+      '  p <- p + stat_pvalue_manual(sig, label = "lab", tip.length = 0.01, bracket.size = 0.4)',
+      "}")
+  }
 
   c(
     "#!/usr/bin/env Rscript",
@@ -264,12 +330,6 @@ recipe_multi_group_compare <- function(df, spec) {
     posthoc_line,
     "ph$group1 <- as.character(ph$group1); ph$group2 <- as.character(ph$group2)",
     "sig <- ph[which(ph$p.adj < 0.05), , drop = FALSE]",
-    "if (nrow(sig) > 0) {",
-    sprintf('  ymax <- max(df[["%s"]], na.rm = TRUE); rng <- diff(range(df[["%s"]], na.rm = TRUE))', y, y),
-    "  if (!is.finite(rng) || rng == 0) rng <- max(abs(ymax), 1)",
-    "  sig$y.position <- ymax + rng * (0.07 + 0.09 * (seq_len(nrow(sig)) - 1))",
-    sprintf("  %s", lab_line),
-    "}",
     "",
     omni_line,
     sprintf('subtitle_txt <- paste0("%s, P = ", formatC(omni$p[1], format = "g", digits = 2))', omni_name),
@@ -283,9 +343,9 @@ recipe_multi_group_compare <- function(df, spec) {
     "  theme_classic(base_size = 13) +",
     '  theme(legend.position = "none",',
     '        plot.subtitle = element_text(hjust = 0.5, size = 10, colour = "grey30"))',
-    'if (nrow(sig) > 0) p <- p + stat_pvalue_manual(sig, label = "lab", tip.length = 0.01, bracket.size = 0.4)',
+    annot_lines,
     "",
-    sprintf('ggsave("%s.pdf", p, width = 4.2, height = 4.2)', fig_stub),
+    sprintf('ggsave("%s.pdf", p, width = %.1f, height = 4.2)', fig_stub, width),
     'cat("Reproduced figure.\\n")'
   )
 }
