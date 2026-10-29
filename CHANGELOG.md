@@ -51,6 +51,14 @@ tag move together.
 - The Python `enrichment_dot` put the count legend inside the plot area, where
   it could cover dots. The count legend and the colour bar now sit right of the
   panel, as in R.
+- The R `volcano` legend showed an "FC" key with no point when no feature passed
+  the fold change alone. Both engines now give a key only to a class that holds
+  at least one feature, and the key glyphs are opaque.
+- The Python `volcano` labels collided, for example Gene15014 with Gene12099.
+  adjustText ran before the final layout, so the later resize undid its
+  spacing, and it stopped after a time limit. The labels are now placed after
+  the layout is final, they repel from every point as ggrepel does, and a fixed
+  iteration limit gives the same result on every run.
 
 ## [1.0.0] - 2026-10-07
 

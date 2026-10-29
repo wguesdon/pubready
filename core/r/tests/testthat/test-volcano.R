@@ -15,3 +15,9 @@ test_that("recipe_volcano counts up/down significant genes", {
   expect_equal(res$test_meta$n_down, 1)
   expect_equal(res$test_meta$n_significant, 3)
 })
+
+# A class with no feature gets no legend key, as in the Python engine.
+test_that("the volcano legend lists only the classes that hold a feature", {
+  cat <- factor(c("NS", "FC and p", "p"), levels = c("NS", "FC", "p", "FC and p"))
+  expect_equal(.volcano_present(cat), c("NS", "p", "FC and p"))
+})

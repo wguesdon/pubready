@@ -35,6 +35,13 @@
   c(NS = "NS", FC = "FC", p = plab, `FC and p` = paste("FC and", plab))
 }
 
+# The classes that hold at least one feature, in legend order. A class with no
+# point gets no legend key, in both engines.
+.volcano_present <- function(cat) {
+  lv <- levels(cat)
+  lv[lv %in% as.character(cat)]
+}
+
 recipe_volcano <- function(df, spec) {
   cols <- .volcano_columns(df, spec)
   if (is.na(cols$fc)) stop("volcano: no log2 fold-change column found; set it with --x")
@@ -66,6 +73,7 @@ recipe_volcano <- function(df, spec) {
   cat <- ifelse(passfc & passp, "FC and p", ifelse(passp, "p", ifelse(passfc, "FC", "NS")))
   cat <- factor(cat, levels = c("NS", "FC", "p", "FC and p"))
   pal <- c(NS = "grey70", FC = "#2E8B57", p = "#3B6DB3", `FC and p` = "#C1432B")
+  present <- .volcano_present(cat)
 
   pdat <- data.frame(fc = fc, neglog = neglog, cat = cat, lab = lab, stringsAsFactors = FALSE)
   sig  <- pdat[pdat$cat == "FC and p", , drop = FALSE]
@@ -78,8 +86,9 @@ recipe_volcano <- function(df, spec) {
 
   p_plot <- ggplot2::ggplot(pdat, ggplot2::aes(x = fc, y = neglog, colour = cat)) +
     ggplot2::geom_point(size = 1.4, alpha = 0.7) +
-    ggplot2::scale_colour_manual(values = pal, labels = .volcano_legend(plab), drop = FALSE,
-                                 name = NULL) +
+    ggplot2::scale_colour_manual(values = pal, breaks = present,
+                                 labels = unname(.volcano_legend(plab)[present]), name = NULL) +
+    ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = 2.5, alpha = 1))) +
     ggplot2::geom_vline(xintercept = c(-fcc, fcc), linetype = "dashed",
                         linewidth = 0.3, colour = "grey40") +
     ggplot2::geom_hline(yintercept = -log10(pcc), linetype = "dashed",
