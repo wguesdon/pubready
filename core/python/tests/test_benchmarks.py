@@ -15,10 +15,14 @@ from pubready.recipes.correlation import recipe_correlation
 from pubready.recipes.correlation_heatmap import recipe_correlation_heatmap
 from pubready.recipes.cox_forest import recipe_cox_forest
 from pubready.recipes.dose_response import recipe_dose_response
+from pubready.recipes.embedding import recipe_embedding
 from pubready.recipes.enrichment_dot import recipe_enrichment_dot
 from pubready.recipes.factorial_anova import recipe_factorial_anova
+from pubready.recipes.feature_panel import recipe_feature_panel
 from pubready.recipes.forest_meta import recipe_forest_meta
 from pubready.recipes.heatmap import recipe_heatmap
+from pubready.recipes.ma_plot import recipe_ma_plot
+from pubready.recipes.manhattan import recipe_manhattan
 from pubready.recipes.multi_group_compare import recipe_multi_group_compare
 from pubready.recipes.paired_compare import recipe_paired_compare
 from pubready.recipes.pca import recipe_pca
@@ -367,3 +371,54 @@ def test_state_x77_correlation_matrix_keeps_spaced_names():
     expect_ref(lm["p_adj"], "state_correlation_heatmap", "padj_murder_life_exp")
     expect_ref(pair_row(res["stats"], "Illiteracy", "Frost", "var1", "var2")["r"],
                "state_correlation_heatmap", "r_illiteracy_frost")
+
+
+def test_airway_ma_plot_counts():
+    res = recipe_ma_plot(bench_data("airway_de"), bench_spec("ma_plot"))
+    tm = res["test_meta"]
+    assert tm["mean_column"] == "baseMean"
+    assert tm["p_column"] == "padj"
+    for q in ("n_up", "n_down", "n_total"):
+        expect_ref(tm[q], "airway_ma", q)
+    assert len(res["stats"]) == tm["n_up"] + tm["n_down"]
+
+
+def test_gwas_results_manhattan_lambda_and_counts():
+    res = recipe_manhattan(bench_data("gwas_results"), bench_spec(
+        "manhattan", group="CHR", x="BP", y="P", label="SNP"))
+    for q in ("lambda_gc", "n_genome_wide", "n_suggestive", "min_p"):
+        expect_ref(res["test_meta"][q], "gwas_manhattan", q)
+    genome = res["stats"][res["stats"]["row_type"] == "genome"].iloc[0]
+    expect_ref(genome["lambda_gc"], "gwas_manhattan", "lambda_gc")
+    expect_ref(genome["p_value"], "gwas_manhattan", "min_p")
+
+
+IRIS_FEATURES = ("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
+
+
+def test_iris_feature_panel_kruskal_with_bh():
+    res = recipe_feature_panel(bench_data("iris"), bench_spec("feature_panel", x="Species"))
+    assert res["test_meta"]["test"] == "kruskal"
+    st = res["stats"].set_index("feature")
+    for f in IRIS_FEATURES:
+        expect_ref(st.loc[f, "statistic"], "iris_feature_panel_kruskal", f"H_{f}")
+        expect_ref(st.loc[f, "p_value"], "iris_feature_panel_kruskal", f"p_{f}")
+        expect_ref(st.loc[f, "p_adj"], "iris_feature_panel_kruskal", f"p_adj_{f}")
+
+
+def test_iris_feature_panel_anova_with_bh():
+    res = recipe_feature_panel(bench_data("iris"), bench_spec("feature_panel", x="Species",
+                                                              test="anova"))
+    st = res["stats"].set_index("feature")
+    for f in IRIS_FEATURES:
+        expect_ref(st.loc[f, "statistic"], "iris_feature_panel_anova", f"F_{f}")
+        expect_ref(st.loc[f, "p_adj"], "iris_feature_panel_anova", f"p_adj_{f}")
+
+
+def test_iris_embedding_silhouettes():
+    res = recipe_embedding(bench_data("iris"), bench_spec(
+        "embedding", x="Petal.Length", y="Petal.Width", group="Species"))
+    st = res["stats"].set_index("cluster")
+    for sp in ("setosa", "versicolor", "virginica"):
+        expect_ref(st.loc[sp, "mean_silhouette"], "iris_embedding", f"silhouette_{sp}")
+    expect_ref(res["test_meta"]["mean_silhouette"], "iris_embedding", "silhouette_overall")
