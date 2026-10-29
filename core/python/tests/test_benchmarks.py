@@ -11,13 +11,13 @@ import pytest
 
 from pubready.io import read_tidy
 from pubready.recipes.bland_altman import recipe_bland_altman
-from pubready.recipes.composition import recipe_composition
 from pubready.recipes.calibration import recipe_calibration
-from pubready.recipes.correlation import recipe_correlation
+from pubready.recipes.composition import recipe_composition
 from pubready.recipes.correlation_heatmap import recipe_correlation_heatmap
+from pubready.recipes.correlation import recipe_correlation
 from pubready.recipes.cox_forest import recipe_cox_forest
-from pubready.recipes.distribution import recipe_distribution
 from pubready.recipes.cumulative_incidence import cif_value_at, recipe_cumulative_incidence
+from pubready.recipes.distribution import recipe_distribution
 from pubready.recipes.dose_response import recipe_dose_response
 from pubready.recipes.embedding import recipe_embedding
 from pubready.recipes.enrichment_dot import recipe_enrichment_dot
@@ -27,15 +27,15 @@ from pubready.recipes.factorial_anova import recipe_factorial_anova
 from pubready.recipes.feature_panel import recipe_feature_panel
 from pubready.recipes.forest_meta import recipe_forest_meta
 from pubready.recipes.heatmap import recipe_heatmap
-from pubready.recipes.ma_plot import recipe_ma_plot
 from pubready.recipes.manhattan import recipe_manhattan
+from pubready.recipes.ma_plot import recipe_ma_plot
 from pubready.recipes.multi_group_compare import recipe_multi_group_compare
 from pubready.recipes.paired_compare import recipe_paired_compare
 from pubready.recipes.pca import recipe_pca
 from pubready.recipes.proportions import recipe_proportions
 from pubready.recipes.roc_curve import recipe_roc_curve
-from pubready.recipes.standard_curve import recipe_standard_curve
 from pubready.recipes.sankey import recipe_sankey
+from pubready.recipes.standard_curve import recipe_standard_curve
 from pubready.recipes.survival_km import recipe_survival_km
 from pubready.recipes.swimmer import recipe_swimmer
 from pubready.recipes.timecourse import recipe_timecourse

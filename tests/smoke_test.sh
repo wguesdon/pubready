@@ -333,7 +333,7 @@ else
   echo "FAIL: expected the interaction plot and term"; fail=1
 fi
 
-echo "[29] estimation plot, Cumming layout (expect Welch t-tests and BCa bootstrap CIs)"
+echo "[32] estimation plot, Cumming layout (expect Welch t-tests and BCa bootstrap CIs)"
 ./cli/figkit plot --recipe estimation_plot --data example/estimation_plot.csv \
   --x treatment --y speed_um_h --ref vehicle --out "$OUT/estimation"
 check_bundle "$OUT/estimation" "estimation_plot"
@@ -346,7 +346,7 @@ else
   echo "FAIL: expected the Welch t-tests and the BCa CIs"; fail=1
 fi
 
-echo "[30] estimation plot, Gardner-Altman paired layout (expect a paired t-test)"
+echo "[33] estimation plot, Gardner-Altman paired layout (expect a paired t-test)"
 ./cli/figkit plot --recipe estimation_plot --data example/paired_response.csv \
   --x condition --y value --id subject --paired --ref pre --out "$OUT/estimation_paired"
 check_bundle "$OUT/estimation_paired" "estimation_plot paired"
@@ -357,7 +357,7 @@ else
   echo "FAIL: expected the paired t-test"; fail=1
 fi
 
-echo "[31] enzyme kinetics (expect Michaelis-Menten fits and the shared Km and Vmax tests)"
+echo "[34] enzyme kinetics (expect Michaelis-Menten fits and the shared Km and Vmax tests)"
 ./cli/figkit plot --recipe enzyme_kinetics --data example/enzyme_kinetics.csv \
   --x substrate_um --y rate --group inhibitor --out "$OUT/enzyme"
 check_bundle "$OUT/enzyme" "enzyme_kinetics"
@@ -369,7 +369,7 @@ else
   echo "FAIL: expected the Michaelis-Menten fits and the F tests"; fail=1
 fi
 
-echo "[32] standard curve (expect a 4PL and the out-of-range unknowns flagged)"
+echo "[35] standard curve (expect a 4PL and the out-of-range unknowns flagged)"
 ./cli/figkit plot --recipe standard_curve --data example/standard_curve.csv \
   --x conc_ng_ml --y absorbance --id sample --out "$OUT/stdcurve"
 check_bundle "$OUT/stdcurve" "standard_curve"
@@ -381,7 +381,7 @@ else
   echo "FAIL: expected the 4PL and the range flags"; fail=1
 fi
 
-echo "[29] cumulative incidence of competing risks (expect Gray's test)"
+echo "[36] cumulative incidence of competing risks (expect Gray's test)"
 ./cli/figkit plot --recipe cumulative_incidence --data example/cumulative_incidence.csv \
   --time months --event status --x arm --xlab "Months after transplant" --out "$OUT/cif"
 check_bundle "$OUT/cif" "cumulative_incidence"
@@ -392,7 +392,7 @@ else
   echo "FAIL: expected the cumulative incidence and Gray's test"; fail=1
 fi
 
-echo "[30] calibration of two risk models (expect Hosmer-Lemeshow)"
+echo "[37] calibration of two risk models (expect Hosmer-Lemeshow)"
 ./cli/figkit plot --recipe calibration --data example/calibration.csv \
   --y event_1y --x risk_clinical,risk_extended --positive yes --out "$OUT/cal"
 check_bundle "$OUT/cal" "calibration"
@@ -403,7 +403,7 @@ else
   echo "FAIL: expected the calibration statistics"; fail=1
 fi
 
-echo "[31] Sankey diagram of response transitions (expect descriptive, three visits)"
+echo "[38] Sankey diagram of response transitions (expect descriptive, three visits)"
 ./cli/figkit plot --recipe sankey --data example/sankey.csv \
   --id patient --x week --y response --xlab "Week" --out "$OUT/sankey"
 check_bundle "$OUT/sankey" "sankey"
@@ -414,7 +414,7 @@ else
   echo "FAIL: expected the Sankey transitions table"; fail=1
 fi
 
-echo "[29] MA plot of a DESeq2 table (expect baseMean on the log10 scale)"
+echo "[39] MA plot of a DESeq2 table (expect baseMean on the log10 scale)"
 ./cli/figkit plot --recipe ma_plot --data example/de_basemean.csv --out "$OUT/ma_plot"
 check_bundle "$OUT/ma_plot" "ma_plot"
 if compgen -G "$OUT/ma_plot/*/methods_*.md" > /dev/null && \
@@ -424,7 +424,7 @@ else
   echo "FAIL: expected an MA plot against log10 baseMean"; fail=1
 fi
 
-echo "[30] Manhattan and QQ plot (expect lambda_GC and lead SNPs)"
+echo "[40] Manhattan and QQ plot (expect lambda_GC and lead SNPs)"
 ./cli/figkit plot --recipe manhattan --data example/gwas_summary.csv \
   --group chr --x pos --y p --label snp --out "$OUT/manhattan"
 check_bundle "$OUT/manhattan" "manhattan"
@@ -435,7 +435,7 @@ else
   echo "FAIL: expected the Manhattan summary and lead SNPs"; fail=1
 fi
 
-echo "[31] feature panel of cytokines (expect Kruskal-Wallis with BH)"
+echo "[41] feature panel of cytokines (expect Kruskal-Wallis with BH)"
 ./cli/figkit plot --recipe feature_panel --data example/cytokine_panel.csv \
   --x group --y concentration_pg_ml --facet cytokine --out "$OUT/feature_panel"
 check_bundle "$OUT/feature_panel" "feature_panel"
@@ -446,7 +446,7 @@ else
   echo "FAIL: expected Kruskal-Wallis with BH-adjusted p"; fail=1
 fi
 
-echo "[32] embedding coloured by cluster (expect silhouette widths)"
+echo "[42] embedding coloured by cluster (expect silhouette widths)"
 ./cli/figkit plot --recipe embedding --data example/umap_clusters.csv \
   --x UMAP_1 --y UMAP_2 --group cell_type --out "$OUT/embedding"
 check_bundle "$OUT/embedding" "embedding"

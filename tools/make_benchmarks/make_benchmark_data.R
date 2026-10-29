@@ -521,7 +521,7 @@ for (k in seq_along(hs_adj)) {
           "stats::p.adjust(method = \"BH\")")
 }
 
-# 22. chickwts: chick weight after six weeks on six feed supplements, Anonymous
+# 25. chickwts: chick weight after six weeks on six feed supplements, Anonymous
 # (1948), in datasets. Each feed is compared with casein, the estimation_plot
 # reference: the mean difference and the Welch two-sample t-test.
 cw_feed <- write_data(datasets::chickwts[, c("feed", "weight")], "chickwts")
@@ -534,7 +534,7 @@ for (fd in setdiff(sort(unique(cw_feed$feed)), "casein")) {
   add_ref("chickwts_estimation", paste0("p_", fd), wt$p.value, "stats::t.test(var.equal = FALSE)")
 }
 
-# 23. Puromycin: the rate of an enzymatic reaction in cells treated or not with
+# 26. Puromycin: the rate of an enzymatic reaction in cells treated or not with
 # puromycin, Treloar (1974), in datasets. Michaelis-Menten fits per state, and
 # the nested shared-K and shared-Vm models against the separate fits by anova().
 # The fits use a tight convergence tolerance, so the reference is the optimum.
@@ -563,7 +563,7 @@ add_ref("puromycin_kinetics", "shared_km_p", ak$`Pr(>F)`[2], "stats::anova(nls)"
 add_ref("puromycin_kinetics", "shared_vmax_F", av$`F value`[2], "stats::anova(nls)")
 add_ref("puromycin_kinetics", "shared_vmax_p", av$`Pr(>F)`[2], "stats::anova(nls)")
 
-# 24. DNase as a standard curve: run 1 (conc, density) is the set of standards,
+# 27. DNase as a standard curve: run 1 (conc, density) is the set of standards,
 # and the densities of run 2, with the concentration removed, are the unknowns.
 # The reference curve is the self-starting SSfpl fit to the standards, and each
 # unknown is the inverse of that curve when its density lies within the curve's
@@ -592,7 +592,7 @@ for (i in which(sc_in)[c(1, ceiling(sum(sc_in) / 2), sum(sc_in))]) {
           "inverse of stats::nls(SSfpl)", rel_tol = 1e-4)
 }
 
-# 22. mgus2: monoclonal gammopathy of undetermined significance, Kyle et al.
+# 28. mgus2: monoclonal gammopathy of undetermined significance, Kyle et al.
 # (2002). Competing risks of progression to a plasma cell malignancy (event 1)
 # and death without progression (event 2), as in the survival vignette "compete".
 mg <- survival::mgus2
@@ -614,7 +614,7 @@ for (curve in rownames(mg_tp)) {
   }
 }
 
-# 23. Pima.tr and Pima.te: diabetes in Pima Indian women, Smith et al. (1988).
+# 29. Pima.tr and Pima.te: diabetes in Pima Indian women, Smith et al. (1988).
 # A logistic model fitted on Pima.tr predicts the risk of each woman in Pima.te,
 # which is then the validation set of the calibration recipe.
 pima_fit <- stats::glm(type ~ npreg + glu + bmi + ped + age, family = stats::binomial(),
@@ -638,7 +638,7 @@ add_ref("pima_calibration", "intercept",
         stats::coef(stats::glm(pima_y ~ 1 + offset(pima_lp), family = stats::binomial()))[[1]],
         "stats::glm(y ~ 1 + offset(logit(p)))")
 
-# 24. pbcseq: the Mayo Clinic primary biliary cholangitis trial with repeated
+# 30. pbcseq: the Mayo Clinic primary biliary cholangitis trial with repeated
 # visits, Murtaugh et al. (1994). Edema at the first visit and at the visit
 # closest to day 730 among the visits between day 365 and day 1095.
 pbs <- survival::pbcseq
@@ -661,7 +661,7 @@ add_ref("pbcseq_sankey", "n_paired", nrow(pb_pair), "patients with both visits")
 add_ref("pbcseq_sankey", "n_0_to_0.5", pb_tab["0", "0.5"], "base::table()")
 add_ref("pbcseq_sankey", "n_0.5_to_0", pb_tab["0.5", "0"], "base::table()")
 
-# 22. gwasResults: the simulated GWAS of the qqman package, Turner (2018),
+# 31. gwasResults: the simulated GWAS of the qqman package, Turner (2018),
 # 16,470 SNPs on 22 chromosomes with one strong locus on chromosome 3.
 data("gwasResults", package = "qqman", envir = environment())
 gw_df <- write_data(gwasResults, "gwas_results")
@@ -672,7 +672,7 @@ add_ref("gwas_manhattan", "n_genome_wide", sum(gw_df$P < 5e-8), "count of p < 5e
 add_ref("gwas_manhattan", "n_suggestive", sum(gw_df$P < 1e-5), "count of p < 1e-5")
 add_ref("gwas_manhattan", "min_p", min(gw_df$P), "base::min()")
 
-# 23. iris as a feature panel: the four measurements across the three species,
+# 32. iris as a feature panel: the four measurements across the three species,
 # one test for each measurement and the Benjamini-Hochberg adjustment across them.
 iris_feats <- c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
 iris_kw <- lapply(iris_feats, kruskal_of, d = ir, grp = "Species")
@@ -693,7 +693,7 @@ for (i in seq_along(iris_feats)) {
           "stats::oneway.test(var.equal = TRUE), stats::p.adjust(method = 'BH')")
 }
 
-# 24. iris as a 2D embedding: the petal length and width as the two coordinates
+# 33. iris as a 2D embedding: the petal length and width as the two coordinates
 # and the species as the cluster, with the silhouette widths of the cluster package.
 iris_species <- factor(ir$Species)
 iris_sil <- summary(cluster::silhouette(as.integer(iris_species),

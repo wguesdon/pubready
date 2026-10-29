@@ -31,35 +31,47 @@ Common plot options:
   --agent-harness NAME                    agent harness recorded in the report
   --agent-harness-version VERSION         agent harness version in the report
   --x, --y                                 axis columns (tidy data)
-  --fill, --facet                          extra factors (factorial_anova)
+  --fill, --facet                          extra factors (factorial_anova); --facet is
+                                           the feature column of feature_panel
   --time, --event                          survival columns (1 = event, 0 = censored);
-                                           swimmer duration and status (0 = ongoing)
+                                           swimmer duration and status (0 = ongoing);
+                                           cumulative_incidence status (0 = censored,
+                                           other codes = causes)
   --markers "a,b"                          event-time columns drawn on the bars (swimmer)
   --ref LEVEL                              reference (control) group (estimation_plot)
   --cause CODE                             event code of the cause of interest
                                            (cumulative_incidence, default 1)
   --covariates "a,b,c"                     Cox model covariates
   --annotation FILE                        heatmap column annotation CSV
-  --id COL                                 subject column (paired_compare, spider_response,
-                                           timecourse, waterfall)
+  --id COL                                 subject or sample column (paired_compare,
+                                           spider_response, timecourse, waterfall,
+                                           estimation_plot, standard_curve, sankey,
+                                           composition)
   --group COL                              grouping column (pca, dose_response, timecourse,
-                                           spider_response, waterfall)
-  --label COL                              label column (volcano, enrichment_dot, pca,
-                                           forest_meta)
-  --positive LEVEL                         case level of the outcome (roc_curve)
+                                           spider_response, waterfall, enzyme_kinetics,
+                                           composition, embedding); the chromosome
+                                           column of manhattan
+  --label COL                              label column (volcano, ma_plot, manhattan,
+                                           enrichment_dot, pca, forest_meta)
+  --positive LEVEL                         case level of the outcome (roc_curve,
+                                           calibration)
   --ci_low COL, --ci_high COL, --se COL    study interval or standard error (forest_meta)
   --measure auto|ratio|difference          pooling scale (forest_meta)
   --pd_threshold N, --pr_threshold N       RECIST lines (spider_response, waterfall)
   --scale row|column|none                  heatmap value scaling
   --cluster both|rows|columns|none         heatmap / correlation clustering
-  --fc_cutoff N, --p_cutoff N              volcano thresholds (default 1, 0.05)
-  --top_n N                                labels / terms / intersections to show (volcano, enrichment_dot, upset)
+  --fc_cutoff N, --p_cutoff N              volcano and ma_plot thresholds (default 1, 0.05)
+  --top_n N                                labels / terms / intersections to show
+                                           (volcano, ma_plot, manhattan, enrichment_dot, upset)
   --test auto|welch_t|wilcoxon|anova|kruskal|art   choose or force the test
                                            (correlation: auto|pearson|spearman|kendall;
                                             proportions: auto|chisq|fisher;
-                                            timecourse: auto|gg|uncorrected)
+                                            timecourse: auto|gg|uncorrected;
+                                            standard_curve: auto|linear|4pl;
+                                            feature_panel: auto|welch_t|wilcoxon|anova|kruskal)
   --paired                                 paired design
-  --geom box|violin|bar|raincloud          plot geometry (comparison recipes)
+  --geom box|violin|bar|raincloud          plot geometry (comparison recipes);
+                                           factorial_anova also takes interaction
   --theme pubready_house|prism              figure style (comparison + correlation)
   --xlab, --ylab, --title                  labels
   --palette "#3B6DB3,#C1432B"              fill colors

@@ -1,11 +1,4 @@
 # pubready (opencode adapter)
-| `cumulative_incidence` | time, status (0 = censored, other codes = causes)[, group] | `--time --event [--x --cause]` | Aalen-Johansen cumulative incidence of each cause, Gray's test across groups, number at risk |
-| `calibration` | binary outcome, predicted probabilities | `--y --x "p1,p2" [--positive]` | Brier score, calibration intercept and slope, Hosmer-Lemeshow test, decile plot with a lowess smooth |
-| `sankey` | patient, visit, state (one row per patient visit) | `--id --x --y` | state transitions across visits; Bowker's or McNemar's test for two visits |
-| `ma_plot` | DE table: log2FC, p, mean expression (`baseMean`, `AveExpr` or `logCPM`) | `--data [--x MEAN --y P --label]` | M against A, up and down genes coloured, top hits labeled (the test is upstream) |
-| `manhattan` | one row per SNP: chromosome, position, p | `--group --x --y [--label]` | Manhattan and QQ plot, 5e-8 and 1e-5 lines, lead SNPs, lambda_GC |
-| `feature_panel` | group, value, feature (long) or one column per feature (wide) | `--x [--y --facet]` | one panel per feature; Welch t or Mann-Whitney, ANOVA or Kruskal-Wallis; BH across the features |
-| `embedding` | UMAP or t-SNE coordinates and a cluster, computed upstream | `--x --y --group` | scatter by cluster, labels at the medians, silhouette width per cluster (no test) |
 
 When the user has tidy data and wants a publication figure, use pubready. It makes
 a publication-ready figure with the statistical test drawn on top. A small
@@ -81,6 +74,13 @@ If a command reports the image is missing, run `figkit build` first.
 | `estimation_plot` | group, value[, subject] | `--x --y [--ref --paired --id]` | mean difference against the reference with a 95% BCa bootstrap CI, Welch or paired t-test; Gardner-Altman or Cumming plot |
 | `enzyme_kinetics` | substrate, rate[, condition] | `--x --y [--group]` | Michaelis-Menten fit, Vmax and Km with 95% CIs, F tests of one shared Km and one shared Vmax |
 | `standard_curve` | concentration (empty for an unknown), signal[, sample] | `--x --y [--id --test auto\|linear\|4pl]` | 4PL or linear standard curve, unknowns read off the curve, no extrapolation, recovery of the standards |
+| `cumulative_incidence` | time, status (0 = censored, other codes = causes)[, group] | `--time --event [--x --cause]` | Aalen-Johansen cumulative incidence of each cause, Gray's test across groups, number at risk |
+| `calibration` | binary outcome, predicted probabilities | `--y --x "p1,p2" [--positive]` | Brier score, calibration intercept and slope, Hosmer-Lemeshow test, decile plot with a lowess smooth |
+| `sankey` | patient, visit, state (one row per patient visit) | `--id --x --y` | state transitions across visits; Bowker's or McNemar's test for two visits |
+| `ma_plot` | DE table: log2FC, p, mean expression (`baseMean`, `AveExpr` or `logCPM`) | `--data [--x MEAN --y P --label]` | M against A, up and down genes coloured, top hits labeled (the test is upstream) |
+| `manhattan` | one row per SNP: chromosome, position, p | `--group --x --y [--label]` | Manhattan and QQ plot, 5e-8 and 1e-5 lines, lead SNPs, lambda_GC |
+| `feature_panel` | group, value, feature (long) or one column per feature (wide) | `--x [--y --facet]` | one panel per feature; Welch t or Mann-Whitney, ANOVA or Kruskal-Wallis; BH across the features |
+| `embedding` | UMAP or t-SNE coordinates and a cluster, computed upstream | `--x --y --group` | scatter by cluster, labels at the medians, silhouette width per cluster (no test) |
 
 Common options: `--engine r|python` (default r), `--geom box|violin|bar|raincloud|interaction` (interaction: `factorial_anova` only),
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
