@@ -13,6 +13,29 @@ tag move together.
 
 ## [Unreleased]
 
+### Added
+- Three clinical recipes, in both engines:
+  - `cumulative_incidence` estimates the cumulative incidence of each cause of a
+    competing-risks outcome with the Aalen-Johansen estimator. Gray's test
+    compares the groups for each cause. The R engine calls `cmprsk::cuminc`, and
+    the Python engine restates the `cinc` and `crstm` routines of cmprsk, so tied
+    times give the same numbers. The `--cause` option names the cause of
+    interest.
+  - `calibration` gives the Brier score, the calibration intercept and slope
+    with Wald CIs, the Hosmer-Lemeshow test and the observed/expected ratio of
+    one or more risk models. The groups of the test follow
+    `ResourceSelection::hoslem.test`. The figure shows the decile points, a
+    lowess smooth and a spike histogram of the predictions.
+  - `sankey` draws the state of each patient at each visit and the transitions
+    between visits. With two visits, Bowker's test of symmetry, or McNemar's
+    test for two states, asks whether the patients move more in one direction.
+- Example datasets for the new recipes: `cumulative_incidence.csv`,
+  `calibration.csv` and `sankey.csv`, each from a seeded generator in
+  `tools/make_examples/`.
+- Three public benchmark cases: `mgus2_cif` from `survival::mgus2`,
+  `pima_calibration` from `MASS::Pima.te`, and `pbcseq_sankey` from
+  `survival::pbcseq`. They add 3 datasets and 24 reference values.
+
 ## [1.0.0] - 2026-10-07
 
 This is the first major release. The rename from pubplot to pubready changes

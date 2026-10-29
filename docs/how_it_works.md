@@ -91,12 +91,13 @@ Common options:
 | `--scale`, `--cluster` | heatmap scaling and clustering |
 | `--id`, `--group`, `--label` | the subject, the grouping and the label columns of the recipes that use them |
 | `--pd_threshold`, `--pr_threshold` | the two RECIST reference lines of `spider_response` and `waterfall`, +20 and -30 by default |
-| `--positive LEVEL` | the case level of the `roc_curve` outcome (default: the second level in sorted order) |
+| `--positive LEVEL` | the case level of the `roc_curve` outcome and the event level of the `calibration` outcome (default: the second level in sorted order) |
 | `--ci_low`, `--ci_high`, `--se` | the 95% CI bounds, or the standard error, of each study in `forest_meta` |
 | `--measure auto\|ratio\|difference` | the pooling scale of `forest_meta` (a ratio is pooled on the log scale) |
 | `--markers "a,b"` | the columns of event times that `swimmer` draws on each bar |
 | `--xlab`, `--ylab`, `--title`, `--palette` | labels and colors |
 | `--out DIR` | output root (default `pubready_output`) |
+| `--cause CODE` | the event code of the cause of interest of `cumulative_incidence` (default 1) |
 
 ## The recipes
 
@@ -127,6 +128,9 @@ engines. Pick the engine per figure with `--engine`.
 | `forest_meta` | one row per study: estimate and 95% CI or SE | fixed-effect and DerSimonian-Laird pooling; Cochran's Q, I2, tau2 | forest plot with weighted squares, pooled diamonds and an estimate column |
 | `swimmer` | one row per patient: `duration[, status, arm, event times]` | descriptive (no test) | one bar per patient sorted by duration, arrows for ongoing courses, symbols for events |
 | `timecourse` | `subject, time, value[, group]` | mixed ANOVA (group between, time within) or repeated-measures ANOVA; Greenhouse-Geisser when Mauchly's test rejects sphericity | mean +/- SEM per group over time, one thin line per subject |
+| `cumulative_incidence` | `time, status[, group]`, status 0 = censored, other codes = causes | Aalen-Johansen cumulative incidence of each cause; Gray's test across groups for each cause | one panel per cause, step curves per group, Gray's P in the panel title, number-at-risk table |
+| `calibration` | binary outcome, one column of predicted probabilities per model | Brier score, calibration intercept and slope with Wald CIs, Hosmer-Lemeshow test, observed/expected ratio | decile points with Wilson CIs, lowess smooth, ideal line, spike histogram of the predictions |
+| `sankey` | `patient, visit, state`, one row per patient visit | transitions table; Bowker's test of symmetry, or McNemar's test, when there are two visits | stacked nodes per visit, ribbons coloured by the state of origin, labels with counts |
 
 ### Test selection
 
@@ -153,6 +157,66 @@ Shapiro-Wilk p, skewness, and kurtosis, and prints the recommended test. The QQ 
 is the tiebreaker a p-value cannot be alone: Shapiro-Wilk is underpowered at small n
 and over-rejects at large n, so read the plot and tolerate mild deviation. Every
 `figkit plot` bundle carries the same panel as `qc_normality_*`.
+
+### Competing risks, calibration and state transitions
+
+`cumulative_incidence` reads a status column in which 0 marks a censored subject
+and each other code marks one event type, or cause. Kaplan-Meier overestimates the
+probability of an event when another event can prevent it. The recipe therefore
+estimates the cumulative incidence of each cause in each group with the
+Aalen-Johansen estimator. Gray's test with rho = 0 compares the groups for each
+cause. The R engine calls `cmprsk::cuminc`, and the Python engine restates the
+`cinc` and `crstm` routines of cmprsk, so tied times give the same numbers.
+
+- The cause of interest is the code that `--cause` names, and its panel comes
+  first. Without `--cause`, the recipe uses code 1, or the first code in sorted
+  order when no event has code 1.
+- A subject is at risk at time t when its follow-up time is t or more. The
+  number-at-risk table below each panel uses this rule.
+- The x step is 1, 2, 2.5 or 5 times a power of ten, and it gives about six
+  intervals up to the largest follow-up time.
+- The stats table gives the cumulative incidence at 25%, 50% and 75% of the
+  largest follow-up time. Each time point is rounded to a multiple of half the x
+  step. A time point after the last follow-up of a group reads NA, as
+  `cmprsk::timepoints` gives it.
+
+`calibration` compares predicted probabilities with the observed outcome of each
+subject. Each `--x` column holds the predictions of one model.
+
+- The Hosmer-Lemeshow groups follow `ResourceSelection::hoslem.test`. The breaks
+  are the unique type-7 quantiles of the predictions at 0, 0.1, ..., 1, and
+  `cut(include.lowest = TRUE)` assigns each subject to a group.
+- Tied quantiles merge, so a model with few distinct predictions has fewer than
+  10 groups. The degrees of freedom are the count of groups minus 2.
+- Two breaks can fall between the same two predictions and leave a group empty.
+  `hoslem.test` then returns NaN, and the recipe leaves out the empty group.
+- The calibration intercept is the intercept of a logistic regression of the
+  outcome with logit(p) as an offset. The calibration slope is the coefficient of
+  logit(p) in a logistic regression. Each estimate has a 95% Wald CI.
+- The recipe clips each prediction to the range from 1e-8 to 1 - 1e-8 before the
+  logit transform. The Brier score and the Hosmer-Lemeshow test use the
+  predictions as given.
+- The lowess smooth uses f = 2/3, a delta of 0.01 times the range of the
+  predictions, and no robustness iterations. Robustness iterations treat the
+  events of a binary outcome as outliers and pull the curve toward 0.
+- Below the calibration panel, a spike histogram shows the predictions in bins of
+  0.01. Events point up and non-events point down.
+
+`sankey` draws the state of each patient at each visit, and a ribbon for each
+transition between two consecutive visits.
+
+- Visits sort as numbers when every visit is a number. Other visits sort in
+  code-point order.
+- States sort as numbers when every state is a number. Other states keep the
+  order of their first appearance in the data, so sort the rows to set the order.
+- A patient who is missing at a visit takes no part in the transitions into or
+  out of that visit.
+- With exactly two visits that carry the same set of states, Bowker's test of
+  symmetry runs on the patients present at both visits. With two states, this
+  test is McNemar's test. Neither engine applies a continuity correction.
+- A pair of cells that holds no patient adds nothing to the statistic and no
+  degree of freedom. `stats::mcnemar.test` returns NaN for such a table, so both
+  engines then compute the statistic from its formula.
 
 ### Examples
 
@@ -224,6 +288,17 @@ figkit plot --recipe waterfall --data lesions.csv --x week --y lesion_mm --id pa
 # swimmer plot of the time on treatment, with response and progression marks
 figkit plot --recipe swimmer --data patients.csv --id patient --time months --event ended \
   --group arm --markers response_month,progression_month
+
+# cumulative incidence of relapse (status 1) and of death without relapse (status 2)
+figkit plot --recipe cumulative_incidence --data transplant.csv --time months --event status \
+  --x arm --cause 1
+
+# calibration of two risk models in a validation cohort
+figkit plot --recipe calibration --data validation.csv --y event_1y \
+  --x risk_clinical,risk_extended --positive yes
+
+# transitions of the response category across assessments
+figkit plot --recipe sankey --data response.csv --id patient --x week --y response
 ```
 
 ## The artifact bundle
@@ -280,6 +355,9 @@ the same numbers. The manifest records which engine drew the figure.
 | ROC / DeLong | pROC | the rules of pROC, restated with numpy |
 | meta-analysis | metafor `rma` | statsmodels `combine_effects` |
 | mixed ANOVA | split-plot sums of squares, the GG epsilon and Mauchly's test of car | the same formulas with numpy |
+| competing risks | cmprsk `cuminc` | the `cinc` and `crstm` routines of cmprsk, restated with numpy |
+| calibration | `stats::glm`, `stats::lowess` | statsmodels `GLM` and `lowess`, the groups of `hoslem.test` restated |
+| Sankey diagram | ggplot2 polygons, `stats::mcnemar.test` | matplotlib polygons, statsmodels `SquareTable` |
 
 Where Python has no faithful equivalent, pubready routes you to R rather than
 running something different. The one current case is the aligned rank transform

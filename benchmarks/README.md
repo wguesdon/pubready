@@ -66,6 +66,9 @@ podman run --rm -v "$PWD":/work -w /work localhost/pubready:<version> \
 | `veteran_km` | `veteran.csv` | `survival_km --x celltype` | `survival::survdiff` |
 | `veteran_cox` | `veteran.csv` | `cox_forest` | `survival::coxph` |
 | `state_correlation_heatmap` | `state_x77.csv` | `correlation_heatmap` | `stats::cor`, `stats::cor.test`, `stats::p.adjust(method = "BH")` |
+| `mgus2_cif` | `mgus2.csv` | `cumulative_incidence --x sex` | `cmprsk::cuminc` (Gray's test), `cmprsk::timepoints` |
+| `pima_calibration` | `pima_te.csv` | `calibration --positive Yes` | `ResourceSelection::hoslem.test(g = 10)`, `stats::glm` |
+| `pbcseq_sankey` | `pbcseq_edema.csv` | `sankey --x year --y edema` | `stats::mcnemar.test(correct = FALSE)` |
 
 ## Tolerances
 
@@ -125,6 +128,17 @@ below make a dataset readable by a recipe. Each change is in
   the pubready code. The exporter writes `trt` as `standard` and `test`.
 - **`state_x77.csv`.** The file keeps the column names `Life Exp` and `HS Grad`
   as R distributes them. The case therefore also tests a column name with a space.
+- **`mgus2.csv`.** The file follows the survival vignette "compete". The time is
+  the time to progression for a patient who progressed, else the follow-up time.
+  The event is 1 for a progression to a plasma cell malignancy, 2 for a death
+  without progression and 0 for a censored patient.
+- **`pima_te.csv`.** The exporter fits the logistic model
+  `type ~ npreg + glu + bmi + ped + age` to `MASS::Pima.tr`. The file holds
+  `MASS::Pima.te` with the predicted risk of each woman in the column `predicted`.
+- **`pbcseq_edema.csv`.** The file holds the edema score of each patient at the
+  first visit, as `year = 0`, and at the visit closest to day 730 among the visits
+  from day 365 to day 1095, as `year = 2`. A patient without such a visit has only
+  the first row, so the test uses the 249 patients with both visits.
 
 ## Sources
 
@@ -154,3 +168,6 @@ license of that package applies to the data.
 | `anorexia_ft.csv` | MASS | Hand, D. J., Daly, F., McConway, K., Lunn, D. and Ostrowski, E. eds (1993) A Handbook of Small Data Sets. Chapman and Hall, data set 285. |
 | `veteran.csv` | survival | Kalbfleisch, J. D. and Prentice, R. L. (1980) The Statistical Analysis of Failure Time Data. Wiley. |
 | `state_x77.csv` | datasets | U.S. Department of Commerce, Bureau of the Census (1977) Statistical Abstract of the United States. |
+| `mgus2.csv` | survival | Kyle, R. A. et al. (2002) A long-term study of prognosis in monoclonal gammopathy of undetermined significance. New England Journal of Medicine 346, 564-569. |
+| `pima_te.csv` | MASS | Smith, J. W. et al. (1988) Using the ADAP learning algorithm to forecast the onset of diabetes mellitus. Proceedings of the Annual Symposium on Computer Application in Medical Care, 261-265. |
+| `pbcseq_edema.csv` | survival | Murtaugh, P. A. et al. (1994) Primary biliary cirrhosis: prediction of short-term survival based on repeated patient visits. Hepatology 20(1), 126-134. |
