@@ -50,3 +50,11 @@ test_that("the emitted script carries the order rule and runs", {
   expect_null(attr(out, "status"), info = paste(out, collapse = "\n"))
   expect_true(file.exists(file.path(dir, "figure.pdf")))
 })
+
+test_that("the heatmap methods name the groups, the independence and the count", {
+  txt <- .hm_methods("row", "both", 40, 8, c("trt", "untrt"), 38)
+  expect_match(txt, "compared between trt and untrt with a Welch two-sample t-test", fixed = TRUE)
+  expect_match(txt, "treats the samples as independent", fixed = TRUE)
+  expect_match(txt, "38 of the 40 features had an adjusted P below 0.05", fixed = TRUE)
+  expect_false(grepl("feature(s)", .hm_methods("row", "both", 40, 8, NULL, NA), fixed = TRUE))
+})

@@ -238,11 +238,12 @@ def recipe_heatmap(df, spec):
             "p_value": pvals, "p_adj": padj, "significant": padj < 0.05,
         })
         test_label = f"per-feature Welch t-test ({lv[0]} vs {lv[1]}), BH-adjusted"
+        test_levels = (lv[0], lv[1])
         n_sig = int((padj < 0.05).sum())
     else:
         stats_df = pd.DataFrame({"feature": mat.index, "mean": mat.mean(axis=1).to_numpy(),
                                  "sd": mat.std(axis=1).to_numpy()})
-        test_label, n_sig = None, None
+        test_label, test_levels, n_sig = None, None, None
 
     w = max(6.5, 3.2 + 0.24 * mat.shape[1])
     h = max(5.0, 1.5 + 0.16 * mat.shape[0])
@@ -309,7 +310,7 @@ def recipe_heatmap(df, spec):
         "per_feature_test": test_label, "n_significant": n_sig,
         "row_order": [str(v) for v in row_order], "column_order": [str(v) for v in col_order],
     }
-    methods = _methods(scale_mode, cluster, mat.shape[0], mat.shape[1], test_label, n_sig, used_pch)
+    methods = _methods(scale_mode, cluster, mat.shape[0], mat.shape[1], test_levels, n_sig, used_pch)
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": df_used, "clean_steps": clean_steps,
@@ -321,7 +322,7 @@ def recipe_heatmap(df, spec):
     }
 
 
-def _methods(scale_mode, cluster, n_feat, n_samp, test_label, n_sig, used_pch):
+def _methods(scale_mode, cluster, n_feat, n_samp, test_levels, n_sig, used_pch):
     from importlib.metadata import version as v
     import platform
     lib = "PyComplexHeatmap" if used_pch else "seaborn.clustermap"
@@ -337,8 +338,13 @@ def _methods(scale_mode, cluster, n_feat, n_samp, test_label, n_sig, used_pch):
         clust_txt += (" Clustering used complete linkage on the Euclidean distance of the displayed "
                       "values, and at each merge the branch with the higher mean of the unscaled "
                       "values was drawn first.")
-    test_txt = (f" A {test_label} was applied per feature; {n_sig} feature(s) were significant "
-                "(adjusted P < 0.05) and are marked with stars." if test_label else "")
+    test_txt = ""
+    if test_levels:
+        test_txt = (f" Each feature was compared between {test_levels[0]} and {test_levels[1]} with a "
+                    "Welch two-sample t-test, which treats the samples as independent, and the P "
+                    f"values were adjusted across the {n_feat} features with the Benjamini-Hochberg "
+                    f"method; {n_sig} of the {n_feat} features had an adjusted P below 0.05 and are "
+                    "marked with stars.")
     return (
         f"A heatmap of {n_feat} features across {n_samp} samples was drawn with {lib}. "
         + scale_txt + " " + clust_txt + test_txt +

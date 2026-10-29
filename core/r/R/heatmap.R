@@ -126,11 +126,12 @@ recipe_heatmap <- function(df, spec) {
       stringsAsFactors = FALSE)
     names(stats_df)[2:3] <- paste0("mean_", lv)
     test_label <- sprintf("per-feature Welch t-test (%s vs %s), BH-adjusted", lv[1], lv[2])
+    test_levels <- lv[1:2]
     n_sig <- sum(padj < 0.05, na.rm = TRUE)
   } else {
     stats_df <- data.frame(feature = rownames(mat), mean = rowMeans(mat),
                            sd = apply(mat, 1, stats::sd), stringsAsFactors = FALSE)
-    test_label <- NULL; n_sig <- NA_integer_
+    test_label <- NULL; test_levels <- NULL; n_sig <- NA_integer_
   }
 
   col_fun <- if (scale_mode == "none") {
@@ -159,7 +160,7 @@ recipe_heatmap <- function(df, spec) {
     column_order = as.list(colnames(disp)[col_order]))
 
   resolved <- list(family = "heatmap", label = "heatmap")
-  methods  <- .hm_methods(scale_mode, cluster, nrow(mat), ncol(mat), test_label, n_sig)
+  methods  <- .hm_methods(scale_mode, cluster, nrow(mat), ncol(mat), test_levels, n_sig)
   build_script <- function(in_name, fig_stub) {
     .hm_emit_script(spec, in_name, fig_stub, scale_mode, cluster_rows, cluster_cols, legend_name)
   }
@@ -173,7 +174,7 @@ recipe_heatmap <- function(df, spec) {
        height = max(5.0, 1.5 + 0.16 * nrow(mat)))
 }
 
-.hm_methods <- function(scale_mode, cluster, n_feat, n_samp, test_label, n_sig) {
+.hm_methods <- function(scale_mode, cluster, n_feat, n_samp, test_levels, n_sig) {
   v    <- pkg_versions(c("ComplexHeatmap", "circlize"))
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   scale_txt <- switch(scale_mode,
@@ -188,9 +189,9 @@ recipe_heatmap <- function(df, spec) {
   if (cluster %in% c("both", "rows", "columns")) {
     clust_txt <- paste(clust_txt, "Clustering used complete linkage on the Euclidean distance of the displayed values, and at each merge the branch with the higher mean of the unscaled values was drawn first.")
   }
-  test_txt <- if (!is.null(test_label)) {
-    sprintf(" A %s was applied per feature; %d feature(s) were significant (adjusted P < 0.05) and are marked with stars.",
-            test_label, n_sig)
+  test_txt <- if (!is.null(test_levels)) {
+    sprintf(" Each feature was compared between %s and %s with a Welch two-sample t-test, which treats the samples as independent, and the P values were adjusted across the %d features with the Benjamini-Hochberg method; %d of the %d features had an adjusted P below 0.05 and are marked with stars.",
+            test_levels[1], test_levels[2], n_feat, n_sig, n_feat)
   } else ""
   paste0(
     sprintf("A heatmap of %d features across %d samples was drawn with ComplexHeatmap. ",

@@ -34,6 +34,11 @@ tag move together.
 - The `estimation_plot` methods paragraph now says that the P values against the
   reference carry no adjustment for multiple comparisons when two or more groups
   are compared.
+- The `heatmap` methods sentence on the per-feature test was broken ("A
+  per-feature Welch t-test (trt vs untrt), BH-adjusted was applied per feature;
+  38 feature(s)"). It is rewritten, and it now says that the Welch test treats
+  the samples as independent, so a reader sees the assumption for a paired
+  design.
 
 ## [2.0.0] - 2026-10-29
 

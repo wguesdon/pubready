@@ -108,3 +108,12 @@ def test_the_emitted_script_carries_the_order_rule_and_runs(tmp_path):
                          text=True, check=False)
     assert run.returncode == 0, run.stderr
     assert (tmp_path / "figure.pdf").exists()
+
+
+def test_heatmap_methods_name_the_groups_the_independence_and_the_count():
+    from pubready.recipes.heatmap import _methods
+    txt = _methods("row", "both", 40, 8, ("trt", "untrt"), 38, True)
+    assert "compared between trt and untrt with a Welch two-sample t-test" in txt
+    assert "treats the samples as independent" in txt
+    assert "38 of the 40 features had an adjusted P below 0.05" in txt
+    assert "feature(s)" not in _methods("row", "both", 40, 8, None, None, True)
