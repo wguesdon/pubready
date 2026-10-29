@@ -83,6 +83,18 @@ def test_roc_auc_is_the_mann_whitney_probability():
     assert res["stats"]["auc"].iloc[0] == pytest.approx(u / (30 * 25), rel=1e-12)
 
 
+def test_roc_curve_legend_keys_show_the_youden_point():
+    # R draws each legend key as the line with its hollow Youden point.
+    rng = np.random.default_rng(5)
+    df = pd.DataFrame({"y": ["ctrl"] * 30 + ["sick"] * 30,
+                       "m1": np.concatenate([rng.normal(0, 1, 30), rng.normal(1, 1, 30)]),
+                       "m2": np.concatenate([rng.normal(0, 1, 30), rng.normal(0.5, 1, 30)])})
+    res = recipe_roc_curve(df, new_spec("roc_curve", y="y", x="m1,m2"))
+    handles = res["fig"].axes[0].get_legend().legend_handles
+    assert len(handles) == 2
+    assert all(h.get_marker() == "o" and h.get_markerfacecolor() == "white" for h in handles)
+
+
 def test_bland_altman_recovers_a_constant_offset():
     rng = np.random.default_rng(2)
     a = rng.uniform(10, 100, 30)

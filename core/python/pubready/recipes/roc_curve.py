@@ -160,6 +160,42 @@ def delong_paired(a, b):
     return float(zval), float(2 * stats.norm.sf(abs(zval)))
 
 
+def legend_handles(ax, pal):
+    """Legend keys that show each curve with its hollow Youden point, as R draws them.
+
+    Args:
+        ax: The ROC axes, with one labelled curve per marker.
+        pal: The colour of each marker, in curve order.
+
+    Returns:
+        list: One Line2D key per marker, labelled as its curve.
+    """
+    from matplotlib.lines import Line2D
+    curves = [ln for ln in ax.get_lines() if not ln.get_label().startswith("_")]
+    return [Line2D([0], [0], color=pal[k], lw=1.6, marker="o", markersize=6,
+                   markerfacecolor="white", markeredgecolor=pal[k], markeredgewidth=1.4,
+                   label=ln.get_label()) for k, ln in enumerate(curves)]
+
+
+def keep_right_margin(fig, ax, inches=0.2):
+    """Keep white space right of the last x tick label, as the R plot margin does.
+
+    The bundle writer crops the figure to its artists, so the right-most tick
+    label "1.0" would end at the edge of the image. An invisible marker at the
+    given distance right of the axes keeps a margin there.
+
+    Args:
+        fig: The figure, after its final layout.
+        ax: The ROC axes.
+        inches: The margin right of the axes in inches.
+    """
+    from matplotlib.patches import Rectangle
+    x = ax.get_position().x1 + inches / fig.get_figwidth()
+    y = ax.get_position().y0
+    fig.add_artist(Rectangle((min(x, 1.0), y), 1e-3, 1e-3, transform=fig.transFigure,
+                             fill=False, edgecolor="none"))
+
+
 def recipe_roc_curve(df, spec):
     """Draw ROC curves with AUCs, DeLong intervals and the Youden points.
 
@@ -240,9 +276,11 @@ def recipe_roc_curve(df, spec):
     ax.set_xlim(-0.01, 1.01); ax.set_ylim(-0.01, 1.01); ax.set_aspect("equal")
     ax.set_xlabel(ap.get("x_label") or "1 - Specificity")
     ax.set_ylabel(ap.get("y_label") or "Sensitivity")
-    ax.legend(loc="lower right", frameon=False, fontsize=9)
+    # The legend keys carry the Youden point as well as the line, as in R.
+    ax.legend(handles=legend_handles(ax, pal), loc="lower right", frameon=False, fontsize=9)
     apply_pub_style(ax, ap.get("theme"))
     fig.tight_layout()
+    keep_right_margin(fig, ax)
 
     test_meta = {
         "name": "ROC curve analysis (DeLong)",

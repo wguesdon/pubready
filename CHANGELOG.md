@@ -64,6 +64,10 @@ tag move together.
   the panel and level with their lines. The figure is 1 inch wider to give
   them room. The R y axis showed only two labelled ticks on the example data,
   and it now has about six.
+- The Python `roc_curve` legend showed only the line of each marker, and the
+  tick label "1.0" ended at the right edge of the image. The legend keys now
+  show the hollow Youden point on the line, as in R, and the figure keeps a
+  margin right of the axis.
 
 ## [1.0.0] - 2026-10-07
 
