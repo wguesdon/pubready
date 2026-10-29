@@ -11,10 +11,12 @@
 # Both engines compute the same starting values and minimise the same residual
 # sum of squares, so they converge to the same estimates.
 #
-# A curve whose fit fails, whose fitted span is below 10% of the response range,
-# whose EC50 lies outside the tested doses or whose CI is not finite is reported
-# as "not determined" (.drc_status_reason): EC50 NA, drawn as its mean +/- SEM
-# without a curve, and left out of the shared-midpoint F test.
+# A curve whose mean responses vary by less than 10% of the response range is
+# flat, and it gets no fit (.drc_is_flat). A curve whose fit fails, whose fitted
+# span is below 10% of the response range, whose EC50 lies outside the tested
+# doses or whose CI is not finite is reported as "not determined"
+# (.drc_status_reason). Both are drawn as their mean +/- SEM without a curve,
+# report EC50 NA and stay out of the shared-midpoint F test.
 
 # Mean response at one dose. Module level so vapply can call it by name.
 .drc_mean_at <- function(u, lx, y) mean(y[lx == u])
@@ -75,6 +77,24 @@
 # The share of the response range below which a fitted curve counts as flat.
 .drc_min_span <- function() 0.10
 
+.drc_flat_reason <- function() "the mean responses vary by less than 10% of the data range"
+
+# The check before the fit. A curve whose mean responses vary by less than 10%
+# of the range of the mean responses of all curves has no midpoint to estimate.
+# The check uses no fitted value, so both engines decide the same way whatever
+# their optimisers do on flat data. A single curve is never flat by this rule,
+# because its own range is the reference.
+.drc_is_flat <- function(lx, y, span_ref) {
+  means <- vapply(unique(lx), .drc_mean_at, numeric(1), lx = lx, y = y)
+  is.finite(span_ref) && span_ref > 0 && diff(range(means)) < .drc_min_span() * span_ref
+}
+
+# The fit result of a flat curve: no fit, and the starting values for its
+# direction.
+.drc_flat_result <- function(lx, y) {
+  list(fit = NULL, start = .drc_start(lx, y), algorithm = NA_character_, flat = TRUE)
+}
+
 .drc_na_se <- function(e) c(bottom = NA_real_, top = NA_real_, log_ec50 = NA_real_, hill = NA_real_)
 
 # Why a curve is "not determined", or NA when its fit stands. The rule is the
@@ -107,7 +127,8 @@
                      ec50_ci_low = NA_real_, ec50_ci_high = NA_real_,
                      r_squared = NA_real_, rss = NA_real_, df_resid = NA_integer_,
                      fit_status = "not determined",
-                     status_reason = "the fit did not converge", stringsAsFactors = FALSE)
+                     status_reason = if (isTRUE(fitres$flat)) .drc_flat_reason() else "the fit did not converge",
+                     stringsAsFactors = FALSE)
   if (is.null(fit)) return(base)
   cf <- .drc_canonical(stats::coef(fit))
   se <- tryCatch(suppressWarnings(sqrt(diag(stats::vcov(fit)))), error = .drc_na_se)
@@ -239,7 +260,11 @@ recipe_dose_response <- function(df, spec) {
       stop(sprintf("dose_response needs at least 4 distinct doses and 5 points per curve; curve '%s' has %d dose(s) and %d point(s)",
                    g, length(unique(d$lx[sel])), sum(sel)))
     }
-    fr <- .drc_fit_curve(d$lx[sel], d$y[sel])
+    fr <- if (.drc_is_flat(d$lx[sel], d$y[sel], span_ref)) {
+      .drc_flat_result(d$lx[sel], d$y[sel])
+    } else {
+      .drc_fit_curve(d$lx[sel], d$y[sel])
+    }
     rows[[g]] <- .drc_curve_row(g, d$lx[sel], d$y[sel], fr, span_ref)
     if (rows[[g]]$fit_status == "fitted") {
       starts[[g]] <- fr$start
@@ -394,7 +419,8 @@ recipe_dose_response <- function(df, spec) {
     sprintf("%s was modelled as a function of %s with a four-parameter logistic curve (variable Hill slope) fitted by nonlinear least squares on log10 dose (n = %d points, %d curve(s)). ",
             cap_first(y_lab), x_lab, nrow(d), nrow(rows)),
     "The 95% confidence interval of the midpoint was computed on the log10 scale from the standard error of the fit and back-transformed. ",
-    "A midpoint was reported as not determined when the fit did not converge, when the fitted span (top minus bottom) was below 10% of the range of the mean responses, when the midpoint lay outside the tested doses, or when its 95% CI was not finite. ",
+    "A curve whose mean responses varied by less than 10% of the range of the mean responses of all curves was not fitted, and its midpoint was reported as not determined. ",
+    "A midpoint was also reported as not determined when the fit did not converge, when the fitted span (top minus bottom) was below 10% of the range of the mean responses, when the midpoint lay outside the tested doses, or when its 95% CI was not finite. ",
     fits, nd_txt, shared_txt,
     sprintf(" Fitted in R %s with stats::nls and drawn with ggplot2 %s.", rver, v$ggplot2))
 }

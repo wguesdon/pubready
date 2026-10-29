@@ -12,15 +12,20 @@ shared EC50 fits the data as well as one EC50 per curve.
 
 Both engines compute the same starting values and minimise the same residual sum
 of squares, so they converge to the same estimates.
+
+A curve whose mean responses vary by less than 10% of the response range is flat
+and gets no fit (is_flat). A curve whose fit fails the rule of status_reason is
+"not determined" too. Both are drawn as their mean +/- SEM without a curve.
 """
 import functools
 
 import numpy as np
 import pandas as pd
+from matplotlib.lines import Line2D
 from scipy import optimize, stats
 
 from ..bundle import slugify
-from ..theme import apply_pub_style, new_fig, palette, plain_log_axis
+from ..theme import R_POINT_PT, apply_pub_style, new_fig, palette, plain_log_axis
 from ..util import cap_first
 
 _FIT_OPTS = {"maxfev": 20000, "ftol": 1e-12, "xtol": 1e-12, "gtol": 1e-12}
@@ -90,6 +95,31 @@ def fit_curve(lx, y):
 MIN_SPAN = 0.10
 """The share of the response range below which a fitted curve counts as flat."""
 
+FLAT_REASON = "the mean responses vary by less than 10% of the data range"
+"""The reason of a curve that is_flat finds flat, as .drc_flat_reason() in R."""
+
+
+def is_flat(lx, y, span_ref):
+    """Check, before the fit, whether a curve is flat, as .drc_is_flat() in R.
+
+    A curve whose mean responses vary by less than 10% of the range of the mean
+    responses of all curves has no midpoint to estimate. The check uses no fitted
+    value, so both engines decide the same way whatever their optimisers do on
+    flat data. A single curve is never flat by this rule, because its own range
+    is the reference.
+
+    Args:
+        lx: The log10 doses of the curve.
+        y: The responses of the curve.
+        span_ref: The range of the mean responses of all curves.
+
+    Returns:
+        bool: Whether the curve is flat.
+    """
+    means = np.array([y[lx == u].mean() for u in np.unique(lx)])
+    return bool(np.isfinite(span_ref) and span_ref > 0
+                and means.max() - means.min() < MIN_SPAN * span_ref)
+
 
 def status_reason(converged, bottom, top, log_ec50, lx, ci_low, ci_high, span_ref):
     """Say why a curve is "not determined", as .drc_status_reason() of the R engine.
@@ -122,11 +152,11 @@ def status_reason(converged, bottom, top, log_ec50, lx, ci_low, ci_high, span_re
     return None
 
 
-def curve_row(g, lx, y, popt, pcov, start, span_ref):
+def curve_row(g, lx, y, popt, pcov, start, span_ref, flat=False):
     """Summarise one curve as one row of the stats table.
 
-    A curve whose fit fails the rule of status_reason keeps its sizes and its
-    direction but no fitted value, as in the R engine.
+    A flat curve, or a curve whose fit fails the rule of status_reason, keeps its
+    sizes and its direction but no fitted value, as in the R engine.
 
     Args:
         g: The curve name.
@@ -136,6 +166,7 @@ def curve_row(g, lx, y, popt, pcov, start, span_ref):
         pcov: Their covariance, or None.
         start: The starting values, which give the direction of a failed fit.
         span_ref: The range of the mean responses of all curves.
+        flat: Whether is_flat found the curve flat, so that it was not fitted.
 
     Returns:
         dict: The stats row.
@@ -147,7 +178,7 @@ def curve_row(g, lx, y, popt, pcov, start, span_ref):
         "bottom": nan, "top": nan, "hill": nan, "log_ec50": nan, "se_log_ec50": nan,
         "ec50": nan, "ec50_ci_low": nan, "ec50_ci_high": nan, "r_squared": nan,
         "rss": nan, "df_resid": nan, "fit_status": "not determined",
-        "status_reason": "the fit did not converge",
+        "status_reason": FLAT_REASON if flat else "the fit did not converge",
     }
     if popt is None:
         return base
@@ -339,8 +370,12 @@ def recipe_dose_response(df, spec):
         if len(np.unique(lx)) < 4 or len(yy) < 5:
             raise ValueError(f"dose_response needs at least 4 distinct doses and 5 points per curve; "
                              f"curve '{g}' has {len(np.unique(lx))} dose(s) and {len(yy)} point(s)")
-        popt, pcov, st, method = fit_curve(lx, yy)
-        row = curve_row(g, lx, yy, popt, pcov, st, span_ref)
+        flat = is_flat(lx, yy, span_ref)
+        if flat:
+            popt, pcov, st, method = None, None, start_values(lx, yy), None
+        else:
+            popt, pcov, st, method = fit_curve(lx, yy)
+        row = curve_row(g, lx, yy, popt, pcov, st, span_ref, flat=flat)
         rows.append(row)
         if row["fit_status"] == "fitted":
             starts[g] = st
@@ -369,15 +404,18 @@ def recipe_dose_response(df, spec):
             rep = s[s["n"] > 1]
             ax.errorbar(10 ** rep["lx"], rep["mean"], yerr=rep["sem"], fmt="none",
                         ecolor=pal[i], elinewidth=0.8, capsize=2)
-        pts = ax.scatter(10 ** s["lx"], s["mean"], color=pal[i], s=22, zorder=3,
-                         label=f"{g} (not determined)")
+        # R draws the means with geom_point(size = 2).
+        pts = ax.scatter(10 ** s["lx"], s["mean"], color=pal[i], s=(2 * R_POINT_PT) ** 2,
+                         zorder=3, label=f"{g} (not determined)")
         if det[i]:
             lxg = d.loc[d["group"] == g, "lx"]
             grid = np.linspace(lxg.min(), lxg.max(), 200)
             cf = (r["bottom"], r["top"], r["log_ec50"], r["hill"])
-            line, = ax.plot(10 ** grid, fpl(grid, *cf), color=pal[i], lw=1.6,
-                            label=f"{g} ({r['midpoint']} = {r['ec50']:.3g})")
-            handles.append(line)
+            ax.plot(10 ** grid, fpl(grid, *cf), color=pal[i], lw=1.6)
+            # The key of a fitted curve shows the point on the line, as in R.
+            handles.append(Line2D([], [], color=pal[i], lw=1.6, marker="o",
+                                  markersize=2 * R_POINT_PT,
+                                  label=f"{g} ({r['midpoint']} = {r['ec50']:.3g})"))
         else:
             handles.append(pts)
     ax.set_xscale("log")
@@ -519,7 +557,9 @@ def _methods(rows, shared, n_points, spec, x, y):
         "curve (variable Hill slope) fitted by nonlinear least squares on log10 dose "
         f"(n = {n_points} points, {len(rows)} curve(s)). The 95% confidence interval of the "
         "midpoint was computed on the log10 scale from the standard error of the fit and "
-        "back-transformed. A midpoint was reported as not determined when the fit did not "
+        "back-transformed. A curve whose mean responses varied by less than 10% of the range "
+        "of the mean responses of all curves was not fitted, and its midpoint was reported as "
+        "not determined. A midpoint was also reported as not determined when the fit did not "
         "converge, when the fitted span (top minus bottom) was below 10% of the range of the mean "
         "responses, when the midpoint lay outside the tested doses, or when its 95% CI was not "
         f"finite. {fits}{nd_txt}{shared_txt} Fitted in Python {platform.python_version()} with "

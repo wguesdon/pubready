@@ -30,7 +30,7 @@ test_that("dose_response reports a flat curve as not determined and keeps the fi
   expect_equal(st$fit_status, c("fitted", "fitted", "not determined"))
   expect_true(is.na(st$ec50[3]))
   expect_true(all(is.na(st[3, c("ec50_ci_low", "ec50_ci_high", "hill")])))
-  expect_false(is.na(st$status_reason[3]))
+  expect_equal(st$status_reason[3], "the mean responses vary by less than 10% of the data range")
   expect_equal(st$ec50[1:2], c(0.3, 3), tolerance = 0.1)
   expect_equal(res$test_meta$n_determined, 2L)
   expect_equal(res$test_meta$shared_ec50_test$df1, 1)
@@ -48,4 +48,13 @@ test_that("the not-determined rule names the same reason as the Python engine", 
   expect_equal(.drc_status_reason(TRUE, 0, 100, 0, lx, 0, Inf, 100),
                "the 95% CI of the EC50 is not finite")
   expect_true(is.na(.drc_status_reason(TRUE, 0, 100, 0, lx, 0.1, 10, 100)))
+})
+
+test_that("the check before the fit finds a flat curve as the Python engine does", {
+  lx <- rep(c(-2, -1, 0, 1), each = 2)
+  expect_true(.drc_is_flat(lx, c(100, 102, 99, 101, 103, 101, 100, 100), 100))
+  expect_false(.drc_is_flat(lx, c(100, 102, 90, 92, 50, 52, 10, 12), 100))
+  # A single curve is its own reference, so it is never flat.
+  y <- c(100, 101, 100, 101, 101, 102, 100, 101)
+  expect_false(.drc_is_flat(lx, y, 1.5))
 })

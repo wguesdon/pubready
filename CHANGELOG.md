@@ -118,7 +118,12 @@ tag move together.
   sets the number. The title states how many intersections are not shown. The
   stats table still lists every intersection, and `n_intersections_shown` in the
   manifest gives the number drawn.
-- A `dose_response` curve is "not determined" when its fit fails, when its
+- A `dose_response` curve is "not determined" in five cases. A check before the
+  fit finds a flat curve, whose mean responses vary by less than 10% of the
+  range of the mean responses of all curves, and gives it no fit. The check uses
+  no fitted value, so both engines give the same reason for a flat curve. Before
+  the check, R `nls` failed on a flat curve and Python converged, so the two
+  reasons differed. A curve is also not determined when its fit fails, when its
   fitted span is below 10% of the range of the mean responses, when its EC50 is
   outside the tested doses, or when its 95% CI is not finite. The stats table
   gives EC50 NA, a `fit_status` and a `status_reason` for that curve. The
@@ -148,6 +153,9 @@ tag move together.
   Podman that does not answer now points to `figkit doctor`. Only a missing image
   gives the hint `figkit build`. `figkit version` prints "podman: not found" in
   place of an empty version.
+- The Python `dose_response` legend drew a fitted curve as a line only. The key
+  now shows the point on the line, as the R key does, and the mean points have
+  the size of the R points.
 - The Python `embedding` points were 27% wider than the R points, because the
   size conversion used 2.7 points for each R size unit. R draws a filled point
   of size 1 with a diameter of 0.75 x 72.27 / 25.4 = 2.13 points, and the

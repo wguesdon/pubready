@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pubready.recipes.dose_response import fpl, recipe_dose_response, status_reason
+from pubready.recipes.dose_response import fpl, is_flat, recipe_dose_response, status_reason
 from pubready.spec import spec_from_args
 
 
@@ -49,7 +49,7 @@ def test_dose_response_reports_a_flat_curve_as_not_determined():
     assert list(st["fit_status"]) == ["fitted", "fitted", "not determined"]
     assert np.isnan(st["ec50"].iloc[2])
     assert st[["ec50_ci_low", "ec50_ci_high", "hill"]].iloc[2].isna().all()
-    assert st["status_reason"].iloc[2]
+    assert st["status_reason"].iloc[2] == "the mean responses vary by less than 10% of the data range"
     assert st["ec50"].iloc[:2].to_numpy() == pytest.approx([0.3, 3], rel=0.1)
     assert res["test_meta"]["n_determined"] == 2
     assert res["test_meta"]["shared_ec50_test"]["df1"] == 1
@@ -67,3 +67,22 @@ def test_the_not_determined_rule_names_the_same_reason_as_the_r_engine():
     assert (status_reason(True, 0, 100, 0, lx, 0, np.inf, 100)
             == "the 95% CI of the EC50 is not finite")
     assert status_reason(True, 0, 100, 0, lx, 0.1, 10, 100) is None
+
+
+def test_the_check_before_the_fit_finds_a_flat_curve_as_the_r_engine_does():
+    lx = np.repeat([-2.0, -1.0, 0.0, 1.0], 2)
+    assert is_flat(lx, np.array([100, 102, 99, 101, 103, 101, 100, 100.0]), 100)
+    assert not is_flat(lx, np.array([100, 102, 90, 92, 50, 52, 10, 12.0]), 100)
+    # A single curve is its own reference, so it is never flat.
+    y = np.array([100, 101, 100, 101, 101, 102, 100, 101.0])
+    assert not is_flat(lx, y, 1.5)
+
+
+def test_the_legend_key_of_a_fitted_curve_shows_a_point_on_a_line():
+    res = recipe_dose_response(drc_three_curves(),
+                               drc_spec(x="dose", y="response", group="compound"))
+    legend = res["fig"].axes[0].get_legend()
+    keys = legend.legend_handles
+    assert [k.get_marker() for k in keys[:2]] == ["o", "o"]
+    assert [k.get_linestyle() for k in keys[:2]] == ["-", "-"]
+    assert legend.get_texts()[2].get_text() == "inactive (not determined)"
