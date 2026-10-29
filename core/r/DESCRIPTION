@@ -30,6 +30,7 @@ Imports:
     metafor,
     optparse,
     pROC,
+    purrr,
     readr,
     readxl,
     rstatix,

@@ -27,6 +27,47 @@
   }, numeric(1), USE.NAMES = FALSE)
 }
 
+# Fill words greedily into lines of at most `width` characters. A word longer
+# than the width keeps its own line.
+.enrich_greedy <- function(words, width) {
+  lines <- words[1]
+  for (wd in words[-1]) {
+    last <- lines[length(lines)]
+    if (nchar(last) + 1 + nchar(wd) <= width) {
+      lines[length(lines)] <- paste(last, wd)
+    } else {
+      lines <- c(lines, wd)
+    }
+  }
+  lines
+}
+
+# Wrap one term label at spaces into balanced lines of at most `width`
+# characters: the fewest lines that the width allows, each about the same length,
+# so no short word is left alone on a line. The Python engine wraps the same way.
+.enrich_wrap <- function(s, width = 45) {
+  words <- strsplit(trimws(s), "\\s+")[[1]]
+  joined <- paste(words, collapse = " ")
+  if (length(words) < 2 || nchar(joined) <= width) return(joined)
+  n_lines <- length(.enrich_greedy(words, width))
+  for (w2 in seq(min(ceiling(nchar(joined) / n_lines), width), width)) {
+    lines <- .enrich_greedy(words, w2)
+    if (length(lines) <= n_lines) return(paste(lines, collapse = "\n"))
+  }
+  paste(.enrich_greedy(words, width), collapse = "\n")
+}
+
+# The figure size from the wrapped labels: each term row grows with its lines,
+# and the label column grows with its longest line. The Python engine uses the
+# same sizes.
+.enrich_size <- function(labels) {
+  parts <- strsplit(labels, "\n", fixed = TRUE)
+  n_lines <- lengths(parts)
+  longest <- max(nchar(unlist(parts)), 4)
+  list(width = max(7.2, 0.3 + 0.075 * longest + 3.2 + 1.6),
+       height = max(4.0, 1.6 + sum(0.2 + 0.16 * n_lines)))
+}
+
 recipe_enrichment_dot <- function(df, spec) {
   cols <- .enrich_columns(df, spec)
   if (is.na(cols$term)) stop("enrichment_dot: no term/Description column found; set it with --label")
@@ -54,9 +95,14 @@ recipe_enrichment_dot <- function(df, spec) {
   pd <- data.frame(term = term[idx], x = xval[idx], padj = padj[idx],
                    count = count[idx], stringsAsFactors = FALSE)
   pd$term <- factor(pd$term, levels = pd$term[order(pd$x)])
+  # Long GO term names would take the whole width and leave no room for the dots,
+  # so each label is wrapped at about 45 characters.
+  pd$label <- vapply(as.character(pd$term), .enrich_wrap, character(1), USE.NAMES = FALSE)
+  pd$label <- factor(pd$label, levels = pd$label[order(pd$x)])
+  size <- .enrich_size(as.character(pd$label))
   has_size <- !all(is.na(pd$count))
 
-  p <- ggplot2::ggplot(pd, ggplot2::aes(x = x, y = term))
+  p <- ggplot2::ggplot(pd, ggplot2::aes(x = x, y = label))
   p <- if (has_size) {
     p + ggplot2::geom_point(ggplot2::aes(size = count, colour = -log10(padj)))
   } else {
@@ -70,7 +116,9 @@ recipe_enrichment_dot <- function(df, spec) {
     ggplot2::labs(x = spec$appearance$x_label %||% xlab_default, y = NULL,
                   title = spec$appearance$title) +
     pub_theme(spec$appearance$theme) +
-    ggplot2::theme(legend.position = "right", axis.title.y = ggplot2::element_blank())
+    ggplot2::theme(legend.position = "right", legend.justification = "top",
+                   axis.title.y = ggplot2::element_blank(),
+                   axis.text.y = ggplot2::element_text(lineheight = 0.9))
   if (gsea_mode) {
     p <- p + ggplot2::geom_vline(xintercept = 0, linetype = "dashed",
                                  linewidth = 0.3, colour = "grey50")
@@ -85,13 +133,15 @@ recipe_enrichment_dot <- function(df, spec) {
   resolved <- list(family = "enrichment_dot",
                    label = if (gsea_mode) "GSEA dot plot" else "ORA dot plot")
   methods <- .enrich_methods(gsea_mode, length(term), nrow(pd), xlab_default)
-  build_script <- function(in_name, fig_stub) .enrich_emit_script(in_name, fig_stub, cols, gsea_mode, topn)
+  build_script <- list(fn = .enrich_emit_script,
+                       args = list(cols = cols, gsea_mode = gsea_mode, topn = topn,
+                                   width = size$width, height = size$height))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
        label = slugify(tools::file_path_sans_ext(spec$data$file)),
        df_used = df_used, clean_steps = "No cleaning applied; enrichment table used as-is.",
-       width = 7.2, height = max(4.0, 0.34 * nrow(pd) + 1.6))
+       width = size$width, height = size$height)
 }
 
 .enrich_methods <- function(gsea_mode, n_total, n_shown, xlab) {
@@ -107,7 +157,7 @@ recipe_enrichment_dot <- function(df, spec) {
     sprintf("Drawn in R %s with ggplot2 %s.", rver, v$ggplot2))
 }
 
-.enrich_emit_script <- function(in_name, fig_stub, cols, gsea_mode, topn) {
+.enrich_emit_script <- function(cols, gsea_mode, topn, width, height, in_name, fig_stub) {
   xline <- if (gsea_mode) {
     sprintf('d$x <- as.numeric(raw[["%s"]]); xlab <- "NES"', cols$nes)
   } else if (!is.na(cols$ratio)) {
@@ -127,11 +177,14 @@ recipe_enrichment_dot <- function(df, spec) {
     if (!is.na(cols$count)) sprintf('d$count <- as.numeric(raw[["%s"]])', cols$count) else "d$count <- NA",
     xline,
     sprintf('d <- d[order(d$padj), ][seq_len(min(%d, nrow(d))), ]', topn),
-    "d$term <- factor(d$term, levels = d$term[order(d$x)])",
-    'p <- ggplot(d, aes(x, term)) + geom_point(aes(size = count, colour = -log10(padj))) +',
+    "# Wrap each term at about 45 characters, as the figure does.",
+    "d$label <- d$term",
+    "for (i in seq_len(nrow(d))) d$label[i] <- paste(strwrap(d$term[i], 46), collapse = \"\\n\")",
+    "d$label <- factor(d$label, levels = d$label[order(d$x)])",
+    'p <- ggplot(d, aes(x, label)) + geom_point(aes(size = count, colour = -log10(padj))) +',
     '  scale_colour_gradient(low = "#3B6DB3", high = "#C1432B", name = "-log10 p.adjust") + labs(x = xlab, y = NULL) + theme_classic()',
     paste0("p <- p", vline),
-    sprintf('ggsave("%s.pdf", p, width = 7.2, height = 6)', fig_stub),
+    sprintf('ggsave("%s.pdf", p, width = %.2f, height = %.2f)', fig_stub, width, height),
     'cat("Reproduced figure.\\n")'
   )
 }

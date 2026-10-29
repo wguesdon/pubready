@@ -82,7 +82,7 @@ def recipe_bland_altman(df, spec):
     mean, diff = (a + b) / 2, a - b
     ap = spec["appearance"]
     pal = palette(1, ap.get("palette"))
-    w, h = 5.4, 4.4
+    w, h = 6.4, 4.4
     fig, ax = new_fig(w, h)
     for lo, hi in ((s["loa_low_ci_low"], s["loa_low_ci_high"]),
                    (s["bias_ci_low"], s["bias_ci_high"]),
@@ -92,8 +92,11 @@ def recipe_bland_altman(df, spec):
                          (s["bias"], "-", f"Bias: {s['bias']:.3g}"),
                          (s["loa_high"], "--", f"+1.96 SD: {s['loa_high']:.3g}")):
         ax.axhline(val, ls=ls, color="0.15", lw=1.0)
-        ax.annotate(lab, xy=(mean.max(), val), xytext=(0, 3), textcoords="offset points",
-                    ha="right", va="bottom", fontsize=9, color="0.15")
+        # The label sits in the right margin, next to its line, so that it never
+        # covers a point; tight_layout leaves room for it, as R does.
+        ax.annotate(lab, xy=(1.0, val), xycoords=("axes fraction", "data"), xytext=(5, 0),
+                    textcoords="offset points", ha="left", va="center", fontsize=9,
+                    color="0.15", annotation_clip=False)
     ax.scatter(mean, diff, s=26, color=pal[0], alpha=0.85, zorder=3)
     ax.set_title(f"n = {s['n']}; proportional bias slope {s['prop_bias_slope']:.3f}, "
                  f"P = {s['prop_bias_p']:.2g}", fontsize=10, color="#4d4d4d")
@@ -175,7 +178,7 @@ bias, s = diff.mean(), diff.std(ddof=1)
 loa = bias + np.array([-1, 1]) * stats.norm.ppf(0.975) * s
 print(f"bias {{bias:.4f}}, SD {{s:.4f}}, limits {{loa[0]:.4f}} to {{loa[1]:.4f}}")
 print(stats.linregress(mean, diff))
-fig, ax = plt.subplots(figsize=(5.4, 4.4))
+fig, ax = plt.subplots(figsize=(6.4, 4.4))
 ax.scatter(mean, diff)
 ax.axhline(bias, color="k"); [ax.axhline(v, color="k", ls="--") for v in loa]
 ax.set_xlabel("Mean of {x} and {y}"); ax.set_ylabel("Difference ({x} - {y})")

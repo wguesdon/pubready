@@ -75,7 +75,7 @@ If a command reports the image is missing, run `figkit build` first.
 | `heatmap` | matrix CSV + annotation CSV | `--data --annotation` | per-feature Welch t-test when the annotation has two groups |
 | `correlation` | x, y (two numeric columns) | `--x --y` | Pearson / Spearman / Kendall, chosen from normality |
 | `correlation_heatmap` | table of numeric variables | `--data` | pairwise correlation, clustered, BH-adjusted stars |
-| `upset` | binary membership matrix | `--data` | descriptive intersection sizes (no test) |
+| `upset` | binary membership matrix | `--data [--top_n]` | descriptive intersection sizes, the 15 largest drawn by default (no test) |
 | `volcano` | DE table (log2FC + p) | `--data [--x --y --label]` | EnhancedVolcano-style scatter, top hits labeled |
 | `enrichment_dot` | GSEA / ORA result table | `--data [--label]` | dot plot, size = count, color = -log10 adjusted p |
 | `paired_compare` | condition, value, id | `--x --y --id` | paired t-test or Wilcoxon, connecting lines |
@@ -99,7 +99,8 @@ Common options: `--engine r|python` (default r), `--geom box|violin|bar|rainclou
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
 `pearson|spearman|kendall`; proportions: `chisq|fisher`; timecourse:
 `gg|uncorrected`), `--scale`/`--cluster` (heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n`
-(volcano, ma_plot), `--id --group --label`, `--positive LEVEL` (roc_curve case level, calibration event level),
+(volcano, ma_plot; `--top_n` also sets the terms of enrichment_dot and the intersections
+of upset), `--id --group --label`, `--positive LEVEL` (roc_curve case level, calibration event level),
 `--cause CODE` (cumulative_incidence cause of interest, default 1),
 `--ci_low --ci_high --se --measure ratio|difference` (forest_meta),
 `--pd_threshold --pr_threshold` (spider_response, waterfall), `--markers "a,b"`
@@ -143,10 +144,9 @@ Pick the engine per figure with `--engine`. Both write the same bundle and, wher
 a matching method exists, the same numbers. The two-group and paired recipes agree
 digit for digit on the t-test, the Mann-Whitney U test and the Wilcoxon signed-rank
 test, and the smoke test asserts it. The public benchmarks in `benchmarks/` hold
-every recipe in both engines to an independent reference value. Five gaps remain.
+every recipe in both engines to an independent reference value. Four gaps remain.
 The aligned rank transform for non-parametric factorial ANOVA is R only, so
-`--test art --engine python` errors and routes you to R. The Python heatmap keeps
-its per-feature significance stars in the stats table rather than on the figure.
+`--test art --engine python` errors and routes you to R.
 The Python `survival_km` table has no confidence interval for the median survival.
 In `multi_group_compare` a Tukey P value below about 1e-8 differs between the
 engines in the second or third digit, because R's `ptukey` loses relative precision

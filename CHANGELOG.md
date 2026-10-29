@@ -100,6 +100,66 @@ tag move together.
 - `factorial_anova` wraps an `--x` level longer than 12 characters, and the
   figure width grows with the number of `--x` levels multiplied by the number of
   `--fill` levels. A design that fitted the old size keeps it.
+- `upset` drew every intersection. Seven sets gave 89 bars in a figure too wide
+  to read. Both engines now draw the 15 largest intersections, and `--top_n`
+  sets the number. The title states how many intersections are not shown. The
+  stats table still lists every intersection, and `n_intersections_shown` in the
+  manifest gives the number drawn.
+
+### Fixed
+- The R `cox_forest` drew its figure with `survminer::ggforest`. The text was
+  about 6 pt, grey bands crossed the rows, and a long level name ran into its
+  hazard ratio. Both engines now draw the same house-style forest plot. Each
+  model term has one row, and the first level of each factor has a "reference"
+  row. The "HR (95% CI)" and "P" columns are on the right, and the subtitle
+  gives the number of subjects and events. The numbers do not change. The
+  generated R script no longer loads survminer.
+- The hazard-ratio axis of `cox_forest` showed only 0.5 and 1 when a CI reached
+  1.94. The axis now has 1-2-5 ticks that cover the CIs on both sides of 1, in
+  both engines.
+- The Python `heatmap` put the group legend and the z-score colour bar on top of
+  the row names. PyComplexHeatmap measured the names before the first draw, when
+  they were still empty. The legends now go to the right of the row names.
+- The Python `heatmap` did not draw the significance stars that R draws when the
+  annotation has two groups. It now writes them between the heatmap and the row
+  names, with the same BH-adjusted Welch t thresholds as R.
+- The two `upset` engines did not agree on the layout. R rotated the counts over
+  the bars by 45 degrees and the set-size axis labels by 90 degrees, and it gave
+  no set-size numbers. Python put the set sizes on the left, where the numbers
+  overlapped the bars, and it sorted tied intersections in a different order.
+  Python now draws the plot with matplotlib in the layout of ComplexHeatmap,
+  with the set sizes on the right. Both engines write horizontal counts and
+  set-size numbers. Both sort the intersections by size, then by degree, then by
+  set name, and the stats table uses the same order.
+- The R `enrichment_dot` gave the whole width to long GO term names, and the dot
+  panel shrank to nothing with 25 terms of up to 90 characters. Both engines now
+  wrap each label into balanced lines of at most 45 characters. The figure
+  height grows with the number of label lines, and the width grows with the
+  longest line.
+- The Python `enrichment_dot` put the count legend inside the plot area, where
+  it could cover dots. The count legend and the colour bar now sit right of the
+  panel, as in R.
+- The R `volcano` legend showed an "FC" key with no point when no feature passed
+  the fold change alone. Both engines now give a key only to a class that holds
+  at least one feature, and the key glyphs are opaque.
+- The Python `volcano` labels collided, for example Gene15014 with Gene12099.
+  adjustText ran before the final layout, so the later resize undid its
+  spacing, and it stopped after a time limit. The labels are now placed after
+  the layout is final, they repel from every point as ggrepel does, and a fixed
+  iteration limit gives the same result on every run.
+- The `bland_altman` labels "Bias" and "+1.96 SD" sat inside the data and
+  covered points in both engines. They now sit in the right margin, outside
+  the panel and level with their lines. The figure is 1 inch wider to give
+  them room. The R y axis showed only two labelled ticks on the example data,
+  and it now has about six.
+- The Python `roc_curve` legend showed only the line of each marker, and the
+  tick label "1.0" ended at the right edge of the image. The legend keys now
+  show the hollow Youden point on the line, as in R, and the figure keeps a
+  margin right of the axis.
+- `swimmer` listed the arms in the order of the input rows, for example Arm C,
+  Arm B, Arm A. Both engines now sort the arms as the other recipes sort their
+  groups, so the colours and the legend follow that order. The R legend text
+  was 10.4 pt and the title 13 pt. They are now 9 pt and 10 pt, as in Python.
 
 ## [1.0.0] - 2026-10-07
 

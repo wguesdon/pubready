@@ -2,6 +2,7 @@
 Mirrors the R recipe. Auto-detects DESeq2 / limma / edgeR columns, four-color
 scheme, cutoff lines, top hits labeled with adjustText. No test is run here; the
 differential test is upstream, so the recipe is descriptive of that result."""
+import functools
 import os
 
 import numpy as np
@@ -29,6 +30,37 @@ def _columns(df, spec):
         obj = [c for c in df.columns if df[c].dtype == object]
         lab = obj[0] if obj else None
     return fc, p, lab
+
+
+def place_labels(ax, fc, neglog, lab, top):
+    """Label the top hits and move the labels clear of each other and of the points.
+
+    adjustText repels the labels from every point of the plot, as ggrepel does in
+    R, and draws a grey segment to each labelled point. A fixed iteration limit
+    keeps the result the same on every run; the default time limit would not.
+
+    Args:
+        ax: The volcano axes, in its final layout.
+        fc: The log2 fold changes of all features.
+        neglog: The -log10 p of all features.
+        lab: The feature labels.
+        top: The indices of the features to label.
+
+    Returns:
+        list: The label text objects.
+    """
+    texts = [ax.text(fc[i], neglog[i], lab[i], fontsize=8, zorder=5) for i in top]
+    if not texts:
+        return texts
+    try:
+        from adjustText import adjust_text
+    except ImportError:
+        return texts
+    adjust_text(texts, x=fc, y=neglog, ax=ax, target_x=fc[top], target_y=neglog[top],
+                expand=(1.3, 1.6), force_text=(0.4, 0.8), force_static=(0.3, 0.6),
+                force_explode=(0.3, 0.8), max_move=(20, 20), iter_lim=600, min_arrow_len=0,
+                arrowprops=dict(arrowstyle="-", color="0.35", lw=0.5))
+    return texts
 
 
 def recipe_volcano(df, spec):
@@ -61,7 +93,7 @@ def recipe_volcano(df, spec):
     passfc = np.abs(fc) >= fcc
     passp = p <= pcc
     cat = np.where(passfc & passp, "FC and p", np.where(passp, "p", np.where(passfc, "FC", "NS")))
-    colors = {"NS": "grey", "FC": "#2E8B57", "p": "#3B6DB3", "FC and p": "#C1432B"}
+    colors = {"NS": "#B3B3B3", "FC": "#2E8B57", "p": "#3B6DB3", "FC and p": "#C1432B"}
     # The legend and the y axis name the p column the threshold reads, as in R.
     plab = "p" if p_col in _P else p_col
     legend = {"NS": "NS", "FC": "FC", "p": plab, "FC and p": f"FC and {plab}"}
@@ -83,20 +115,20 @@ def recipe_volcano(df, spec):
     else:
         order = np.argsort(-neglog)
     top = order[:topn]
-    texts = [ax.text(fc[i], neglog[i], lab[i], fontsize=8) for i in top]
-    try:
-        from adjustText import adjust_text
-        adjust_text(texts, ax=ax, arrowprops=dict(arrowstyle="-", color="grey", lw=0.4))
-    except Exception:
-        pass
 
     ax.set_xlabel(ap.get("x_label") or "log2 fold change")
     ax.set_ylabel(ap.get("y_label") or f"-log10 {plab}")
     if ap.get("title"):
         ax.set_title(ap["title"], fontweight="bold")
     apply_pub_style(ax, ap.get("theme"))
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.13), ncol=4, frameon=False, fontsize=9)
+    leg = ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.13), ncol=4, frameon=False,
+                    fontsize=9, markerscale=2.0)
+    for handle in leg.legend_handles:
+        handle.set_alpha(1.0)
     fig.tight_layout()
+    # The labels are placed last, once the layout is final: adjustText works in
+    # display units, so a later change of the axes size would undo its spacing.
+    place_labels(ax, fc, neglog, lab, top)
 
     n_up = int(np.sum((fc >= fcc) & (p <= pcc)))
     n_down = int(np.sum((fc <= -fcc) & (p <= pcc)))
@@ -113,7 +145,7 @@ def recipe_volcano(df, spec):
         "df_used": df_used, "clean_steps": clean_steps,
         "label": slugify(os.path.splitext(spec["data"]["file"])[0]),
         "width": w, "height": h,
-        "build_script": lambda in_name, fig_stub: _script(in_name, fig_stub, fc_col, p_col, lab_col, fcc, pcc, topn),
+        "build_script": functools.partial(_script, fc_col, p_col, lab_col, fcc, pcc, topn),
     }
 
 
@@ -129,7 +161,7 @@ def _methods(n, fcc, pcc, n_up, n_down):
     )
 
 
-def _script(in_name, fig_stub, fc_col, p_col, lab_col, fcc, pcc, topn):
+def _script(fc_col, p_col, lab_col, fcc, pcc, topn, in_name, fig_stub):
     lab_line = (f'lab = raw["{lab_col}"].astype(str).to_numpy()' if lab_col
                 else "lab = raw.index.astype(str).to_numpy()")
     return f'''#!/usr/bin/env python3

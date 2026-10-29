@@ -83,6 +83,18 @@ def test_roc_auc_is_the_mann_whitney_probability():
     assert res["stats"]["auc"].iloc[0] == pytest.approx(u / (30 * 25), rel=1e-12)
 
 
+def test_roc_curve_legend_keys_show_the_youden_point():
+    # R draws each legend key as the line with its hollow Youden point.
+    rng = np.random.default_rng(5)
+    df = pd.DataFrame({"y": ["ctrl"] * 30 + ["sick"] * 30,
+                       "m1": np.concatenate([rng.normal(0, 1, 30), rng.normal(1, 1, 30)]),
+                       "m2": np.concatenate([rng.normal(0, 1, 30), rng.normal(0.5, 1, 30)])})
+    res = recipe_roc_curve(df, new_spec("roc_curve", y="y", x="m1,m2"))
+    handles = res["fig"].axes[0].get_legend().legend_handles
+    assert len(handles) == 2
+    assert all(h.get_marker() == "o" and h.get_markerfacecolor() == "white" for h in handles)
+
+
 def test_bland_altman_recovers_a_constant_offset():
     rng = np.random.default_rng(2)
     a = rng.uniform(10, 100, 30)
@@ -92,6 +104,23 @@ def test_bland_altman_recovers_a_constant_offset():
     assert s["bias"] == pytest.approx(2, abs=0.2)
     assert s["loa_low"] < s["bias"] < s["loa_high"]
     assert list(res["qc"]["panels"]) == ["a - b"]
+
+
+def test_bland_altman_labels_sit_in_the_right_margin():
+    # The bias and limit labels sit outside the panel, so they cannot cover a point.
+    rng = np.random.default_rng(3)
+    a = rng.uniform(10, 100, 40)
+    df = pd.DataFrame({"a": a + 2 + rng.normal(0, 1, 40), "b": a})
+    res = recipe_bland_altman(df, new_spec("bland_altman", x="a", y="b"))
+    fig = res["fig"]
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    ax = fig.axes[0]
+    labels = [t for t in ax.texts if "SD" in t.get_text() or "Bias" in t.get_text()]
+    assert len(labels) == 3
+    right = ax.get_window_extent(renderer).x1
+    assert all(t.get_window_extent(renderer).x0 > right for t in labels)
+    assert all(t.get_window_extent(renderer).x1 <= fig.bbox.x1 for t in labels)
 
 
 def test_forest_meta_pools_a_difference_measure_by_inverse_variance():
@@ -175,6 +204,16 @@ def test_swimmer_sorts_the_courses_and_counts_ongoing_and_markers():
     assert list(res["stats"]["patient"]) == ["b", "c", "a"]
     assert res["test_meta"]["n_ongoing"] == 1
     assert res["test_meta"]["markers"]["response"] == 2
+
+
+def test_swimmer_sorts_the_arms_as_the_other_recipes_sort_their_groups():
+    df = pd.DataFrame({"pt": ["a", "b", "c"], "months": [3, 10, 6], "ended": [1, 0, 1],
+                       "arm": ["Arm C", "Arm B", "Arm A"]})
+    res = recipe_swimmer(df, new_spec("swimmer", id="pt", time="months", event="ended",
+                                      group="arm"))
+    assert list(res["test_meta"]["arms"]) == ["Arm A", "Arm B", "Arm C"]
+    legend = res["fig"].axes[0].get_legend()
+    assert [t.get_text() for t in legend.get_texts()] == ["Arm A", "Arm B", "Arm C"]
 
 
 def test_swimmer_refuses_a_status_not_coded_one_or_zero():

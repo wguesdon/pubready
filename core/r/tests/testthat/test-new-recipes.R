@@ -62,6 +62,16 @@ test_that("bland_altman recovers a constant offset as the bias", {
   expect_named(res$qc$panels, "a - b")
 })
 
+test_that("bland_altman gives the y axis enough breaks", {
+  set.seed(4)
+  a <- stats::runif(40, 40, 220)
+  df <- data.frame(a = a + 6 + stats::rnorm(40, 0, 4.7), b = a)
+  res <- recipe_bland_altman(df, new_spec("bland_altman", x = "a", y = "b"))
+  built <- ggplot2::ggplot_build(res$plot)
+  brk <- built$layout$panel_params[[1]]$y$breaks
+  expect_gte(sum(is.finite(brk)), 4)
+})
+
 test_that("forest_meta pools a difference measure from standard errors by inverse variance", {
   df <- data.frame(study = c("s1", "s2", "s3"), md = c(1.0, 2.0, 1.5), se = c(0.5, 0.25, 1.0))
   res <- recipe_forest_meta(df, new_spec("forest_meta", y = "md", se = "se", label = "study"))
@@ -140,6 +150,14 @@ test_that("swimmer sorts the courses, counts the ongoing ones and the markers", 
   expect_equal(res$stats$patient, c("b", "c", "a"))
   expect_equal(res$test_meta$n_ongoing, 1)
   expect_equal(res$test_meta$markers$response, 2)
+})
+
+test_that("swimmer sorts the arms as the other recipes sort their groups", {
+  df <- data.frame(pt = c("a", "b", "c"), months = c(3, 10, 6), ended = c(1, 0, 1),
+                   arm = c("Arm C", "Arm B", "Arm A"))
+  res <- recipe_swimmer(df, new_spec("swimmer", id = "pt", time = "months", event = "ended",
+                                     group = "arm"))
+  expect_equal(names(res$test_meta$arms), c("Arm A", "Arm B", "Arm C"))
 })
 
 test_that("swimmer refuses a status that is not coded 1 or 0", {
