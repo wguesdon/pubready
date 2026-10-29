@@ -168,3 +168,9 @@ p_phrase <- function(p) {
 sig_text <- function(x, digits = 3) {
   sub("\\.$", "", sprintf(paste0("%#.", digits, "g"), x))
 }
+
+# A degree of freedom for a methods sentence: a whole number as an integer, and
+# a fractional df (Welch, Greenhouse-Geisser) with two decimals.
+df_text <- function(d) {
+  if (abs(d - round(d)) < 1e-9) sprintf("%d", as.integer(round(d))) else sprintf("%.2f", d)
+}

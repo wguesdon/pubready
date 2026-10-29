@@ -263,3 +263,17 @@ def sig_text(x, digits=3):
         return "NA"
     text = f"{float(x):#.{digits}g}"
     return text[:-1] if text.endswith(".") else text
+
+
+def df_text(d):
+    """Write a degree of freedom for a methods sentence.
+
+    Args:
+        d: The degree of freedom.
+
+    Returns:
+        str: A whole number as an integer, and a fractional df (Welch,
+        Greenhouse-Geisser) with two decimals.
+    """
+    d = float(d)
+    return f"{int(round(d))}" if abs(d - round(d)) < 1e-9 else f"{d:.2f}"

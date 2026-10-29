@@ -108,3 +108,10 @@ def test_integer_columns_drops_the_trailing_zero_of_whole_numbers():
     out = integer_columns(frame)
     assert out.to_csv(index=False).splitlines() == ["n,df,p,label", "16470,2,0.5,a", ",147,,b"]
     assert frame["n"].dtype.kind == "f"
+
+
+def test_df_text_writes_a_whole_df_as_an_integer_and_a_welch_df_with_two_decimals():
+    from pubready.util import df_text
+    assert df_text(5) == "5"
+    assert df_text(np.int64(27)) == "27"
+    assert df_text(29.9520363861042) == "29.95"

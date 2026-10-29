@@ -14,7 +14,7 @@ from scipy import stats
 from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, category_width, geom_top, new_fig, palette,
                      plain_number_axis, script_geom_code, wrap_labels)
-from ..util import cap_first, cld_letters, p_stars, shapiro_normal
+from ..util import cap_first, cld_letters, df_text, p_stars, shapiro_normal
 
 MAX_BRACKETS = 6
 """More significant pairs than this switch the figure to a compact letter display."""
@@ -221,7 +221,8 @@ def _methods(label, posthoc_label, omni, n_by, spec, display, n_sig):
         omni_txt = f"a Kruskal-Wallis test (H({int(omni['df1'])}) = {omni['stat']:.2f}, P = {omni['p']:.2g})"
     else:
         art = "a " if label == "one-way ANOVA" else ""
-        omni_txt = f"{art}{label} (F({int(omni['df1'])}, {omni['df2']:.0f}) = {omni['stat']:.2f}, P = {omni['p']:.2g})"
+        omni_txt = (f"{art}{label} (F({df_text(omni['df1'])}, {df_text(omni['df2'])}) = "
+                    f"{omni['stat']:.2f}, P = {omni['p']:.2g})")
     eff = f" The effect size was {omni['eff_name']} = {omni['eff']:.2f}." if omni["eff_name"] else ""
     ns = ", ".join(f"{g} (n = {n})" for g, n in n_by.items())
     if display == "compact letter display":

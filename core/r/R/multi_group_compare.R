@@ -255,7 +255,7 @@ recipe_multi_group_compare <- function(df, spec) {
   } else {
     sprintf("%s%s (F(%s, %s) = %.2f, P = %s)",
             resolved$article, resolved$label,
-            omnibus$df1, omnibus$df2, omnibus$statistic, .mg_p_text(omnibus$p))
+            df_text(omnibus$df1), df_text(omnibus$df2), omnibus$statistic, .mg_p_text(omnibus$p))
   }
   eff <- if (!is.null(omnibus$effect_size)) {
     sprintf(" The effect size was %s = %.2f.", omnibus$effect_size$name, omnibus$effect_size$value)

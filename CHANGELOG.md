@@ -84,6 +84,10 @@ tag move together.
   check the new `ph_global_p` reference of `lung_cox` and `veteran_cox`.
 
 ### Fixed
+- The `multi_group_compare` methods paragraph wrote the Welch df unformatted in R,
+  "F(5, 29.9520363861042)", and rounded to a whole number in Python, "F(5, 30)".
+  Both engines now write a whole df as an integer and a fractional df with two
+  decimals, "F(5, 29.95)". The new `chickwts_welch` case showed it.
 - The Python `proportions` ran Fisher's exact test only on a 2 x 2 table and
   fell back to the chi-square test for a larger table, where R runs Fisher's
   test on any table. For a 2 x 2 table it reported the sample odds ratio with a

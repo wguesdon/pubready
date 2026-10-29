@@ -85,3 +85,8 @@ test_that("sig_text keeps the trailing zeros and drops a trailing point", {
   expect_equal(sig_text(0.0104, 2), "0.010")
   expect_equal(sig_text(7.1e-5, 2), "7.1e-05")
 })
+
+test_that("df_text writes a whole df as an integer and a Welch df with two decimals", {
+  expect_equal(df_text(5), "5")
+  expect_equal(df_text(29.9520363861042), "29.95")
+})
