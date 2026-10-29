@@ -48,6 +48,9 @@ tag move together.
 - The Python `timecourse` spread the group means at each time point k times
   wider than R, because each group took a full dodge step. The groups now
   share one dodge width, as `position_dodge` does in R.
+- The `composition` facet strips now name the group column, for example "Cont:
+  High". On the `housing` benchmark the strips read "High" and "Low", the same
+  words as two levels of the stacked categories.
 
 ### Fixed
 - `paired_compare` wrote "The test was chosen from the Shapiro-Wilk normality

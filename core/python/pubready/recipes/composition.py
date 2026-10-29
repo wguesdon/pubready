@@ -351,7 +351,9 @@ def _plot(prop, ids, g_of, lv, cats, labels, padj, run_test, has_group, test_lab
         ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
         ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0, decimals=0))
         if has_group:
-            ax.set_title(wrap_label(gl, lay["strip_chars"][k]), fontsize=10)
+            # The strip names its column, so a group level cannot read as a category.
+            ax.set_title(wrap_label(f"{spec['data']['group']}: {gl}", lay["strip_chars"][k]),
+                         fontsize=10)
         apply_pub_style(ax, ap.get("theme"))
         if lay["small_x"]:
             ax.tick_params(axis="x", labelsize=8.5)

@@ -95,3 +95,9 @@ def test_without_group_is_descriptive_and_a_sample_in_two_groups_is_refused():
     df.loc[0, "condition"] = "treated"
     with pytest.raises(ValueError, match="one group"):
         recipe_composition(df, comp_spec(id="sample", x="cell", y="n", group="condition"))
+
+
+def test_each_composition_strip_names_the_group_column():
+    res = recipe_composition(comp_data(), comp_spec(id="sample", x="cell", y="n", group="condition"))
+    titles = [ax.get_title() for ax in res["fig"].axes if ax.get_title()]
+    assert titles and all(t.startswith("condition: ") for t in titles)

@@ -63,3 +63,10 @@ test_that("composition without --group is descriptive and refuses a sample in tw
   expect_error(recipe_composition(df, comp_spec(id = "sample", x = "cell", y = "n", group = "condition")),
                "one group")
 })
+
+test_that("each composition strip names the group column", {
+  df <- comp_data()
+  res <- recipe_composition(df, comp_spec(id = "sample", x = "cell", y = "n", group = "condition"))
+  panels <- levels(res$plot$data$panel)
+  expect_true(all(startsWith(panels, "condition: ")))
+})

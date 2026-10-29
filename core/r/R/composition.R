@@ -207,7 +207,10 @@ recipe_composition <- function(df, spec) {
 .comp_strip_chars <- function(gl, g_of, slot) max(8, floor(sum(g_of == gl) * slot / 0.08))
 
 .comp_plot <- function(P, ids, g_of, lv, cats, tests, run_test, has_group, test_label, dims, spec, id, cat_col) {
-  strips <- vapply(seq_along(lv), .comp_strip_label, character(1), lv = lv, chars = dims$strip_chars)
+  # The strip names its column, so a group level cannot read as a category.
+  strip_text <- if (has_group) paste0(spec$data$group, ": ", lv) else lv
+  strips <- vapply(seq_along(lv), .comp_strip_label, character(1), lv = strip_text,
+                   chars = dims$strip_chars)
   long <- data.frame(
     sample = factor(rep(ids, times = length(cats)), levels = ids),
     panel = factor(strips[match(rep(g_of, times = length(cats)), lv)], levels = strips),
