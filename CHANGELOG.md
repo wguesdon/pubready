@@ -54,6 +54,10 @@ tag move together.
 - The `cox_forest` subtitle now warns when the proportional-hazards check fails,
   for example "137 subjects, 128 events; PH assumption violated (P < 0.001)" on
   the `veteran` benchmark. Before, only the methods paragraph said so.
+- The Python `heatmap` cut a legend at its right edge when a level name was
+  longer than the width estimate of PyComplexHeatmap, for example the `cell`
+  legend of the `airway` benchmark. The legends now draw in full, and the saved
+  figure includes them.
 
 ### Fixed
 - `paired_compare` wrote "The test was chosen from the Shapiro-Wilk normality

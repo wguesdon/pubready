@@ -117,3 +117,20 @@ def test_heatmap_methods_name_the_groups_the_independence_and_the_count():
     assert "treats the samples as independent" in txt
     assert "38 of the 40 features had an adjusted P below 0.05" in txt
     assert "feature(s)" not in _methods("row", "both", 40, 8, None, None, True)
+
+
+def test_heatmap_legends_are_not_clipped_to_the_legend_axes(tmp_path):
+    from matplotlib.legend import Legend
+    samples = [f"a{i}" for i in range(4)] + [f"b{i}" for i in range(4)]
+    rng = np.random.RandomState(1)
+    df = pd.DataFrame(rng.normal(0, 1, (6, 8)), columns=samples)
+    df.insert(0, "gene", [f"g{i}" for i in range(6)])
+    ann_path = tmp_path / "ann.csv"
+    pd.DataFrame({"sample": samples, "group": ["a"] * 4 + ["b"] * 4,
+                  "donor": ["N052611", "N061011", "N080611", "N61311"] * 2}).to_csv(
+        ann_path, index=False)
+    a = SimpleNamespace(recipe="heatmap", data="matrix.csv", x=None, y=None,
+                        annotation=str(ann_path))
+    res = recipe_heatmap(df, spec_from_args(a))
+    legends = [c for ax in res["fig"].axes for c in ax.get_children() if isinstance(c, Legend)]
+    assert legends and not any(lg.get_clip_on() for lg in legends)

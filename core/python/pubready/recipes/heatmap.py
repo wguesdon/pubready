@@ -13,6 +13,7 @@ import inspect
 import os
 
 import matplotlib.pyplot as plt
+from matplotlib.legend import Legend
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -166,6 +167,23 @@ def label_overhang(fig, axes):
     return max(reach, 0.0) / fig.get_window_extent(renderer).width
 
 
+def unclip_legends(fig):
+    """Let each legend draw past the axes that PyComplexHeatmap made for it.
+
+    PyComplexHeatmap sizes the legend axes from its own width estimate, and
+    add_artist clips each legend to that axes. A long level name then runs past
+    the estimate, the legend is cut, and the tight bounding box of the saved
+    figure stops at the same edge.
+
+    Args:
+        fig: The figure.
+    """
+    for ax in fig.axes:
+        for child in ax.get_children():
+            if isinstance(child, Legend):
+                child.set_clip_on(False)
+
+
 def row_label_axes(plotter):
     """The heatmap axes of a PyComplexHeatmap plotter that carry the row names.
 
@@ -285,6 +303,7 @@ def recipe_heatmap(df, spec):
         gap = 4.0 / 25.4 * fig.dpi / fig.get_window_extent().width
         plotter.legend_delta_x = label_overhang(fig, label_axes) + gap
         plotter.plot_legends(ax=plotter.ax_heatmap)
+        unclip_legends(fig)
     except Exception as err:  # noqa: BLE001 - any PyComplexHeatmap failure falls back
         plt.close("all")
         used_pch = False
