@@ -106,12 +106,12 @@ engines. Pick the engine per figure with `--engine`.
 | Recipe | Tidy input | Test | Figure |
 |---|---|---|---|
 | `two_group_compare` | `group, value` | t-test or Mann-Whitney, paired or unpaired | box or violin with a bracket |
-| `multi_group_compare` | `group, value` | one-way ANOVA / Welch / Kruskal-Wallis + post hoc | box with brackets for significant pairs, omnibus as a subtitle |
+| `multi_group_compare` | `group, value` | one-way ANOVA / Welch / Kruskal-Wallis + post hoc | box with brackets for significant pairs, or a compact letter display when more than six pairs differ; omnibus as a subtitle |
 | `factorial_anova` | `f1, f2[, f3], value` | two-way and three-way ANOVA (R also does the aligned rank transform) | grouped box or bar, faceted, effects on top |
-| `survival_km` | `time, event, group` | Kaplan-Meier with a log-rank test | step curves, log-rank p, number-at-risk table |
+| `survival_km` | `time, event, group` | Kaplan-Meier with a log-rank test | step curves, log-rank p, number-at-risk table (time >= t), legend right of the panel |
 | `cox_forest` | `time, event, covariate…` | Cox proportional hazards | forest plot of hazard ratios with 95% CI |
 | `heatmap` | matrix CSV + annotation CSV | per-feature Welch t-test when the annotation has two groups | clustered heatmap, z-scored, group annotation bar |
-| `correlation` | `x, y` (two numeric columns) | Pearson / Spearman / Kendall, chosen from normality | scatter with a linear fit, CI band, r and p annotated |
+| `correlation` | `x, y` (two numeric columns) | Pearson / Spearman / Kendall, chosen from normality | scatter with a linear fit, CI band, method, coefficient and P in the subtitle |
 | `correlation_heatmap` | table of numeric variables | pairwise correlation, BH-adjusted | clustered correlation matrix, coefficients + significance stars |
 | `upset` | binary membership matrix | descriptive (intersection sizes, no test) | UpSet plot of set intersections |
 | `volcano` | DE table (log2FC + p) | thresholds on fold change and p (test is upstream) | EnhancedVolcano-style four-color scatter, top hits labeled |
@@ -121,7 +121,7 @@ engines. Pick the engine per figure with `--engine`.
 | `pca` | samples × features + group | PERMANOVA for group separation | PC1/PC2 scatter, 95% ellipses, variance on the axes |
 | `spider_response` | `patient, time, value` | descriptive (change from baseline, no test) | one line per patient, RECIST reference lines at +20% and -30% |
 | `waterfall` | `patient, time, value`, or one best change per patient | descriptive (best change from baseline, no test) | one sorted bar per patient, RECIST reference lines |
-| `dose_response` | `dose, response[, curve]` | four-parameter logistic fit; extra-sum-of-squares F test of one shared EC50 | fitted curves on a log dose axis, mean +/- SEM at each dose, EC50 or IC50 in the legend |
+| `dose_response` | `dose, response[, curve]` | four-parameter logistic fit; extra-sum-of-squares F test of one shared EC50 over the determined curves | fitted curves on a log dose axis, mean +/- SEM at each dose, EC50 or IC50 in the legend; a curve that is not determined is drawn as points only |
 | `roc_curve` | binary outcome, numeric markers | AUC with a DeLong 95% CI; DeLong test of each marker against the first | ROC curves with the Youden point, AUCs in the legend |
 | `bland_altman` | `method_a, method_b`, one row per subject | bias and 95% limits of agreement with CIs; regression test of proportional bias | difference against mean, shaded CIs of the bias and the limits |
 | `forest_meta` | one row per study: estimate and 95% CI or SE | fixed-effect and DerSimonian-Laird pooling; Cochran's Q, I2, tau2 | forest plot with weighted squares, pooled diamonds and an estimate column |
@@ -153,6 +153,23 @@ Shapiro-Wilk p, skewness, and kurtosis, and prints the recommended test. The QQ 
 is the tiebreaker a p-value cannot be alone: Shapiro-Wilk is underpowered at small n
 and over-rejects at large n, so read the plot and tolerate mild deviation. Every
 `figkit plot` bundle carries the same panel as `qc_normality_*`.
+
+### Shared figure rules
+
+Both engines apply the same rules to the layout and to the reported numbers.
+
+| Rule | Recipes | What it does |
+|---|---|---|
+| Brackets or letters | `multi_group_compare` | Up to six significant pairs get one bracket each, on its own level. More than six pairs give a compact letter display. Groups that share a letter do not differ. `test_meta` records the display. |
+| Not determined | `dose_response` | A curve is not determined when its fit fails, when its fitted span is below 10% of the range of the mean responses, when its EC50 is outside the tested doses, or when its 95% CI is not finite. Its EC50 is NA, `fit_status` and `status_reason` give the cause, and the shared-midpoint F test leaves it out. |
+| Number at risk | `survival_km` | The table counts the subjects whose time is at or after each break. The breaks use the 1-2-5 step that gives at most six intervals, and the x axis runs to the largest time. |
+| Heterogeneity | `forest_meta` | The DerSimonian-Laird tau2 is truncated at zero, so I2 is 0% when Q is below its degrees of freedom. |
+| Labels | the comparison recipes | A category label wraps at 12 characters. The y axis shows plain numbers with a comma between the thousands. |
+
+The compact letter display uses the insert-and-absorb algorithm of Piepho (2004),
+which is also the algorithm of `multcompView::multcompLetters`. Each engine has
+its own copy of the steps, `cld_letters()` in `util.R` and in `util.py`, and the
+two unit suites check that the copies give the same letters.
 
 ### Examples
 
@@ -265,11 +282,11 @@ the same numbers. The manifest records which engine drew the figure.
 | | R engine | Python engine |
 |---|---|---|
 | plotting | ggplot2 / ggpubr / ggprism | matplotlib / seaborn |
-| brackets | rstatix + ggpubr | statannotations |
+| brackets | rstatix + ggpubr | statannotations (two groups), drawn by pubready (multi-group) |
 | ANOVA / post hoc | rstatix | pingouin + scikit-posthocs + statsmodels |
-| survival | survival / survminer | lifelines |
+| survival | survival / survminer; the at-risk table is drawn by pubready | lifelines; the at-risk table is drawn by pubready |
 | heatmap | ComplexHeatmap | PyComplexHeatmap (seaborn clustermap fallback) |
-| correlation | ggplot2 + ggpubr `stat_cor` | seaborn `regplot` |
+| correlation | ggplot2 | seaborn `regplot` |
 | correlation heatmap | ComplexHeatmap | seaborn `clustermap` |
 | UpSet | ComplexHeatmap `UpSet` | `upsetplot` |
 | Prism style (`--theme prism`) | ggprism `theme_prism` | matched matplotlib style |
@@ -278,7 +295,7 @@ the same numbers. The manifest records which engine drew the figure.
 | PCA / PERMANOVA | prcomp + exact or seeded permutation | numpy SVD + exact or seeded permutation |
 | dose-response (4PL) | `stats::nls` | `scipy.optimize.curve_fit` |
 | ROC / DeLong | pROC | the rules of pROC, restated with numpy |
-| meta-analysis | metafor `rma` | statsmodels `combine_effects` |
+| meta-analysis | metafor `rma` | statsmodels `combine_effects` for the fixed effect; DerSimonian-Laird with numpy, tau2 truncated at zero |
 | mixed ANOVA | split-plot sums of squares, the GG epsilon and Mauchly's test of car | the same formulas with numpy |
 
 Where Python has no faithful equivalent, pubready routes you to R rather than
