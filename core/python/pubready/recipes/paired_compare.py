@@ -117,10 +117,15 @@ def _methods(label, lv, n, eff_name, eff, spec):
     from importlib.metadata import version as v
     import platform
     y_lab = spec["appearance"].get("y_label") or spec["data"]["y"]
+    if (spec["test"].get("method") or "auto").lower() == "auto":
+        choice = ("The test was chosen from the Shapiro-Wilk normality of the "
+                  "within-subject differences. ")
+    else:
+        choice = "The test was set by the user. "
     return (
         f"{cap_first(y_lab)} was compared between {lv[0]} and {lv[1]} within each subject with a "
-        f"{label} (n = {n} pairs). The test was chosen from the Shapiro-Wilk normality of the "
-        f"within-subject differences. Effect size is reported as {eff_name} = {eff:.2f}. "
+        f"{label} (n = {n} pairs). {choice}"
+        f"Effect size is reported as {eff_name} = {eff:.2f}. "
         "Significance was set at P < 0.05. "
         f"Analyses were performed in Python {platform.python_version()} with scipy {v('scipy')}; "
         f"the figure was produced with matplotlib {v('matplotlib')}."

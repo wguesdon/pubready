@@ -13,6 +13,13 @@ tag move together.
 
 ## [Unreleased]
 
+### Fixed
+- `paired_compare` wrote "The test was chosen from the Shapiro-Wilk normality
+  of the within-subject differences" also when `--test` set the test. The
+  methods paragraph now says "The test was set by the user" for a set test. On
+  the `sleep` benchmark, the old text contradicted the paired t-test, because
+  the Shapiro-Wilk P of the differences is 0.033.
+
 ## [2.0.0] - 2026-10-29
 
 The fixes below change figure output in both engines, and the rule at the top of

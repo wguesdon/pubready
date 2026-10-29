@@ -34,3 +34,18 @@ test_that("paired_compare labels P < 1e-4 with four stars, as the other recipes 
   }
   expect_true("****" %in% found)
 })
+
+test_that("paired_compare methods name the source of the test choice", {
+  pre  <- c(10, 11, 12, 13, 14, 15, 16, 17)
+  post <- pre - 5 + 0.3 * (-1)^(seq_along(pre))
+  df <- data.frame(subject = rep(paste0("s", 1:8), 2),
+                   condition = rep(c("pre", "post"), each = 8),
+                   value = c(pre, post), stringsAsFactors = FALSE)
+  base <- list(recipe = "paired_compare", data = "p.csv", x = "condition",
+               y = "value", id = "subject")
+  forced <- recipe_paired_compare(df, spec_from_opt(c(base, test = "t")))
+  expect_match(forced$methods, "The test was set by the user.", fixed = TRUE)
+  expect_false(grepl("chosen from the Shapiro-Wilk", forced$methods))
+  auto <- recipe_paired_compare(df, spec_from_opt(c(base, test = "auto")))
+  expect_match(auto$methods, "chosen from the Shapiro-Wilk normality", fixed = TRUE)
+})

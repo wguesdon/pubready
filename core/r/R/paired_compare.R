@@ -113,7 +113,9 @@ recipe_paired_compare <- function(df, spec) {
   paste0(
     sprintf("%s was compared between %s and %s within each subject with a %s (n = %d pairs). ",
             cap_first(y_lab), lv[1], lv[2], label, n),
-    "The test was chosen from the Shapiro-Wilk normality of the within-subject differences. ",
+    if (tolower(spec$test$method %||% "auto") == "auto") {
+      "The test was chosen from the Shapiro-Wilk normality of the within-subject differences. "
+    } else "The test was set by the user. ",
     sprintf("Effect size is reported as %s = %s. Significance was set at P < 0.05. ",
             eff_name, formatC(eff, format = "f", digits = 2)),
     sprintf("Drawn in R %s with ggplot2 %s and ggpubr %s.", rver, v$ggplot2, v$ggpubr))
