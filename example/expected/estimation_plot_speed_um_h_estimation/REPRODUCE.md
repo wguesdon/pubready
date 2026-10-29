@@ -5,10 +5,10 @@ environment it was made in:
 
 ## 1. Get the pinned environment
 
-- Container image: `localhost/pubready:1.0.0`
-- Image id: `b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83`
-- Image digest: `sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410`
-- pubready commit: `31d6bbe65e2043a4e8204e63902cf8f8a135acf6`
+- Container image: `localhost/pubready:2.0.0`
+- Image id: `1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2`
+- Image digest: `sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e`
+- pubready commit: `1b8bb2fd31d9315d60137be3bc664c2a3e33f671`
 
 ## 2. Run the standalone script
 
@@ -16,7 +16,7 @@ From inside this folder:
 
 ```bash
 podman run --rm --security-opt label=disable -v "$PWD":/work -w /work \
-  localhost/pubready:1.0.0 Rscript script_estimation.R
+  localhost/pubready:2.0.0 Rscript script_estimation.R
 ```
 
 The script reads the bundled input copy, reruns the same test, and redraws

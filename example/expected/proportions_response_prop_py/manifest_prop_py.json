@@ -1,6 +1,6 @@
 {
-  "pubready_version": "1.0.0",
-  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
+  "pubready_version": "2.0.0",
+  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "proportions",
@@ -33,9 +33,9 @@
     "any_expected_below_5": false
   },
   "container": {
-    "image": "localhost/pubready:1.0.0",
-    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
-    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "image": "localhost/pubready:2.0.0",
+    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
+    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -64,7 +64,7 @@
     {
       "file": "figure_response_prop_py.pdf",
       "bytes": 13478,
-      "sha256": "5da5071cddb9eb6bc771b22e8f961e457795a1d19070fbe69df5abaf592b614e"
+      "sha256": "0c6bd59421d56db7bda9d1855b57fe9aa2497ce2ee68d9af4e7535889ab38c7c"
     },
     {
       "file": "figure_response_prop_py.png",
@@ -74,7 +74,7 @@
     {
       "file": "figure_response_prop_py.svg",
       "bytes": 29812,
-      "sha256": "a8e17427c3a14be139d0931d9f8327c96915c744fae7583f7dbc3835dde8ab03"
+      "sha256": "73cebb8ecb795b52416086ba30b0fc8744ead716dc8b648057fd263991ddf72f"
     },
     {
       "file": "packages_prop_py.txt",
@@ -84,17 +84,17 @@
     {
       "file": "report.qmd",
       "bytes": 2855,
-      "sha256": "03af46ad9ef5d98b3c4a339d2cc77f7ff2d1ce2c139dccde9a46d12d4820e7e4"
+      "sha256": "ada06421a60094d42488c1291a07a09cf259b486742ff0309596309f20498885"
     },
     {
       "file": "report.html",
       "bytes": 1319770,
-      "sha256": "9f8ad172812f5a350f1b61de05ed533b3587d31027e8ab9bbb2aa7851b1210cb"
+      "sha256": "975cc0c955c0cb4751e36ca8070c67d8a5ebd4d6642c3d36f1494c3feed84af6"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2009,
-      "sha256": "b25b800c7dc8406603c2be7d599ba0f408ade31d510575a79a83a8855dff3fa0"
+      "sha256": "320b4a294766b8e91187f9946644765f1ff4603528aebb1576fb55e8d1e6e852"
     }
   ]
 }

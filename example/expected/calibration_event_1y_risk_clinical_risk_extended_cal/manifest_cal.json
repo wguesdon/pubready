@@ -1,6 +1,6 @@
 {
-  "pubready_version": "1.0.0",
-  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
+  "pubready_version": "2.0.0",
+  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "calibration",
@@ -58,9 +58,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:1.0.0",
-    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
-    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "image": "localhost/pubready:2.0.0",
+    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
+    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -86,7 +86,7 @@
     {
       "file": "figure_event_1y_risk_clinical_risk_extended_cal.pdf",
       "bytes": 24333,
-      "sha256": "4af6b4bf8eecf11fb152b8eb087f8715d526cf180236de143db449ef7b5b5304"
+      "sha256": "526624e5f7acbf879a1b6beb2946746b5d5c4d63156a8f458b7d57ba29ff95c5"
     },
     {
       "file": "figure_event_1y_risk_clinical_risk_extended_cal.png",
@@ -106,17 +106,17 @@
     {
       "file": "report.qmd",
       "bytes": 4471,
-      "sha256": "f09bfa2c55d3a5acd71210af05e25e2ca588a8b045b82101735ed55a649674c6"
+      "sha256": "a35724da1de93bd32cc91329c7a65c182fa1d34b2a14c78a3de205b4f66affee"
     },
     {
       "file": "report.html",
       "bytes": 1430715,
-      "sha256": "7d50cbf582a78c63c918cbdfef94fdb7f47ca63df2659764d1bf8b52cba731f4"
+      "sha256": "c348bbad092b11468bea8e1930f71cbd967e692a48f99fbe2d2a8d6dbaee2522"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2048,
-      "sha256": "5566b26b5cb0e191f73387a925d18f52fbae329989394c3c5d73fb1be147c2ae"
+      "sha256": "0283931f7de04ea6649773346dcbaacd83c4576810a97a57a43847337c660fb3"
     }
   ]
 }

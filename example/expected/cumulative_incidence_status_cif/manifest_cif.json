@@ -1,6 +1,6 @@
 {
-  "pubready_version": "1.0.0",
-  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
+  "pubready_version": "2.0.0",
+  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "cumulative_incidence",
@@ -49,9 +49,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:1.0.0",
-    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
-    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "image": "localhost/pubready:2.0.0",
+    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
+    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -77,7 +77,7 @@
     {
       "file": "figure_status_cif.pdf",
       "bytes": 21135,
-      "sha256": "feac4aeec1be3a22b15dd8ca349908d74ed5c7173df90c7545bf45a5209ec6eb"
+      "sha256": "74f8e1eed8d9f0c44694b42154d9ddfebbd6ee93498c2be52d8f77185fe98c43"
     },
     {
       "file": "figure_status_cif.png",
@@ -97,17 +97,17 @@
     {
       "file": "report.qmd",
       "bytes": 3665,
-      "sha256": "962dbb4b78b41bace852880b5bd860f300ad3eff77a1cd61be55229b0440e826"
+      "sha256": "792baf3b97ebeba2a09ffe2e4621a0bb4278f1dc6038fbc3b202de7ebceb5734"
     },
     {
       "file": "report.html",
       "bytes": 1339500,
-      "sha256": "5b5b1a7b1866ec634953cf969f8a8df5771e3e6b27056960d35be66e4f085c0d"
+      "sha256": "8a7c3230d3fc610ad83d0e396bb3e17a561f0a67c70b3681647c7a3cf7ad6011"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2043,
-      "sha256": "a10aa0615e80928579466bc870d8f836b0dd254dedbc73703e8f5ec77a8cb510"
+      "sha256": "f1d49be01296ec5fd29cc7dd5a2f5d859f2cd9aa8f3fd8a8a7f14f0c213d9a8d"
     }
   ]
 }

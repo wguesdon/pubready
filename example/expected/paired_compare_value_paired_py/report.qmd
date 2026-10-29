@@ -39,15 +39,15 @@ The complete plot configuration is in `plot_config.yaml`.
 | field | value |
 | --- | --- |
 | repository | pubready |
-| repository_version | 1.0.0 |
-| git_commit | 31d6bbe65e2043a4e8204e63902cf8f8a135acf6 |
+| repository_version | 2.0.0 |
+| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
 | git_dirty | False |
 | llm_provider | none |
 | llm_model | none |
 | agent_harness | manual |
 | agent_harness_version | not_recorded |
-| container_image | localhost/pubready:1.0.0 |
-| container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
+| container_image | localhost/pubready:2.0.0 |
+| container_digest | sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e |
 | input | {"file": "input_value.csv", "md5": "e995b32f1de8c3186d6e6c6f0d010a9f", "sha256": "8bfc166ad40f6287fcf50fe3c144a4ccce89d4a501007e5e47dd183fc2df2b0f"} |
 | command | figkit plot --recipe paired_compare |
 | analysis_options | {"engine": "python", "recipe": "paired_compare", "data": {"file": "paired_response.csv", "x": "condition", "y": "value", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": "subject", "group": null, "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "ref": null, "cause": null, "levels": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": null, "y_label": "Marker (a.u.)", "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |

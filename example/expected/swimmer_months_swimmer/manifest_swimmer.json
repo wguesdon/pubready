@@ -1,6 +1,6 @@
 {
-  "pubready_version": "1.0.0",
-  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
+  "pubready_version": "2.0.0",
+  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "swimmer",
@@ -41,9 +41,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:1.0.0",
-    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
-    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "image": "localhost/pubready:2.0.0",
+    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
+    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -69,7 +69,7 @@
     {
       "file": "figure_months_swimmer.pdf",
       "bytes": 8757,
-      "sha256": "fb8f003928699cb4d19b37a902cae446a2c390653560c321840ee87272cbc4b4"
+      "sha256": "dba3bafcdbcab3b71e8170834403e30a60e91967fd20dfd413c7b126ae3104c2"
     },
     {
       "file": "figure_months_swimmer.png",
@@ -89,17 +89,17 @@
     {
       "file": "report.qmd",
       "bytes": 3908,
-      "sha256": "90d9c7eed9b6a8d779e769ad5b7dca5955e9da6ff7bd1198cdfe74fa1c90a5cc"
+      "sha256": "784108f4877bc79071541fc557f3208c054cc64e01a5c2c5f5c1ed47c3c8136b"
     },
     {
       "file": "report.html",
       "bytes": 1351476,
-      "sha256": "532c1387df8f77f519227c7d79368b9fcef206b2c4d669d0eb4e89325d4be7f5"
+      "sha256": "8b384d7ce96abbae679d557f712b8806e579ec82136f9c960b534f3144e011c6"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2065,
-      "sha256": "b64b59ae3fb6368fe842acac845a7724278b47bc2ebb6974fb0a067b84fcf521"
+      "sha256": "54e229f721c0c9b6ad16a2ea37097c8ce53b23f0e72df189831b3210f35fb722"
     }
   ]
 }

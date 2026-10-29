@@ -1,6 +1,6 @@
 {
-  "pubready_version": "1.0.0",
-  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
+  "pubready_version": "2.0.0",
+  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "standard_curve",
@@ -101,9 +101,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:1.0.0",
-    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
-    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "image": "localhost/pubready:2.0.0",
+    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
+    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -132,7 +132,7 @@
     {
       "file": "figure_absorbance_stdcurve_py.pdf",
       "bytes": 19785,
-      "sha256": "03d597437354d45c17393e28a0d4833f3368ded76ba2a262005a18d9748c5c69"
+      "sha256": "94b76d05e7212ee4b1254d3c0e42bdb2447e38998652935b30ab8464a8d8abfc"
     },
     {
       "file": "figure_absorbance_stdcurve_py.png",
@@ -142,7 +142,7 @@
     {
       "file": "figure_absorbance_stdcurve_py.svg",
       "bytes": 51040,
-      "sha256": "b3ea1d33a0a424d051158a685c5d67c0d69b897edf6ba169c1b4e4ee0ab94e34"
+      "sha256": "eac96d28cfe718429173c638e3cc68487a413f6630269e3d30e96206922f7c54"
     },
     {
       "file": "packages_stdcurve_py.txt",
@@ -152,17 +152,17 @@
     {
       "file": "report.qmd",
       "bytes": 4658,
-      "sha256": "3c31c4b0b30a9f9f0abe4d46449225e1d678ea605eb8539215bacc54b5bcb878"
+      "sha256": "ffff2b3f249f8ae1dd657381574006ac14d7417e732c4c4916bd862406800ebb"
     },
     {
       "file": "report.html",
       "bytes": 1380465,
-      "sha256": "4a6a835e7e72b0006c5e8f863a9334939f5b1617a10ed31b00b79e8a95446a6c"
+      "sha256": "20b83d2e4f0c09abd4e9d95115e40035eef0cb3ff21d54ee20d85036ea22753a"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2057,
-      "sha256": "df23c5b69b04f4bbdd46fd3ba050369abe1ec690327ace3734eb515d6cc79eca"
+      "sha256": "a703da3b2e524f58c2cf9ccdc9bbbbee17dc23568a6e151b00e3ea51160ceb9f"
     }
   ]
 }

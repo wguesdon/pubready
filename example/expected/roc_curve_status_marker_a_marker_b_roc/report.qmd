@@ -40,15 +40,15 @@ The complete plot configuration is in `plot_config.yaml`.
 | field | value |
 | --- | --- |
 | repository | pubready |
-| repository_version | 1.0.0 |
-| git_commit | 31d6bbe65e2043a4e8204e63902cf8f8a135acf6 |
+| repository_version | 2.0.0 |
+| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
 | git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |
 | agent_harness | manual |
 | agent_harness_version | not_recorded |
-| container_image | localhost/pubready:1.0.0 |
-| container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
+| container_image | localhost/pubready:2.0.0 |
+| container_digest | sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e |
 | input | {"file":"input_status_marker_a_marker_b.csv","md5":"f6d3a1a52479ba12f8a4ee2644beb33d","sha256":"093cd3826f05f33eb5db7e8f7d1b571a2e2c02a398727171a5702f39ecce3fa7"} |
 | command | figkit plot --recipe roc_curve |
 | analysis_options | {"engine":"r","recipe":"roc_curve","data":{"file":"biomarker_roc.csv","x":"marker_a,marker_b","y":"status","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":null,"positive":"disease","se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":null,"cause":null,"levels":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |

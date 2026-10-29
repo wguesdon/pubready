@@ -5,9 +5,9 @@ environment it was made in:
 
 ## 1. Get the pinned environment
 
-- Container image: `localhost/pubready:1.0.0`
-- Image id: `b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83`
-- pubready commit: `31d6bbe65e2043a4e8204e63902cf8f8a135acf6`
+- Container image: `localhost/pubready:2.0.0`
+- Image id: `1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2`
+- pubready commit: `1b8bb2fd31d9315d60137be3bc664c2a3e33f671`
 
 ## 2. Run the standalone script
 
@@ -15,7 +15,7 @@ From inside this folder:
 
 ```bash
 podman run --rm --security-opt label=disable -v "$PWD":/work -w /work \
-  localhost/pubready:1.0.0 python3 script_paired_py.py
+  localhost/pubready:2.0.0 python3 script_paired_py.py
 ```
 
 The script reads the bundled input copy, reruns the analysis, and redraws

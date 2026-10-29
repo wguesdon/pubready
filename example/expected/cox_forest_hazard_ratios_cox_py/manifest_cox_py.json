@@ -1,6 +1,6 @@
 {
-  "pubready_version": "1.0.0",
-  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
+  "pubready_version": "2.0.0",
+  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "cox_forest",
@@ -79,9 +79,9 @@
     ]
   },
   "container": {
-    "image": "localhost/pubready:1.0.0",
-    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
-    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "image": "localhost/pubready:2.0.0",
+    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
+    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -110,7 +110,7 @@
     {
       "file": "figure_hazard_ratios_cox_py.pdf",
       "bytes": 21470,
-      "sha256": "250898b9292df7a25e578b797257d1d8e0ce4dcabe562fae96674683f6db216a"
+      "sha256": "31b57c9ebb9845f0fac86ac916665a3ac25d23d738d983bce474339d74715aeb"
     },
     {
       "file": "figure_hazard_ratios_cox_py.png",
@@ -120,7 +120,7 @@
     {
       "file": "figure_hazard_ratios_cox_py.svg",
       "bytes": 48520,
-      "sha256": "edfd4a3d20d96366ffd23d3ca53abbb9df9962047044f12669389baea8dde462"
+      "sha256": "fe1e091db75af7aa1954c3ffffa76ee120f1c84309b33e6962d3a64849392ed5"
     },
     {
       "file": "packages_cox_py.txt",
@@ -130,17 +130,17 @@
     {
       "file": "report.qmd",
       "bytes": 3429,
-      "sha256": "6bb7741c8a11f718d28700bacc0df91e240b530b6d973d78307b0303358a1517"
+      "sha256": "1baad734049292b3340146337bdc2f4c2d56ba8cb8a6741bea9e91f3ae0d2f47"
     },
     {
       "file": "report.html",
       "bytes": 1400864,
-      "sha256": "072ebba486a3f57384cb51e634c3fc4b569557e9f86c90f7f08331550ab3538e"
+      "sha256": "702f3efadac78057b8a5155db8cc525349f983475bc3becce1fe9811ef06481a"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2075,
-      "sha256": "05005fa08a98615122d2b34132802058960495e4fb5c541d552ff8f327eaa4b9"
+      "sha256": "b2b86b9b171e61ef189ad18c67543b7e16d19a1fb341e5f48f7cf7d87e2bfd38"
     }
   ]
 }

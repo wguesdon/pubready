@@ -1,6 +1,6 @@
 {
-  "pubready_version": "1.0.0",
-  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
+  "pubready_version": "2.0.0",
+  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "volcano",
@@ -31,9 +31,9 @@
     "n_significant": 150
   },
   "container": {
-    "image": "localhost/pubready:1.0.0",
-    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
-    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "image": "localhost/pubready:2.0.0",
+    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
+    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -62,7 +62,7 @@
     {
       "file": "figure_de_results_volcano_py.pdf",
       "bytes": 30909,
-      "sha256": "97736cde1abb278766650b992eec8cb9249b24d380ca9b09badaf39ca342ffe0"
+      "sha256": "63b6fb9f7709b054835d050b0fd3142e76b39dcf9668ec3ff8b77f6bea2809f0"
     },
     {
       "file": "figure_de_results_volcano_py.png",
@@ -72,7 +72,7 @@
     {
       "file": "figure_de_results_volcano_py.svg",
       "bytes": 237822,
-      "sha256": "15e735002a118078e3712b6115cc34525bd57661e2813db84ede08e11e408e96"
+      "sha256": "f2b476c7bc9eb562563ced621ed97ea3e0fc3191864dfb290e0cd71ea98b98d5"
     },
     {
       "file": "packages_volcano_py.txt",
@@ -82,17 +82,17 @@
     {
       "file": "report.qmd",
       "bytes": 3730,
-      "sha256": "ef62c0bf3ad08d294a8a83388dd0997781f39ca30c16d96d51e70307dae8f0f3"
+      "sha256": "cc8f1cf1f660c892d55e77cb6f999fb5a6663b88db3bd3b78280ef6b1f4c8743"
     },
     {
       "file": "report.html",
       "bytes": 1441814,
-      "sha256": "8e929aea02ed8816c0b9046831e82445e5b89e46a4a715f4426b9fb9e0c01833"
+      "sha256": "fae11e28c70e72bbae3bb839828b7b49cd407592822f164a5894f3a154100f55"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2008,
-      "sha256": "5a57e7774a63182d96274ab9b81dadea1faabdcc69e4a7d6fe1b9c6a5e46a076"
+      "sha256": "e7642a97e423e013dc0b70d24d288c6aefc8a8b0e11a3323147a66f66ccbf1e9"
     }
   ]
 }

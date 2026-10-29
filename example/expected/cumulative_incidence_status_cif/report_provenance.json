@@ -1,14 +1,14 @@
 {
   "repository": "pubready",
-  "repository_version": "1.0.0",
-  "git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
+  "repository_version": "2.0.0",
+  "git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
   "git_dirty": false,
   "llm_provider": "none",
   "llm_model": "none",
   "agent_harness": "manual",
   "agent_harness_version": "not_recorded",
-  "container_image": "localhost/pubready:1.0.0",
-  "container_digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+  "container_image": "localhost/pubready:2.0.0",
+  "container_digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
   "input": {
     "file": "input_status.csv",
     "md5": "f51b7f002d22481f599b4424a27f3bdc",

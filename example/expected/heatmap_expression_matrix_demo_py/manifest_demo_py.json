@@ -1,6 +1,6 @@
 {
-  "pubready_version": "1.0.0",
-  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
+  "pubready_version": "2.0.0",
+  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "heatmap",
@@ -87,9 +87,9 @@
     ]
   },
   "container": {
-    "image": "localhost/pubready:1.0.0",
-    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
-    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "image": "localhost/pubready:2.0.0",
+    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
+    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -118,7 +118,7 @@
     {
       "file": "figure_expression_matrix_demo_py.pdf",
       "bytes": 33497,
-      "sha256": "a1391043a0b92bfc6c8eccfa0f3e419894f582872143387e5e165f767c3dc219"
+      "sha256": "09208cfec13897246563e77578ad3f56d02c04b05d65a23fe37b3a8b316fe029"
     },
     {
       "file": "figure_expression_matrix_demo_py.png",
@@ -128,7 +128,7 @@
     {
       "file": "figure_expression_matrix_demo_py.svg",
       "bytes": 193063,
-      "sha256": "9fdbb6a5a1a63f6e3684b54f115d778cb33ba312e5010a6ca7bdba0d760ff5f4"
+      "sha256": "f084decfa86d1dcd3410d01ecd0120d584b75f6b5513aac19be6a4b209a915a8"
     },
     {
       "file": "packages_demo_py.txt",
@@ -138,17 +138,17 @@
     {
       "file": "report.qmd",
       "bytes": 5943,
-      "sha256": "77c9f84c650abd2f6a9acd223afc5f5aaff91dcc125e2fb2270a95198d19592c"
+      "sha256": "928a5760fc7474cf7a1f19ec6f5116421c58873d9321232850f0a033214dfee0"
     },
     {
       "file": "report.html",
       "bytes": 1485184,
-      "sha256": "b8735a33c7bb0bf0533362edad4ec3a8208645a197da32dcc66125e586ecdc35"
+      "sha256": "92a8e92a070ecfc468be2ceaea5c9ca338d6aef44789a6b0cc84d39c0b6abd80"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2036,
-      "sha256": "da79e3eea1318093be74ad814d0f3f48f2890d0d61e1410c17d0377ca0939eae"
+      "sha256": "9f58a1125d5f29a3765f8b6221294d61181f353f73cedead8d99ccb1b34f7c17"
     }
   ]
 }

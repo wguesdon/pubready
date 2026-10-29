@@ -1,6 +1,6 @@
 {
-  "pubready_version": "1.0.0",
-  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
+  "pubready_version": "2.0.0",
+  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "sankey",
@@ -38,9 +38,9 @@
     "no_test_reason": "more than two visits"
   },
   "container": {
-    "image": "localhost/pubready:1.0.0",
-    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
-    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "image": "localhost/pubready:2.0.0",
+    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
+    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -66,7 +66,7 @@
     {
       "file": "figure_response_sankey.pdf",
       "bytes": 18579,
-      "sha256": "8ea0de5bb4e1f8b8cb440ced10f4dc67e3705d811afc1b04b814b5ea9c8e800b"
+      "sha256": "dbfb1aa3fcde44ba28e02fe71d15fcdc778abc4ced5cf8950176eca38046ed55"
     },
     {
       "file": "figure_response_sankey.png",
@@ -86,17 +86,17 @@
     {
       "file": "report.qmd",
       "bytes": 3925,
-      "sha256": "1a737d1f7ac99c903db5135f09fa79806795593fd5acff3cbd9c9ec99e443cdd"
+      "sha256": "f599f2c91571f02b55134dc757a74fafd67c578e595abb5442c4572f385e970d"
     },
     {
       "file": "report.html",
       "bytes": 1387699,
-      "sha256": "17407389213e1110c5b76af0fab3f715106dfb4421d104287602f9cf5bbd09e5"
+      "sha256": "650827f8d543334a91c42e3384da15153f4bf6c2e586f46aaefbb808b09fc47e"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2066,
-      "sha256": "4af1f29817f65a9612f6f50d20bedb16ad93e35a1a03f668f98d4344e11ade1a"
+      "sha256": "4726e45b8fbbbd12b9f37ee24e278a50b73db0ecfa494914e377b762dad913fe"
     }
   ]
 }

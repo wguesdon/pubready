@@ -1,6 +1,6 @@
 {
-  "pubready_version": "1.0.0",
-  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
+  "pubready_version": "2.0.0",
+  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "enzyme_kinetics",
@@ -73,9 +73,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:1.0.0",
-    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
-    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "image": "localhost/pubready:2.0.0",
+    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
+    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -104,7 +104,7 @@
     {
       "file": "figure_rate_enzyme_py.pdf",
       "bytes": 20909,
-      "sha256": "680c2aef806700fe0b5ae433ec9268a7d5b52ab4b0c3ce1731fa353ffbc9fb5d"
+      "sha256": "a4025b7f3952602bd21631c357306941d5f06083296e663b7eaf780fff69a836"
     },
     {
       "file": "figure_rate_enzyme_py.png",
@@ -114,7 +114,7 @@
     {
       "file": "figure_rate_enzyme_py.svg",
       "bytes": 58946,
-      "sha256": "ce6953973b34134c7385f29016f549a681817f2251f7482b184ce8fb1f961fb2"
+      "sha256": "8367ee94298dd5a4314e1500bfc0d6100b7252d26f2ee1fb889db059946fe533"
     },
     {
       "file": "packages_enzyme_py.txt",
@@ -124,17 +124,17 @@
     {
       "file": "report.qmd",
       "bytes": 4384,
-      "sha256": "680ab477c313e8e4b8d0b551d4ce9e9573bcdf7a50ca6e641015f44b6bed432d"
+      "sha256": "b3b5228a43ee9496ea9b3962b0415f56afede7bbc95c44d40add20965e1de53b"
     },
     {
       "file": "report.html",
       "bytes": 1434118,
-      "sha256": "4ea31fb9e4e58167bb605488af4632ab70993f5e7e326afcbcf2d85457058d02"
+      "sha256": "f6919b5ce954f392c67bbfa29255544a3dfd41f29b9f6336c5413779f363aab7"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2053,
-      "sha256": "9707db209974f4bdce2160cef0a87348b65ba763b211f5d98e68efeb79d7dd01"
+      "sha256": "dea7de34bffa45c12df5419f6b42138871255842a060befb4a3242cb7fd7cde1"
     }
   ]
 }

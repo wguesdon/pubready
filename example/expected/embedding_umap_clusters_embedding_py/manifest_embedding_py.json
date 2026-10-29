@@ -1,6 +1,6 @@
 {
-  "pubready_version": "1.0.0",
-  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
+  "pubready_version": "2.0.0",
+  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "embedding",
@@ -33,9 +33,9 @@
     "drawing_step": 1
   },
   "container": {
-    "image": "localhost/pubready:1.0.0",
-    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
-    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "image": "localhost/pubready:2.0.0",
+    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
+    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -63,18 +63,18 @@
   "output_checksums": [
     {
       "file": "figure_umap_clusters_embedding_py.pdf",
-      "bytes": 65924,
-      "sha256": "44efa10b179de469d68c4ef2a790cdca6f3e3d137defe4269a49d62b6efcbc51"
+      "bytes": 65939,
+      "sha256": "d116a434198d9c3700ea04adfc4e918236b49c57ebe9d7d68d5cf173a64379e0"
     },
     {
       "file": "figure_umap_clusters_embedding_py.png",
-      "bytes": 413667,
-      "sha256": "f07ee6106ef3cebe45b4af1f44600d903c4722d280cee8a1b371d71c0bac802f"
+      "bytes": 414192,
+      "sha256": "0c4b24ea43606f74dca02a615bf2e4a57fb8c4acdd37bf31c35106b470951f5c"
     },
     {
       "file": "figure_umap_clusters_embedding_py.svg",
-      "bytes": 474865,
-      "sha256": "0478b06053279e2bfa00ce812943d5affed9a2b3a8d71e527aa6dd2127786b0e"
+      "bytes": 474869,
+      "sha256": "2288cc1967400a4e4b92575b4432ab73817962cfb17259f59ffb382e99c05436"
     },
     {
       "file": "packages_embedding_py.txt",
@@ -84,17 +84,17 @@
     {
       "file": "report.qmd",
       "bytes": 3826,
-      "sha256": "06e2648fb5dc523ec66e658ff2f09c69fcadb096fab104faf3cc6dac147b5f93"
+      "sha256": "da01b774129ee46e5cad2704ad0534e5c8ec996d30fd0064e08ecb4fa21e90be"
     },
     {
       "file": "report.html",
-      "bytes": 1745550,
-      "sha256": "213026f620ece025fa62cddf4d85ddc160d69cfa92290c52194d95d1b4fbb54e"
+      "bytes": 1746250,
+      "sha256": "483870996c6fece4f01401b1a982d253cc903baec703b4632375782834502cc1"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2016,
-      "sha256": "f0dd0ed787a908a4061892af95d85ab5c559a5b72d403eaf6cbb4ff58e14dff6"
+      "sha256": "cd73e26ff7c819e5614e4ee0e69fb6bd292b822c6d903e52bd871497a6e1616f"
     }
   ]
 }

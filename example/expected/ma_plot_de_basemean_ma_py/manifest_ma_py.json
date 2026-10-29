@@ -1,6 +1,6 @@
 {
-  "pubready_version": "1.0.0",
-  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
+  "pubready_version": "2.0.0",
+  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "ma_plot",
@@ -36,9 +36,9 @@
     "n_grey_drawn": 5653
   },
   "container": {
-    "image": "localhost/pubready:1.0.0",
-    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
-    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "image": "localhost/pubready:2.0.0",
+    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
+    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -67,7 +67,7 @@
     {
       "file": "figure_de_basemean_ma_py.pdf",
       "bytes": 110206,
-      "sha256": "e447cc54be5e61f4969155a9c4847d443cfa5458fafeb744ace6e343d0991b5a"
+      "sha256": "6b1dd214c5fa308057fa70d9bd00574c01aa58969ea758c4911f97d41fff9e6c"
     },
     {
       "file": "figure_de_basemean_ma_py.png",
@@ -77,7 +77,7 @@
     {
       "file": "figure_de_basemean_ma_py.svg",
       "bytes": 611697,
-      "sha256": "00bdf0b5113f9a33f123aebb8bbb44a5d5c8f219bb998d5f12f812b02f0e2307"
+      "sha256": "0cf70604e453be936859de65a795729dce94757500f83be8b363e560208ee228"
     },
     {
       "file": "packages_ma_py.txt",
@@ -87,17 +87,17 @@
     {
       "file": "report.qmd",
       "bytes": 9290,
-      "sha256": "3cf169a43bad71e9d869a852cbf60bedcc6601bb9cbac0a4c73d0fd392b166e5"
+      "sha256": "3e6b210b63dfa46efcccdb5d72c84216911dcac4d9cf5aeda1c685bb4e5e67f2"
     },
     {
       "file": "report.html",
       "bytes": 1563189,
-      "sha256": "324db913dab4036151d1049df6e25a166c857028cf89c717b6d45e42a6eceff4"
+      "sha256": "43b09b5736ff5fcbb35e454ac5695bf352844a2c98ea102e1c5fbb51a34e73c5"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1993,
-      "sha256": "63adf057e7978e69e5a0435d30cab88f72cdaa9a6cff9efdd71b6feeb2bf248d"
+      "sha256": "bf86126ee55597acbc451163c4e6ad72f0440bf14dd74e7fc46f577bb526040a"
     }
   ]
 }
