@@ -316,6 +316,22 @@ def shift(v, offset):
     return np.asarray(v) + offset
 
 
+def ga_width(labels):
+    """The width of the Gardner-Altman figure, grown for long column labels.
+
+    Each of the three columns gets 1.1 in, or 0.1 in per character of the longest
+    label line when that is wider, plus 1.6 in for the two axes. The R engine
+    uses the same rule.
+
+    Args:
+        labels: The three wrapped column labels.
+
+    Returns:
+        float: The width in inches, at least 4.9.
+    """
+    chars = max(len(line) for lab in labels for line in str(lab).split("\n"))
+    return max(4.9, 3 * max(1.1, 0.1 * chars) + 1.6)
+
 def wrap(label, width=14):
     """Wrap a category label into lines shorter than width, as the R engine does.
 
@@ -635,7 +651,8 @@ def _gardner_altman(d, lv, boots, rows, pal, paired, ap, y_lab):
     Returns:
         tuple: The figure, its width and its height.
     """
-    w, h = 4.9, 4.4
+    labels = _axis_labels(lv, d) + [wrap(f"{lv[1]} minus {lv[0]}")]
+    w, h = ga_width(labels), 4.4
     fig, ax = plt.subplots(figsize=(w, h))
     r = rows.iloc[0]
     m_ref, m_grp = r["mean_ref"], r["mean_group"]
@@ -649,7 +666,7 @@ def _gardner_altman(d, lv, boots, rows, pal, paired, ap, y_lab):
     _draw_difference(ax, boots[0], 3, m_ref, r["mean_diff"], r["ci_low"], r["ci_high"], pal[lv[1]])
     ax.set_xlim(0.55, 3.55)
     ax.set_xticks([1, 2, 3])
-    ax.set_xticklabels(_axis_labels(lv, d) + [wrap(f"{lv[1]} minus {lv[0]}")])
+    ax.set_xticklabels(labels)
     ax.set_ylabel(y_lab)
     if ap.get("x_label"):
         ax.set_xlabel(ap["x_label"])

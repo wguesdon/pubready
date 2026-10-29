@@ -186,6 +186,14 @@
              y = offset[i] + c(dd$y[1], dd$y, dd$y[nrow(dd)]))
 }
 
+# The width of the Gardner-Altman figure, grown for long column labels: each of
+# the three columns gets 1.1 in, or 0.1 in per character of the longest label
+# line, plus 1.6 in for the two axes. Python uses the same rule (ga_width).
+.est_ga_width <- function(labels) {
+  chars <- max(nchar(unlist(strsplit(as.character(labels), "\n", fixed = TRUE))))
+  max(4.9, 3 * max(1.1, 0.1 * chars) + 1.6)
+}
+
 # Wrap a category label into lines shorter than width, as scales::label_wrap
 # does, but also break after an underscore, so that a name such as
 # "stimulated_plus_inhibitor" wraps too. The Python engine has the same rule.
@@ -445,7 +453,7 @@ recipe_estimation_plot <- function(df, spec) {
     pub_theme(ap$theme) +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"),
                    axis.line.y.right = ggplot2::element_line(colour = "black", linewidth = 0.5))
-  list(plot = p, width = 4.9, height = 4.4)
+  list(plot = p, width = .est_ga_width(labs_x), height = 4.4)
 }
 
 # Three or more groups: the Cumming layout, raw data on top and the differences

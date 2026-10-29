@@ -126,6 +126,12 @@ tag move together.
   the Python figure does.
 
 ### Fixed
+- The R `calibration` figure dropped the 95% CI bar of a decile point whose
+  observed proportion was 1, because the Wilson bound passed 1 by a rounding
+  error. The bounds now stay inside 0 and 1, and the y scale keeps them.
+- `estimation_plot` with two groups had a fixed width, so long group labels ran
+  into each other in the Python figure. The Gardner-Altman figure now grows
+  with the longest label line, by the same rule in both engines.
 - The Python `factorial_anova` ignored `--geom bar` and drew a box plot. It now
   draws the mean of each cell as a bar with its SEM and the points over it, as
   the R engine does.

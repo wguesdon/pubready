@@ -195,6 +195,10 @@ recipe_calibration <- function(df, spec) {
   top <- max(vapply(fits, .cal_spike_max, numeric(1)))
   spikes <- do.call(rbind, lapply(seq_len(n_models), .cal_spikes, fits = fits, top = top))
   pts <- do.call(rbind, lapply(seq_len(n_models), .cal_points, fits = fits, n_models = n_models))
+  # A Wilson bound can pass 1 or 0 by a rounding error; the y scale would then
+  # drop the bar, so clamp the bounds to the probability range.
+  pts$hi <- pmin(pts$hi, 1)
+  pts$lo <- pmax(pts$lo, 0)
   sm <- do.call(rbind, lapply(fits, .cal_smooth))
   spikes$model <- factor(spikes$model, levels = models)
   pts$model <- factor(pts$model, levels = models)
@@ -228,7 +232,7 @@ recipe_calibration <- function(df, spec) {
                                 expand = ggplot2::expansion(add = 0.02), oob = scales::oob_keep) +
     ggplot2::scale_y_continuous(limits = c(ylow, 1), breaks = seq(0, 1, 0.25),
                                 labels = c("0.00", "0.25", "0.50", "0.75", "1.00"),
-                                expand = ggplot2::expansion(add = c(0, 0.03))) +
+                                expand = ggplot2::expansion(add = c(0, 0.03)), oob = scales::oob_keep) +
     ggplot2::coord_equal(clip = "off") +
     ggplot2::guides(x = ggplot2::guide_axis(cap = "both"), y = ggplot2::guide_axis(cap = "both"),
                     colour = ggplot2::guide_legend(ncol = 1)) +
