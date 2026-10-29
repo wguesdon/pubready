@@ -13,6 +13,31 @@ tag move together.
 
 ## [Unreleased]
 
+### Added
+- Four omics recipes, in both engines:
+  - `ma_plot` draws the log2 fold change against the mean expression of a
+    DESeq2, limma or edgeR table. Up genes are red, down genes are blue and the
+    top genes by p carry labels. The stats table lists the significant genes
+    sorted by p, and the subtitle gives the counts.
+  - `manhattan` draws a Manhattan plot and a QQ plot of GWAS summary
+    statistics side by side. The recipe reports lambda_GC, the counts below
+    5e-8 and 1e-5 and the lead SNP of each chromosome. It reads a p of exactly
+    0 as the smallest positive double and thins the SNPs with p of 0.01 or more
+    for the vector outputs.
+  - `feature_panel` draws one panel per feature with one test family for the
+    whole panel: the Welch t-test or the Mann-Whitney U test for two groups,
+    and the one-way ANOVA or the Kruskal-Wallis test for more. The p values are
+    adjusted across the features with the Benjamini-Hochberg method.
+  - `embedding` draws UMAP or t-SNE coordinates from upstream, coloured by
+    cluster, with a label at each cluster median. It reports the mean
+    silhouette width of each cluster on the two coordinates.
+- Example datasets for the new recipes: `de_basemean.csv`, `gwas_summary.csv`,
+  `cytokine_panel.csv` and `umap_clusters.csv`, each from a seeded generator in
+  `tools/make_examples/`.
+- Benchmark cases `airway_ma`, `gwas_manhattan` (the `gwasResults` data of
+  qqman), `iris_feature_panel_kruskal`, `iris_feature_panel_anova` and
+  `iris_embedding`. The `airway_de.csv` file now holds the `baseMean` column.
+
 ## [1.0.0] - 2026-10-07
 
 This is the first major release. The rename from pubplot to pubready changes

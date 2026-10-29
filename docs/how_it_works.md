@@ -97,6 +97,8 @@ Common options:
 | `--markers "a,b"` | the columns of event times that `swimmer` draws on each bar |
 | `--xlab`, `--ylab`, `--title`, `--palette` | labels and colors |
 | `--out DIR` | output root (default `pubready_output`) |
+| `--fc_cutoff`, `--p_cutoff`, `--top_n` | the fold-change cutoff, the p cutoff and the count of labels of `volcano` and `ma_plot` (default 1, 0.05 and 15); `--top_n` also sets the most lead SNPs that `manhattan` labels |
+| `--facet COL` (`feature_panel`) | the feature column of long data; without it, every numeric column other than `--x` is a feature |
 
 ## The recipes
 
@@ -127,6 +129,10 @@ engines. Pick the engine per figure with `--engine`.
 | `forest_meta` | one row per study: estimate and 95% CI or SE | fixed-effect and DerSimonian-Laird pooling; Cochran's Q, I2, tau2 | forest plot with weighted squares, pooled diamonds and an estimate column |
 | `swimmer` | one row per patient: `duration[, status, arm, event times]` | descriptive (no test) | one bar per patient sorted by duration, arrows for ongoing courses, symbols for events |
 | `timecourse` | `subject, time, value[, group]` | mixed ANOVA (group between, time within) or repeated-measures ANOVA; Greenhouse-Geisser when Mauchly's test rejects sphericity | mean +/- SEM per group over time, one thin line per subject |
+| `ma_plot` | DE table: log2FC, p and mean expression (`baseMean`, `AveExpr` or `logCPM`) | thresholds on fold change and p (the test is upstream) | M against A, up genes red, down genes blue, top hits labeled, counts in the subtitle |
+| `manhattan` | one row per SNP: `chr, pos, p[, snp]` | descriptive; genomic inflation factor lambda_GC | Manhattan plot with the 5e-8 and 1e-5 lines and the lead SNPs, QQ plot with a 95% band |
+| `feature_panel` | `group, value, feature` (long) or one column per feature (wide) | Welch t-test or Mann-Whitney U (2 groups), one-way ANOVA or Kruskal-Wallis (3 or more); one family for the panel; BH across the features | one panel per feature, box and points, the adjusted p in each title |
+| `embedding` | `UMAP_1, UMAP_2, cluster`, computed upstream | descriptive; mean silhouette width of each cluster on the 2D coordinates | scatter coloured by cluster, labels at the cluster medians, equal aspect ratio |
 
 ### Test selection
 
@@ -224,7 +230,41 @@ figkit plot --recipe waterfall --data lesions.csv --x week --y lesion_mm --id pa
 # swimmer plot of the time on treatment, with response and progression marks
 figkit plot --recipe swimmer --data patients.csv --id patient --time months --event ended \
   --group arm --markers response_month,progression_month
+
+# MA plot of a DESeq2 table; baseMean is drawn on the log10 scale
+figkit plot --recipe ma_plot --data de_results.csv
+
+# Manhattan and QQ plot of GWAS summary statistics
+figkit plot --recipe manhattan --data gwas.csv --group chr --x pos --y p --label snp
+
+# one panel per cytokine, with the test of each and BH across the cytokines
+figkit plot --recipe feature_panel --data cytokines.csv --x group --y concentration --facet cytokine
+
+# UMAP from Seurat or scanpy, coloured by cluster, with silhouette widths
+figkit plot --recipe embedding --data umap.csv --x UMAP_1 --y UMAP_2 --group seurat_clusters
 ```
+
+The four omics recipes follow these rules:
+
+- `ma_plot` finds the columns of DESeq2, limma and edgeR tables. `--x` sets the
+  mean column and `--y` sets the p column. A gene without a p counts as not
+  significant. Above 20,000 grey genes, the recipe draws one grey point for
+  each cell of a 600 by 600 grid, so the vector files stay small.
+- `manhattan` puts the chromosomes in the order 1 to 22, X, Y, XY, MT and
+  removes a "chr" prefix. A p outside 0 to 1 stops the recipe. A p of exactly 0
+  becomes the smallest positive double for the statistics, and the figure
+  draws it as a triangle at the top. Above 50,000 SNPs, the figure draws every
+  SNP with p < 0.01 and one in every k of the others. Every statistic uses all
+  SNPs.
+- `feature_panel` uses one test family for all the features. With `--test
+  auto`, the parametric test is used only when the Shapiro-Wilk test accepts
+  every group of every feature. The recipe stops above 36 features and points
+  to the `heatmap` recipe.
+- `embedding` does not compute the embedding. A numeric `--group` with more
+  than 12 values is a continuous score on the viridis scale, unless it holds 50
+  or fewer whole numbers. Above 5,000 cells, the silhouette uses one in every k
+  cells in input order. A silhouette on two embedding coordinates describes the
+  separation in the embedding and not in the original feature space.
 
 ## The artifact bundle
 
@@ -280,6 +320,10 @@ the same numbers. The manifest records which engine drew the figure.
 | ROC / DeLong | pROC | the rules of pROC, restated with numpy |
 | meta-analysis | metafor `rma` | statsmodels `combine_effects` |
 | mixed ANOVA | split-plot sums of squares, the GG epsilon and Mauchly's test of car | the same formulas with numpy |
+| MA and Manhattan labels | ggplot2 + ggrepel, ggpubr `ggarrange` for the two panels | matplotlib + adjustText |
+| QQ band, lambda_GC | `stats::qbeta`, `stats::qchisq` | `scipy.stats.beta`, `scipy.stats.chi2` |
+| feature panel tests | `stats::t.test`, `wilcox.test`, `oneway.test`, `kruskal.test`, `p.adjust` | scipy with R's wilcox rule, BH restated with numpy |
+| embedding silhouette | `cluster::silhouette` | the rules of `cluster::silhouette`, restated with numpy |
 
 Where Python has no faithful equivalent, pubready routes you to R rather than
 running something different. The one current case is the aligned rank transform

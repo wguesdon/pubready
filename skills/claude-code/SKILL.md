@@ -82,12 +82,16 @@ If a command reports the image is missing, run `figkit build` first.
 | `forest_meta` | one row per study: estimate and 95% CI or SE | `--y --ci_low --ci_high [--se --label --measure]` | fixed-effect and DerSimonian-Laird pooling, Q, I2, tau2 |
 | `timecourse` | subject, time, value[, group] | `--x --y --id [--group]` | mixed (or repeated-measures) ANOVA, Greenhouse-Geisser when Mauchly rejects |
 | `swimmer` | one row per patient: duration[, status, arm, event times] | `--id --time [--event --group --markers "a,b"]` | descriptive bar per patient, arrows for ongoing courses (no test) |
+| `ma_plot` | DE table: log2FC, p, mean expression (`baseMean`, `AveExpr` or `logCPM`) | `--data [--x MEAN --y P --label]` | M against A, up and down genes coloured, top hits labeled (the test is upstream) |
+| `manhattan` | one row per SNP: chromosome, position, p | `--group --x --y [--label]` | Manhattan and QQ plot, 5e-8 and 1e-5 lines, lead SNPs, lambda_GC |
+| `feature_panel` | group, value, feature (long) or one column per feature (wide) | `--x [--y --facet]` | one panel per feature; Welch t or Mann-Whitney, ANOVA or Kruskal-Wallis; BH across the features |
+| `embedding` | UMAP or t-SNE coordinates and a cluster, computed upstream | `--x --y --group` | scatter by cluster, labels at the medians, silhouette width per cluster (no test) |
 
 Common options: `--engine r|python` (default r), `--geom box|violin|bar|raincloud`,
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
 `pearson|spearman|kendall`; proportions: `chisq|fisher`; timecourse:
 `gg|uncorrected`), `--scale`/`--cluster` (heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n`
-(volcano), `--id --group --label`, `--positive LEVEL` (roc_curve case level),
+(volcano, ma_plot), `--id --group --label`, `--positive LEVEL` (roc_curve case level),
 `--ci_low --ci_high --se --measure ratio|difference` (forest_meta),
 `--pd_threshold --pr_threshold` (spider_response, waterfall), `--markers "a,b"`
 (swimmer event-time columns),
