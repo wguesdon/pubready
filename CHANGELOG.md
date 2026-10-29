@@ -13,6 +13,17 @@ tag move together.
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-10-29
+
+The fixes of the public data audit change figure output and stats tables in
+both engines, and the rule at the top of this file calls for a major version for
+such changes. The release also adds six benchmark cases, the
+`proportions --levels` option and the `pubready.fisher` module of the Python
+engine.
+
+- The default image tag is `localhost/pubready:3.0.0`. Run `figkit build` once
+  after the upgrade. The README installs the `v3.0.0` tag with uv.
+
 ### Added
 - Six benchmark cases cover test paths that no case covered before: Fisher's
   exact test of a 2 x 2 table (`mtcars_fisher`) and of a 3 x 2 table
@@ -772,7 +783,8 @@ top of this file calls for a major version for each of these changes.
   stats table, input copy, manifest, methods paragraph, and `REPRODUCE.md`.
 - Host adapters for Claude Code, Codex, and opencode on one shared core.
 
-[Unreleased]: https://github.com/wguesdon/pubready/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/wguesdon/pubready/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/wguesdon/pubready/compare/v2.0.0...v3.0.0
 [2.0.0]: https://github.com/wguesdon/pubready/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/wguesdon/pubready/compare/v0.4.1...v1.0.0
 [0.4.1]: https://github.com/wguesdon/pubready/compare/v0.4.0...v0.4.1
