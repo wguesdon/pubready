@@ -38,7 +38,7 @@ recipe_factorial_anova <- function(df, spec) {
 
   method <- tolower(spec$test$method %||% "auto")
   resid_vec <- tryCatch(as.numeric(stats::residuals(stats::aov(fml, data = df))),
-                        error = function(e) NULL)
+                        error = .fa_null_on_error)
   res_p  <- if (!is.null(resid_vec)) shapiro_safe(resid_vec)$p else NA_real_
   use_art <- if (method %in% c("anova", "aov")) FALSE
              else if (method %in% c("art", "aligned_rank")) TRUE
@@ -91,28 +91,49 @@ recipe_factorial_anova <- function(df, spec) {
   pal  <- spec$appearance$palette %||% pubready_palette
   pal  <- rep(pal, length.out = nlevels(df[[f2]]))
   geom <- spec$appearance$geom %||% "box"
+  if (!geom %in% c("box", "bar", "interaction")) geom <- "box"
   pd   <- ggplot2::position_dodge(width = 0.8)
 
-  p <- ggplot2::ggplot(df, ggplot2::aes(x = .data[[f1]], y = .data[[y]], fill = .data[[f2]]))
-  if (geom == "bar") {
-    p <- p +
-      ggplot2::stat_summary(fun = mean, geom = "bar", position = pd, width = 0.7,
-                            alpha = 0.9, colour = "black", linewidth = 0.3) +
-      ggplot2::stat_summary(fun.data = ggplot2::mean_se, geom = "errorbar",
-                            position = pd, width = 0.2)
+  if (geom == "interaction") {
+    # The interaction plot: the mean +/- SEM of each cell, one line per --fill
+    # level across the --x levels, slightly dodged so the error bars do not
+    # overlap. The statistics are those of the box geom.
+    summ <- .fa_cell_summary(df, y, factors)
+    pdi <- ggplot2::position_dodge(width = .fa_int_dodge)
+    p <- ggplot2::ggplot(summ, ggplot2::aes(x = .data[[f1]], y = mean, colour = .data[[f2]],
+                                            group = .data[[f2]])) +
+      ggplot2::geom_line(position = pdi, linewidth = 0.8) +
+      ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - sem, ymax = mean + sem), width = 0.12,
+                             position = pdi, linewidth = 0.6, na.rm = TRUE) +
+      ggplot2::geom_point(position = pdi, size = 2.4) +
+      ggplot2::scale_colour_manual(values = pal) +
+      ggplot2::scale_y_continuous(breaks = scales::breaks_extended(n = 6))
   } else {
-    p <- p + ggplot2::geom_boxplot(position = pd, width = 0.7, outlier.shape = NA, alpha = 0.9)
+    p <- ggplot2::ggplot(df, ggplot2::aes(x = .data[[f1]], y = .data[[y]], fill = .data[[f2]]))
+    if (geom == "bar") {
+      p <- p +
+        ggplot2::stat_summary(fun = mean, geom = "bar", position = pd, width = 0.7,
+                              alpha = 0.9, colour = "black", linewidth = 0.3) +
+        ggplot2::stat_summary(fun.data = ggplot2::mean_se, geom = "errorbar",
+                              position = pd, width = 0.2)
+    } else {
+      p <- p + ggplot2::geom_boxplot(position = pd, width = 0.7, outlier.shape = NA, alpha = 0.9)
+    }
+    if (isTRUE(spec$appearance$show_points)) {
+      p <- p + ggplot2::geom_point(
+        position = ggplot2::position_jitterdodge(jitter.width = 0.15, dodge.width = 0.8),
+        size = 1.3, alpha = 0.7, shape = 21, stroke = 0.3)
+    }
+    p <- p + ggplot2::scale_fill_manual(values = pal)
   }
-  if (isTRUE(spec$appearance$show_points)) {
-    p <- p + ggplot2::geom_point(
-      position = ggplot2::position_jitterdodge(jitter.width = 0.15, dodge.width = 0.8),
-      size = 1.3, alpha = 0.7, shape = 21, stroke = 0.3)
+  # Long --x levels wrap at 12 characters, so neighbouring labels do not collide.
+  if (.fa_needs_wrap(levels(df[[f1]]))) {
+    p <- p + ggplot2::scale_x_discrete(labels = .fa_wrap_labels)
   }
   p <- p +
-    ggplot2::scale_fill_manual(values = pal) +
     ggplot2::labs(x = spec$appearance$x_label %||% f1,
                   y = spec$appearance$y_label %||% y,
-                  fill = f2, title = spec$appearance$title, subtitle = subtitle) +
+                  fill = f2, colour = f2, title = spec$appearance$title, subtitle = subtitle) +
     pub_theme(spec$appearance$theme) +
     ggplot2::theme(legend.position = "right",
                    plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 9.5, colour = "grey30"))
@@ -128,29 +149,71 @@ recipe_factorial_anova <- function(df, spec) {
     factors = as.list(factors),
     type    = if (use_art) "aligned_rank_transform" else "type_II_anova",
     residual_normality = list(test = "shapiro-wilk", p = res_p),
-    effects = lapply(seq_len(nrow(eff)), function(i) list(
-      effect = eff$effect[i], df1 = eff$df1[i], df2 = eff$df2[i],
-      statistic = eff$statistic[i], p_value = eff$p_value[i],
-      effect_size = if (is.na(eff$effect_size[i])) NULL else eff$effect_size[i]
-    ))
+    effects = lapply(seq_len(nrow(eff)), .fa_meta_effect, eff = eff)
   )
 
   resolved <- list(family = if (use_art) "art" else "anova", label = test_name,
                    factors = factors, use_art = use_art)
 
   methods <- .fa_methods(eff, spec, factors, use_art)
-  build_script <- function(in_name, fig_stub) {
-    .fa_emit_script(spec, factors, use_art, pal[seq_len(nlevels(df[[f2]]))], in_name, fig_stub)
-  }
-
   has_facet <- !is.null(f3) && nzchar(f3)
+  size <- .fa_fig_size(levels(df[[f1]]), levels(df[[f2]]), f2,
+                       if (has_facet) nlevels(df[[f3]]) else 1, has_facet)
+  build_script <- list(fn = .fa_emit_script,
+                       args = list(spec = spec, factors = factors, use_art = use_art,
+                                   pal = pal[seq_len(nlevels(df[[f2]]))],
+                                   width = size$width, height = size$height,
+                                   wrap_x = .fa_needs_wrap(levels(df[[f1]]))))
+
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
        df_used = df, clean_steps = clean_steps,
        qc = if (!is.null(resid_vec))
               list(quantity = "model residuals", panels = list(residuals = resid_vec))
             else NULL,
-       width = if (has_facet) 6.8 else 5.2, height = 4.4)
+       width = size$width, height = size$height)
+}
+
+.fa_null_on_error <- function(e) NULL
+
+# The dodge width of the interaction plot; the Python engine offsets each line
+# by the same amount.
+.fa_int_dodge <- 0.25
+
+.fa_meta_effect <- function(i, eff) {
+  list(effect = eff$effect[i], df1 = eff$df1[i], df2 = eff$df2[i],
+       statistic = eff$statistic[i], p_value = eff$p_value[i],
+       effect_size = if (is.na(eff$effect_size[i])) NULL else eff$effect_size[i])
+}
+
+# The mean, SEM and n of each cell of the design, for the interaction geom.
+.fa_cell_summary <- function(df, y, factors) {
+  by <- df[factors]
+  out <- stats::aggregate(df[y], by = by, FUN = mean)
+  names(out)[ncol(out)] <- "mean"
+  sds <- stats::aggregate(df[y], by = by, FUN = stats::sd)[[y]]
+  ns <- stats::aggregate(df[y], by = by, FUN = length)[[y]]
+  out$sem <- sds / sqrt(ns)
+  out$n <- ns
+  out
+}
+
+# Wrap the --x labels on spaces at 12 characters. strwrap keeps a line shorter
+# than its width, so the width is 13; the Python engine uses
+# textwrap.fill(12, break_on_hyphens = False) and gives the same lines.
+.fa_wrap_one <- function(s) paste(strwrap(s, width = 13), collapse = "\n")
+.fa_wrap_labels <- function(x) vapply(as.character(x), .fa_wrap_one, character(1), USE.NAMES = FALSE)
+.fa_needs_wrap <- function(lv) any(nchar(as.character(lv)) > 12)
+
+# The figure size: wide enough for every --x level times every --fill level in
+# each panel, plus the legend; never smaller than the original 5.2 (6.8 with a
+# facet) by 4.4 inches. Wrapped labels add a line of height each.
+.fa_fig_size <- function(x_lv, fill_lv, fill_name, n_facet, has_facet) {
+  slot <- 0.3 * length(fill_lv) + 0.35
+  legend_w <- 0.5 + 0.08 * max(nchar(c(as.character(fill_lv), fill_name)))
+  width <- max(if (has_facet) 6.8 else 5.2, 0.9 + n_facet * length(x_lv) * slot + legend_w)
+  lines <- max(lengths(strsplit(.fa_wrap_labels(x_lv), "\n", fixed = TRUE)))
+  list(width = width, height = 4.4 + if (.fa_needs_wrap(x_lv)) 0.18 * (lines - 1) else 0)
 }
 
 .fa_methods <- function(eff, spec, factors, use_art) {
@@ -165,11 +228,7 @@ recipe_factorial_anova <- function(df, spec) {
     sprintf("%s was analyzed by a %d-way ANOVA (Type II sums of squares) with factors %s.",
             cap_first(y_label), length(factors), paste(factors, collapse = ", "))
   }
-  parts <- vapply(seq_len(nrow(eff)), function(i) {
-    e <- eff[i, ]
-    sprintf("%s (F(%s, %s) = %.2f, %s)",
-            gsub(":", " x ", e$effect), e$df1, e$df2, e$statistic, .fa_plab(e$p_value))
-  }, character(1))
+  parts <- vapply(seq_len(nrow(eff)), .fa_effect_part, character(1), eff = eff)
   soft <- if (use_art) sprintf("ARTool %s", v$ARTool) else sprintf("car %s", v$car)
   es_txt <- if (use_art) "" else " Effect sizes are partial eta squared."
 
@@ -181,12 +240,22 @@ recipe_factorial_anova <- function(df, spec) {
   )
 }
 
-.fa_emit_script <- function(spec, factors, use_art, pal, in_name, fig_stub) {
+.fa_effect_part <- function(i, eff) {
+  e <- eff[i, ]
+  sprintf("%s (F(%s, %s) = %.2f, %s)",
+          gsub(":", " x ", e$effect), e$df1, e$df2, e$statistic, .fa_plab(e$p_value))
+}
+
+.fa_emit_script <- function(spec, factors, use_art, pal, width, height, wrap_x, in_name, fig_stub) {
   y  <- spec$data$y
   f1 <- factors[1]; f2 <- factors[2]; f3 <- if (length(factors) >= 3) factors[3] else NULL
   pal_str <- paste0("c(", paste(sprintf('"%s"', pal), collapse = ", "), ")")
   rhs <- paste(sprintf("`%s`", factors), collapse = " * ")
   geom <- spec$appearance$geom %||% "box"
+  if (geom == "interaction") {
+    return(.fa_emit_interaction_script(spec, factors, use_art, pal_str, width, height, wrap_x,
+                                       in_name, fig_stub))
+  }
 
   omni_lines <- if (use_art) c(
     sprintf('m  <- ARTool::art(%s ~ %s, data = df)', y, rhs),
@@ -229,8 +298,68 @@ recipe_factorial_anova <- function(df, spec) {
     "  theme_classic(base_size = 13) +",
     '  theme(plot.subtitle = element_text(hjust = 0.5, size = 9.5, colour = "grey30"))',
     facet_line,
+    if (isTRUE(wrap_x)) "p <- p + scale_x_discrete(labels = scales::label_wrap(13))" else character(0),
     "",
-    sprintf('ggsave("%s.pdf", p, width = %s, height = 4.4)', fig_stub, if (!is.null(f3)) "6.8" else "5.2"),
+    sprintf('ggsave("%s.pdf", p, width = %s, height = %s)', fig_stub,
+            sprintf("%.4g", width), sprintf("%.4g", height)),
+    'cat("Reproduced figure.\\n")'
+  )
+}
+
+# The standalone script of the interaction geom: the same ANOVA, then the mean
+# +/- SEM of each cell joined by one line per --fill level.
+.fa_emit_interaction_script <- function(spec, factors, use_art, pal_str, width, height, wrap_x,
+                                        in_name, fig_stub) {
+  y  <- spec$data$y
+  f1 <- factors[1]; f2 <- factors[2]; f3 <- if (length(factors) >= 3) factors[3] else NULL
+  rhs <- paste(sprintf("`%s`", factors), collapse = " * ")
+  omni_lines <- if (use_art) c(
+    sprintf('m  <- ARTool::art(%s ~ %s, data = df)', y, rhs),
+    'at <- as.data.frame(anova(m))',
+    'eff <- data.frame(effect = at$Term, p = at[["Pr(>F)"]])'
+  ) else c(
+    sprintf('at <- as.data.frame(car::Anova(lm(`%s` ~ %s, data = df), type = 2))', y, rhs),
+    'at <- at[rownames(at) != "Residuals", ]',
+    'eff <- data.frame(effect = gsub("`", "", rownames(at)), p = at[["Pr(>F)"]])'
+  )
+  by_line <- sprintf('by <- df[c(%s)]', paste(sprintf('"%s"', factors), collapse = ", "))
+  c(
+    "#!/usr/bin/env Rscript",
+    "# Standalone reproduction. Run inside the pinned pubready container",
+    "# (see REPRODUCE.md) from this bundle folder.",
+    "suppressPackageStartupMessages({",
+    "  library(ggplot2); library(readr); library(ARTool)",
+    "})",
+    "",
+    sprintf('df <- as.data.frame(read_csv("%s", show_col_types = FALSE))', in_name),
+    paste0(sprintf('df[["%s"]] <- factor(df[["%s"]]); ', factors, factors), collapse = ""),
+    sprintf('df[["%s"]] <- as.numeric(df[["%s"]])', y, y),
+    "",
+    omni_lines,
+    'plab <- function(p) if (is.na(p)) "P = NA" else if (p < 0.001) "P < 0.001" else paste0("P = ", formatC(p, format = "g", digits = 2))',
+    'sig <- eff[which(eff$p < 0.05), , drop = FALSE]',
+    'subtitle_txt <- if (nrow(sig) > 0) paste(sprintf("%s: %s", gsub(":", " × ", sig$effect), vapply(sig$p, plab, character(1))), collapse = "\\n") else "No significant effects (P ≥ 0.05)"',
+    "",
+    "# The mean and SEM of each cell.",
+    by_line,
+    sprintf('summ <- aggregate(df["%s"], by = by, FUN = mean); names(summ)[ncol(summ)] <- "mean"', y),
+    sprintf('summ$sem <- aggregate(df["%s"], by = by, FUN = sd)[["%s"]] / sqrt(aggregate(df["%s"], by = by, FUN = length)[["%s"]])', y, y, y, y),
+    "",
+    "pd <- position_dodge(width = 0.25)",
+    sprintf('p <- ggplot(summ, aes(x = .data[["%s"]], y = mean, colour = .data[["%s"]], group = .data[["%s"]])) +', f1, f2, f2),
+    "  geom_line(position = pd, linewidth = 0.8) +",
+    "  geom_errorbar(aes(ymin = mean - sem, ymax = mean + sem), width = 0.12, position = pd, linewidth = 0.6) +",
+    "  geom_point(position = pd, size = 2.4) +",
+    sprintf("  scale_colour_manual(values = %s) +", pal_str),
+    sprintf('  labs(x = "%s", y = "%s", colour = "%s", subtitle = subtitle_txt) +',
+            spec$appearance$x_label %||% f1, spec$appearance$y_label %||% y, f2),
+    "  theme_classic(base_size = 13) +",
+    '  theme(plot.subtitle = element_text(hjust = 0.5, size = 9.5, colour = "grey30"))',
+    if (!is.null(f3)) sprintf('p <- p + facet_wrap(vars(.data[["%s"]]))', f3) else character(0),
+    if (isTRUE(wrap_x)) "p <- p + scale_x_discrete(labels = scales::label_wrap(13))" else character(0),
+    "",
+    sprintf('ggsave("%s.pdf", p, width = %s, height = %s)', fig_stub,
+            sprintf("%.4g", width), sprintf("%.4g", height)),
     'cat("Reproduced figure.\\n")'
   )
 }
