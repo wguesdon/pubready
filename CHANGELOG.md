@@ -207,6 +207,10 @@ recipes, the interaction geom, the uv install, `figkit doctor` and the
   of size 1 with a diameter of 0.75 x 72.27 / 25.4 = 2.13 points, and the
   Python engine now uses the same diameter. The legend keys and the emitted
   script use it too.
+- The Python `embedding` labels moved between runs. adjustText stops after one
+  second when it has no iteration limit, so the layout depended on the speed of
+  the machine. The recipe now sets 2000 iterations, as `ma_plot` and
+  `manhattan` do.
 - `figkit inspect` and the other data commands stopped with "unbound variable"
   under the bash 3.2 of macOS when they had no arguments. `cli/figkit` now runs
   on bash 3.2.

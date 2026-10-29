@@ -307,8 +307,10 @@ def recipe_embedding(df, spec):
         if len(texts) > 1:
             try:
                 from adjustText import adjust_text
+                # A fixed iteration count: without one, adjustText stops after one
+                # second, so the labels would depend on the speed of the machine.
                 adjust_text(texts, ax=ax, expand=(1.05, 1.15), force_text=(0.2, 0.3),
-                            ensure_inside_axes=True)
+                            ensure_inside_axes=True, iter_lim=2000)
             except Exception:
                 pass
         if legend:
