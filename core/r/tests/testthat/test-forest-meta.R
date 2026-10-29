@@ -32,3 +32,16 @@ test_that("log_ticks_ref puts a tick on each side of the null line", {
   expect_equal(log_ticks_ref(0.04, 18, 1), c(0.1, 1, 10))
   expect_equal(log_ticks_ref(0.15, 6, 1), c(0.2, 0.5, 1, 2, 5))
 })
+
+test_that("forest_meta names the tau2 truncation only when it occurs", {
+  spec <- fm_spec(y = "hr", ci_low = "lo", ci_high = "hi", label = "study")
+  homo <- recipe_forest_meta(homogeneous_studies(), spec)
+  expect_match(homo$methods, "tau2 was truncated at zero", fixed = TRUE)
+  z <- stats::qnorm(0.975)
+  lr <- log(c(0.3, 0.9, 1.5, 0.5, 2.0)); se <- rep(0.1, 5)
+  hetero <- data.frame(study = paste("s", 1:5), hr = exp(lr),
+                       lo = exp(lr - z * se), hi = exp(lr + z * se))
+  res <- recipe_forest_meta(hetero, spec)
+  expect_gt(res$test_meta$heterogeneity$q, res$test_meta$heterogeneity$df)
+  expect_false(grepl("truncated", res$methods))
+})

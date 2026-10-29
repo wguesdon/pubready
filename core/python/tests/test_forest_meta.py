@@ -58,3 +58,18 @@ def test_log_ticks_ref_puts_a_tick_on_each_side_of_the_null_line():
     assert log_ticks_ref(0.7, 0.95, 1) == pytest.approx([0.5, 1])
     assert log_ticks_ref(0.04, 18, 1) == pytest.approx([0.1, 1, 10])
     assert log_ticks_ref(0.15, 6, 1) == pytest.approx([0.2, 0.5, 1, 2, 5])
+
+
+def test_forest_meta_names_the_tau2_truncation_only_when_it_occurs():
+    spec = fm_spec(y="hr", ci_low="lo", ci_high="hi", label="study")
+    homo = recipe_forest_meta(homogeneous_studies(), spec)
+    assert "tau2 was truncated at zero" in homo["methods"]
+    z = stats.norm.ppf(0.975)
+    lr = np.log([0.3, 0.9, 1.5, 0.5, 2.0])
+    se = np.full(5, 0.1)
+    hetero = pd.DataFrame({"study": [f"s {i}" for i in range(1, 6)], "hr": np.exp(lr),
+                           "lo": np.exp(lr - z * se), "hi": np.exp(lr + z * se)})
+    res = recipe_forest_meta(hetero, spec)
+    het = res["test_meta"]["heterogeneity"]
+    assert het["q"] > het["df"]
+    assert "truncated" not in res["methods"]

@@ -320,8 +320,8 @@ def _methods(pooled, measure, k, y):
         f"estimate was {re['estimate']:.3f} (95% CI {re['ci_low']:.3f} to {re['ci_high']:.3f}, "
         f"P = {re['p_value']:.2g}). Heterogeneity was assessed with Cochran's Q (Q = {re['q']:.2f}, "
         f"df = {int(re['q_df'])}, P = {re['q_p']:.2g}), I2 = {re['i2']:.1f}% and tau2 = "
-        f"{re['tau2']:.4f}; the DerSimonian-Laird tau2 was truncated at zero, so I2 is 0% when Q "
-        "is below its degrees of freedom. Squares are sized by the random-effects weight and the "
+        f"{re['tau2']:.4f}{_truncation_text(re['q'], re['q_df'])}. Squares are sized by the "
+        "random-effects weight and the "
         f"diamonds show the pooled estimates. Computed in Python {platform.python_version()} with "
         f"statsmodels {v('statsmodels')} (combine_effects for the fixed effect) and drawn with "
         f"matplotlib {v('matplotlib')}."
@@ -362,3 +362,22 @@ fig = res.plot_forest()
 fig.savefig("{fig_stub}.pdf", bbox_inches="tight")
 print("Reproduced figure.")
 '''
+
+
+def _truncation_text(q, q_df):
+    """Return the truncation clause of the methods paragraph.
+
+    The DerSimonian-Laird tau2 is truncated at zero only when Q is below its
+    degrees of freedom, so the paragraph names the truncation only then.
+
+    Args:
+        q: Cochran's Q.
+        q_df: The degrees of freedom of Q.
+
+    Returns:
+        str: The clause, or an empty string when no truncation occurred.
+    """
+    if np.isfinite(q) and np.isfinite(q_df) and q < q_df:
+        return ("; Q was below its degrees of freedom, so the DerSimonian-Laird tau2 was "
+                "truncated at zero and I2 is 0%")
+    return ""

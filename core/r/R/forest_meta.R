@@ -190,9 +190,9 @@ recipe_forest_meta <- function(df, spec) {
             y, pooled$estimate[1], pooled$ci_low[1], pooled$ci_high[1], sprintf("%.2g", pooled$p_value[1])),
     sprintf("and the DerSimonian-Laird random-effects estimate was %.3f (95%% CI %.3f to %.3f, P = %s). ",
             pooled$estimate[2], pooled$ci_low[2], pooled$ci_high[2], sprintf("%.2g", pooled$p_value[2])),
-    sprintf("Heterogeneity was assessed with Cochran's Q (Q = %.2f, df = %d, P = %s), I2 = %.1f%% and tau2 = %.4f; ",
-            pooled$q[2], as.integer(pooled$q_df[2]), sprintf("%.2g", pooled$q_p[2]), pooled$i2[2], pooled$tau2[2]),
-    "the DerSimonian-Laird tau2 was truncated at zero, so I2 is 0% when Q is below its degrees of freedom. ",
+    sprintf("Heterogeneity was assessed with Cochran's Q (Q = %.2f, df = %d, P = %s), I2 = %.1f%% and tau2 = %.4f%s. ",
+            pooled$q[2], as.integer(pooled$q_df[2]), sprintf("%.2g", pooled$q_p[2]), pooled$i2[2], pooled$tau2[2],
+            .fm_truncation_text(pooled$q[2], pooled$q_df[2])),
     "Squares are sized by the random-effects weight and the diamonds show the pooled estimates. ",
     sprintf("Computed in R %s with metafor %s and drawn with ggplot2 %s.", rver, v$metafor, v$ggplot2))
 }
@@ -222,4 +222,12 @@ recipe_forest_meta <- function(df, spec) {
     "invisible(dev.off())",
     'cat("Reproduced figure.\\n")'
   )
+}
+
+# The DerSimonian-Laird tau2 is truncated at zero only when Q is below its
+# degrees of freedom, so the methods paragraph names the truncation only then.
+.fm_truncation_text <- function(q, q_df) {
+  if (is.finite(q) && is.finite(q_df) && q < q_df) {
+    "; Q was below its degrees of freedom, so the DerSimonian-Laird tau2 was truncated at zero and I2 is 0%"
+  } else ""
 }

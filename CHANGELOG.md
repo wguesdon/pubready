@@ -19,6 +19,10 @@ tag move together.
   methods paragraph now says "The test was set by the user" for a set test. On
   the `sleep` benchmark, the old text contradicted the paired t-test, because
   the Shapiro-Wilk P of the differences is 0.033.
+- `forest_meta` wrote "the DerSimonian-Laird tau2 was truncated at zero" in every
+  methods paragraph. It now writes the clause only when Q is below its degrees
+  of freedom, which is the only condition that truncates tau2. On the `bcg`
+  benchmark, tau2 is 0.309, and the old text read as a truncation.
 
 ## [2.0.0] - 2026-10-29
 
