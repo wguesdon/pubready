@@ -321,6 +321,8 @@ The ANOVA is the same as for the box geom.
 ```bash
 figkit plot --recipe factorial_anova --data example/twoway_response.csv \
   --y response --x genotype --fill treatment --ylab "Response (a.u.)" --geom interaction
+```
+
 ### Estimation plot (`estimation_plot.csv`)
 A wound-healing assay with one migration speed for each well. The file holds 14
 vehicle wells and 10 to 12 wells for each of three compounds. The levels sort
@@ -545,6 +547,11 @@ Three-way factorial ANOVA (faceted by the third factor):
 
 ![three-way](expected/factorial_anova_response_threeway/figure_response_threeway.png)
 
+The interaction geom of the two-way factorial ANOVA draws one line for each
+treatment, with the mean and the SEM of each cell:
+
+![interaction](expected/factorial_anova_response_interaction/figure_response_interaction.png)
+
 Kaplan-Meier survival curves (log-rank p, censoring ticks, risk table):
 
 ![Kaplan-Meier](expected/survival_km_arm_km/figure_arm_km.png)
@@ -598,6 +605,11 @@ Raincloud geom, and the bar geom (mean + SEM + points):
 ![raincloud](expected/two_group_compare_volume_raincloud/figure_volume_raincloud.png)
 ![bar](expected/multi_group_compare_expression_bar/figure_expression_bar.png)
 
+The spider plot draws one line for each patient, as the percentage change from
+the baseline of that patient, with the RECIST lines:
+
+![spider](expected/spider_response_target_lesion_mm_spider/figure_target_lesion_mm_spider.png)
+
 Waterfall of the best change from baseline, with the RECIST lines:
 
 ![waterfall](expected/waterfall_target_lesion_mm_waterfall/figure_target_lesion_mm_waterfall.png)
@@ -625,6 +637,73 @@ Repeated-measures time course with the mixed ANOVA:
 Swimmer plot of the months on treatment, with response and progression marks:
 
 ![swimmer](expected/swimmer_months_swimmer/figure_months_swimmer.png)
+
+The distribution plot draws a histogram, a kernel density and a normal fit for
+each condition, with the Shapiro-Wilk P in the panel title:
+
+![distribution](expected/distribution_cell_area_um2_dist/figure_cell_area_um2_dist.png)
+
+The composition plot draws one 100% stacked bar for each sample. A star in the
+legend marks a cell type that differs between the conditions after the BH
+adjustment:
+
+![composition](expected/composition_cell_type_comp/figure_cell_type_comp.png)
+
+The Cumming estimation plot draws the mean difference of each compound against
+vehicle, with its bootstrap distribution and its 95% BCa CI:
+
+![estimation](expected/estimation_plot_speed_um_h_estimation/figure_speed_um_h_estimation.png)
+
+The Gardner-Altman layout of the paired data draws a slopegraph, and the paired
+mean difference on a second axis:
+
+![paired estimation](expected/estimation_plot_value_estimation_paired/figure_value_estimation_paired.png)
+
+The enzyme kinetics plot fits a Michaelis-Menten curve for each inhibitor
+concentration, and an F test compares a shared Km and a shared Vmax:
+
+![enzyme kinetics](expected/enzyme_kinetics_rate_enzyme/figure_rate_enzyme.png)
+
+The standard curve fits a four-parameter logistic curve to the standards and
+reads the unknowns off the curve:
+
+![standard curve](expected/standard_curve_absorbance_stdcurve/figure_absorbance_stdcurve.png)
+
+The cumulative incidence plot draws one panel for each cause, with Gray's test
+and the number at risk:
+
+![cumulative incidence](expected/cumulative_incidence_status_cif/figure_status_cif.png)
+
+The calibration plot draws the observed proportion in each bin of predicted
+risk, with a smooth curve and the event spikes. The legend gives the slope, the
+intercept, the Brier score and the Hosmer-Lemeshow P of each model:
+
+![calibration](expected/calibration_event_1y_risk_clinical_risk_extended_cal/figure_event_1y_risk_clinical_risk_extended_cal.png)
+
+The Sankey diagram draws the response transitions of the patients between the
+visits:
+
+![Sankey](expected/sankey_response_sankey/figure_response_sankey.png)
+
+The MA plot draws the log2 fold change against the mean count, with the labels
+of the top genes:
+
+![MA](expected/ma_plot_de_basemean_ma/figure_de_basemean_ma.png)
+
+The Manhattan plot draws the genome-wide line and the suggestive line. The QQ
+plot on the right gives the genomic inflation factor:
+
+![Manhattan](expected/manhattan_gwas_summary_manhattan/figure_gwas_summary_manhattan.png)
+
+The feature panel draws one box plot for each cytokine, with the
+Kruskal-Wallis q value after the BH adjustment across the panel:
+
+![feature panel](expected/feature_panel_cytokine_panel_fpanel/figure_cytokine_panel_fpanel.png)
+
+The embedding plot draws the UMAP coordinates of each cell, with a label at each
+cell type and the mean silhouette width in the subtitle:
+
+![embedding](expected/embedding_umap_clusters_embedding/figure_umap_clusters_embedding.png)
 
 ### Python engine (matplotlib / seaborn / statannotations / lifelines / PyComplexHeatmap)
 
@@ -692,3 +771,22 @@ The recipes added in v1.0.0, drawn by the Python engine:
 ![py forest](expected/forest_meta_hazard_ratio_meta_py/figure_hazard_ratio_meta_py.png)
 ![py time course](expected/timecourse_volume_mm3_tc_py/figure_volume_mm3_tc_py.png)
 ![py swimmer](expected/swimmer_months_swimmer_py/figure_months_swimmer_py.png)
+
+The Python engine also draws the spider plot, the interaction geom and the
+recipes that came after v1.0.0:
+
+![py spider](expected/spider_response_target_lesion_mm_spider_py/figure_target_lesion_mm_spider_py.png)
+![py interaction](expected/factorial_anova_response_interaction_py/figure_response_interaction_py.png)
+![py distribution](expected/distribution_cell_area_um2_dist_py/figure_cell_area_um2_dist_py.png)
+![py composition](expected/composition_cell_type_comp_py/figure_cell_type_comp_py.png)
+![py estimation](expected/estimation_plot_speed_um_h_estimation_py/figure_speed_um_h_estimation_py.png)
+![py paired estimation](expected/estimation_plot_value_estimation_paired_py/figure_value_estimation_paired_py.png)
+![py enzyme kinetics](expected/enzyme_kinetics_rate_enzyme_py/figure_rate_enzyme_py.png)
+![py standard curve](expected/standard_curve_absorbance_stdcurve_py/figure_absorbance_stdcurve_py.png)
+![py cumulative incidence](expected/cumulative_incidence_status_cif_py/figure_status_cif_py.png)
+![py calibration](expected/calibration_event_1y_risk_clinical_risk_extended_cal_py/figure_event_1y_risk_clinical_risk_extended_cal_py.png)
+![py Sankey](expected/sankey_response_sankey_py/figure_response_sankey_py.png)
+![py MA](expected/ma_plot_de_basemean_ma_py/figure_de_basemean_ma_py.png)
+![py Manhattan](expected/manhattan_gwas_summary_manhattan_py/figure_gwas_summary_manhattan_py.png)
+![py feature panel](expected/feature_panel_cytokine_panel_fpanel_py/figure_cytokine_panel_fpanel_py.png)
+![py embedding](expected/embedding_umap_clusters_embedding_py/figure_umap_clusters_embedding_py.png)
