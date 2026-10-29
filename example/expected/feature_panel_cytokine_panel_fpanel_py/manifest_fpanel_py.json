@@ -1,6 +1,6 @@
 {
-  "pubready_version": "2.0.0",
-  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
+  "pubready_version": "3.0.0",
+  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "feature_panel",
@@ -45,9 +45,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:2.0.0",
-    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
-    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
+    "image": "localhost/pubready:3.0.0",
+    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
+    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -78,7 +78,7 @@
     {
       "file": "figure_cytokine_panel_fpanel_py.pdf",
       "bytes": 37822,
-      "sha256": "7ad99b06a6edb57ce81b68c44ed85146c823ba5a2d6d6a78ac7a33282a08dcce"
+      "sha256": "cb689641aa21842df854631993ab5131a544c40fb540fb66eb6bb611c3764ced"
     },
     {
       "file": "figure_cytokine_panel_fpanel_py.png",
@@ -88,7 +88,7 @@
     {
       "file": "figure_cytokine_panel_fpanel_py.svg",
       "bytes": 179750,
-      "sha256": "22d6bdc439dacf333ee7c4912040e24a207f713874d22ecfd6904acb1c78faba"
+      "sha256": "edb7fbbe697aca496d6fe4635dcdae1545a1a739919ce9bec271e5d208d92e2a"
     },
     {
       "file": "packages_fpanel_py.txt",
@@ -103,22 +103,22 @@
     {
       "file": "qc_normality_fpanel_py.pdf",
       "bytes": 50802,
-      "sha256": "b8c7dda3423cf9a19f262148dd481402aeb102193c55828b7e5b660ed7e9b91c"
+      "sha256": "26d2dfd8ebe2e4ea95df68f6b29a660aa7f4bce366fd6617fd2cf40298e68cea"
     },
     {
       "file": "report.qmd",
       "bytes": 4920,
-      "sha256": "342d69a20049f6498da12d10dc12985e7d9fbb29b4788af4df106e7d93952cc1"
+      "sha256": "a982006cd2bf009822153bcb3ef23dfc963752225a95030bf4761b058e5af856"
     },
     {
       "file": "report.html",
       "bytes": 1697950,
-      "sha256": "26acdb3cb74c8c2f67b37255fc34f3f754c77fe4e032ad0b94aa8229186899d1"
+      "sha256": "83c628375b4556d6305ca6084b2a6adc7a9a9539386e4cbcc6b2720e744437a8"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2059,
-      "sha256": "21224be6f92a94a6773d079028a30e628ee51538f2c4e5a0cf9c7b18569dd822"
+      "sha256": "0b151182d0313130b68cac846b107cd11c4aaaedf95869e1e1a4ba2df25e1427"
     }
   ]
 }

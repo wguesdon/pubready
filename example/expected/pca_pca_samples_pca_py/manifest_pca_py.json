@@ -1,6 +1,6 @@
 {
-  "pubready_version": "2.0.0",
-  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
+  "pubready_version": "3.0.0",
+  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "pca",
@@ -35,9 +35,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:2.0.0",
-    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
-    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
+    "image": "localhost/pubready:3.0.0",
+    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
+    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -66,7 +66,7 @@
     {
       "file": "figure_pca_samples_pca_py.pdf",
       "bytes": 19485,
-      "sha256": "69ad59734dd8f4b06aecb77f6a6fef16a2e0fe26547e3061337fc34285be3200"
+      "sha256": "3c54ce832c897ac25a32a8d9287e7378b07d1eefef89f87382a2f63c8ab70cc8"
     },
     {
       "file": "figure_pca_samples_pca_py.png",
@@ -76,7 +76,7 @@
     {
       "file": "figure_pca_samples_pca_py.svg",
       "bytes": 41899,
-      "sha256": "5eec7cc811fa96196eb90e6c4c4c2708edf0e2ecfba865f107668605fa5d7991"
+      "sha256": "30cb364438037cad25fe0400f4ee6d0b195c6528646ffc5d3f5e573efbb1f5c7"
     },
     {
       "file": "packages_pca_py.txt",
@@ -86,17 +86,17 @@
     {
       "file": "report.qmd",
       "bytes": 3361,
-      "sha256": "8279816102fedabda14fe39bd6eb10778d5e76e28f955de140a3622da7819e29"
+      "sha256": "071d2cc8d196314c750b69c47523e0cc0ca3fa1255995ca4d9c02f3a3aa736ff"
     },
     {
       "file": "report.html",
       "bytes": 1440477,
-      "sha256": "7cd29edeb74254a3a93f1999859e480ecd9922a8dff5688b59ba7f5ddc8ae18b"
+      "sha256": "ba3845dc09eec7c268f6b76540052a0ba949a2ceff3bb62a1ac4564fabe69506"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1988,
-      "sha256": "347b3cf889414e869e53257506ec74c8465bf281ce30b3c5ee546beb3254e602"
+      "sha256": "91d25545a62a30ce93f1d4d0750b6894d01eedf54b2213432c752870e8603a6c"
     }
   ]
 }

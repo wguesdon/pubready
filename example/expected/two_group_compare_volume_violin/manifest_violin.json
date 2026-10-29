@@ -1,6 +1,6 @@
 {
-  "pubready_version": "2.0.0",
-  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
+  "pubready_version": "3.0.0",
+  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "two_group_compare",
@@ -41,9 +41,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:2.0.0",
-    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
-    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
+    "image": "localhost/pubready:3.0.0",
+    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
+    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -71,7 +71,7 @@
     {
       "file": "figure_volume_violin.pdf",
       "bytes": 18019,
-      "sha256": "9b9f93e92b2a2549568b9d411f8142ca9f96792e20088fadf95cf206cd242751"
+      "sha256": "0e737fee659a748408d359f1895b7e06cfc346522057bbee152489711dab1b57"
     },
     {
       "file": "figure_volume_violin.png",
@@ -96,22 +96,22 @@
     {
       "file": "qc_normality_violin.pdf",
       "bytes": 28025,
-      "sha256": "e955c831b4125ac088dc39bb6f4eeb7fa6290e5db70b30b3b8f4c43fb4b948c6"
+      "sha256": "2eeb33480e726f5d48467ff1857f80f06746b5530bd4822256509383c7689694"
     },
     {
       "file": "report.qmd",
       "bytes": 2954,
-      "sha256": "3e09c8b85be106482abc7693d2916696e59d46e04c34148c689fc8a5f05c3c21"
+      "sha256": "6b1480c3706a40c2e356f11fd6986e5be74d3707e2d7eeff4ec6bbc747c9ac0c"
     },
     {
       "file": "report.html",
       "bytes": 1307783,
-      "sha256": "1d37034cf25164ec6c6b3ecae3a825770f59b7186dfcfa52827836e3a7309139"
+      "sha256": "cbfa8584278c0cd65769643749861715abdce0463e5028bef7efc6f79b4957d7"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1666,
-      "sha256": "ca659a13844e259ba978333bcaea916eeff71861145ee0dda6a55793307ce40d"
+      "sha256": "1d792fed05446eaeef76312bd5dc659a69f52cda4adf834fb77c760a5b77d973"
     }
   ]
 }

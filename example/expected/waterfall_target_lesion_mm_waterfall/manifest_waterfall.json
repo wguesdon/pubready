@@ -1,6 +1,6 @@
 {
-  "pubready_version": "2.0.0",
-  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
+  "pubready_version": "3.0.0",
+  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "waterfall",
@@ -39,9 +39,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:2.0.0",
-    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
-    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
+    "image": "localhost/pubready:3.0.0",
+    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
+    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -67,7 +67,7 @@
     {
       "file": "figure_target_lesion_mm_waterfall.pdf",
       "bytes": 7894,
-      "sha256": "fa682e0c81a0ce2f31d49d7120c62e75de77511130a77ad9d3cc772d0dee9496"
+      "sha256": "5dd39081af1368a36487bcc62fade2d179c8bb08f5d68b655012aa59c8e1cce7"
     },
     {
       "file": "figure_target_lesion_mm_waterfall.png",
@@ -87,17 +87,17 @@
     {
       "file": "report.qmd",
       "bytes": 4520,
-      "sha256": "8ec09704f05aaf8e230b5364aea74e56be8aceba676cf4aec8d133b9f6ab9b8d"
+      "sha256": "bb66b1ed7458cdda5faeef3328d29b3946be54b6160ebd67d0af830d00ffed76"
     },
     {
       "file": "report.html",
       "bytes": 1293358,
-      "sha256": "b0803deb06c3ca31921b673436e8314c0762c98c175c4af0b91baec07e9a5165"
+      "sha256": "122c96ba50ca63ccd2952f14de502f4753f0606fca373eb1f904a1c4674b02e4"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2018,
-      "sha256": "d7dfc01b64aaf67b8045ab88e656094b9c401cbda3481e4c4f4ec6125e4e43c6"
+      "sha256": "5c366aedc6b7209ade34081dcbc67ba11b191931fb33853a96b56a117e8a64c1"
     }
   ]
 }

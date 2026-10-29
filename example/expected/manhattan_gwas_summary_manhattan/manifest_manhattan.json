@@ -1,6 +1,6 @@
 {
-  "pubready_version": "2.0.0",
-  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
+  "pubready_version": "3.0.0",
+  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "manhattan",
@@ -35,9 +35,9 @@
     "n_drawn": 20000
   },
   "container": {
-    "image": "localhost/pubready:2.0.0",
-    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
-    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
+    "image": "localhost/pubready:3.0.0",
+    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
+    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -63,7 +63,7 @@
     {
       "file": "figure_gwas_summary_manhattan.pdf",
       "bytes": 668738,
-      "sha256": "b724514defd96927e99feb4440fb3ce9ae25d05c077cf9b6a3a289cafa693288"
+      "sha256": "01d1b9de9085a31d18821e55458f5a3871c7d6a352707adb93e7e317b31b04be"
     },
     {
       "file": "figure_gwas_summary_manhattan.png",
@@ -83,17 +83,17 @@
     {
       "file": "report.qmd",
       "bytes": 3721,
-      "sha256": "d18733b22c1fa425a807294e7d0b787630c1f51d8c6cd825aa62b9fca2cdcc44"
+      "sha256": "06119786b5f28ef105aad711305c0948c67c5b39642f834072b7b2dbc9f52ad6"
     },
     {
       "file": "report.html",
       "bytes": 1373727,
-      "sha256": "697ac76fb5347f899184d85ff43bf925a30e410f6d9b65909dd92b669ac6d960"
+      "sha256": "e47aa5ac7844cff82daa2a164790cc768804c987df295e815fcfa88875301235"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1991,
-      "sha256": "171956493a9952abe31abdd0f7274d2dcdcf0f3c3fdcfa4ca82e7655bf8a4b4e"
+      "sha256": "7d675e2d6c25b2f09c44e06e59200feedd6e94b22a47a7ceb77ea5b368881dee"
     }
   ]
 }

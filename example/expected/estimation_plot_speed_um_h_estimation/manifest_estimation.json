@@ -1,6 +1,6 @@
 {
-  "pubready_version": "2.0.0",
-  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
+  "pubready_version": "3.0.0",
+  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "estimation_plot",
@@ -61,9 +61,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:2.0.0",
-    "image_id": "1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2",
-    "digest": "sha256:f22d119d4121702c30e3632421cdf83f9bc1b190c13c3547876874aed2f0419e",
+    "image": "localhost/pubready:3.0.0",
+    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
+    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -91,7 +91,7 @@
     {
       "file": "figure_speed_um_h_estimation.pdf",
       "bytes": 22033,
-      "sha256": "0a86913817683f3fc69307c90d79057dfa6953c195fe908eea3e5ad01a2989b2"
+      "sha256": "34067ba187035628a6068a722808113af5cdbd57fb61ed8d9147001242075a57"
     },
     {
       "file": "figure_speed_um_h_estimation.png",
@@ -116,22 +116,22 @@
     {
       "file": "qc_normality_estimation.pdf",
       "bytes": 29635,
-      "sha256": "d1eafb91b85707d1a5048b930497edcfbcc59127a5a39d5ab9eb6b043f0c58a2"
+      "sha256": "e9809894df34def936a3535563666fbd57e3ca592a2664cd12e783ea649ae49f"
     },
     {
       "file": "report.qmd",
       "bytes": 4535,
-      "sha256": "021c6e0292ad57e69fd10b42a07d227fd2664b715dd842a236afd90009491b3f"
+      "sha256": "e8c20fff48fb7f42f6db20205a4f08707ddc932592091ed6ea53e8626ddc0841"
     },
     {
       "file": "report.html",
       "bytes": 1372994,
-      "sha256": "b2ba4c6ddc87e4359f018197e9bb5e992ea544730e738e290189d30ba8a9298e"
+      "sha256": "90ba16151bcfe1754e923c744f8a01a0c55d50e3cdebdc164ffce0a1d150a64c"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2042,
-      "sha256": "3954ba8ad72ef0eb1decb63600f7f1bd2fddf74dc0471577646282652036c3d0"
+      "sha256": "640b4eefeab3ae9989277d9f303896e573b7504a74a9aeb669462f7b4d66c328"
     }
   ]
 }

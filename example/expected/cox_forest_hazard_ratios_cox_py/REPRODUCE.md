@@ -5,9 +5,9 @@ environment it was made in:
 
 ## 1. Get the pinned environment
 
-- Container image: `localhost/pubready:2.0.0`
-- Image id: `1e752da378ea70f07f72cd70305231f4f079f1b4e2d99c87cdf2e3d35e1f44b2`
-- pubready commit: `a9f218358c74881d725e4bdcd4c40be832ba06c8`
+- Container image: `localhost/pubready:3.0.0`
+- Image id: `0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6`
+- pubready commit: `4657df8148b43cbd66ec3a2bc04a756a38e7843c`
 
 ## 2. Run the standalone script
 
@@ -15,7 +15,7 @@ From inside this folder:
 
 ```bash
 podman run --rm --security-opt label=disable -v "$PWD":/work -w /work \
-  localhost/pubready:2.0.0 python3 script_cox_py.py
+  localhost/pubready:3.0.0 python3 script_cox_py.py
 ```
 
 The script reads the bundled input copy, reruns the analysis, and redraws
