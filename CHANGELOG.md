@@ -21,6 +21,13 @@ tag move together.
   the exact code. `figkit where` prints the folder that holds the adapters,
   `reference/` and `docs/` of the install. `tests/install_test.sh` installs HEAD
   with uv and checks a figure from the installed command.
+- `figkit doctor` checks the host setup: the platform, bash, `podman` on the
+  PATH, the macOS Podman machine, the Podman service, rootless mode, the
+  subordinate UID ranges on Linux, the mounted folders, the image and a test
+  container with the mounts of `figkit plot`. Each failed check prints its fix.
+  The command never installs anything and never runs `sudo`, and it exits 1 when
+  a check fails. `tests/doctor_test.sh` tests each result with stub `podman`
+  and `uname` scripts, so it needs no image.
 - `tools/render_audit/` writes stress datasets and renders every recipe with
   both engines, and it puts the two figures of each case side by side.
 - The `distribution` recipe, in both engines, shows the shape of one numeric
@@ -135,6 +142,15 @@ tag move together.
   the Python figure does.
 
 ### Fixed
+- `figkit` told the user to build the image when Podman was not installed, and
+  also when Podman could not reach its service, such as a stopped macOS Podman
+  machine. A missing `podman` now gives the install command of the platform. A
+  Podman that does not answer now points to `figkit doctor`. Only a missing image
+  gives the hint `figkit build`. `figkit version` prints "podman: not found" in
+  place of an empty version.
+- `figkit inspect` and the other data commands stopped with "unbound variable"
+  under the bash 3.2 of macOS when they had no arguments. `cli/figkit` now runs
+  on bash 3.2.
 - The R `calibration` figure dropped the 95% CI bar of a decile point whose
   observed proportion was 1, because the Wilson bound passed 1 by a rounding
   error. The bounds now stay inside 0 and 1, and the y scale keeps them.

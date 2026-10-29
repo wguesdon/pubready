@@ -20,6 +20,7 @@ Usage:
   figkit plot --recipe NAME --data FILE --x COL --y COL [options]
   figkit render --config plot_config.yaml [--data FILE]
   figkit build
+  figkit doctor         # check Podman, the image and the mounts; print a fix for each problem
   figkit shell
   figkit test
   figkit version
@@ -93,6 +94,62 @@ EOF
 image_id()      { podman image inspect --format '{{.Id}}'     "$IMAGE" 2>/dev/null || echo ""; }
 image_digest()  { podman image inspect --format '{{.Digest}}' "$IMAGE" 2>/dev/null || echo ""; }
 podman_version(){ podman --version 2>/dev/null | awk '{print $3}'; }
+
+# The host platform: macos, wsl, linux, windows (Git Bash, MSYS or Cygwin) or
+# unknown.
+host_platform() {
+  case "$(uname -s 2>/dev/null || true)" in
+    Darwin) echo macos ;;
+    Linux)
+      if grep -qi microsoft /proc/version 2>/dev/null; then echo wsl; else echo linux; fi
+      ;;
+    MINGW*|MSYS*|CYGWIN*) echo windows ;;
+    *) echo unknown ;;
+  esac
+}
+
+# One field of /etc/os-release without its quotes. The file is parsed, not
+# sourced, so figkit runs none of its content.
+os_release_field() {
+  [ -r /etc/os-release ] || return 0
+  sed -n "s/^$1=//p" /etc/os-release | head -1 | tr -d "\"'"
+}
+
+# The command that installs Podman on this host. figkit prints it for the user
+# and never runs it.
+podman_install_hint() {
+  case "$(host_platform)" in
+    macos)
+      echo "brew install podman && podman machine init && podman machine start"
+      return 0
+      ;;
+    windows)
+      echo "wsl --install -d Ubuntu   (then install Podman and run figkit inside the Ubuntu shell)"
+      return 0
+      ;;
+  esac
+  # Amazon Linux reports the Fedora family in ID_LIKE, but its package manager
+  # and its repositories differ by release, so it gets the install guide.
+  case " $(os_release_field ID) $(os_release_field ID_LIKE) " in
+    *" amzn "*)                            echo "see https://podman.io/docs/installation" ;;
+    *" ubuntu "*|*" debian "*)             echo "sudo apt update && sudo apt install -y podman" ;;
+    *" fedora "*|*" rhel "*|*" centos "*)  echo "sudo dnf install -y podman" ;;
+    *" arch "*)                            echo "sudo pacman -S podman" ;;
+    *" suse "*|*" opensuse "*)             echo "sudo zypper install -y podman" ;;
+    *)                                     echo "see https://podman.io/docs/installation" ;;
+  esac
+}
+
+require_podman() {
+  command -v podman >/dev/null 2>&1 && return 0
+  {
+    echo "Podman is not installed, or it is not on the PATH. figkit runs every command in a Podman container."
+    echo "Install Podman with:"
+    echo "  $(podman_install_hint)"
+    echo "Then check the setup with: figkit doctor"
+  } >&2
+  exit 1
+}
 
 # True when REPO_ROOT is the top of a pubready Git checkout. An installed copy
 # (uv add or uv tool install) is not one, even when it sits inside another
@@ -172,11 +229,26 @@ parse_report_options() {
   done
 }
 
+# `podman image exists` exits 1 for a missing image and 125 when it cannot reach
+# the Podman service, for example when the macOS Podman machine is stopped. Only
+# the first case is fixed by a build.
 require_image() {
-  if ! podman image exists "$IMAGE"; then
-    echo "Image '$IMAGE' not found. Build it first: figkit build" >&2
-    exit 1
-  fi
+  require_podman
+  local err rc=0
+  err="$(podman image exists "$IMAGE" 2>&1)" || rc=$?
+  case "$rc" in
+    0) ;;
+    1)
+      echo "Image '$IMAGE' not found. Build it first: figkit build" >&2
+      exit 1
+      ;;
+    *)
+      echo "Podman cannot reach its service, so figkit cannot use the image '$IMAGE'." >&2
+      [ -z "$err" ] || printf '  %s\n' "$(printf '%s\n' "$err" | head -1)" >&2
+      echo "Run figkit doctor for the cause and the fix." >&2
+      exit 1
+      ;;
+  esac
 }
 
 # Shared podman run for either engine. $1 = interpreter+script; rest = args.
@@ -230,15 +302,229 @@ run_tests() {
 
 show_version() {
   echo "pubready $VERSION"
-  if podman image exists "$IMAGE" 2>/dev/null; then
-    echo "image:  $IMAGE"
-    echo "id:     $(image_id)"
-    echo "digest: $(image_digest)"
+  if ! command -v podman >/dev/null 2>&1; then
+    echo "image:  $IMAGE (not checked: podman not found; run: figkit doctor)"
+    echo "podman: not found"
   else
-    echo "image:  $IMAGE (not built; run: figkit build)"
+    local rc=0
+    podman image exists "$IMAGE" 2>/dev/null || rc=$?
+    case "$rc" in
+      0)
+        echo "image:  $IMAGE"
+        echo "id:     $(image_id)"
+        echo "digest: $(image_digest)"
+        ;;
+      1) echo "image:  $IMAGE (not built; run: figkit build)" ;;
+      *) echo "image:  $IMAGE (not checked: Podman does not answer; run: figkit doctor)" ;;
+    esac
+    echo "podman: $(podman_version)"
   fi
-  echo "podman: $(podman_version)"
   local c; c="$(source_commit)"; echo "commit: ${c:0:7}"
+}
+
+# figkit doctor checks the host setup and prints the fix of each failed check.
+# It never installs anything and never runs sudo. Each check is one function;
+# a check that returns 1 stops the checks that depend on it.
+DOCTOR_FAILS=0
+DOCTOR_WARNS=0
+DOCTOR_INFO=""
+
+doctor_line() {  # $1 = status, $2 = message, $3 = fix (optional)
+  printf '%-5s %s\n' "$1" "$2"
+  [ -z "${3:-}" ] || printf '      fix: %s\n' "$3"
+}
+doctor_ok()   { doctor_line ok "$1"; }
+doctor_warn() { DOCTOR_WARNS=$((DOCTOR_WARNS + 1)); doctor_line warn "$1" "${2:-}"; }
+doctor_fail() { DOCTOR_FAILS=$((DOCTOR_FAILS + 1)); doctor_line FAIL "$1" "${2:-}"; }
+doctor_skip() { doctor_line skip "$1"; }
+
+# One field of the `podman info` line that doctor_service stores: 1 = rootless,
+# 2 = count of UID map entries, 3 = SELinux enabled.
+doctor_info_field() {
+  printf '%s\n' "$DOCTOR_INFO" | awk -v f="$1" '{print $f}'
+}
+
+doctor_platform() {
+  case "$(host_platform)" in
+    windows)
+      doctor_fail "figkit runs on Linux, macOS or WSL2, not in Git Bash, MSYS or Cygwin" \
+        "$(podman_install_hint)"
+      return 1
+      ;;
+    wsl)   doctor_ok "platform WSL2, $(os_release_field PRETTY_NAME)" ;;
+    linux) doctor_ok "platform Linux, $(os_release_field PRETTY_NAME)" ;;
+    macos) doctor_ok "platform macOS $(sw_vers -productVersion 2>/dev/null || true)" ;;
+    *)     doctor_warn "platform $(uname -s 2>/dev/null || echo unknown) is not a tested platform" ;;
+  esac
+}
+
+doctor_bash() {
+  if [ "${BASH_VERSINFO[0]}" -gt 3 ] || { [ "${BASH_VERSINFO[0]}" -eq 3 ] && [ "${BASH_VERSINFO[1]}" -ge 2 ]; }; then
+    doctor_ok "bash $BASH_VERSION at $BASH"
+  else
+    doctor_fail "bash $BASH_VERSION is older than 3.2" "install bash 3.2 or later"
+  fi
+}
+
+doctor_podman() {
+  if ! command -v podman >/dev/null 2>&1; then
+    doctor_fail "podman is not on the PATH" "$(podman_install_hint)"
+    return 1
+  fi
+  doctor_ok "podman $(podman_version) at $(command -v podman)"
+}
+
+# On macOS the containers run in a Linux VM that `podman machine` manages. A
+# machine must exist and run.
+doctor_machine() {
+  [ "$(host_platform)" = macos ] || return 0
+  local list
+  list="$(podman machine list --format '{{.Name}} {{.Running}}' 2>/dev/null || true)"
+  if [ -z "$list" ]; then
+    doctor_fail "no Podman machine exists" "podman machine init && podman machine start"
+    return 1
+  fi
+  if ! printf '%s\n' "$list" | grep -q ' true$'; then
+    doctor_fail "the Podman machine is stopped" "podman machine start"
+    return 1
+  fi
+  doctor_ok "Podman machine $(printf '%s\n' "$list" | awk '$2 == "true" {print $1; exit}' | tr -d '*') runs"
+}
+
+doctor_service() {
+  local rc=0 err
+  DOCTOR_INFO="$(podman info --format '{{.Host.Security.Rootless}} {{len .Host.IDMappings.UIDMap}} {{.Host.Security.SELinuxEnabled}}' 2>/dev/null)" || rc=$?
+  if [ "$rc" -ne 0 ]; then
+    # Only stderr: a remote client prints its own details on stdout first.
+    err="$(podman info 2>&1 >/dev/null | grep -v '^$' | head -1 || true)"
+    doctor_fail "Podman does not answer: $err" "run 'podman info' and read the full error"
+    return 1
+  fi
+  doctor_ok "Podman answers"
+}
+
+doctor_rootless() {
+  if [ "$(doctor_info_field 1)" = true ]; then
+    doctor_ok "Podman runs rootless"
+  elif [ "$(host_platform)" = macos ]; then
+    doctor_warn "the Podman machine runs rootful. figkit works, but rootless is the tested setup" \
+      "podman machine stop && podman machine set --rootful=false && podman machine start"
+  else
+    doctor_warn "Podman runs rootful. figkit works, but the files that it writes can belong to root" \
+      "run figkit as your own user, without sudo"
+  fi
+}
+
+# Rootless Podman on Linux needs subordinate UID and GID ranges to unpack image
+# layers that hold files of other owners. One UID map entry means no range.
+doctor_id_ranges() {
+  case "$(host_platform)" in linux|wsl) ;; *) return 0 ;; esac
+  [ "$(doctor_info_field 1)" = true ] || return 0
+  local user maps
+  user="$(id -un)"
+  maps="$(doctor_info_field 2)"
+  if [ "${maps:-0}" -ge 2 ] 2>/dev/null; then
+    doctor_ok "subordinate UID and GID ranges are set for $user"
+  else
+    doctor_fail "no subordinate UID range is set for $user, so Podman cannot unpack the image" \
+      "sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 $user && podman system migrate"
+  fi
+}
+
+# True when a physical path is under a folder that the default macOS Podman
+# machine mounts: the home folder, /private and /var/folders (/private/var).
+macos_machine_mounts() {  # $1 = physical path, $2 = physical home folder
+  case "$1/" in
+    "$2"/*|/private/*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# figkit mounts the current folder and the pubready core files. Podman must see
+# both of them.
+doctor_folder() {
+  local here core home
+  here="$(pwd -P)"
+  core="$(cd "$CORE_DIR" && pwd -P)"
+  case "$(host_platform)" in
+    macos)
+      home="$(cd "$HOME" && pwd -P)"
+      if macos_machine_mounts "$here" "$home" && macos_machine_mounts "$core" "$home"; then
+        doctor_ok "the current folder and the pubready files are in folders that the Podman machine mounts"
+      else
+        doctor_warn "the current folder or the pubready files are outside $home, and the default Podman machine does not mount them" \
+          "put the data and pubready under $home"
+      fi
+      ;;
+    wsl)
+      case "$here" in
+        /mnt/[a-z]/*)
+          doctor_warn "the current folder is on a Windows drive, which Podman mounts slowly and without the file modes" \
+            "run figkit from a folder in the WSL file system, for example under $HOME"
+          ;;
+        *) doctor_ok "the current folder is in the WSL file system" ;;
+      esac
+      ;;
+  esac
+}
+
+doctor_image() {
+  local rc=0
+  podman image exists "$IMAGE" 2>/dev/null || rc=$?
+  case "$rc" in
+    0) doctor_ok "image $IMAGE exists" ;;
+    1) doctor_fail "image $IMAGE is not built" "figkit build"; return 1 ;;
+    *) doctor_fail "Podman cannot check the image $IMAGE" "run 'podman info' and read the full error"; return 1 ;;
+  esac
+}
+
+# Start the image with the mounts of figkit plot and list both mounted folders.
+# This finds a blocked user namespace, such as an agent sandbox, a folder that
+# the macOS machine does not mount and an SELinux denial.
+doctor_container() {
+  local out rc=0 fix
+  out="$(podman --log-level=error run --rm \
+    -v "$PWD":/work -w /work \
+    -v "$CORE_DIR":/opt/pubready/core:ro \
+    "$IMAGE" ls /work /opt/pubready/core 2>&1)" || rc=$?
+  if [ "$rc" -eq 0 ]; then
+    doctor_ok "a test container reads the current folder and the pubready files"
+    return 0
+  fi
+  fix="run figkit outside the sandbox of the agent or the terminal, then run figkit doctor again"
+  if [ "$(doctor_info_field 3)" = true ]; then
+    fix="SELinux is on and can block the mount. figkit sets no SELinux label yet"
+  fi
+  doctor_fail "a test container cannot read the mounted folders: $(printf '%s\n' "$out" | grep -v '^$' | tail -1)" "$fix"
+}
+
+run_doctor() {
+  echo "figkit doctor, pubready $VERSION"
+  if doctor_platform; then
+    doctor_bash
+    if ! doctor_podman; then
+      doctor_skip "Podman service, rootless mode, image and test container: they need podman"
+    elif ! doctor_machine || ! doctor_service; then
+      doctor_skip "rootless mode, image and test container: they need a working Podman service"
+    else
+      doctor_rootless
+      doctor_id_ranges
+      doctor_folder
+      if doctor_image; then
+        doctor_container
+      else
+        doctor_skip "test container: it needs the image"
+      fi
+    fi
+  fi
+  echo
+  if [ "$DOCTOR_FAILS" -gt 0 ]; then
+    echo "$DOCTOR_FAILS check(s) failed. Apply each fix, then run figkit doctor again."
+  elif [ "$DOCTOR_WARNS" -gt 0 ]; then
+    echo "No check failed. Read the $DOCTOR_WARNS warning(s) above."
+  else
+    echo "All checks passed."
+  fi
 }
 
 # Read the value of --engine from the argument list (default r).
@@ -257,10 +543,12 @@ dispatch() {
     require_tracked_report_source
   fi
   parse_report_options "$@"
-  if [ "$(engine_of "${REPORT_ARGS[@]}")" = "python" ]; then
-    run_py "$cmd" "${REPORT_ARGS[@]}"
+  # ${a[@]+"${a[@]}"} expands an empty array to nothing under set -u. A plain
+  # "${a[@]}" stops bash before 4.4, such as the bash 3.2 of macOS.
+  if [ "$(engine_of ${REPORT_ARGS[@]+"${REPORT_ARGS[@]}"})" = "python" ]; then
+    run_py "$cmd" ${REPORT_ARGS[@]+"${REPORT_ARGS[@]}"}
   else
-    run_r "$cmd" "${REPORT_ARGS[@]}"
+    run_r "$cmd" ${REPORT_ARGS[@]+"${REPORT_ARGS[@]}"}
   fi
 }
 
@@ -272,11 +560,16 @@ case "$cmd" in
   plot)     dispatch plot     "$@" ;;
   render)   dispatch render   "$@" ;;
   build)
+    require_podman
     podman build -t "$IMAGE" \
       --build-arg "PUBREADY_VERSION=$VERSION" \
       -f "$REPO_ROOT/container/Containerfile" "$REPO_ROOT"
     ;;
   test)    run_tests ;;
+  doctor)
+    run_doctor
+    [ "$DOCTOR_FAILS" -eq 0 ] || exit 1
+    ;;
   version|--version|-v) show_version ;;
   where)   echo "$REPO_ROOT" ;;
   shell)

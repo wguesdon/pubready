@@ -126,6 +126,17 @@ cd pubready
 ./cli/figkit build
 ```
 
+#### Check the setup
+
+Run `figkit doctor` after the build, or when a command reports a Podman problem.
+It checks Podman, rootless mode, the macOS Podman machine, the image and the
+folders that `figkit` mounts. For each failed check, it prints the fix. It does
+not install anything, and it does not run `sudo`.
+
+```bash
+figkit doctor        # from a clone: ./cli/figkit doctor
+```
+
 ### 3. Install the skill in your agent
 
 Run the commands of a clone from the root of the repository. Run the commands of

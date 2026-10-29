@@ -70,6 +70,7 @@ figkit diagnose --recipe NAME --data FILE [options]   # QQ + assumption check, r
 figkit plot --recipe NAME --data FILE [options]
 figkit render --config plot_config.yaml [--data FILE]
 figkit build          # build or rebuild the container image
+figkit doctor         # check Podman, the image and the mounts, and print each fix
 figkit shell          # open a shell in the image
 figkit test           # run both engines' test suites in the image
 figkit version        # print version, image tag/digest, podman, git commit
@@ -114,6 +115,40 @@ Common options:
 | `--cause CODE` | the event code of the cause of interest of `cumulative_incidence` (default 1) |
 | `--fc_cutoff`, `--p_cutoff`, `--top_n` | the fold-change cutoff, the p cutoff and the count of labels of `volcano` and `ma_plot` (default 1, 0.05 and 15); `--top_n` also sets the most lead SNPs that `manhattan` labels |
 | `--facet COL` (`feature_panel`) | the feature column of long data; without it, every numeric column other than `--x` is a feature |
+
+### Check the setup
+
+`figkit doctor` checks the host setup and prints one line for each check. A
+failed check also prints its fix. The command never installs a package and never
+runs `sudo`. The user runs each fix that needs administrator rights. The exit
+code is 1 when a check fails. The exit code is 0 when all checks pass or when a
+check gives only a warning.
+
+| Check | Result | Fix that doctor prints |
+|---|---|---|
+| Platform | Fails in Git Bash, MSYS or Cygwin on Windows. | Install WSL2 and run figkit in the Ubuntu shell. |
+| bash | Fails before bash 3.2. `cli/figkit` runs on the bash 3.2 of macOS. | Install a newer bash. |
+| podman | Fails when `podman` is not on the PATH. | The install command of the platform. |
+| Podman machine | On macOS, fails when no machine exists or when the machine is stopped. | `podman machine init` and `podman machine start`. |
+| Podman service | Fails when `podman info` fails. Doctor shows the first line of the error. | Read the full error of `podman info`. |
+| Rootless mode | Warns when Podman runs rootful. figkit works, but the files that it writes can belong to root. | Run figkit as your own user. On macOS, set the machine back to rootless. |
+| Subordinate IDs | On Linux, fails when rootless Podman has no subordinate UID range. Podman then cannot unpack the image. | `sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 USER`, then `podman system migrate`. |
+| Folders | On macOS, warns when the current folder or the pubready files are outside the home folder. On WSL2, warns when the current folder is on a Windows drive. | Move the files. |
+| Image | Fails when the image is not built. | `figkit build`. |
+| Test container | Fails when a container with the mounts of `figkit plot` cannot list the two mounted folders. An agent sandbox that blocks user namespaces gives this failure. | Run figkit outside the sandbox. |
+
+The install command depends on the platform. Doctor uses `apt` on Ubuntu and
+Debian, `dnf` on Fedora, RHEL and CentOS, `pacman` on Arch and `zypper` on
+openSUSE. On macOS it uses `brew install podman`, then `podman machine init` and
+`podman machine start`. On other platforms it points to the Podman install guide.
+
+The other commands check Podman before they use it. If `podman` is not on the
+PATH, they print the install command of the platform. If Podman cannot reach its
+service, for example when the macOS machine is stopped, they tell the user to run
+`figkit doctor`. Only a missing image gives the hint `figkit build`.
+
+figkit sets no SELinux label on its mounts. On a host with SELinux in enforcing
+mode, the test container can fail. Doctor then states that SELinux is on.
 
 ## The recipes
 

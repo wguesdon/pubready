@@ -38,13 +38,17 @@ be in that folder or below it.
 
 ```
 figkit build                                  # once, builds the image
+figkit doctor                                 # checks Podman, the image and the mounts, prints each fix
 figkit inspect --data FILE [--format json]    # columns, types, group sizes, candidate x/y
 figkit diagnose --recipe NAME --data FILE ... # QQ + assumption check, recommend a test (no figure)
 figkit plot --recipe NAME --data FILE ...     # draw + test, writes a bundle
 figkit render --config plot_config.yaml       # redraw from an edited spec, recompute stats
 ```
 
-If a command reports the image is missing, run `figkit build` first.
+If a command reports that the image is missing, run `figkit build` first. If a
+command reports a Podman problem, run `figkit doctor` and show its output to the
+user. Do not install Podman, and do not run `sudo`. The user runs each fix that
+needs administrator rights.
 
 ## Workflow
 

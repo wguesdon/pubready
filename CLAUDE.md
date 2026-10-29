@@ -14,6 +14,7 @@ For work on the repository itself, follow the rules below.
 | `cli/figkit` | The one command surface. It runs the pinned Podman image. |
 | `pyproject.toml`, `src/pubready_cli/` | The uv package. Its `figkit` launcher runs `cli/figkit` from the files that the wheel carries. |
 | `tests/install_test.sh` | The end-to-end test of a uv tool install of HEAD. |
+| `tests/doctor_test.sh` | The test of `figkit doctor` and of the Podman errors, with stub `podman` and `uname` scripts. |
 | `tools/render_audit/` | The stress datasets and the runner that renders every recipe with both engines for a visual review. |
 | `core/r/` | R recipes, built on ggpubr, rstatix and ggprism. |
 | `core/python/` | Python recipes, built on matplotlib, seaborn and pingouin. |
@@ -33,7 +34,8 @@ For work on the repository itself, follow the rules below.
 
 1. Never call R or Python directly, and never call `podman` directly. Every run
    goes through `./cli/figkit`. If a command reports that the image is missing,
-   run `./cli/figkit build` first.
+   run `./cli/figkit build` first. If it reports a Podman problem, run
+   `./cli/figkit doctor`.
 2. Keep the two engines at parity. When you change a recipe in `core/r/`, make
    the matching change in `core/python/`, and keep the argument names and the
    reported numbers the same. Record a gap in the "Engine limits" section of each
@@ -46,6 +48,7 @@ For work on the repository itself, follow the rules below.
    the container. It asserts that each example writes a complete bundle and that
    the expected test is chosen. Run `./cli/figkit test` too. It compares every
    recipe, in both engines, with the reference values in `benchmarks/`. After a
+   change to `cli/figkit`, run `./tests/doctor_test.sh`. It needs no image. After a
    change to `cli/figkit`, `pyproject.toml` or `src/pubready_cli/`, commit and
    run `./tests/install_test.sh`. It installs HEAD with uv and draws a figure
    from the installed `figkit`. A new top-level folder that `cli/figkit` mounts
