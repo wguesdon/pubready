@@ -62,6 +62,16 @@ test_that("bland_altman recovers a constant offset as the bias", {
   expect_named(res$qc$panels, "a - b")
 })
 
+test_that("bland_altman gives the y axis enough breaks", {
+  set.seed(4)
+  a <- stats::runif(40, 40, 220)
+  df <- data.frame(a = a + 6 + stats::rnorm(40, 0, 4.7), b = a)
+  res <- recipe_bland_altman(df, new_spec("bland_altman", x = "a", y = "b"))
+  built <- ggplot2::ggplot_build(res$plot)
+  brk <- built$layout$panel_params[[1]]$y$breaks
+  expect_gte(sum(is.finite(brk)), 4)
+})
+
 test_that("forest_meta pools a difference measure from standard errors by inverse variance", {
   df <- data.frame(study = c("s1", "s2", "s3"), md = c(1.0, 2.0, 1.5), se = c(0.5, 0.25, 1.0))
   res <- recipe_forest_meta(df, new_spec("forest_meta", y = "md", se = "se", label = "study"))

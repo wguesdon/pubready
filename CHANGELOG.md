@@ -59,6 +59,11 @@ tag move together.
   spacing, and it stopped after a time limit. The labels are now placed after
   the layout is final, they repel from every point as ggrepel does, and a fixed
   iteration limit gives the same result on every run.
+- The `bland_altman` labels "Bias" and "+1.96 SD" sat inside the data and
+  covered points in both engines. They now sit in the right margin, outside
+  the panel and level with their lines. The figure is 1 inch wider to give
+  them room. The R y axis showed only two labelled ticks on the example data,
+  and it now has about six.
 
 ## [1.0.0] - 2026-10-07
 

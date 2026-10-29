@@ -25,6 +25,15 @@
        shapiro_p_diff = shapiro_safe(d)$p)
 }
 
+# One label in the right margin, just outside the panel, level with its line.
+# The plot turns clipping off so that the label can sit outside the panel.
+.ba_margin_label <- function(i, lines) {
+  grob <- grid::textGrob(lines$lab[i], x = grid::unit(1, "npc") + grid::unit(5, "pt"),
+                         just = "left", gp = grid::gpar(fontsize = 9, col = "grey20"))
+  ggplot2::annotation_custom(grob, xmin = -Inf, xmax = Inf,
+                             ymin = lines$y[i], ymax = lines$y[i])
+}
+
 recipe_bland_altman <- function(df, spec) {
   x <- spec$data$x; y <- spec$data$y
   if (is.null(x) || is.null(y)) {
@@ -46,7 +55,6 @@ recipe_bland_altman <- function(df, spec) {
   s <- .ba_stats(a, b)
   pd <- data.frame(mean = (a + b) / 2, diff = a - b)
   pal <- spec$appearance$palette %||% pubready_palette
-  xr <- range(pd$mean)
   bands <- data.frame(
     ymin = c(s$loa_low_ci_low, s$bias_ci_low, s$loa_high_ci_low),
     ymax = c(s$loa_low_ci_high, s$bias_ci_high, s$loa_high_ci_high))
@@ -61,15 +69,19 @@ recipe_bland_altman <- function(df, spec) {
     ggplot2::geom_hline(yintercept = lines$y, linetype = lines$lty, colour = "grey25",
                         linewidth = 0.5) +
     ggplot2::geom_point(colour = pal[1], size = 2.2, alpha = 0.85) +
-    ggplot2::annotate("text", x = xr[2], y = lines$y, label = lines$lab, hjust = 1,
-                      vjust = -0.5, size = 3.2, colour = "grey20") +
+    # The bias and limit labels go in the right margin, next to their lines, so
+    # that they never cover a point.
+    lapply(seq_len(nrow(lines)), .ba_margin_label, lines = lines) +
+    ggplot2::scale_y_continuous(breaks = scales::breaks_pretty(n = 6)) +
+    ggplot2::coord_cartesian(clip = "off") +
     ggplot2::labs(x = spec$appearance$x_label %||% sprintf("Mean of %s and %s", x, y),
                   y = spec$appearance$y_label %||% sprintf("Difference (%s - %s)", x, y),
                   title = spec$appearance$title,
                   subtitle = sprintf("n = %d; proportional bias slope %.3f, P = %s",
                                      s$n, s$prop_bias_slope, sprintf("%.2g", s$prop_bias_p))) +
     pub_theme(spec$appearance$theme) +
-    ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"))
+    ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"),
+                   plot.margin = ggplot2::margin(10, 12 + 5.2 * max(nchar(lines$lab)), 10, 10))
 
   stats_df <- data.frame(method_a = x, method_b = y, s, stringsAsFactors = FALSE)
   test_meta <- c(list(name = "Bland-Altman agreement analysis"), s)
@@ -82,7 +94,7 @@ recipe_bland_altman <- function(df, spec) {
        clean_steps = clean_steps,
        qc = list(quantity = "differences between the methods",
                  panels = stats::setNames(list(pd$diff), sprintf("%s - %s", x, y))),
-       width = 5.4, height = 4.4)
+       width = 6.4, height = 4.4)
 }
 
 .ba_methods <- function(s, x, y, spec) {
@@ -121,7 +133,7 @@ recipe_bland_altman <- function(df, spec) {
     "p <- ggplot(d, aes(mean, diff)) + geom_point() +",
     '  geom_hline(yintercept = bias) + geom_hline(yintercept = loa, linetype = "dashed") +',
     sprintf('  labs(x = "Mean of %s and %s", y = "Difference (%s - %s)") + theme_classic()', x, y, x, y),
-    sprintf('ggsave("%s.pdf", p, width = 5.4, height = 4.4)', fig_stub),
+    sprintf('ggsave("%s.pdf", p, width = 6.4, height = 4.4)', fig_stub),
     'cat("Reproduced figure.\\n")'
   )
 }

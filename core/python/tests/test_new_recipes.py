@@ -94,6 +94,23 @@ def test_bland_altman_recovers_a_constant_offset():
     assert list(res["qc"]["panels"]) == ["a - b"]
 
 
+def test_bland_altman_labels_sit_in_the_right_margin():
+    # The bias and limit labels sit outside the panel, so they cannot cover a point.
+    rng = np.random.default_rng(3)
+    a = rng.uniform(10, 100, 40)
+    df = pd.DataFrame({"a": a + 2 + rng.normal(0, 1, 40), "b": a})
+    res = recipe_bland_altman(df, new_spec("bland_altman", x="a", y="b"))
+    fig = res["fig"]
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    ax = fig.axes[0]
+    labels = [t for t in ax.texts if "SD" in t.get_text() or "Bias" in t.get_text()]
+    assert len(labels) == 3
+    right = ax.get_window_extent(renderer).x1
+    assert all(t.get_window_extent(renderer).x0 > right for t in labels)
+    assert all(t.get_window_extent(renderer).x1 <= fig.bbox.x1 for t in labels)
+
+
 def test_forest_meta_pools_a_difference_measure_by_inverse_variance():
     df = pd.DataFrame({"study": ["s1", "s2", "s3"], "md": [1.0, 2.0, 1.5], "se": [0.5, 0.25, 1.0]})
     res = recipe_forest_meta(df, new_spec("forest_meta", y="md", se="se", label="study"))
