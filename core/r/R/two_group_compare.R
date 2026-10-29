@@ -89,6 +89,14 @@ recipe_two_group_compare <- function(df, spec) {
   pal  <- spec$appearance$palette %||% pubready_palette[seq_len(2)]
   geom <- spec$appearance$geom %||% "box"
 
+  # A violin with trim = FALSE reaches past the data, so its bracket starts
+  # above the drawn violin, not above the largest value.
+  if (identical(geom, "violin")) {
+    tops <- vapply(by_group, geom_top, numeric(1), geom = "violin")
+    span <- max(tops) - min(df[[y]], na.rm = TRUE)
+    stat$y.position <- max(tops) + 0.06 * span
+  }
+
   # fill is mapped inside each geom, not globally: the significance-bracket
   # layer inherits global aesthetics, and a global fill would break it because
   # its data has no grouping column.

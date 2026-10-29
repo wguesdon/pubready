@@ -32,3 +32,10 @@ def test_category_width_grows_with_the_number_of_groups():
 def test_category_width_widens_the_slots_for_a_long_unbreakable_word():
     assert category_width(8, wrap_labels(["WT", "Overexpression"])) == pytest.approx(
         0.085 * 14 * 8 + 1)
+
+
+def test_rain_offsets_puts_the_raincloud_points_left_of_the_box_as_r_does():
+    from pubready.theme import rain_offsets
+    assert list(rain_offsets(3)) == pytest.approx([-0.1058359, -0.1516718, -0.0775078], abs=1e-6)
+    off = rain_offsets(500)
+    assert ((off >= -0.18) & (off <= -0.06)).all()

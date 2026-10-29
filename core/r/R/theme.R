@@ -115,6 +115,33 @@ log_ticks_ref <- function(lo, hi, ref = 1) {
   sort(unique(ticks))
 }
 
+# The top of the drawn geom of one group, so that a bracket or a letter sits
+# above what the reader sees. A violin with trim = FALSE reaches 3 bandwidths
+# (stats::bw.nrd0, the ggplot2 default) past the largest value; a bar ends at
+# the mean plus its standard error when no point is higher.
+geom_top <- function(v, geom = "box") {
+  v <- v[is.finite(v)]
+  if (length(v) == 0) return(NA_real_)
+  top <- max(v)
+  if (identical(geom, "violin") && length(v) >= 2) {
+    bw <- tryCatch(stats::bw.nrd0(v), error = .theme_na)
+    if (is.finite(bw)) top <- top + 3 * bw
+  } else if (identical(geom, "bar") && length(v) >= 2) {
+    top <- max(top, mean(v) + stats::sd(v) / sqrt(length(v)))
+  }
+  top
+}
+
+.theme_na <- function(e) NA_real_
+
+# Deterministic horizontal offsets for the points of a raincloud: n values in
+# [lo, hi] from the golden-ratio sequence, so the points spread to the left of
+# the box without a random seed. Python uses the same sequence.
+rain_offsets <- function(n, lo = -0.18, hi = -0.06) {
+  if (n == 0) return(numeric(0))
+  lo + (hi - lo) * ((seq_len(n) * 0.6180339887498949) %% 1)
+}
+
 # Add the distribution geom for the comparison recipes, plus optional points.
 # geom is one of box | violin | bar | raincloud. `x` is the grouping column name;
 # fill is mapped per layer so the significance-bracket layer is not affected.
@@ -135,9 +162,15 @@ add_dist_geom <- function(p, x, geom = "box", show_points = TRUE) {
   } else {
     p + ggplot2::geom_boxplot(fill, width = 0.6, outlier.shape = NA, alpha = 0.9)
   }
-  if (isTRUE(show_points)) {
-    jit <- if (geom == "raincloud") 0.06 else 0.12
-    p <- p + ggplot2::geom_jitter(fill, width = jit, size = 1.5, alpha = 0.7,
+  if (isTRUE(show_points) && geom == "raincloud") {
+    # The rain falls to the left of the box, so the points never hide it.
+    d <- p$data
+    idx <- stats::ave(seq_len(nrow(d)), d[[x]], FUN = seq_along)
+    d$.rain_x <- as.integer(d[[x]]) + rain_offsets(max(idx, 0))[idx]
+    p <- p + ggplot2::geom_point(data = d, ggplot2::aes(x = .data$.rain_x, fill = .data[[x]]),
+                                 size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3)
+  } else if (isTRUE(show_points)) {
+    p <- p + ggplot2::geom_jitter(fill, width = 0.12, size = 1.5, alpha = 0.7,
                                   shape = 21, stroke = 0.3)
   }
   p

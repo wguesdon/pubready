@@ -280,6 +280,50 @@ def plain_number_axis(axis):
     axis.set_major_formatter(PlainNumberFormatter())
 
 
+def geom_top(values, geom="box"):
+    """The top of the drawn geom of one group, as geom_top() of the R engine.
+
+    The seaborn violin is cut at the data (cut=0), so it ends at the largest
+    value; a bar ends at the mean plus its standard error when no point is
+    higher.
+
+    Args:
+        values: The values of the group.
+        geom: The geometry: box, violin, bar or raincloud.
+
+    Returns:
+        float: The top, or NaN for an empty group.
+    """
+    import numpy as np
+    v = np.asarray(values, dtype=float)
+    v = v[np.isfinite(v)]
+    if len(v) == 0:
+        return float("nan")
+    top = float(v.max())
+    if geom == "bar" and len(v) >= 2:
+        top = max(top, float(v.mean() + v.std(ddof=1) / np.sqrt(len(v))))
+    return top
+
+
+def rain_offsets(n, lo=-0.18, hi=-0.06):
+    """Deterministic horizontal offsets for the points of a raincloud.
+
+    The n values in [lo, hi] come from the golden-ratio sequence, so the points
+    spread to the left of the box without a random seed, as in the R engine.
+
+    Args:
+        n: The count of points.
+        lo: The leftmost offset.
+        hi: The rightmost offset.
+
+    Returns:
+        numpy.ndarray: The offsets.
+    """
+    import numpy as np
+    k = np.arange(1, n + 1)
+    return lo + (hi - lo) * np.mod(k * 0.6180339887498949, 1.0)
+
+
 def plain_log_axis(axis):
     """Label a log-scaled matplotlib axis with plain numbers.
 
@@ -314,7 +358,7 @@ def _raincloud(ax, data, x, y, order, pal, show_points=True):
         for med in bp["medians"]:
             med.set_color("black")
         if show_points:
-            jit = np.random.RandomState(i).uniform(-0.18, -0.06, size=len(vals))
+            jit = rain_offsets(len(vals))
             ax.scatter(np.full(len(vals), i) + jit, vals, s=10, color=pal[i],
                        alpha=0.6, edgecolors="black", linewidths=0.2, zorder=3)
     ax.set_xticks(range(len(order))); ax.set_xticklabels(order)

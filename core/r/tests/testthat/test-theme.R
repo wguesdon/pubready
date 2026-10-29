@@ -27,3 +27,16 @@ test_that("category_width grows with the number of groups", {
 test_that("category_width widens the slots for a long unbreakable word", {
   expect_equal(category_width(8, wrap_labels(c("WT", "Overexpression"))), 0.085 * 14 * 8 + 1)
 })
+
+test_that("rain_offsets puts the raincloud points left of the box, as Python does", {
+  off <- rain_offsets(3)
+  expect_equal(off, c(-0.1058359, -0.1516718, -0.0775078), tolerance = 1e-6)
+  expect_true(all(rain_offsets(500) >= -0.18 & rain_offsets(500) <= -0.06))
+})
+
+test_that("geom_top reaches past the data for an untrimmed violin", {
+  v <- c(1, 2, 3, 4, 10)
+  expect_equal(geom_top(v, "box"), 10)
+  expect_equal(geom_top(v, "violin"), 10 + 3 * stats::bw.nrd0(v))
+  expect_equal(geom_top(c(1, 1, 1, 1), "bar"), 1)
+})
