@@ -287,6 +287,42 @@ figkit plot --recipe swimmer --data example/swimmer_patients.csv \
   --markers response_month,progression_month --xlab "Months on treatment"
 ```
 
+### Distribution (`distribution.csv`)
+The file holds the area of 240 single cells in three culture conditions. The
+control cells are close to normal. The serum-starved cells are right-skewed, and
+the mixed culture is bimodal. The recipe draws one histogram panel for each
+condition, with a kernel density and a normal fit. The stats table gives the
+Shapiro-Wilk test of each condition. The file comes from
+`tools/make_examples/make_distribution_data.R`, which uses a fixed seed.
+
+```bash
+figkit plot --recipe distribution --data example/distribution.csv \
+  --x condition --y cell_area_um2 --xlab "Cell area (um^2)"
+```
+
+### Composition (`composition.csv`)
+The file holds the cell-type counts of 12 blood samples from a single-cell
+experiment, 6 control and 6 treated. The treated samples hold more CD8 T cells
+and fewer B cells. The recipe draws one 100% stacked bar for each sample and
+compares each cell type between the conditions with the Mann-Whitney U test. The
+file comes from `tools/make_examples/make_composition_data.R`, which uses a fixed
+seed.
+
+```bash
+figkit plot --recipe composition --data example/composition.csv \
+  --id sample --x cell_type --y n_cells --group condition
+```
+
+### Interaction plot (`twoway_response.csv`)
+The two-way design of the factorial example, drawn as an interaction plot. Each
+treatment has one line across the genotypes, with the mean +/- SEM of each cell.
+The ANOVA is the same as for the box geom.
+
+```bash
+figkit plot --recipe factorial_anova --data example/twoway_response.csv \
+  --y response --x genotype --fill treatment --ylab "Response (a.u.)" --geom interaction
+```
+
 ## Config
 
 ### `edited_config.yaml` — render path
@@ -328,6 +364,9 @@ where a bare `y` is read as a boolean. The reader normalizes it.
 | `meta_trials.csv`      | Fixed + random-effects pooling | random HR 0.77 (0.70 to 0.84); I2 = 17% |
 | `tumor_growth.csv`     | Mixed ANOVA, Greenhouse-Geisser | arm x day P < 0.001; 1 mouse dropped |
 | `swimmer_patients.csv` | Swimmer (descriptive)       | median 2.4 and 14.4 months; 5 ongoing |
+| `distribution.csv`     | Shapiro-Wilk per group (descriptive) | P = 0.26, P = 0.0015 and P < 0.001 |
+| `composition.csv`      | Mann-Whitney U per cell type, BH | 3 of 8 cell types (CD8 T, B, cDC) |
+| `twoway_response.csv`  | Two-way ANOVA, interaction geom | both effects + interaction |
 | `edited_config.yaml`   | (same as tumor_volume)      | yes                   |
 
 ## Generated figures

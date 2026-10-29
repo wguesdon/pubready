@@ -13,6 +13,31 @@ tag move together.
 
 ## [Unreleased]
 
+### Added
+- The `distribution` recipe, in both engines, shows the shape of one numeric
+  variable, overall or for each group. The figure is a histogram with a kernel
+  density and a normal fit, with one panel for each group on a shared x axis.
+  The bins come from the Freedman-Diaconis rule on the pooled values, and the
+  bandwidth is that of `stats::bw.nrd0`. The stats table gives the moments, the
+  quantiles and the Shapiro-Wilk test of each group. The recipe does not compare
+  the groups.
+- The `composition` recipe, in both engines, shows one 100% stacked bar for each
+  sample, for example the cell-type proportions of a single-cell experiment. With
+  `--group`, each category is compared with the Mann-Whitney U test for two
+  groups or the Kruskal-Wallis test for three or more. The P values are adjusted
+  with the Benjamini-Hochberg method. The methods paragraph states that
+  proportions are compositional, so the tests are exploratory.
+- `factorial_anova --geom interaction`, in both engines, draws the interaction
+  plot of the same ANOVA. It shows the mean +/- SEM of each cell, with one line
+  for each `--fill` level. The statistics do not change.
+- Three public benchmark cases: `faithful_distribution`,
+  `tooth_growth_distribution` and `housing_composition`.
+
+### Changed
+- `factorial_anova` wraps an `--x` level longer than 12 characters, and the
+  figure width grows with the number of `--x` levels multiplied by the number of
+  `--fill` levels. A design that fitted the old size keeps it.
+
 ## [1.0.0] - 2026-10-07
 
 This is the first major release. The rename from pubplot to pubready changes
