@@ -74,3 +74,8 @@ def test_rank_biserial_covers_both_designs():
     assert rank_biserial_unpaired(18, 6, 6) == 0.0
     assert rank_biserial_paired([1.0, 2.0, 3.0, -4.0]) == pytest.approx(0.2)
     assert np.isnan(rank_biserial_paired([0.0, 0.0]))
+
+
+def test_p_stars_boundaries_match_the_r_engine():
+    assert p_stars(1e-4) == "***"
+    assert p_stars(0.05) == "ns"

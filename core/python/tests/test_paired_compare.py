@@ -37,3 +37,15 @@ def test_paired_compare_needs_id():
         assert False, "expected ValueError"
     except ValueError as e:
         assert "--id" in str(e)
+
+
+def test_paired_compare_labels_p_below_1e4_with_four_stars():
+    pre = [10, 11, 12, 13, 14, 15, 16, 17]
+    post = [pre[i] - 5 + 0.3 * (-1) ** (i + 1) for i in range(len(pre))]
+    df = pd.DataFrame({"subject": [f"s{i}" for i in range(8)] * 2,
+                       "condition": ["pre"] * 8 + ["post"] * 8, "value": pre + post})
+    a = SimpleNamespace(recipe="paired_compare", data="p.csv", x="condition", y="value",
+                        id="subject", test="t")
+    res = recipe_paired_compare(df, spec_from_args(a))
+    assert res["stats"]["p_value"].iloc[0] < 1e-4
+    assert "****" in [t.get_text() for t in res["fig"].axes[0].texts]

@@ -61,8 +61,9 @@ recipe_paired_compare <- function(df, spec) {
   plong$cond <- factor(plong$cond, levels = lv)
 
   pal <- spec$appearance$palette %||% pubready_palette[seq_len(2)]
-  star <- if (is.na(pval)) "ns" else if (pval < 0.001) "***" else
-          if (pval < 0.01) "**" else if (pval < 0.05) "*" else "ns"
+  # The same star scale as every other recipe and the Python engine: **** for
+  # P < 1e-4.
+  star <- p_stars(pval)
   blabel <- spec$appearance$bracket$label %||% "p.signif"
   brk <- if (blabel == "p.format") paste0("p = ", formatC(pval, format = "g", digits = 2)) else star
   ypos <- max(plong$v, na.rm = TRUE) + 0.06 * diff(range(plong$v, na.rm = TRUE))

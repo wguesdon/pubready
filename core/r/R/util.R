@@ -66,6 +66,20 @@ pkg_versions <- function(pkgs) {
   out
 }
 
+# Significance stars with the cutpoints of rstatix::add_significance, as
+# util.p_stars of the Python engine: **** below 1e-4, *** below 0.001, ** below
+# 0.01, * below 0.05, and ns otherwise or for a missing P. Vectorised.
+p_stars <- function(p) {
+  p <- suppressWarnings(as.numeric(p))
+  out <- rep("ns", length(p))
+  ok <- !is.na(p)
+  out[ok & p < 0.05] <- "*"
+  out[ok & p < 0.01] <- "**"
+  out[ok & p < 1e-3] <- "***"
+  out[ok & p < 1e-4] <- "****"
+  out
+}
+
 cap_first <- function(s) {
   if (length(s) == 0 || is.na(s) || nchar(s) == 0) return(s)
   paste0(toupper(substring(s, 1, 1)), substring(s, 2))
