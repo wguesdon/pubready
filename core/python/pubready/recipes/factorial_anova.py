@@ -17,13 +17,15 @@ import statsmodels.formula.api as smf
 from matplotlib.lines import Line2D
 from matplotlib.ticker import MaxNLocator
 
-from ..theme import apply_pub_style, palette
+from ..theme import apply_pub_style, palette, rain_offsets
 from ..util import cap_first
 
 # The dodge width of the interaction plot, as position_dodge(0.25) in R.
 INT_DODGE = 0.25
 # The dodge width of the bar geom, as position_dodge(0.8) in R.
 BAR_DODGE = 0.8
+# The dodge width of the box geom: seaborn dodges the boxes over their width of 0.7.
+BOX_DODGE = 0.7
 
 
 def _plab(p):
@@ -152,7 +154,7 @@ def _bar_panel(ax, sub, y, f1, f2, f1_lv, f2_lv, pal):
         pal: The colour of each --fill level.
 
     Returns:
-        list: The x position of each --fill level's bars, for the points.
+        list: The x position of each --fill level's bars.
     """
     k = len(f2_lv)
     base = np.arange(len(f1_lv), dtype=float)
@@ -174,8 +176,14 @@ def _bar_panel(ax, sub, y, f1, f2, f1_lv, f2_lv, pal):
     return centres
 
 
-def _bar_points(ax, sub, y, f1, f2, f1_lv, f2_lv, pal, centres):
-    """Draw the jittered points over the bars, at each bar's centre.
+def _cell_points(ax, sub, y, f1, f2, f1_lv, f2_lv, pal, dodge):
+    """Draw the points of each cell at fixed offsets around the cell centre.
+
+    The centre is the dodged position of the box or the bar of the cell. Each
+    point gets a golden-ratio offset by its row in the cell, within
+    +/- 0.15 / (k + 2) for k --fill levels, the jitter of
+    position_jitterdodge(jitter.width = 0.15) in the R engine. The points keep
+    their places in every run, as .fa_point_x() does in R.
 
     Args:
         ax: The axes.
@@ -186,18 +194,18 @@ def _bar_points(ax, sub, y, f1, f2, f1_lv, f2_lv, pal, centres):
         f1_lv: The --x levels.
         f2_lv: The --fill levels.
         pal: The colour of each --fill level.
-        centres: The bar centres that _bar_panel returned.
+        dodge: The dodge width of the boxes or the bars.
     """
-    rng = np.random.RandomState(0)
-    pos = {lv: j for j, lv in enumerate(f1_lv)}
+    k = len(f2_lv)
+    a = 0.15 / (k + 2)
     for i, lv in enumerate(f2_lv):
-        cell = sub[sub[f2] == lv]
-        if cell.empty:
-            continue
-        xs = np.array([centres[i][pos[v]] for v in cell[f1]])
-        jit = rng.uniform(-0.15, 0.15, size=len(xs)) * 0.7 / len(f2_lv)
-        ax.scatter(xs + jit, cell[y], s=10, color=pal[i], alpha=0.7, edgecolors="black",
-                   linewidths=0.3, zorder=3)
+        for j, v in enumerate(f1_lv):
+            vals = sub.loc[(sub[f2] == lv) & (sub[f1] == v), y].to_numpy(dtype=float)
+            if len(vals) == 0:
+                continue
+            x = j + (i + 0.5 - k / 2) * dodge / k + rain_offsets(len(vals), -a, a)
+            ax.scatter(x, vals, s=10, color=pal[i], alpha=0.7, edgecolors="black",
+                       linewidths=0.3, zorder=3)
 
 
 def recipe_factorial_anova(df, spec):
@@ -271,16 +279,14 @@ def recipe_factorial_anova(df, spec):
         if geom == "interaction":
             _interaction_panel(ax, sub, y, f1, f2, f1_lv, f2_lv, pal)
         elif geom == "bar":
-            centres = _bar_panel(ax, sub, y, f1, f2, f1_lv, f2_lv, pal)
+            _bar_panel(ax, sub, y, f1, f2, f1_lv, f2_lv, pal)
             if ap.get("show_points", True):
-                _bar_points(ax, sub, y, f1, f2, f1_lv, f2_lv, pal, centres)
+                _cell_points(ax, sub, y, f1, f2, f1_lv, f2_lv, pal, BAR_DODGE)
         else:
             sns.boxplot(data=sub, x=f1, y=y, hue=f2, order=f1_lv, hue_order=f2_lv,
-                        palette=pal, ax=ax, width=0.7, fliersize=0, legend=False)
+                        palette=pal, ax=ax, width=BOX_DODGE, fliersize=0, legend=False)
             if ap.get("show_points", True):
-                sns.stripplot(data=sub, x=f1, y=y, hue=f2, order=f1_lv, hue_order=f2_lv,
-                              dodge=True, palette=pal, ax=ax, size=3, alpha=0.6,
-                              edgecolor="black", linewidth=0.3, legend=False)
+                _cell_points(ax, sub, y, f1, f2, f1_lv, f2_lv, pal, BOX_DODGE)
         if wrap or geom in ("interaction", "bar"):
             ax.set_xticklabels([wrap_x(s) if wrap else str(s) for s in f1_lv])
         if fl is not None:
@@ -341,6 +347,35 @@ def _methods(eff, factors, spec):
     )
 
 
+def _script_points(f1, f2, y, pal, dodge):
+    """Write the code that draws the points of each cell in an emitted script.
+
+    The code places the points as _cell_points does: the dodged cell centre plus
+    a golden-ratio offset by row in the cell. It runs inside the panel loop.
+
+    Args:
+        f1: The --x column.
+        f2: The --fill column.
+        y: The outcome column.
+        pal: The colour of each --fill level.
+        dodge: The dodge width of the boxes or the bars.
+
+    Returns:
+        str: The code lines, indented for the panel loop.
+    """
+    return (
+        "    # Each point sits at its dodged cell centre plus a fixed golden-ratio offset.\n"
+        "    k = len(f2_lv); a = 0.15 / (k + 2)\n"
+        "    for i, lv in enumerate(f2_lv):\n"
+        "        for j, v in enumerate(f1_lv):\n"
+        f'            vals = sub.loc[(sub["{f2}"] == lv) & (sub["{f1}"] == v), "{y}"].to_numpy(dtype=float)\n'
+        "            n = np.arange(1, len(vals) + 1)\n"
+        f"            x = j + (i + 0.5 - k / 2) * {dodge} / k - a + 2 * a * np.mod(n * 0.6180339887498949, 1.0)\n"
+        f'            ax.scatter(x, vals, s=10, color={pal}[i], alpha=0.7, edgecolors="black", '
+        "linewidths=0.3, zorder=3)"
+    )
+
+
 def _script(spec, factors, f1_lv, f2_lv, facet_lv, pal, w, h, in_name, fig_stub):
     """Write the standalone reproduction script.
 
@@ -383,16 +418,20 @@ def _script(spec, factors, f1_lv, f2_lv, facet_lv, pal, w, h, in_name, fig_stub)
         ax.bar(x, m, width=0.7 / k, color={pal}[i], alpha=0.9, edgecolor="black", linewidth=0.3)
         ax.errorbar(x, m, yerr=se, fmt="none", ecolor="black", capsize=3)
     ax.set_xticks(range(len(f1_lv))); ax.set_xticklabels(f1_lv)'''
+        if ap.get("show_points", True):
+            draw += "\n" + _script_points(f1, f2, y, pal, BAR_DODGE)
         legend = f'axes[-1].legend(handles=[mpatches.Patch(color={pal}[i], label=l) for i, l in enumerate(f2_lv)], title="{f2}", loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)'
     else:
-        draw = f'''    sns.boxplot(data=sub, x="{f1}", y="{y}", hue="{f2}", order=f1_lv, hue_order=f2_lv, palette={pal}, ax=ax, width=0.7, fliersize=0, legend=False)
-    sns.stripplot(data=sub, x="{f1}", y="{y}", hue="{f2}", order=f1_lv, hue_order=f2_lv, dodge=True, palette={pal}, ax=ax, size=3, alpha=0.6, edgecolor="black", linewidth=0.3, legend=False)'''
+        draw = f'''    sns.boxplot(data=sub, x="{f1}", y="{y}", hue="{f2}", order=f1_lv, hue_order=f2_lv, palette={pal}, ax=ax, width={BOX_DODGE}, fliersize=0, legend=False)'''
+        if ap.get("show_points", True):
+            draw += "\n" + _script_points(f1, f2, y, pal, BOX_DODGE)
         legend = f'axes[-1].legend(handles=[mpatches.Patch(color={pal}[i], label=l) for i, l in enumerate(f2_lv)], title="{f2}", loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)'
     imports = "import textwrap\n" if needs_wrap(f1_lv) else ""
     return f'''#!/usr/bin/env python3
 # Standalone reproduction (parametric ANOVA). Run inside the pinned container.
 {imports}import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt, matplotlib.patches as mpatches
+import numpy as np
 import pandas as pd, seaborn as sns
 import statsmodels.api as sm, statsmodels.formula.api as smf
 

@@ -44,3 +44,16 @@ def test_recipe_two_group_rejects_non_binary_group():
     spec = spec_from_args(a)
     with pytest.raises(ValueError, match="exactly 2 groups"):
         recipe_two_group_compare(df, spec)
+
+
+def test_the_points_sit_at_fixed_offsets_as_in_the_r_engine():
+    """The points of a group sit at golden-ratio offsets by input row, so they
+    keep their places in every run. The R suite (test-theme.R) expects the same
+    offsets."""
+    df = pd.DataFrame({"group": ["a"] * 3 + ["b"] * 3, "value": [1, 2, 3, 4, 5, 6.0]})
+    spec = spec_from_args(SimpleNamespace(recipe="two_group_compare", data="toy.csv",
+                                          x="group", y="value", test="welch_t"))
+    res = recipe_two_group_compare(df, spec)
+    groups = [c.get_offsets() for c in res["fig"].axes[0].collections if len(c.get_offsets()) == 3]
+    assert list(groups[0][:, 0]) == pytest.approx([0.0283282, -0.0633437, 0.0849845], abs=1e-6)
+    assert list(groups[1][:, 0]) == pytest.approx([1.0283282, 0.9366563, 1.0849845], abs=1e-6)

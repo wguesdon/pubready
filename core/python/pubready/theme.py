@@ -312,10 +312,12 @@ def geom_top(values, geom="box"):
 
 
 def rain_offsets(n, lo=-0.18, hi=-0.06):
-    """Deterministic horizontal offsets for the points of a raincloud.
+    """Deterministic horizontal offsets for the points of the comparison recipes.
 
     The n values in [lo, hi] come from the golden-ratio sequence, so the points
-    spread to the left of the box without a random seed, as in the R engine.
+    spread without a random seed and keep their places in every run, as in the
+    R engine. The default range puts the rain of a raincloud to the left of the
+    box.
 
     Args:
         n: The count of points.
@@ -430,14 +432,22 @@ def script_geom_code(x, y, pal, geom="box", show_points=True):
     else:
         lines = [f"sns.boxplot({common}, width=0.6, fliersize=0)"]
     if show_points:
-        lines.append(f'sns.stripplot({common}, size=4, alpha=0.7, edgecolor="black", '
-                     "linewidth=0.3, jitter=0.12)")
+        lines += [
+            "# Each point sits at a fixed golden-ratio offset by its row in its group.",
+            f"pal = {pal!r}",
+            "for i, g in enumerate(order):",
+            f'    vals = df.loc[df["{x}"] == g, "{y}"].to_numpy()',
+            "    k = np.arange(1, len(vals) + 1)",
+            "    jit = -0.12 + 0.24 * np.mod(k * 0.6180339887498949, 1.0)",
+            "    ax.scatter(i + jit, vals, s=16, color=pal[i], alpha=0.7, edgecolors=\"black\",",
+            "               linewidths=0.3, zorder=3)",
+        ]
     return "\n".join(lines)
 
 
 def add_dist_geom(ax, data, x, y, order, pal, geom="box", show_points=True):
     """Draw the distribution geom for the comparison recipes: box | violin | bar |
-    raincloud, plus optional jittered points."""
+    raincloud, plus optional points at fixed offsets."""
     import numpy as np
     import seaborn as sns
     if geom == "violin":
@@ -458,7 +468,9 @@ def add_dist_geom(ax, data, x, y, order, pal, geom="box", show_points=True):
                     palette=pal, ax=ax,
                     legend=False, width=0.6, fliersize=0)
     if show_points:
-        sns.stripplot(data=data, x=x, y=y, hue=x, order=order, hue_order=order,
-                      palette=pal, ax=ax,
-                      legend=False, size=4, alpha=0.7, edgecolor="black",
-                      linewidth=0.3, jitter=0.12)
+        # Each point sits at a fixed offset by its input row in its group, the
+        # offset of the R engine, so the points keep their places in every run.
+        for i, g in enumerate(order):
+            vals = data.loc[data[x] == g, y].to_numpy()
+            ax.scatter(i + rain_offsets(len(vals), -0.12, 0.12), vals, s=16, color=pal[i],
+                       alpha=0.7, edgecolors="black", linewidths=0.3, zorder=3)

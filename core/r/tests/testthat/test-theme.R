@@ -40,3 +40,16 @@ test_that("geom_top reaches past the data for an untrimmed violin", {
   expect_equal(geom_top(v, "violin"), 10 + 3 * stats::bw.nrd0(v))
   expect_equal(geom_top(c(1, 1, 1, 1), "bar"), 1)
 })
+
+.is_point_layer <- function(layer) inherits(layer$geom, "GeomPoint")
+
+test_that("the comparison points sit at fixed offsets, the same as in Python", {
+  df <- data.frame(group = rep(c("a", "b"), each = 3), value = c(1, 2, 3, 4, 5, 6))
+  spec <- spec_from_opt(list(recipe = "two_group_compare", data = "d.csv", x = "group",
+                             y = "value", test = "welch_t"))
+  res <- recipe_two_group_compare(df, spec)
+  i <- which(vapply(res$plot$layers, .is_point_layer, logical(1)))[1]
+  x <- as.numeric(ggplot2::ggplot_build(res$plot)$data[[i]]$x)
+  expect_equal(x, c(1.0283282, 0.9366563, 1.0849845, 2.0283282, 1.9366563, 2.0849845),
+               tolerance = 1e-6)
+})

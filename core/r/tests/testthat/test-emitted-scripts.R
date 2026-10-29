@@ -60,5 +60,5 @@ test_that("a script without points draws no points", {
   spec$appearance$show_points <- FALSE
   res <- recipe_two_group_compare(es_data(2), spec)
   script <- call_build_script(res$build_script, "input.csv", "figure")
-  expect_false(any(grepl("geom_jitter", script, fixed = TRUE)))
+  expect_false(any(grepl(".point_x", script, fixed = TRUE)))
 })

@@ -83,4 +83,4 @@ def test_a_script_without_points_draws_no_points():
     spec = es_spec("two_group_compare", "box")
     spec["appearance"]["show_points"] = False
     res = recipe_two_group_compare(es_data(2), spec)
-    assert "stripplot" not in res["build_script"]("input.csv", "figure")
+    assert "ax.scatter(i + jit" not in res["build_script"]("input.csv", "figure")

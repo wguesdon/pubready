@@ -120,9 +120,9 @@ recipe_factorial_anova <- function(df, spec) {
       p <- p + ggplot2::geom_boxplot(position = pd, width = 0.7, outlier.shape = NA, alpha = 0.9)
     }
     if (isTRUE(spec$appearance$show_points)) {
-      p <- p + ggplot2::geom_point(
-        position = ggplot2::position_jitterdodge(jitter.width = 0.15, dodge.width = 0.8),
-        size = 1.3, alpha = 0.7, shape = 21, stroke = 0.3)
+      p <- p + ggplot2::geom_point(data = .fa_point_x(df, f1, f2, f3),
+                                   ggplot2::aes(x = .data$.point_x),
+                                   size = 1.3, alpha = 0.7, shape = 21, stroke = 0.3)
     }
     p <- p + ggplot2::scale_fill_manual(values = pal)
   }
@@ -246,6 +246,21 @@ recipe_factorial_anova <- function(df, spec) {
           gsub(":", " x ", e$effect), e$df1, e$df2, e$statistic, .fa_plab(e$p_value))
 }
 
+# The x position of each point of the box and bar geoms: the centre of its cell,
+# where position_dodge(0.8) puts the box or the bar, plus a fixed golden-ratio
+# offset by its row in the cell. The offsets span +/- 0.15 / (m + 2) for m --fill
+# levels, the jitter of position_jitterdodge(jitter.width = 0.15), so the points
+# keep their places in every run. The Python engine uses the same offsets.
+.fa_point_x <- function(df, f1, f2, f3 = NULL) {
+  m <- nlevels(df[[f2]])
+  a <- 0.15 / (m + 2)
+  key <- paste(df[[f1]], df[[f2]], if (is.null(f3) || !nzchar(f3)) "" else df[[f3]], sep = "\r")
+  k <- stats::ave(seq_len(nrow(df)), key, FUN = seq_along)
+  df$.point_x <- as.integer(df[[f1]]) - 0.4 + 0.8 * (as.integer(df[[f2]]) - 0.5) / m +
+    rain_offsets(max(k, 0), -a, a)[k]
+  df
+}
+
 .fa_emit_script <- function(spec, factors, use_art, pal, width, height, wrap_x, in_name, fig_stub) {
   y  <- spec$data$y
   f1 <- factors[1]; f2 <- factors[2]; f3 <- if (length(factors) >= 3) factors[3] else NULL
@@ -271,6 +286,19 @@ recipe_factorial_anova <- function(df, spec) {
   ) else
     '  geom_boxplot(position = position_dodge(0.8), width = 0.7, outlier.shape = NA, alpha = 0.9) +'
   facet_line <- if (!is.null(f3)) sprintf('p <- p + facet_wrap(vars(.data[["%s"]]))', f3) else character(0)
+  show_points <- isTRUE(spec$appearance$show_points %||% TRUE)
+  point_prep <- if (show_points) c(
+    "# Each point sits at its dodged cell centre plus a fixed golden-ratio offset",
+    "# by its row in the cell, as in the figure.",
+    sprintf('point_m <- nlevels(df[["%s"]]); point_a <- 0.15 / (point_m + 2)', f2),
+    sprintf('point_k <- ave(seq_len(nrow(df)), paste(df[["%s"]], df[["%s"]]%s, sep = "|"), FUN = seq_along)',
+            f1, f2, if (!is.null(f3)) sprintf(', df[["%s"]]', f3) else ""),
+    sprintf('df$.point_x <- as.integer(df[["%s"]]) - 0.4 + 0.8 * (as.integer(df[["%s"]]) - 0.5) / point_m - point_a + 2 * point_a * ((point_k * 0.6180339887498949) %%%% 1)',
+            f1, f2)
+  ) else character(0)
+  point_layer <- if (show_points) {
+    "  geom_point(aes(x = .point_x), size = 1.3, alpha = 0.7, shape = 21, stroke = 0.3) +"
+  } else character(0)
 
   c(
     "#!/usr/bin/env Rscript",
@@ -289,9 +317,10 @@ recipe_factorial_anova <- function(df, spec) {
     'sig <- eff[which(eff$p < 0.05), , drop = FALSE]',
     'subtitle_txt <- if (nrow(sig) > 0) paste(sprintf("%s: %s", gsub(":", " × ", sig$effect), vapply(sig$p, plab, character(1))), collapse = "\\n") else "No significant effects (P ≥ 0.05)"',
     "",
+    point_prep,
     sprintf('p <- ggplot(df, aes(x = .data[["%s"]], y = .data[["%s"]], fill = .data[["%s"]])) +', f1, y, f2),
     geom_lines,
-    '  geom_point(position = position_jitterdodge(jitter.width = 0.15, dodge.width = 0.8), size = 1.3, alpha = 0.7, shape = 21, stroke = 0.3) +',
+    point_layer,
     sprintf("  scale_fill_manual(values = %s) +", pal_str),
     sprintf('  labs(x = "%s", y = "%s", fill = "%s", subtitle = subtitle_txt) +',
             spec$appearance$x_label %||% f1, spec$appearance$y_label %||% y, f2),

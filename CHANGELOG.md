@@ -158,6 +158,13 @@ tag move together.
   Podman that does not answer now points to `figkit doctor`. Only a missing image
   gives the hint `figkit build`. `figkit version` prints "podman: not found" in
   place of an empty version.
+- The points of `two_group_compare`, `multi_group_compare` and
+  `factorial_anova` moved on each run, because R `geom_jitter`,
+  `position_jitterdodge` and seaborn `stripplot` drew random offsets with no
+  seed. Each point now sits at a fixed golden-ratio offset by its input row in
+  its group or cell, the rule of the raincloud points. Both engines use the same
+  offsets, so the two-group and multi-group points sit at the same places in R
+  and Python. The emitted scripts use the same rule.
 - The `heatmap` row order differed between the engines. ComplexHeatmap
   reordered each branch by the row means of the drawn values, which are
   rounding noise after a row z-score, and PyComplexHeatmap kept the scipy

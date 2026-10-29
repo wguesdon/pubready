@@ -180,16 +180,16 @@ script_geom_lines <- function(x, geom = "box", show_points = TRUE) {
       sprintf("  geom_boxplot(%s, width = 0.12, outlier.shape = NA, alpha = 0.9) +", fill)),
     sprintf("  geom_boxplot(%s, width = 0.6, outlier.shape = NA, alpha = 0.9) +", fill))
   prep <- character(0)
-  if (isTRUE(show_points) && geom == "raincloud") {
-    # The golden-ratio offsets of rain_offsets(): the rain falls left of the box.
+  if (isTRUE(show_points)) {
+    # The golden-ratio offsets of rain_offsets() by row in each group: the rain
+    # of a raincloud falls left of the box, other points spread +/- 0.12.
+    lim <- if (geom == "raincloud") c(-0.18, 0.12) else c(-0.12, 0.24)
     prep <- c(
-      sprintf('rain_k <- ave(seq_len(nrow(df)), df[["%s"]], FUN = seq_along)', x),
-      sprintf('df$.rain_x <- as.integer(df[["%s"]]) - 0.18 + 0.12 * ((rain_k * 0.6180339887498949) %%%% 1)', x))
+      sprintf('point_k <- ave(seq_len(nrow(df)), df[["%s"]], FUN = seq_along)', x),
+      sprintf('df$.point_x <- as.integer(df[["%s"]]) + %s + %s * ((point_k * 0.6180339887498949) %%%% 1)',
+              x, format(lim[1]), format(lim[2])))
     layers <- c(layers, sprintf(
-      '  geom_point(aes(x = .rain_x, fill = .data[["%s"]]), size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3) +', x))
-  } else if (isTRUE(show_points)) {
-    layers <- c(layers, sprintf(
-      "  geom_jitter(%s, width = 0.12, size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3) +", fill))
+      '  geom_point(aes(x = .point_x, fill = .data[["%s"]]), size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3) +', x))
   }
   list(prep = prep, layers = layers)
 }

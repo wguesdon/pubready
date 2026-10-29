@@ -134,9 +134,10 @@ geom_top <- function(v, geom = "box") {
 
 .theme_na <- function(e) NA_real_
 
-# Deterministic horizontal offsets for the points of a raincloud: n values in
-# [lo, hi] from the golden-ratio sequence, so the points spread to the left of
-# the box without a random seed. Python uses the same sequence.
+# Deterministic horizontal offsets for the points of the comparison recipes: n
+# values in [lo, hi] from the golden-ratio sequence, so the points spread without
+# a random seed and keep their places in every run. The default range puts the
+# rain of a raincloud to the left of the box. Python uses the same sequence.
 rain_offsets <- function(n, lo = -0.18, hi = -0.06) {
   if (n == 0) return(numeric(0))
   lo + (hi - lo) * ((seq_len(n) * 0.6180339887498949) %% 1)
@@ -162,16 +163,16 @@ add_dist_geom <- function(p, x, geom = "box", show_points = TRUE) {
   } else {
     p + ggplot2::geom_boxplot(fill, width = 0.6, outlier.shape = NA, alpha = 0.9)
   }
-  if (isTRUE(show_points) && geom == "raincloud") {
-    # The rain falls to the left of the box, so the points never hide it.
+  if (isTRUE(show_points)) {
+    # Each point sits at a fixed offset by its input row in its group, the same
+    # offset as in the Python engine. The rain of a raincloud falls to the left
+    # of the box, so the points never hide it; other points spread +/- 0.12.
+    lim <- if (geom == "raincloud") c(-0.18, -0.06) else c(-0.12, 0.12)
     d <- p$data
     idx <- stats::ave(seq_len(nrow(d)), d[[x]], FUN = seq_along)
-    d$.rain_x <- as.integer(d[[x]]) + rain_offsets(max(idx, 0))[idx]
-    p <- p + ggplot2::geom_point(data = d, ggplot2::aes(x = .data$.rain_x, fill = .data[[x]]),
+    d$.point_x <- as.integer(d[[x]]) + rain_offsets(max(idx, 0), lim[1], lim[2])[idx]
+    p <- p + ggplot2::geom_point(data = d, ggplot2::aes(x = .data$.point_x, fill = .data[[x]]),
                                  size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3)
-  } else if (isTRUE(show_points)) {
-    p <- p + ggplot2::geom_jitter(fill, width = 0.12, size = 1.5, alpha = 0.7,
-                                  shape = 21, stroke = 0.3)
   }
   p
 }
