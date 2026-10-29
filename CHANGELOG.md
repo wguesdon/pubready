@@ -107,6 +107,9 @@ tag move together.
   manifest gives the number drawn.
 
 ### Fixed
+- The Python `factorial_anova` ignored `--geom bar` and drew a box plot. It now
+  draws the mean of each cell as a bar with its SEM and the points over it, as
+  the R engine does.
 - The R `cox_forest` drew its figure with `survminer::ggforest`. The text was
   about 6 pt, grey bands crossed the rows, and a long level name ran into its
   hazard ratio. Both engines now draw the same house-style forest plot. Each
