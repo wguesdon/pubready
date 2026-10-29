@@ -22,6 +22,8 @@ from ..util import cap_first
 
 # The dodge width of the interaction plot, as position_dodge(0.25) in R.
 INT_DODGE = 0.25
+# The dodge width of the bar geom, as position_dodge(0.8) in R.
+BAR_DODGE = 0.8
 
 
 def _plab(p):
@@ -133,6 +135,71 @@ def _interaction_panel(ax, sub, y, f1, f2, f1_lv, f2_lv, pal):
     ax.yaxis.set_major_locator(MaxNLocator(nbins=6, steps=[1, 2, 2.5, 3, 5, 10]))
 
 
+def _bar_panel(ax, sub, y, f1, f2, f1_lv, f2_lv, pal):
+    """Draw the bar geom of one panel: mean bar +/- SEM per cell, as R's stat_summary.
+
+    The bars are dodged as position_dodge(0.8) with a bar width of 0.7, so the
+    layout matches the R engine.
+
+    Args:
+        ax: The axes.
+        sub: The rows of the panel.
+        y: The outcome column.
+        f1: The --x column.
+        f2: The --fill column.
+        f1_lv: The --x levels.
+        f2_lv: The --fill levels.
+        pal: The colour of each --fill level.
+
+    Returns:
+        list: The x position of each --fill level's bars, for the points.
+    """
+    k = len(f2_lv)
+    base = np.arange(len(f1_lv), dtype=float)
+    bar_w = 0.7 / k
+    centres = []
+    for i, lv in enumerate(f2_lv):
+        g = sub[sub[f2] == lv].groupby(f1)[y]
+        means = g.mean().reindex(f1_lv).to_numpy(dtype=float)
+        sems = (g.std(ddof=1) / np.sqrt(g.size())).reindex(f1_lv).to_numpy(dtype=float)
+        x = base + (i + 0.5 - k / 2) * BAR_DODGE / k
+        ok = np.isfinite(means)
+        ax.bar(x[ok], means[ok], width=bar_w, color=pal[i], alpha=0.9, edgecolor="black",
+               linewidth=0.3, zorder=1)
+        ax.errorbar(x[ok], means[ok], yerr=np.nan_to_num(sems[ok]), fmt="none", ecolor="black",
+                    elinewidth=0.8, capsize=3, zorder=2)
+        centres.append(x)
+    ax.set_xticks(base)
+    ax.set_xlim(-0.6, len(f1_lv) - 0.4)
+    return centres
+
+
+def _bar_points(ax, sub, y, f1, f2, f1_lv, f2_lv, pal, centres):
+    """Draw the jittered points over the bars, at each bar's centre.
+
+    Args:
+        ax: The axes.
+        sub: The rows of the panel.
+        y: The outcome column.
+        f1: The --x column.
+        f2: The --fill column.
+        f1_lv: The --x levels.
+        f2_lv: The --fill levels.
+        pal: The colour of each --fill level.
+        centres: The bar centres that _bar_panel returned.
+    """
+    rng = np.random.RandomState(0)
+    pos = {lv: j for j, lv in enumerate(f1_lv)}
+    for i, lv in enumerate(f2_lv):
+        cell = sub[sub[f2] == lv]
+        if cell.empty:
+            continue
+        xs = np.array([centres[i][pos[v]] for v in cell[f1]])
+        jit = rng.uniform(-0.15, 0.15, size=len(xs)) * 0.7 / len(f2_lv)
+        ax.scatter(xs + jit, cell[y], s=10, color=pal[i], alpha=0.7, edgecolors="black",
+                   linewidths=0.3, zorder=3)
+
+
 def recipe_factorial_anova(df, spec):
     """Run a two-way or three-way Type II ANOVA and draw the grouped figure.
 
@@ -203,6 +270,10 @@ def recipe_factorial_anova(df, spec):
         sub = df if fl is None else df[df[f3] == fl]
         if geom == "interaction":
             _interaction_panel(ax, sub, y, f1, f2, f1_lv, f2_lv, pal)
+        elif geom == "bar":
+            centres = _bar_panel(ax, sub, y, f1, f2, f1_lv, f2_lv, pal)
+            if ap.get("show_points", True):
+                _bar_points(ax, sub, y, f1, f2, f1_lv, f2_lv, pal, centres)
         else:
             sns.boxplot(data=sub, x=f1, y=y, hue=f2, order=f1_lv, hue_order=f2_lv,
                         palette=pal, ax=ax, width=0.7, fliersize=0, legend=False)
@@ -210,7 +281,7 @@ def recipe_factorial_anova(df, spec):
                 sns.stripplot(data=sub, x=f1, y=y, hue=f2, order=f1_lv, hue_order=f2_lv,
                               dodge=True, palette=pal, ax=ax, size=3, alpha=0.6,
                               edgecolor="black", linewidth=0.3, legend=False)
-        if wrap or geom == "interaction":
+        if wrap or geom in ("interaction", "bar"):
             ax.set_xticklabels([wrap_x(s) if wrap else str(s) for s in f1_lv])
         if fl is not None:
             ax.set_title(str(fl), fontsize=11)
@@ -303,6 +374,16 @@ def _script(spec, factors, f1_lv, f2_lv, facet_lv, pal, w, h, in_name, fig_stub)
         ax.errorbar(x, m, yerr=se, color={pal}[i], marker="o", capsize=3, label=lv)
     ax.set_xticks(range(len(f1_lv))); ax.set_xticklabels(f1_lv)'''
         legend = f'axes[-1].legend(title="{f2}", loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)'
+    elif (ap.get("geom") or "box") == "bar":
+        draw = f'''    k = len(f2_lv)
+    for i, lv in enumerate(f2_lv):
+        g = sub[sub["{f2}"] == lv].groupby("{f1}")["{y}"]
+        m = g.mean().reindex(f1_lv); se = (g.std() / g.size() ** 0.5).reindex(f1_lv)
+        x = [j + (i + 0.5 - k / 2) * 0.8 / k for j in range(len(f1_lv))]
+        ax.bar(x, m, width=0.7 / k, color={pal}[i], alpha=0.9, edgecolor="black", linewidth=0.3)
+        ax.errorbar(x, m, yerr=se, fmt="none", ecolor="black", capsize=3)
+    ax.set_xticks(range(len(f1_lv))); ax.set_xticklabels(f1_lv)'''
+        legend = f'axes[-1].legend(handles=[mpatches.Patch(color={pal}[i], label=l) for i, l in enumerate(f2_lv)], title="{f2}", loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)'
     else:
         draw = f'''    sns.boxplot(data=sub, x="{f1}", y="{y}", hue="{f2}", order=f1_lv, hue_order=f2_lv, palette={pal}, ax=ax, width=0.7, fliersize=0, legend=False)
     sns.stripplot(data=sub, x="{f1}", y="{y}", hue="{f2}", order=f1_lv, hue_order=f2_lv, dodge=True, palette={pal}, ax=ax, size=3, alpha=0.6, edgecolor="black", linewidth=0.3, legend=False)'''

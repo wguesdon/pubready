@@ -58,3 +58,16 @@ def test_long_x_levels_wrap_at_twelve_and_the_figure_grows():
     assert fig_size(["wt", "ko"], ["vehicle", "low", "high"], "treatment", 1, False) == (5.2, 4.4)
     w, _ = fig_size([f"strain {i}" for i in range(4)], ["a", "b", "c"], "treatment", 1, False)
     assert w > 5.2
+
+
+def test_bar_geom_draws_mean_bars_like_r():
+    """--geom bar draws one bar per cell at the cell mean, not a box."""
+    df = fa_data()
+    res = recipe_factorial_anova(df, fa_spec(x="strain", fill="dose", y="y", geom="bar"))
+    ax = res["fig"].axes[0]
+    bars = [p for p in ax.patches if p.get_width() > 0 and p.get_height() != 0]
+    assert len(bars) == 6
+    means = sorted(df.groupby(["strain", "dose"])["y"].mean().round(9))
+    assert sorted(round(b.get_height(), 9) for b in bars) == means
+    assert res["stats"]["effect"].tolist() == recipe_factorial_anova(
+        df, fa_spec(x="strain", fill="dose", y="y"))["stats"]["effect"].tolist()
