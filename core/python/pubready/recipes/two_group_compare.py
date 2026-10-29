@@ -137,7 +137,9 @@ def _methods(r, stats_df, eff_name, eff_value, spec):
                    else " Equal variances were not assumed, and the Welch correction was applied.")
     else:
         var_txt = " A non-parametric test was used because the normality assumption was not met."
-    n1, n2 = int(stats_df["n1"].iloc[0]), int(stats_df["n2"].iloc[0])
+    if (spec["test"].get("method") or "auto").lower() != "auto":
+        var_txt = (var_txt if r["family"] == "t" else "") + " The test was set by the user."
+    n1, n2 =int(stats_df["n1"].iloc[0]), int(stats_df["n2"].iloc[0])
     # The value is given, not only the name, so the paragraph can be read on
     # its own. The R engine writes the same sentence.
     eff_txt = (eff_name if eff_value is None or not np.isfinite(eff_value)

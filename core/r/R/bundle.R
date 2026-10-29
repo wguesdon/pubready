@@ -135,6 +135,9 @@ methods_paragraph <- function(resolved, stats_df, test_meta, spec) {
     if (isTRUE(resolved$var_equal)) " Equal variances were assumed."
     else " Equal variances were not assumed, and the Welch correction was applied."
   } else " A non-parametric test was used because the normality assumption was not met."
+  if (tolower(spec$test$method %||% "auto") != "auto") {
+    var_txt <- paste0(if (resolved$family == "t") var_txt else "", " The test was set by the user.")
+  }
   eff_txt <- if (!is.null(test_meta$effect_size)) {
     # The value is given, not only the name, so the paragraph can be read on its
     # own. The Python engine writes the same sentence.

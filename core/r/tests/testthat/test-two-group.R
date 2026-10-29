@@ -54,3 +54,16 @@ test_that("the Mann-Whitney branch reports a signed effect size and Levene's p",
   expect_equal(out$test_meta$assumptions$equal_variance$test, "Levene")
   expect_false(is.na(out$stats$var_equal_p))
 })
+
+test_that("two_group_compare methods say when the user set the test", {
+  df <- data.frame(group = rep(c("ctrl", "treat"), each = 8),
+                   value = c(10, 11, 12, 13, 14, 10.5, 11.5, 12.5,
+                             20, 21, 22, 23, 24, 20.5, 21.5, 22.5))
+  base <- list(recipe = "two_group_compare", data = "toy.csv", x = "group", y = "value",
+               paired = FALSE, p_adjust = "none")
+  mw <- recipe_two_group_compare(df, spec_from_opt(c(base, test = "wilcoxon")))
+  expect_match(mw$methods, "The test was set by the user.", fixed = TRUE)
+  expect_false(grepl("normality assumption was not met", mw$methods))
+  auto <- recipe_two_group_compare(df, spec_from_opt(c(base, test = "auto")))
+  expect_false(grepl("set by the user", auto$methods))
+})

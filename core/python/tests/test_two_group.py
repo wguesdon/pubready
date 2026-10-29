@@ -57,3 +57,16 @@ def test_the_points_sit_at_fixed_offsets_as_in_the_r_engine():
     groups = [c.get_offsets() for c in res["fig"].axes[0].collections if len(c.get_offsets()) == 3]
     assert list(groups[0][:, 0]) == pytest.approx([0.0283282, -0.0633437, 0.0849845], abs=1e-6)
     assert list(groups[1][:, 0]) == pytest.approx([1.0283282, 0.9366563, 1.0849845], abs=1e-6)
+
+
+def test_two_group_methods_say_when_the_user_set_the_test():
+    df = pd.DataFrame({"group": ["ctrl"] * 8 + ["treat"] * 8,
+                       "value": [10, 11, 12, 13, 14, 10.5, 11.5, 12.5,
+                                 20, 21, 22, 23, 24, 20.5, 21.5, 22.5]})
+    base = dict(recipe="two_group_compare", data="toy.csv", x="group", y="value",
+                paired=False, p_adjust="none")
+    mw = recipe_two_group_compare(df, spec_from_args(SimpleNamespace(**base, test="wilcoxon")))
+    assert "The test was set by the user." in mw["methods"]
+    assert "normality assumption was not met" not in mw["methods"]
+    auto = recipe_two_group_compare(df, spec_from_args(SimpleNamespace(**base, test="auto")))
+    assert "set by the user" not in auto["methods"]
