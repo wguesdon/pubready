@@ -199,7 +199,7 @@ km_width <- function(leg_labs, title) {
 }
 
 .km_median_text <- function(m) {
-  if (is.na(m) || !is.finite(m)) "not reached" else formatC(m, format = "g", digits = 3)
+  if (is.na(m) || !is.finite(m)) "not reached" else trimws(formatC(m, format = "g", digits = 3))
 }
 
 .km_methods <- function(stats_df, lr_p, sd, lr_df, spec, group_col) {

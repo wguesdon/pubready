@@ -42,6 +42,9 @@ tag move together.
 - The `cox_forest` and `survival_km` methods paragraphs wrote "P = < 0.001".
   They now write "P < 0.001". A new `p_phrase()` helper in each engine writes
   the P value of a methods sentence.
+- The R `survival_km` methods paragraph padded each median with spaces, for
+  example "adeno (median   51)". The padding is removed, so the text matches the
+  Python engine.
 
 ## [2.0.0] - 2026-10-29
 

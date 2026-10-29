@@ -28,3 +28,9 @@ test_that("the x breaks follow the 1-2-5 step that gives at most six intervals",
   expect_equal(km_break_step(1), 0.2)
   expect_equal(km_breaks(21.8, 5), c(0, 5, 10, 15, 20))
 })
+
+test_that("the median text carries no padding", {
+  expect_equal(.km_median_text(51L), "51")
+  expect_equal(.km_median_text(426), "426")
+  expect_equal(.km_median_text(NA_real_), "not reached")
+})
