@@ -70,6 +70,7 @@ def fpl_signal(conc, bottom, top, ec50, hill):
 
 
 def test_park_miller_reaches_the_published_state():
+    """The generator reaches the state that Park, Miller and Stockmeyer (1993) publish."""
     # Park, Miller and Stockmeyer (1993): seed 1, multiplier 48271, state 399268537.
     u, state = park_miller_uniforms(10000, 1, block_multipliers(BLOCK))
     assert state == 399268537
@@ -77,6 +78,7 @@ def test_park_miller_reaches_the_published_state():
 
 
 def test_estimation_plot_matches_the_r_bca_interval_unpaired():
+    """The unpaired BCa interval equals the R value, and the t-test equals scipy."""
     df = fixed_unpaired()
     res = recipe_estimation_plot(df, bench_recipe_spec("estimation_plot", x="group", y="value"))
     row = res["stats"].iloc[0]
@@ -90,6 +92,7 @@ def test_estimation_plot_matches_the_r_bca_interval_unpaired():
 
 
 def test_estimation_plot_matches_the_r_bca_interval_paired():
+    """The paired BCa interval equals the R value."""
     res = recipe_estimation_plot(fixed_paired(), bench_recipe_spec(
         "estimation_plot", x="cond", y="value", id="id", paired=True, ref="pre"))
     row = res["stats"].iloc[0]
@@ -100,6 +103,7 @@ def test_estimation_plot_matches_the_r_bca_interval_paired():
 
 
 def test_estimation_plot_puts_the_reference_first():
+    """--ref names the reference, and the other levels follow in sorted order."""
     df = pd.DataFrame({"g": ["b"] * 4 + ["c"] * 4 + ["a"] * 4,
                        "v": list(range(1, 5)) + list(range(5, 9)) + list(range(3, 7))})
     res = recipe_estimation_plot(df, bench_recipe_spec("estimation_plot", x="g", y="v", ref="c"))
@@ -110,6 +114,7 @@ def test_estimation_plot_puts_the_reference_first():
 
 
 def test_estimation_plot_paired_leaves_out_an_incomplete_subject():
+    """A subject without a value in both groups is left out and logged."""
     df = fixed_paired().iloc[:-1]
     res = recipe_estimation_plot(df, bench_recipe_spec(
         "estimation_plot", x="cond", y="value", id="id", paired=True, ref="pre"))
@@ -118,11 +123,13 @@ def test_estimation_plot_paired_leaves_out_an_incomplete_subject():
 
 
 def test_wrap_breaks_after_spaces_and_underscores():
+    """Labels wrap after spaces and underscores, as in the R engine."""
     assert wrap("Heterozygous knockout vehicle") == "Heterozygous\nknockout\nvehicle"
     assert wrap("stimulated_plus_inhibitor") == "stimulated_\nplus_\ninhibitor"
 
 
 def test_enzyme_kinetics_recovers_vmax_and_km():
+    """The fit recovers Vmax and Km, and the CI is the estimate +/- t times SE."""
     s = np.repeat([0.5, 1, 2, 4, 8, 16, 32], 2)
     df = pd.DataFrame({"s": s, "v": 10 * s / (2 + s) * np.tile([1.01, 0.99], 7)})
     res = recipe_enzyme_kinetics(df, bench_recipe_spec("enzyme_kinetics", x="s", y="v"))
@@ -135,6 +142,7 @@ def test_enzyme_kinetics_recovers_vmax_and_km():
 
 
 def test_enzyme_kinetics_tests_shared_parameters():
+    """A Km shift is found by the shared-Km test and not by the shared-Vmax test."""
     s = np.tile([0.5, 1, 2, 4, 8, 16, 32], 2).astype(float)
     v = np.concatenate([10 * s[:7] / (2 + s[:7]), 10 * s[7:] / (6 + s[7:])])
     v = v * np.resize([1.01, 0.99, 1.0], 14)
@@ -147,12 +155,14 @@ def test_enzyme_kinetics_tests_shared_parameters():
 
 
 def test_enzyme_kinetics_needs_three_concentrations():
+    """A curve with two concentrations is refused."""
     df = pd.DataFrame({"s": [1, 2, 1, 2], "v": [1, 2, 1.1, 2.1]})
     with pytest.raises(ValueError, match="at least 3 distinct positive substrate"):
         recipe_enzyme_kinetics(df, bench_recipe_spec("enzyme_kinetics", x="s", y="v"))
 
 
 def test_standard_curve_4pl_flags_the_out_of_range_unknowns():
+    """The 4PL reads the unknowns in range and flags the others without a value."""
     conc = np.repeat([0, 1, 3, 10, 30, 100, 300], 2).astype(float)
     sig = np.concatenate([[0.05, 0.05], fpl_signal(conc[2:], 0.05, 2.5, 25, 1.1)]) * np.tile([1.01, 0.99], 7)
     unk = np.concatenate([[0.02], fpl_signal([2, 20, 200], 0.05, 2.5, 25, 1.1), [2.6]])
@@ -173,6 +183,7 @@ def test_standard_curve_4pl_flags_the_out_of_range_unknowns():
 
 
 def test_standard_curve_falls_back_to_a_line_and_names_rows():
+    """Four levels give a line, and unknowns without an id are named by row."""
     df = pd.DataFrame({"conc": [0, 0, 10, 10, 20, 20, 40, 40, np.nan, np.nan],
                        "signal": [0.02, 0.03, 0.21, 0.23, 0.41, 0.44, 0.8, 0.83, 0.33, 0.95]})
     res = recipe_standard_curve(df, bench_recipe_spec("standard_curve", x="conc", y="signal"))
@@ -187,6 +198,7 @@ def test_standard_curve_falls_back_to_a_line_and_names_rows():
 
 
 def test_standard_curve_reads_a_falling_curve():
+    """On a falling curve a high signal is below the range of the standards."""
     conc = np.array([1, 3, 10, 30, 100, 300], dtype=float)
     od = fpl_signal(conc, 0.1, 2, 20, -1) * np.array([1.01, 0.99, 1.02, 0.98, 1.01, 0.99])
     df = pd.DataFrame({"conc": np.concatenate([conc, [np.nan, np.nan]]),
