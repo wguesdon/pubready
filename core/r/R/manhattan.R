@@ -188,10 +188,11 @@ recipe_manhattan <- function(df, spec) {
 
   plot <- ggpubr::ggarrange(man, qqp, ncol = 2, widths = c(2.7, 1), align = "h")
 
-  lead_tab <- data.frame(row_type = "lead", chr = lv[ci[leads]], snp = snp[leads], pos = pos[leads],
-                         p_value = p[leads], n_snps = NA_integer_, lambda_gc = NA_real_,
-                         n_genome_wide = NA_integer_, n_suggestive = NA_integer_,
-                         stringsAsFactors = FALSE)
+  nl <- length(leads)
+  lead_tab <- data.frame(row_type = rep("lead", nl), chr = lv[ci[leads]], snp = snp[leads],
+                         pos = pos[leads], p_value = p[leads], n_snps = rep(NA_integer_, nl),
+                         lambda_gc = rep(NA_real_, nl), n_genome_wide = rep(NA_integer_, nl),
+                         n_suggestive = rep(NA_integer_, nl), stringsAsFactors = FALSE)
   genome <- data.frame(row_type = "genome", chr = NA_character_, snp = NA_character_, pos = NA_real_,
                        p_value = min(p), n_snps = n, lambda_gc = lambda, n_genome_wide = n_gw,
                        n_suggestive = n_sugg, stringsAsFactors = FALSE)
