@@ -206,3 +206,10 @@ def test_standard_curve_reads_a_falling_curve():
     res = recipe_standard_curve(df, bench_recipe_spec("standard_curve", x="conc", y="od"))
     # A competitive assay: a high signal means a low concentration.
     assert list(res["stats"]["flag"]) == ["below range", "above range"]
+
+
+def test_estimation_plot_says_that_its_p_values_carry_no_adjustment():
+    from pubready.recipes.estimation_plot import _p_text
+    assert ("no adjustment for the 5 comparisons against casein"
+            in _p_text("Welch two-sample t-test", 5, "casein"))
+    assert _p_text("paired t-test", 1, "pre") == "A paired t-test gives the P value. "

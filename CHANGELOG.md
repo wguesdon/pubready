@@ -31,6 +31,9 @@ tag move together.
 - The `dose_response` and `enzyme_kinetics` methods paragraphs did not say that
   the points and the error bars show the mean +/- SEM of the replicates. They
   now say what each point shows, also for data without replicates.
+- The `estimation_plot` methods paragraph now says that the P values against the
+  reference carry no adjustment for multiple comparisons when two or more groups
+  are compared.
 
 ## [2.0.0] - 2026-10-29
 

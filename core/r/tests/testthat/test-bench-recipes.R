@@ -145,3 +145,9 @@ test_that("the category labels wrap after spaces and after underscores, as in Py
   expect_equal(.est_wrap("Heterozygous knockout vehicle"), "Heterozygous\nknockout\nvehicle")
   expect_equal(.est_wrap("stimulated_plus_inhibitor"), "stimulated_\nplus_\ninhibitor")
 })
+
+test_that("estimation_plot says that its P values carry no adjustment", {
+  expect_match(.est_p_text("Welch two-sample t-test", 5, "casein"),
+               "no adjustment for the 5 comparisons against casein", fixed = TRUE)
+  expect_equal(.est_p_text("paired t-test", 1, "pre"), "A paired t-test gives the P value. ")
+})

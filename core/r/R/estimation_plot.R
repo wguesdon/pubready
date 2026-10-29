@@ -543,7 +543,7 @@ recipe_estimation_plot <- function(df, spec) {
             if (paired) "pair" else "observation of both groups"),
     sprintf("Hedges' g is Cohen's d over the %s with the exact small-sample correction. ",
             if (paired) "average standard deviation of the two conditions" else "pooled standard deviation"),
-    sprintf("A %s gives each P value. ", if (paired) "paired t-test" else "Welch two-sample t-test"),
+    .est_p_text(if (paired) "paired t-test" else "Welch two-sample t-test", nrow(rows), ref),
     each, ". ",
     sprintf("Computed in R %s and drawn with ggplot2 %s.", rver, v$ggplot2))
 }
@@ -621,4 +621,12 @@ recipe_estimation_plot <- function(df, spec) {
     sprintf('ggsave("%s.pdf", ggpubr::ggarrange(p1, p2, ncol = 1, align = "v"), width = 5, height = 6)', fig_stub),
     'cat("Reproduced figure.\\n")'
   )
+}
+
+# Each group is tested against the reference on its own, so with two or more
+# groups the methods paragraph says that the P values carry no adjustment.
+.est_p_text <- function(test, k, ref) {
+  if (k > 1) {
+    sprintf("A %s gives each P value, with no adjustment for the %d comparisons against %s. ", test, k, ref)
+  } else sprintf("A %s gives the P value. ", test)
 }

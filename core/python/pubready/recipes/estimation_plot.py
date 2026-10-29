@@ -750,6 +750,26 @@ def _cumming(d, lv, boots, rows, pal, paired, ap, y_lab):
     return fig, w, h
 
 
+def _p_text(test, k, ref):
+    """Name the test of the P values and their adjustment.
+
+    Each group is tested against the reference on its own, so with two or more
+    groups the sentence says that the P values carry no adjustment.
+
+    Args:
+        test: The name of the t-test.
+        k: The count of groups compared with the reference.
+        ref: The reference group.
+
+    Returns:
+        str: The sentence, with a trailing space.
+    """
+    if k > 1:
+        return (f"A {test} gives each P value, with no adjustment for the {k} comparisons "
+                f"against {ref}. ")
+    return f"A {test} gives the P value. "
+
+
 def _methods(rows, ref, paired, spec, y):
     """Write the methods paragraph, with the same sentences as the R engine.
 
@@ -786,8 +806,9 @@ def _methods(rows, ref, paired, spec, y):
         f"{'pair' if paired else 'observation of both groups'}, and the interval ends are type-7 "
         "quantiles. Hedges' g is Cohen's d over the "
         f"{'average standard deviation of the two conditions' if paired else 'pooled standard deviation'}"
-        " with the exact small-sample correction. A "
-        f"{'paired t-test' if paired else 'Welch two-sample t-test'} gives each P value. {each}. "
+        " with the exact small-sample correction. "
+        f"{_p_text('paired t-test' if paired else 'Welch two-sample t-test', len(rows), ref)}"
+        f"{each}. "
         f"Computed in Python {platform.python_version()} with numpy {v('numpy')} and scipy "
         f"{v('scipy')} and drawn with matplotlib {v('matplotlib')}."
     )
