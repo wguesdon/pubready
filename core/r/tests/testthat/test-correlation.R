@@ -26,3 +26,15 @@ test_that("recipe_correlation runs end to end", {
   expect_true(res$stats$estimate > 0.9)
   expect_true(res$stats$p_value < 1e-6)
 })
+
+test_that("the correlation subtitle names the method, the coefficient and P as Python does", {
+  expect_equal(cor_label("Pearson correlation", "r", 0.7123, 2.1e-10),
+               "Pearson correlation, r = 0.71, P = 2.1e-10")
+  expect_equal(cor_label("Spearman rank correlation", "rho", -0.456, 0.0312),
+               "Spearman rank correlation, rho = -0.46, P = 0.031")
+  df <- data.frame(x = 1:20, y = (1:20) + sin(1:20))
+  spec <- spec_from_opt(list(recipe = "correlation", data = "toy.csv", x = "x", y = "y",
+                             test = "kendall"))
+  res <- recipe_correlation(df, spec)
+  expect_match(res$plot$labels$subtitle, "^Kendall rank correlation, tau = ")
+})

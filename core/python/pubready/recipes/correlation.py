@@ -1,6 +1,8 @@
 """Recipe: correlation between two continuous variables. Mirrors the R recipe:
 picks Pearson or Spearman from the normality of each variable (unless forced),
-scatter with a linear fit and CI band, coefficient and p annotated."""
+scatter with a linear fit and CI band, method, coefficient and P in a subtitle."""
+import functools
+
 import numpy as np
 import pandas as pd
 import pingouin as pg
@@ -8,7 +10,22 @@ import seaborn as sns
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
-from ..util import cap_first, format_p, shapiro_normal
+from ..util import cap_first, shapiro_normal
+
+
+def cor_label(method_label, estimate_name, estimate, p):
+    """Write the subtitle, as cor_label() of the R engine does.
+
+    Args:
+        method_label: The method, for example "Pearson correlation".
+        estimate_name: The coefficient symbol: r, rho or tau.
+        estimate: The coefficient.
+        p: The P value.
+
+    Returns:
+        str: For example "Pearson correlation, r = 0.71, P = 2.1e-10".
+    """
+    return f"{method_label}, {estimate_name} = {estimate:.2f}, P = {p:.2g}"
 
 
 def _resolve(method, x_normal, y_normal):
@@ -74,14 +91,14 @@ def recipe_correlation(df, spec):
     sns.regplot(x=xv, y=yv, ax=ax, color=pal[0],
                 scatter_kws={"s": 24, "alpha": 0.8, "edgecolor": "none"},
                 line_kws={"color": "#333333", "linewidth": 1.4})
-    pv = format_p(pval)
-    est_txt = f"{r['estimate_name']} = {estimate:.2f}, p {'' if pv.startswith('<') else '= '}{pv}"
-    ax.annotate(est_txt, xy=(0.03, 0.96), xycoords="axes fraction",
-                ha="left", va="top", fontsize=11)
+    # The method, the coefficient and the P value go in a subtitle, in the style
+    # of the other recipes and in the same words as the R engine.
+    ax.set_title(cor_label(r["label"], r["estimate_name"], estimate, pval),
+                 fontsize=10, color="#4d4d4d")
     ax.set_xlabel(ap.get("x_label") or x)
     ax.set_ylabel(ap.get("y_label") or y)
     if ap.get("title"):
-        ax.set_title(ap["title"], fontweight="bold")
+        fig.suptitle(ap["title"], fontweight="bold")
     yl = ap.get("y_limits") or [None, None]
     if yl[0] is not None or yl[1] is not None:
         ax.set_ylim(yl[0], yl[1])
@@ -110,7 +127,7 @@ def recipe_correlation(df, spec):
         "df_used": df_used, "clean_steps": steps,
         "label": slugify(f"{y}_vs_{x}"), "width": w, "height": h,
         "qc": {"quantity": "variable values", "panels": {x: xv, y: yv}},
-        "build_script": lambda in_name, fig_stub: _script(spec, r, pal[0], in_name, fig_stub),
+        "build_script": functools.partial(_script, spec, r, pal[0]),
     }
 
 
@@ -122,13 +139,12 @@ def _methods(r, stats_df, spec):
     auto_txt = (" The method was chosen from the Shapiro-Wilk normality of each variable."
                 if (spec["test"].get("method") or "auto").lower() == "auto" else "")
     est = f"{stats_df['estimate'].iloc[0]:.2f}"
-    pv = format_p(float(stats_df["p_value"].iloc[0]))
+    pv = f"{float(stats_df['p_value'].iloc[0]):.2g}"
     return (
         f"The association between {cap_first(x_lab)} and {y_lab} was assessed with a "
         f"{r['label']} (n = {int(stats_df['n'].iloc[0])})." + auto_txt +
-        f" The correlation was {r['estimate_name']} = {est} "
-        f"(P {'' if pv.startswith('<') else '= '}{pv}), with a linear fit and 95% "
-        "confidence band shown. Significance was set at P < 0.05."
+        f" The correlation was {r['estimate_name']} = {est} (P = {pv}), with a linear fit and "
+        "95% confidence band shown. Significance was set at P < 0.05."
         f" Analyses were performed in Python {platform.python_version()} with pingouin {v('pingouin')};"
         f" the figure was produced with seaborn {v('seaborn')}."
     )
@@ -150,13 +166,15 @@ x = pd.to_numeric(raw["{x}"], errors="coerce")
 y = pd.to_numeric(raw["{y}"], errors="coerce")
 mask = np.isfinite(x) & np.isfinite(y)
 x, y = x[mask].to_numpy(), y[mask].to_numpy()
-print(pg.corr(x, y, method="{r['method']}"))
+res = pg.corr(x, y, method="{r['method']}"); print(res)
+sub = "{r['label']}, {r['estimate_name']} = %.2f, P = %.2g" % (res["r"].iloc[0], res["p_val"].iloc[0])
 
 fig, ax = plt.subplots(figsize=(4.6, 4.2))
 sns.regplot(x=x, y=y, ax=ax, color="{color}",
             scatter_kws={{"s": 24, "alpha": 0.8, "edgecolor": "none"}},
             line_kws={{"color": "#333333", "linewidth": 1.4}})
 ax.set_xlabel("{ap.get('x_label') or x}"); ax.set_ylabel("{ap.get('y_label') or y}")
+ax.set_title(sub, fontsize=10, color="#4d4d4d")
 for s in ("top", "right"): ax.spines[s].set_visible(False)
 fig.tight_layout()
 fig.savefig("{fig_stub}.pdf")
