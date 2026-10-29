@@ -45,6 +45,9 @@ SESSION_SUMMARY.md
 # Product requirements doc, kept local only
 PRD.md
 
+# Session handover prompts, kept local only
+prompts/
+
 # OS / editor
 .DS_Store
 *.swp
