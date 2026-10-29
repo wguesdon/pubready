@@ -512,3 +512,61 @@ test_that("iris: the embedding silhouettes match cluster::silhouette", {
   }
   expect_ref(res$test_meta$mean_silhouette, "iris_embedding", "silhouette_overall")
 })
+
+test_that("mtcars: Fisher's exact test of a 2 x 2 table matches stats::fisher.test", {
+  bench_skip()
+  res <- recipe_proportions(bench_data("mtcars_fisher"),
+                            bench_spec("proportions", x = "transmission", y = "engine", test = "fisher"))
+  expect_equal(res$test_meta$name, "Fisher's exact test")
+  expect_ref(res$test_meta$p_value, "mtcars_fisher", "p_value")
+  expect_ref(res$test_meta$odds_ratio, "mtcars_fisher", "odds_ratio")
+  expect_ref(res$test_meta$or_conf_low, "mtcars_fisher", "or_ci_low")
+  expect_ref(res$test_meta$or_conf_high, "mtcars_fisher", "or_ci_high")
+})
+
+test_that("infert: Fisher's exact test of a 3 x 2 table matches stats::fisher.test", {
+  bench_skip()
+  res <- recipe_proportions(bench_data("infert"),
+                            bench_spec("proportions", x = "spontaneous", y = "status", test = "fisher"))
+  expect_ref(res$test_meta$p_value, "infert_fisher", "p_value")
+})
+
+test_that("swiss: Kendall's tau matches stats::cor.test", {
+  bench_skip()
+  res <- recipe_correlation(bench_data("swiss"),
+                            bench_spec("correlation", x = "Education", y = "Fertility", test = "kendall"))
+  expect_ref(res$stats$estimate, "swiss_kendall", "estimate")
+  expect_ref(res$stats$statistic, "swiss_kendall", "statistic")
+  expect_ref(res$stats$p_value, "swiss_kendall", "p_value")
+})
+
+test_that("chickwts: Welch's one-way ANOVA matches stats::oneway.test", {
+  bench_skip()
+  res <- recipe_multi_group_compare(bench_data("chickwts"),
+                                    bench_spec("multi_group_compare", x = "feed", y = "weight", test = "welch"))
+  expect_ref(res$test_meta$omnibus$statistic, "chickwts_welch", "statistic")
+  expect_ref(res$test_meta$omnibus$df2, "chickwts_welch", "df2")
+  expect_ref(res$test_meta$omnibus$p_value, "chickwts_welch", "p_value")
+})
+
+test_that("sleep: the paired Wilcoxon signed-rank test matches stats::wilcox.test", {
+  bench_skip()
+  res <- recipe_paired_compare(bench_data("sleep"),
+                               bench_spec("paired_compare", x = "group", y = "extra", id = "ID", test = "wilcoxon"))
+  expect_ref(res$stats$statistic, "sleep_wilcoxon", "statistic")
+  expect_ref(res$stats$p_value, "sleep_wilcoxon", "p_value")
+})
+
+test_that("Normand (1999): pooling on standard errors matches metafor", {
+  bench_skip()
+  res <- recipe_forest_meta(bench_data("normand_stroke"),
+                            bench_spec("forest_meta", y = "mean_difference", se = "se",
+                                       label = "study", measure = "difference"))
+  re <- res$stats[res$stats$label == "Random effects (DerSimonian-Laird)", ]
+  fe <- res$stats[res$stats$label == "Fixed effect", ]
+  for (q in c("estimate", "ci_low", "ci_high")) expect_ref(re[[q]], "normand_meta", paste0("random_", q))
+  expect_ref(re$tau2, "normand_meta", "tau2")
+  expect_ref(re$i2, "normand_meta", "i2")
+  expect_ref(re$q, "normand_meta", "q")
+  expect_ref(fe$estimate, "normand_meta", "fixed_estimate")
+})

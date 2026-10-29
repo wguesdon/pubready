@@ -707,6 +707,80 @@ for (k in seq_along(levels(iris_species))) {
 }
 add_ref("iris_embedding", "silhouette_overall", iris_sil$avg.width, "cluster::silhouette()")
 
+# The tables of a proportions case follow the order of first appearance, as the
+# recipe builds them, so the odds ratio has the orientation of the recipe.
+first_table <- function(d, x, y) {
+  table(factor(d[[x]], levels = unique(d[[x]])), factor(d[[y]], levels = unique(d[[y]])))
+}
+
+# 34. mtcars as a 2 x 2 table: transmission by engine shape, with Fisher's exact
+# test, its conditional maximum likelihood odds ratio and the exact 95% CI.
+mtf <- data.frame(car = rownames(datasets::mtcars),
+                  transmission = ifelse(datasets::mtcars$am == 1, "manual", "automatic"),
+                  engine = ifelse(datasets::mtcars$vs == 1, "straight", "V-shaped"),
+                  stringsAsFactors = FALSE)
+mtf_df <- write_data(mtf, "mtcars_fisher")
+mtf_ft <- stats::fisher.test(first_table(mtf_df, "transmission", "engine"))
+add_ref("mtcars_fisher", "p_value", mtf_ft$p.value, "stats::fisher.test()")
+add_ref("mtcars_fisher", "odds_ratio", mtf_ft$estimate, "stats::fisher.test()")
+add_ref("mtcars_fisher", "or_ci_low", mtf_ft$conf.int[1], "stats::fisher.test()")
+add_ref("mtcars_fisher", "or_ci_high", mtf_ft$conf.int[2], "stats::fisher.test()")
+
+# 35. infert: Trichopoulos et al. (1976), prior spontaneous abortions (0, 1, 2 or
+# more) by case status, a 3 x 2 table for Fisher's exact test of an r x c table.
+# Cases and controls were matched on education, so education carries no signal.
+inf <- data.frame(spontaneous = c("0", "1", "2+")[datasets::infert$spontaneous + 1],
+                  status = ifelse(datasets::infert$case == 1, "case", "control"),
+                  stringsAsFactors = FALSE)
+inf_df <- write_data(inf, "infert")
+add_ref("infert_fisher", "p_value",
+        stats::fisher.test(first_table(inf_df, "spontaneous", "status"))$p.value,
+        "stats::fisher.test()")
+
+# 36. swiss: Mosteller and Tukey (1977), fertility and education in 47 French-
+# speaking provinces of 1888, with Kendall's tau. The data hold ties, so R gives
+# the normal score z with the tie correction of the variance.
+sw <- data.frame(province = rownames(datasets::swiss), datasets::swiss,
+                 check.names = FALSE, stringsAsFactors = FALSE)
+sw_df <- write_data(sw, "swiss")
+sw_kt <- suppressWarnings(stats::cor.test(sw_df$Education, sw_df$Fertility, method = "kendall"))
+add_ref("swiss_kendall", "estimate", sw_kt$estimate, "stats::cor.test(kendall)")
+add_ref("swiss_kendall", "statistic", sw_kt$statistic, "stats::cor.test(kendall)")
+add_ref("swiss_kendall", "p_value", sw_kt$p.value, "stats::cor.test(kendall)")
+
+# 37. chickwts with Welch's one-way ANOVA, which does not assume equal variances.
+cw_df <- utils::read.csv(file.path(out_dir, "chickwts.csv"), stringsAsFactors = FALSE)
+cw_wt <- stats::oneway.test(weight ~ feed, data = cw_df, var.equal = FALSE)
+add_ref("chickwts_welch", "statistic", cw_wt$statistic, "stats::oneway.test(var.equal = FALSE)")
+add_ref("chickwts_welch", "df2", cw_wt$parameter[[2]], "stats::oneway.test(var.equal = FALSE)")
+add_ref("chickwts_welch", "p_value", cw_wt$p.value, "stats::oneway.test(var.equal = FALSE)")
+
+# 38. sleep with the Wilcoxon signed-rank test of the paired differences. The
+# differences hold ties and a zero, so R uses the normal approximation with the
+# continuity correction.
+sl_df <- utils::read.csv(file.path(out_dir, "sleep.csv"), stringsAsFactors = FALSE)
+sl_wx <- suppressWarnings(stats::wilcox.test(sl_df$extra[sl_df$group == 2],
+                                             sl_df$extra[sl_df$group == 1], paired = TRUE))
+add_ref("sleep_wilcoxon", "statistic", sl_wx$statistic, "stats::wilcox.test(paired = TRUE)")
+add_ref("sleep_wilcoxon", "p_value", sl_wx$p.value, "stats::wilcox.test(paired = TRUE)")
+
+# 39. Normand (1999): length of hospital stay after a stroke in specialist and
+# general care, nine studies, pooled on the mean difference from its standard error.
+nd <- metafor::escalc(measure = "MD", m1i = m1i, sd1i = sd1i, n1i = n1i,
+                      m2i = m2i, sd2i = sd2i, n2i = n2i, data = metadat::dat.normand1999)
+nd_df <- write_data(data.frame(study = nd$source, mean_difference = as.numeric(nd$yi),
+                               se = sqrt(as.numeric(nd$vi)), stringsAsFactors = FALSE),
+                    "normand_stroke")
+nd_dl <- metafor::rma(yi = nd_df$mean_difference, sei = nd_df$se, method = "DL")
+nd_fe <- metafor::rma(yi = nd_df$mean_difference, sei = nd_df$se, method = "FE")
+add_ref("normand_meta", "random_estimate", nd_dl$b[1], "metafor::rma(method = 'DL')")
+add_ref("normand_meta", "random_ci_low", nd_dl$ci.lb, "metafor::rma(method = 'DL')")
+add_ref("normand_meta", "random_ci_high", nd_dl$ci.ub, "metafor::rma(method = 'DL')")
+add_ref("normand_meta", "tau2", nd_dl$tau2, "metafor::rma(method = 'DL')")
+add_ref("normand_meta", "i2", nd_dl$I2, "metafor::rma(method = 'DL')")
+add_ref("normand_meta", "q", nd_dl$QE, "metafor::rma(method = 'DL')")
+add_ref("normand_meta", "fixed_estimate", nd_fe$b[1], "metafor::rma(method = 'FE')")
+
 ref_df <- do.call(rbind, refs)
 utils::write.csv(ref_df, file.path("benchmarks", "reference_values.csv"), row.names = FALSE)
 cat(sprintf("Wrote %d datasets and %d reference values.\n",

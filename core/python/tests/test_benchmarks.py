@@ -544,3 +544,59 @@ def test_iris_embedding_silhouettes():
     for sp in ("setosa", "versicolor", "virginica"):
         expect_ref(st.loc[sp, "mean_silhouette"], "iris_embedding", f"silhouette_{sp}")
     expect_ref(res["test_meta"]["mean_silhouette"], "iris_embedding", "silhouette_overall")
+
+
+def test_mtcars_fisher_2x2_matches_fisher_test():
+    res = recipe_proportions(bench_data("mtcars_fisher"), bench_spec(
+        "proportions", x="transmission", y="engine", test="fisher"))
+    tm = res["test_meta"]
+    assert tm["name"] == "Fisher's exact test"
+    expect_ref(tm["p_value"], "mtcars_fisher", "p_value")
+    expect_ref(tm["odds_ratio"], "mtcars_fisher", "odds_ratio")
+    expect_ref(tm["or_conf_low"], "mtcars_fisher", "or_ci_low")
+    expect_ref(tm["or_conf_high"], "mtcars_fisher", "or_ci_high")
+
+
+def test_infert_fisher_3x2_matches_fisher_test():
+    res = recipe_proportions(bench_data("infert"), bench_spec(
+        "proportions", x="spontaneous", y="status", test="fisher"))
+    expect_ref(res["test_meta"]["p_value"], "infert_fisher", "p_value")
+
+
+def test_swiss_kendall_matches_cor_test():
+    res = recipe_correlation(bench_data("swiss"), bench_spec(
+        "correlation", x="Education", y="Fertility", test="kendall"))
+    s = res["stats"].iloc[0]
+    expect_ref(s["estimate"], "swiss_kendall", "estimate")
+    expect_ref(s["statistic"], "swiss_kendall", "statistic")
+    expect_ref(s["p_value"], "swiss_kendall", "p_value")
+
+
+def test_chickwts_welch_anova_matches_oneway_test():
+    res = recipe_multi_group_compare(bench_data("chickwts"), bench_spec(
+        "multi_group_compare", x="feed", y="weight", test="welch"))
+    om = res["test_meta"]["omnibus"]
+    expect_ref(om["statistic"], "chickwts_welch", "statistic")
+    expect_ref(om["df2"], "chickwts_welch", "df2")
+    expect_ref(om["p_value"], "chickwts_welch", "p_value")
+
+
+def test_sleep_paired_wilcoxon_matches_wilcox_test():
+    res = recipe_paired_compare(bench_data("sleep"), bench_spec(
+        "paired_compare", x="group", y="extra", id="ID", test="wilcoxon"))
+    s = res["stats"].iloc[0]
+    expect_ref(s["statistic"], "sleep_wilcoxon", "statistic")
+    expect_ref(s["p_value"], "sleep_wilcoxon", "p_value")
+
+
+def test_normand_meta_on_standard_errors_matches_metafor():
+    res = recipe_forest_meta(bench_data("normand_stroke"), bench_spec(
+        "forest_meta", y="mean_difference", se="se", label="study", measure="difference"))
+    st = res["stats"].set_index("label")
+    re = st.loc["Random effects (DerSimonian-Laird)"]
+    for q in ("estimate", "ci_low", "ci_high"):
+        expect_ref(re[q], "normand_meta", f"random_{q}")
+    expect_ref(re["tau2"], "normand_meta", "tau2")
+    expect_ref(re["i2"], "normand_meta", "i2")
+    expect_ref(re["q"], "normand_meta", "q")
+    expect_ref(st.loc["Fixed effect", "estimate"], "normand_meta", "fixed_estimate")

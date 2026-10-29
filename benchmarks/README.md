@@ -80,6 +80,12 @@ podman run --rm --security-opt label=disable -v "$PWD":/work -w /work localhost/
 | `iris_feature_panel_kruskal` | `iris.csv` | `feature_panel --x Species` | `stats::kruskal.test` for each measurement, `stats::p.adjust(method = "BH")` |
 | `iris_feature_panel_anova` | `iris.csv` | `feature_panel --x Species --test anova` | `stats::oneway.test(var.equal = TRUE)` for each measurement, `stats::p.adjust(method = "BH")` |
 | `iris_embedding` | `iris.csv` | `embedding --x Petal.Length --y Petal.Width --group Species` | `cluster::silhouette` on the two petal measurements |
+| `mtcars_fisher` | `mtcars_fisher.csv` | `proportions --test fisher` | `stats::fisher.test`: P, the conditional MLE odds ratio and its exact 95% CI |
+| `infert_fisher` | `infert.csv` | `proportions --x spontaneous --y status --test fisher` | `stats::fisher.test` of a 3 x 2 table |
+| `swiss_kendall` | `swiss.csv` | `correlation --x Education --y Fertility --test kendall` | `stats::cor.test(method = "kendall")` |
+| `chickwts_welch` | `chickwts.csv` | `multi_group_compare --test welch` | `stats::oneway.test(var.equal = FALSE)` |
+| `sleep_wilcoxon` | `sleep.csv` | `paired_compare --test wilcoxon` | `stats::wilcox.test(paired = TRUE)` |
+| `normand_meta` | `normand_stroke.csv` | `forest_meta --se se --measure difference` | `metafor::rma(sei = )` with `method = "DL"` and `"FE"` |
 
 ## Tolerances
 
@@ -181,6 +187,26 @@ below make a dataset readable by a recipe. Each change is in
   embedding case uses the petal length and the petal width as the two
   coordinates. A silhouette on these two columns describes the separation of the
   species on two measurements and not on a computed embedding.
+- **`mtcars_fisher.csv`.** This file holds the transmission and the engine shape
+  of each car of `datasets::mtcars` as text. The reference table follows the
+  order of first appearance, as the recipe builds it, so the odds ratio has the
+  orientation of the recipe: the odds of a V-shaped engine for a manual car
+  against an automatic car.
+- **`infert.csv`.** This file holds the prior spontaneous abortions (0, 1, 2+)
+  and the case status of the 248 women of `datasets::infert`. The study matched
+  cases and controls on education, so the case uses the spontaneous abortions,
+  which carry a real association.
+- **`swiss.csv`.** The file keeps the 47 provinces of `datasets::swiss` with the
+  province name as a column. The data hold ties, so R reports the normal score
+  z of Kendall's tau with the tie correction of the variance.
+- **`chickwts.csv` and `sleep.csv` for the new paths.** The Welch case and the
+  Wilcoxon case read the files of the earlier cases. The sleep differences hold
+  ties and a zero, so R uses the normal approximation with the continuity
+  correction.
+- **`normand_stroke.csv`.** The exporter computes the mean difference of the
+  length of hospital stay and its standard error with `metafor::escalc(measure
+  = "MD")` for the nine studies of `metadat::dat.normand1999`. The case pools
+  the studies from the standard errors, not from confidence intervals.
 
 ## Sources
 
@@ -219,3 +245,7 @@ license of that package applies to the data.
 | `pima_te.csv` | MASS | Smith, J. W. et al. (1988) Using the ADAP learning algorithm to forecast the onset of diabetes mellitus. Proceedings of the Annual Symposium on Computer Application in Medical Care, 261-265. |
 | `pbcseq_edema.csv` | survival | Murtaugh, P. A. et al. (1994) Primary biliary cirrhosis: prediction of short-term survival based on repeated patient visits. Hepatology 20(1), 126-134. |
 | `gwas_results.csv` | qqman | Turner, S. D. (2018) qqman: an R package for visualizing GWAS results using Q-Q and manhattan plots. Journal of Open Source Software 3(25), 731. |
+| `mtcars_fisher.csv` | datasets | Henderson and Velleman (1981) Building multiple regression models interactively. Biometrics 37, 391-411. |
+| `infert.csv` | datasets | Trichopoulos, D. et al. (1976) Induced abortion and secondary infertility. British Journal of Obstetrics and Gynaecology 83, 645-650. |
+| `swiss.csv` | datasets | Mosteller, F. and Tukey, J. W. (1977) Data Analysis and Regression: A Second Course in Statistics. Addison-Wesley. |
+| `normand_stroke.csv` | metadat | Normand, S. T. (1999) Meta-analysis: formulating, evaluating, combining, and reporting. Statistics in Medicine 18(3), 321-359. |

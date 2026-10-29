@@ -151,6 +151,20 @@ bench iris_feature_panel_anova "one-way ANOVA" --recipe feature_panel --data $D/
 bench iris_embedding "silhouette" --recipe embedding --data $D/iris.csv \
   --x Petal.Length --y Petal.Width --group Species
 
+echo "--- Test paths that the first cases did not cover ---"
+bench mtcars_fisher "Fisher" --recipe proportions --data $D/mtcars_fisher.csv \
+  --x transmission --y engine --test fisher
+bench infert_fisher "Fisher" --recipe proportions --data $D/infert.csv \
+  --x spontaneous --y status --test fisher
+bench swiss_kendall "Kendall" --recipe correlation --data $D/swiss.csv \
+  --x Education --y Fertility --test kendall
+bench chickwts_welch "Welch" --recipe multi_group_compare --data $D/chickwts.csv \
+  --x feed --y weight --test welch
+bench sleep_wilcoxon "Wilcoxon" --recipe paired_compare --data $D/sleep.csv \
+  --x group --y extra --id ID --test wilcoxon
+bench normand_meta "DerSimonian-Laird" --recipe forest_meta --data $D/normand_stroke.csv \
+  --y mean_difference --se se --label study --measure difference
+
 echo
 if [ "$ran" -eq 0 ]; then
   echo "NO BENCHMARK MATCHED '$FILTER'"; exit 1
