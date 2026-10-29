@@ -152,7 +152,9 @@ rm -rf "$OUT"
 ./cli/figkit plot --recipe calibration --data example/calibration.csv \
   --y event_1y --x risk_clinical,risk_extended --positive yes --stamp cal --out "$OUT"
 ./cli/figkit plot --recipe sankey --data example/sankey.csv \
-  --id patient --x week --y response --xlab "Week" --stamp sankey --out "$OUT"
+  --id patient --x week --y response --xlab "Week" \
+  --levels "complete response,partial response,stable disease,progressive disease" \
+  --stamp sankey --out "$OUT"
 
 # Omics recipes: MA plot, Manhattan and QQ plot, feature panel, embedding
 ./cli/figkit plot --recipe ma_plot --data example/de_basemean.csv --stamp ma --out "$OUT"
@@ -255,7 +257,9 @@ PY="--engine python"
 ./cli/figkit plot $PY --recipe calibration --data example/calibration.csv \
   --y event_1y --x risk_clinical,risk_extended --positive yes --stamp cal_py --out "$OUT"
 ./cli/figkit plot $PY --recipe sankey --data example/sankey.csv \
-  --id patient --x week --y response --xlab "Week" --stamp sankey_py --out "$OUT"
+  --id patient --x week --y response --xlab "Week" \
+  --levels "complete response,partial response,stable disease,progressive disease" \
+  --stamp sankey_py --out "$OUT"
 ./cli/figkit plot $PY --recipe ma_plot --data example/de_basemean.csv --stamp ma_py --out "$OUT"
 ./cli/figkit plot $PY --recipe manhattan --data example/gwas_summary.csv \
   --group chr --x pos --y p --label snp --stamp manhattan_py --out "$OUT"
