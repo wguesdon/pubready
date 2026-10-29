@@ -22,14 +22,14 @@ The report records the selected recipe and does not claim a new method.
 
 ## Statistical results
 
-| outcome | group1 | group2 | n1 | n2 | post_hoc | estimate | p_adj | p_adj_signif | displayed |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| expression | het | ko | 10 | 10 | Tukey's HSD | 3.91 | 0 | **** | TRUE |
-| expression | het | rescue | 10 | 10 | Tukey's HSD | -1.55 | 1.2967866700464e-06 | **** | TRUE |
-| expression | het | wt | 10 | 10 | Tukey's HSD | -1.82 | 4.56134162662991e-08 | **** | TRUE |
-| expression | ko | rescue | 10 | 10 | Tukey's HSD | -5.46 | 0 | **** | TRUE |
-| expression | ko | wt | 10 | 10 | Tukey's HSD | -5.73 | 0 | **** | TRUE |
-| expression | rescue | wt | 10 | 10 | Tukey's HSD | -0.27 | 0.685794789730678 | ns | FALSE |
+| outcome | group1 | group2 | contrast | n1 | n2 | post_hoc | estimate | p_adj | p_adj_signif | displayed | omnibus_test | omnibus_statistic | omnibus_df1 | omnibus_df2 | omnibus_p | omnibus_effect_size_name | omnibus_effect_size |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| expression | het | ko | ko - het | 10 | 10 | Tukey's HSD | 3.91 | 0 | **** | TRUE | one-way ANOVA | 235.832112676056 | 3 | 36 | 1.02141936948119e-23 | partial eta-squared | 0.95158012466413 |
+| expression | het | rescue | rescue - het | 10 | 10 | Tukey's HSD | -1.55 | 1.2967866700464e-06 | **** | TRUE | one-way ANOVA | 235.832112676056 | 3 | 36 | 1.02141936948119e-23 | partial eta-squared | 0.95158012466413 |
+| expression | het | wt | wt - het | 10 | 10 | Tukey's HSD | -1.82 | 4.56134162662991e-08 | **** | TRUE | one-way ANOVA | 235.832112676056 | 3 | 36 | 1.02141936948119e-23 | partial eta-squared | 0.95158012466413 |
+| expression | ko | rescue | rescue - ko | 10 | 10 | Tukey's HSD | -5.46 | 0 | **** | TRUE | one-way ANOVA | 235.832112676056 | 3 | 36 | 1.02141936948119e-23 | partial eta-squared | 0.95158012466413 |
+| expression | ko | wt | wt - ko | 10 | 10 | Tukey's HSD | -5.73 | 0 | **** | TRUE | one-way ANOVA | 235.832112676056 | 3 | 36 | 1.02141936948119e-23 | partial eta-squared | 0.95158012466413 |
+| expression | rescue | wt | wt - rescue | 10 | 10 | Tukey's HSD | -0.27 | 0.685794789730678 | ns | FALSE | one-way ANOVA | 235.832112676056 | 3 | 36 | 1.02141936948119e-23 | partial eta-squared | 0.95158012466413 |
 
 ## Methods
 
@@ -45,7 +45,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |

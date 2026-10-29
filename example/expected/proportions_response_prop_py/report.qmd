@@ -22,16 +22,16 @@ The report records the selected recipe and does not claim a new statistical meth
 
 ## Statistical results
 
-| group | outcome | n | proportion |
-| --- | --- | --- | --- |
-| control | non-responder | 39 | 0.65 |
-| control | responder | 21 | 0.35 |
-| treated | non-responder | 28 | 0.4375 |
-| treated | responder | 36 | 0.5625 |
+| group | outcome | n | proportion | omnibus_test | omnibus_statistic | omnibus_df1 | omnibus_df2 | omnibus_p | odds_ratio |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| control | non-responder | 39 | 0.65 | Pearson's chi-squared test | 5.630164964650431 | 1 | nan | 0.017653970014690736 | 2.3877551020408165 |
+| control | responder | 21 | 0.35 | Pearson's chi-squared test | 5.630164964650431 | 1 | nan | 0.017653970014690736 | 2.3877551020408165 |
+| treated | non-responder | 28 | 0.4375 | Pearson's chi-squared test | 5.630164964650431 | 1 | nan | 0.017653970014690736 | 2.3877551020408165 |
+| treated | responder | 36 | 0.5625 | Pearson's chi-squared test | 5.630164964650431 | 1 | nan | 0.017653970014690736 | 2.3877551020408165 |
 
 ## Methods
 
-The distribution of the outcome (2 categories) across 2 groups (n = 124) was tested with Pearson's chi-squared test (P = 0.018). The odds ratio was 2.39. Proportions are shown as a 100% stacked bar per group. Analyses were performed in Python 3.10.12 with scipy 1.15.3; the figure was produced with matplotlib 3.10.9.
+The distribution of the outcome (2 categories) across 2 groups (n = 124) was tested with Pearson's chi-squared test (chi-square(1) = 5.63, P = 0.018). The odds ratio of non-responder for control versus treated was 2.39. Proportions are shown as a 100% stacked bar per group. Analyses were performed in Python 3.10.12 with scipy 1.15.3; the figure was produced with matplotlib 3.10.9.
 
 ## Plot configuration
 
@@ -43,7 +43,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | False |
 | llm_provider | none |
 | llm_model | none |

@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "heatmap",
@@ -117,18 +117,18 @@
   "output_checksums": [
     {
       "file": "figure_expression_matrix_demo_py.pdf",
-      "bytes": 33497,
-      "sha256": "09208cfec13897246563e77578ad3f56d02c04b05d65a23fe37b3a8b316fe029"
+      "bytes": 33501,
+      "sha256": "abad947a0f54b7d1071f42efd9d5a9090b587c89b173ce89b2c0fcea66d5a7b9"
     },
     {
       "file": "figure_expression_matrix_demo_py.png",
-      "bytes": 215758,
-      "sha256": "cbb1cfefb1b2ad32c1113b1e195b3e2f04c528bf1f8b31185b7c2a86f7b1bde0"
+      "bytes": 215783,
+      "sha256": "f01352f2acf0ee01e1f11876962692ad492cc1cfbfe9cf603420e263419d1947"
     },
     {
       "file": "figure_expression_matrix_demo_py.svg",
       "bytes": 193063,
-      "sha256": "f084decfa86d1dcd3410d01ecd0120d584b75f6b5513aac19be6a4b209a915a8"
+      "sha256": "230abe9825f79ff02a55b11d803d541bf668141a092784a147fe666ccd01de77"
     },
     {
       "file": "packages_demo_py.txt",
@@ -137,18 +137,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 5943,
-      "sha256": "928a5760fc7474cf7a1f19ec6f5116421c58873d9321232850f0a033214dfee0"
+      "bytes": 6074,
+      "sha256": "8fdad6b60f7a8c7d91d74db758eeb9ee5f5f2a86cc993fa1b5bffde7cd7779cc"
     },
     {
       "file": "report.html",
-      "bytes": 1485184,
-      "sha256": "92a8e92a070ecfc468be2ceaea5c9ca338d6aef44789a6b0cc84d39c0b6abd80"
+      "bytes": 1485344,
+      "sha256": "8ab0ca6906a65b1c6ebb139c50143d4e5890ae1a368c5a8e4d0342b7c6bc4c09"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2036,
-      "sha256": "9f58a1125d5f29a3765f8b6221294d61181f353f73cedead8d99ccb1b34f7c17"
+      "sha256": "d2c5054a50335a40644b6b078b02598fc29b0d134a6bf84bd3f902ba7ba4421e"
     }
   ]
 }

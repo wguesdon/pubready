@@ -32,7 +32,7 @@ The report records the selected recipe and does not claim a new statistical meth
 
 ## Methods
 
-Hazard ratios were estimated with a Cox proportional-hazards model (120 subjects, 75 events) including arm, age, sex, stage. Significant predictors: armtreated (HR = 0.54, 95% CI 0.34-0.88, P = 0.013). The proportional-hazards assumption was not violated (minimum covariate cox.zph P = 0.12). Analyses were performed in Python 3.10.12 with lifelines 0.30.0, and the forest plot was drawn with matplotlib 3.10.9.
+Hazard ratios were estimated with a Cox proportional-hazards model (120 subjects, 75 events) including arm, age, sex, stage. Significant predictors: armtreated (HR = 0.54, 95% CI 0.34-0.88, P = 0.013). The proportional-hazards assumption was not violated (global cox.zph P = 0.58). Analyses were performed in Python 3.10.12 with lifelines 0.30.0, and the forest plot was drawn with matplotlib 3.10.9.
 
 ## Plot configuration
 
@@ -44,7 +44,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | False |
 | llm_provider | none |
 | llm_model | none |

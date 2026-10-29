@@ -2243,12 +2243,30 @@ Important
 <section id="statistical-results" class="level2">
 <h2 class="anchored" data-anchor-id="statistical-results">Statistical results</h2>
 <table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>group</th>
 <th>outcome</th>
 <th>n</th>
 <th>proportion</th>
+<th>omnibus_test</th>
+<th>omnibus_statistic</th>
+<th>omnibus_df1</th>
+<th>omnibus_df2</th>
+<th>omnibus_p</th>
+<th>odds_ratio</th>
 </tr>
 </thead>
 <tbody>
@@ -2257,31 +2275,55 @@ Important
 <td>non-responder</td>
 <td>39</td>
 <td>0.65</td>
+<td>Pearson’s chi-squared test</td>
+<td>5.630164964650431</td>
+<td>1</td>
+<td>nan</td>
+<td>0.017653970014690736</td>
+<td>2.3877551020408165</td>
 </tr>
 <tr class="even">
 <td>control</td>
 <td>responder</td>
 <td>21</td>
 <td>0.35</td>
+<td>Pearson’s chi-squared test</td>
+<td>5.630164964650431</td>
+<td>1</td>
+<td>nan</td>
+<td>0.017653970014690736</td>
+<td>2.3877551020408165</td>
 </tr>
 <tr class="odd">
 <td>treated</td>
 <td>non-responder</td>
 <td>28</td>
 <td>0.4375</td>
+<td>Pearson’s chi-squared test</td>
+<td>5.630164964650431</td>
+<td>1</td>
+<td>nan</td>
+<td>0.017653970014690736</td>
+<td>2.3877551020408165</td>
 </tr>
 <tr class="even">
 <td>treated</td>
 <td>responder</td>
 <td>36</td>
 <td>0.5625</td>
+<td>Pearson’s chi-squared test</td>
+<td>5.630164964650431</td>
+<td>1</td>
+<td>nan</td>
+<td>0.017653970014690736</td>
+<td>2.3877551020408165</td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
-<p>The distribution of the outcome (2 categories) across 2 groups (n = 124) was tested with Pearson’s chi-squared test (P = 0.018). The odds ratio was 2.39. Proportions are shown as a 100% stacked bar per group. Analyses were performed in Python 3.10.12 with scipy 1.15.3; the figure was produced with matplotlib 3.10.9.</p>
+<p>The distribution of the outcome (2 categories) across 2 groups (n = 124) was tested with Pearson’s chi-squared test (chi-square(1) = 5.63, P = 0.018). The odds ratio of non-responder for control versus treated was 2.39. Proportions are shown as a 100% stacked bar per group. Analyses were performed in Python 3.10.12 with scipy 1.15.3; the figure was produced with matplotlib 3.10.9.</p>
 </section>
 <section id="plot-configuration" class="level2">
 <h2 class="anchored" data-anchor-id="plot-configuration">Plot configuration</h2>
@@ -2311,7 +2353,7 @@ Important
 </tr>
 <tr class="odd">
 <td>git_commit</td>
-<td>1b8bb2fd31d9315d60137be3bc664c2a3e33f671</td>
+<td>a9f218358c74881d725e4bdcd4c40be832ba06c8</td>
 </tr>
 <tr class="even">
 <td>git_dirty</td>

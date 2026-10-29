@@ -22,14 +22,14 @@ The report records the selected recipe and does not claim a new statistical meth
 
 ## Statistical results
 
-| outcome | group1 | group2 | n1 | n2 | post_hoc | estimate | p_adj | p_adj_signif | displayed |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| expression | het | ko | 10 | 10 | Tukey's HSD | 3.910000000000002 | 4.9960036108132044e-15 | **** | True |
-| expression | het | rescue | 10 | 10 | Tukey's HSD | -1.549999999999999 | 1.2967871768632122e-06 | **** | True |
-| expression | het | wt | 10 | 10 | Tukey's HSD | -1.8200000000000003 | 4.561359057131398e-08 | **** | True |
-| expression | ko | rescue | 10 | 10 | Tukey's HSD | -5.460000000000001 | 4.884981308350689e-15 | **** | True |
-| expression | ko | wt | 10 | 10 | Tukey's HSD | -5.730000000000002 | 4.884981308350689e-15 | **** | True |
-| expression | rescue | wt | 10 | 10 | Tukey's HSD | -0.27000000000000135 | 0.6857947897299388 | ns | False |
+| outcome | group1 | group2 | contrast | n1 | n2 | post_hoc | estimate | p_adj | p_adj_signif | displayed | omnibus_test | omnibus_statistic | omnibus_df1 | omnibus_df2 | omnibus_p | omnibus_effect_size_name | omnibus_effect_size |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| expression | het | ko | ko - het | 10 | 10 | Tukey's HSD | 3.910000000000002 | 4.9960036108132044e-15 | **** | True | one-way ANOVA | 235.83211267605637 | 3 | 36 | 1.0214193694811828e-23 | partial eta-squared | 0.9515801246641298 |
+| expression | het | rescue | rescue - het | 10 | 10 | Tukey's HSD | -1.549999999999999 | 1.2967871768632122e-06 | **** | True | one-way ANOVA | 235.83211267605637 | 3 | 36 | 1.0214193694811828e-23 | partial eta-squared | 0.9515801246641298 |
+| expression | het | wt | wt - het | 10 | 10 | Tukey's HSD | -1.8200000000000003 | 4.561359057131398e-08 | **** | True | one-way ANOVA | 235.83211267605637 | 3 | 36 | 1.0214193694811828e-23 | partial eta-squared | 0.9515801246641298 |
+| expression | ko | rescue | rescue - ko | 10 | 10 | Tukey's HSD | -5.460000000000001 | 4.884981308350689e-15 | **** | True | one-way ANOVA | 235.83211267605637 | 3 | 36 | 1.0214193694811828e-23 | partial eta-squared | 0.9515801246641298 |
+| expression | ko | wt | wt - ko | 10 | 10 | Tukey's HSD | -5.730000000000002 | 4.884981308350689e-15 | **** | True | one-way ANOVA | 235.83211267605637 | 3 | 36 | 1.0214193694811828e-23 | partial eta-squared | 0.9515801246641298 |
+| expression | rescue | wt | wt - rescue | 10 | 10 | Tukey's HSD | -0.27000000000000135 | 0.6857947897299388 | ns | False | one-way ANOVA | 235.83211267605637 | 3 | 36 | 1.0214193694811828e-23 | partial eta-squared | 0.9515801246641298 |
 
 ## Methods
 
@@ -45,7 +45,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | False |
 | llm_provider | none |
 | llm_model | none |

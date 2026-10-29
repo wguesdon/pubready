@@ -94,6 +94,6 @@
 <text x='320.76' y='289.01' text-anchor='middle' style='font-size: 10.40px; font-weight: 0; font-family: "TeX Gyre Heros";' textLength='17.32px' lengthAdjust='spacingAndGlyphs'>200</text>
 <text x='207.02' y='303.99' text-anchor='middle' style='font-size: 13.00px; font-weight: 0; font-family: "TeX Gyre Heros";' textLength='240.65px' lengthAdjust='spacingAndGlyphs'>Mean of new_assay and reference_assay</text>
 <text transform='translate(19.44,150.76) rotate(-90)' text-anchor='middle' style='font-size: 13.00px; font-weight: 0; font-family: "TeX Gyre Heros";' textLength='244.22px' lengthAdjust='spacingAndGlyphs'>Difference (new_assay - reference_assay)</text>
-<text x='207.02' y='17.25' text-anchor='middle' style='font-size: 10.00px; font-weight: 0;fill: #4D4D4D; font-family: "TeX Gyre Heros";' textLength='210.63px' lengthAdjust='spacingAndGlyphs'>n = 40; proportional bias slope 0.045, P = 0.001</text>
+<text x='207.02' y='17.25' text-anchor='middle' style='font-size: 10.00px; font-weight: 0;fill: #4D4D4D; font-family: "TeX Gyre Heros";' textLength='216.19px' lengthAdjust='spacingAndGlyphs'>n = 40; proportional bias slope 0.045, P = 0.0010</text>
 </g>
 </svg>

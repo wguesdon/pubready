@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "pca",
@@ -66,7 +66,7 @@
     {
       "file": "figure_pca_samples_pca_py.pdf",
       "bytes": 19485,
-      "sha256": "97ba39982bc700fe5b99e293e427acb2858e197030522e657fcdef37c570aca6"
+      "sha256": "69ad59734dd8f4b06aecb77f6a6fef16a2e0fe26547e3061337fc34285be3200"
     },
     {
       "file": "figure_pca_samples_pca_py.png",
@@ -76,7 +76,7 @@
     {
       "file": "figure_pca_samples_pca_py.svg",
       "bytes": 41899,
-      "sha256": "78dadce4a9ad6318f203240e98f9a3b797ecf4bcb8496fe2da04cadd46b0f842"
+      "sha256": "5eec7cc811fa96196eb90e6c4c4c2708edf0e2ecfba865f107668605fa5d7991"
     },
     {
       "file": "packages_pca_py.txt",
@@ -85,18 +85,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 2859,
-      "sha256": "2726b21ebc0e1d98d25169a43a60faf9bcc7910a0b05c4d192cc474b1c7e4ff9"
+      "bytes": 3361,
+      "sha256": "8279816102fedabda14fe39bd6eb10778d5e76e28f955de140a3622da7819e29"
     },
     {
       "file": "report.html",
-      "bytes": 1439475,
-      "sha256": "59721b64f1fec90e32458c6343c17474ed90506f33d3fc7826610ff6bafd7fd6"
+      "bytes": 1440477,
+      "sha256": "7cd29edeb74254a3a93f1999859e480ecd9922a8dff5688b59ba7f5ddc8ae18b"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1988,
-      "sha256": "671349a0012ea1aed98edf3627a94d0a8750cd5009cefcf1bed8197e93f325ea"
+      "sha256": "347b3cf889414e869e53257506ec74c8465bf281ce30b3c5ee546beb3254e602"
     }
   ]
 }

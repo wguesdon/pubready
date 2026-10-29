@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "enrichment_dot",
@@ -59,7 +59,7 @@
     {
       "file": "figure_enrichment_results_enrich_py.pdf",
       "bytes": 23093,
-      "sha256": "f6352659d5c434ea7a31e3368f5a57702c97cb2ab6eac1a5c8f55a3ba1791c01"
+      "sha256": "3b8cbdeb6034da100ed5a8862332453bd73343a8befaacbf480630e63feb6a30"
     },
     {
       "file": "figure_enrichment_results_enrich_py.png",
@@ -69,7 +69,7 @@
     {
       "file": "figure_enrichment_results_enrich_py.svg",
       "bytes": 74514,
-      "sha256": "e8204cc3ef9215d267cdbeafea7dc29f776d34f487a4140585fa732e0354ac9a"
+      "sha256": "f955fd7cd9c6cb05aad9d84f2a73f8a6307337bc498624b89b4a606762deabb6"
     },
     {
       "file": "packages_enrich_py.txt",
@@ -78,18 +78,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3482,
-      "sha256": "b8bfb05c0ff546bef57532be4c79e58b5c66251b595bb243eb5a4f63e65f168c"
+      "bytes": 3483,
+      "sha256": "7c6401a63bfffe6658c6f835e2d2ee4898a164491bc057687d481da3bb064c7c"
     },
     {
       "file": "report.html",
-      "bytes": 1497667,
-      "sha256": "d3eef4bb4ecc940a4bb7ae28ca1c814df22e841d766be7f22c906f49b719304b"
+      "bytes": 1497668,
+      "sha256": "2f75f204c60c47e5fee06a4dcb710dd719b71f38c41092fcb099b90c3882b9bb"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2021,
-      "sha256": "ff187e04f7099c13641c0801b3af55233b596bec92318f4877652de69b5146f7"
+      "sha256": "954c4fa07c276250035088a7630a4b899657fe5c1a91030df7ce7e2095329eea"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "estimation_plot",
@@ -96,7 +96,7 @@
     {
       "file": "figure_speed_um_h_estimation_py.pdf",
       "bytes": 23338,
-      "sha256": "37a174c449945dbe00956126d15d7aaa86544b2e039dc9aeb4dd0db55e9674e3"
+      "sha256": "18fc709e934b8600148755df47d5ff80acdd13498e5f0c50747905127a8153c6"
     },
     {
       "file": "figure_speed_um_h_estimation_py.png",
@@ -106,7 +106,7 @@
     {
       "file": "figure_speed_um_h_estimation_py.svg",
       "bytes": 65021,
-      "sha256": "ec66ee88ad376689bc95af8ef82d2643f03c816c91628dd8d00dc727ca8c65ea"
+      "sha256": "57b72a023220df690d9607e3f266995ce0d0e4847d59f8da44b51a1a29e7161a"
     },
     {
       "file": "packages_estimation_py.txt",
@@ -121,22 +121,22 @@
     {
       "file": "qc_normality_estimation_py.pdf",
       "bytes": 27815,
-      "sha256": "a7e791eee27f97a0d43f68d81f77a7d136f953f09f80406ee9cf06d4b0e6eb7d"
+      "sha256": "0122490ddc73602a3b819a95979d34c78e9f49eb02ff80d9de2f635d275d168e"
     },
     {
       "file": "report.qmd",
-      "bytes": 4692,
-      "sha256": "c338126b44d31e13ba14968d244540ee8a516def780433f97fef422951b2521c"
+      "bytes": 4752,
+      "sha256": "6aa9843ffacaeb9add36087a0576e327d394f17d438b9340d638c382d41366cc"
     },
     {
       "file": "report.html",
-      "bytes": 1410840,
-      "sha256": "a33bca5216205b8dfe3167556512ac0784174272030eaf862953ed35b5cc27c3"
+      "bytes": 1410900,
+      "sha256": "779c9eb807e4ee7d7fe6081e42fc87060083d1a3bf7a173d8804ee1b1e778e31"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2052,
-      "sha256": "7ae2b737a9b0b55d9680beba5f1ca3fb0f2146c1e03390c0d5470dfdbd7978eb"
+      "sha256": "a369e404bc7015c68c0f5dd63ed326c0d977f398f300a6783a485cbb99095a12"
     }
   ]
 }

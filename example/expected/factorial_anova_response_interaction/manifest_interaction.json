@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "factorial_anova",
@@ -88,7 +88,7 @@
     {
       "file": "figure_response_interaction.pdf",
       "bytes": 14790,
-      "sha256": "fe5df04b49356eb704f0506e5bbdec753e7d97a3731217fe54ebc7c0f6cdd228"
+      "sha256": "516955adc1705dfd8a60e2457098f6332a8261c160ee8f125c6884a06caf8501"
     },
     {
       "file": "figure_response_interaction.png",
@@ -113,22 +113,22 @@
     {
       "file": "qc_normality_interaction.pdf",
       "bytes": 20351,
-      "sha256": "4afce5313b0b4986c2442d34997f2eb276616e9e5025181d944e4d581f9f3a82"
+      "sha256": "37aa8996b31efc569f9c3a7331ada9a775a04139d267358484d9eb73d65ebbda"
     },
     {
       "file": "report.qmd",
       "bytes": 3155,
-      "sha256": "d476af925d618449426271899687d46b691d59a13bf398275c8dc6b93eb65cfc"
+      "sha256": "c4d0d2f1ada5f567a026e892534309103f75b3db4061aa776dc24e41ba471f54"
     },
     {
       "file": "report.html",
       "bytes": 1321205,
-      "sha256": "90ff079b35c431c2ceac79c93c937edae98a5c3412923943f89a3eb245f3491a"
+      "sha256": "440c5e59633648c026ccb610302e11b47194d93236f51108a8ad83e16c10c6af"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2040,
-      "sha256": "540fa1658bfc1becb2cfd3cbc14a175c1bc905ec27f0432a4db5491e080d6df3"
+      "sha256": "910cd1284e518ff3590a397b15d985329dd702122018a55dc65512bcc1e50aaa"
     }
   ]
 }

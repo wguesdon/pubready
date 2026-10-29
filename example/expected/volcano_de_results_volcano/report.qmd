@@ -42,7 +42,7 @@ The report records the selected recipe and does not claim a new method.
 
 ## Methods
 
-Differential-expression results for 1200 features were shown as a volcano plot. Features with |log2 fold change| >= 1 and p <= 0.05 were called significant; 75 were up-regulated and 75 down-regulated. The differential test itself was performed upstream; this figure summarises its output. Drawn in R 4.4.1 with ggplot2 3.5.1 and ggrepel 0.9.6.
+Differential-expression results for 1200 features were shown as a volcano plot. Features with |log2 fold change| >= 1 and padj <= 0.05 were called significant; 75 were up-regulated and 75 down-regulated. The 15 significant features with the largest product of |log2 fold change| and -log10 padj are labelled. The differential test itself was performed upstream; this figure summarises its output. Drawn in R 4.4.1 with ggplot2 3.5.1 and ggrepel 0.9.6.
 
 ## Plot configuration
 
@@ -54,7 +54,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |

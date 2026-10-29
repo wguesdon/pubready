@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "swimmer",
@@ -74,7 +74,7 @@
     {
       "file": "figure_months_swimmer_py.pdf",
       "bytes": 16647,
-      "sha256": "4f44f7b72b001dc5f6bc2834ff0ea1fce9e7e6d82177c127bca8d54a68c3290b"
+      "sha256": "3efaf746a8fe97a7259523befa3b924d39fc807f0b6cad4095736daca15f5364"
     },
     {
       "file": "figure_months_swimmer_py.png",
@@ -84,7 +84,7 @@
     {
       "file": "figure_months_swimmer_py.svg",
       "bytes": 56361,
-      "sha256": "fd66ae2864904ccca00907ac091a465e6614dda7872502c4c7faf31984947a97"
+      "sha256": "4df42eb919ae891130d902bb960d618184a7f0edf84c9198ce3d52ce4ec5c505"
     },
     {
       "file": "packages_swimmer_py.txt",
@@ -94,17 +94,17 @@
     {
       "file": "report.qmd",
       "bytes": 4099,
-      "sha256": "c725baea22e9c0229db428ed01c343d1611b8b318896efe33293034cf8ab236c"
+      "sha256": "52cf410e79f87365f9fdff481e72b243d7252af3992c616e3fcce546ede68c3f"
     },
     {
       "file": "report.html",
       "bytes": 1377032,
-      "sha256": "f47d933e21c4ab18834577ccc2389928a4968ce6b87c2ae416ebbf304d4ee92c"
+      "sha256": "35e6f1f339dfdd49e8b68d87efbaf2d865838758526ce6895b85a5b3c79bf89a"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2082,
-      "sha256": "139e132089a828d9773d2b1101dd1e1755f11f32d95655a9c5e02c31b810ea82"
+      "sha256": "ad7930de435b4823d9250f18687d5d358b3bd43d377886d3dcab52d4a21d8347"
     }
   ]
 }

@@ -29,7 +29,7 @@ The report records the selected recipe and does not claim a new method.
 
 ## Methods
 
-Survival was estimated by the Kaplan-Meier method and compared between groups of arm with the log-rank test (chi-square(1) = 7.27, P = 0.007). Median survival by group: control (median  6.8), treated (median 11.4). Censoring is marked with ticks and the number at risk is tabulated below the curves; it counts the subjects whose time is at or after each time point. Analyses were performed in R 4.4.1 with survival 3.6.4 and survminer 0.4.9.
+Survival was estimated by the Kaplan-Meier method and compared between groups of arm with the log-rank test (chi-square(1) = 7.27, P = 0.007). Median survival by group: control (median 6.8), treated (median 11.4). Censoring is marked with ticks and the number at risk is tabulated below the curves; it counts the subjects whose time is at or after each time point. Analyses were performed in R 4.4.1 with survival 3.6.4 and survminer 0.4.9.
 
 ## Plot configuration
 
@@ -41,7 +41,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |

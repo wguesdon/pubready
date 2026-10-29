@@ -2370,7 +2370,7 @@ Important
 </section>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
-<p>Differential-expression results for 1200 features were shown as a volcano plot. Features with |log2 fold change| &gt;= 1.0 and p &lt;= 0.05 were called significant; 75 were up-regulated and 75 down-regulated. The differential test itself was performed upstream; this figure summarises its output. Drawn in Python 3.10.12 with matplotlib 3.10.9 and adjustText 1.4.0.</p>
+<p>Differential-expression results for 1200 features were shown as a volcano plot. Features with |log2 fold change| &gt;= 1 and padj &lt;= 0.05 were called significant; 75 were up-regulated and 75 down-regulated. The 15 significant features with the largest product of |log2 fold change| and -log10 padj are labelled. The differential test itself was performed upstream; this figure summarises its output. Drawn in Python 3.10.12 with matplotlib 3.10.9 and adjustText 1.4.0.</p>
 </section>
 <section id="plot-configuration" class="level2">
 <h2 class="anchored" data-anchor-id="plot-configuration">Plot configuration</h2>
@@ -2400,7 +2400,7 @@ Important
 </tr>
 <tr class="odd">
 <td>git_commit</td>
-<td>1b8bb2fd31d9315d60137be3bc664c2a3e33f671</td>
+<td>a9f218358c74881d725e4bdcd4c40be832ba06c8</td>
 </tr>
 <tr class="even">
 <td>git_dirty</td>

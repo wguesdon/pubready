@@ -42,7 +42,7 @@ The report records the selected recipe and does not claim a new statistical meth
 
 ## Methods
 
-The top 15 of 20 enriched terms from a over-representation (ORA) analysis were shown as a dot plot. The x-axis is gene ratio, dot color the -log10 of the adjusted p-value, and dot size the gene count. The enrichment analysis was performed upstream; this figure summarises its output. Drawn in Python 3.10.12 with matplotlib 3.10.9.
+The top 15 of 20 enriched terms from an over-representation (ORA) analysis were shown as a dot plot. The x-axis is gene ratio, dot color the -log10 of the adjusted p-value, and dot size the gene count. The enrichment analysis was performed upstream; this figure summarises its output. Drawn in Python 3.10.12 with matplotlib 3.10.9.
 
 ## Plot configuration
 
@@ -54,7 +54,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | False |
 | llm_provider | none |
 | llm_model | none |

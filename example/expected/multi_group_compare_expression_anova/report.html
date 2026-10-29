@@ -2244,22 +2244,31 @@ Important
 <h2 class="anchored" data-anchor-id="statistical-results">Statistical results</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>outcome</th>
 <th>group1</th>
 <th>group2</th>
+<th>contrast</th>
 <th>n1</th>
 <th>n2</th>
 <th>post_hoc</th>
@@ -2267,6 +2276,13 @@ Important
 <th>p_adj</th>
 <th>p_adj_signif</th>
 <th>displayed</th>
+<th>omnibus_test</th>
+<th>omnibus_statistic</th>
+<th>omnibus_df1</th>
+<th>omnibus_df2</th>
+<th>omnibus_p</th>
+<th>omnibus_effect_size_name</th>
+<th>omnibus_effect_size</th>
 </tr>
 </thead>
 <tbody>
@@ -2274,6 +2290,7 @@ Important
 <td>expression</td>
 <td>het</td>
 <td>ko</td>
+<td>ko - het</td>
 <td>10</td>
 <td>10</td>
 <td>Tukey’s HSD</td>
@@ -2281,11 +2298,19 @@ Important
 <td>0</td>
 <td>****</td>
 <td>TRUE</td>
+<td>one-way ANOVA</td>
+<td>235.832112676056</td>
+<td>3</td>
+<td>36</td>
+<td>1.02141936948119e-23</td>
+<td>partial eta-squared</td>
+<td>0.95158012466413</td>
 </tr>
 <tr class="even">
 <td>expression</td>
 <td>het</td>
 <td>rescue</td>
+<td>rescue - het</td>
 <td>10</td>
 <td>10</td>
 <td>Tukey’s HSD</td>
@@ -2293,11 +2318,19 @@ Important
 <td>1.2967866700464e-06</td>
 <td>****</td>
 <td>TRUE</td>
+<td>one-way ANOVA</td>
+<td>235.832112676056</td>
+<td>3</td>
+<td>36</td>
+<td>1.02141936948119e-23</td>
+<td>partial eta-squared</td>
+<td>0.95158012466413</td>
 </tr>
 <tr class="odd">
 <td>expression</td>
 <td>het</td>
 <td>wt</td>
+<td>wt - het</td>
 <td>10</td>
 <td>10</td>
 <td>Tukey’s HSD</td>
@@ -2305,11 +2338,19 @@ Important
 <td>4.56134162662991e-08</td>
 <td>****</td>
 <td>TRUE</td>
+<td>one-way ANOVA</td>
+<td>235.832112676056</td>
+<td>3</td>
+<td>36</td>
+<td>1.02141936948119e-23</td>
+<td>partial eta-squared</td>
+<td>0.95158012466413</td>
 </tr>
 <tr class="even">
 <td>expression</td>
 <td>ko</td>
 <td>rescue</td>
+<td>rescue - ko</td>
 <td>10</td>
 <td>10</td>
 <td>Tukey’s HSD</td>
@@ -2317,11 +2358,19 @@ Important
 <td>0</td>
 <td>****</td>
 <td>TRUE</td>
+<td>one-way ANOVA</td>
+<td>235.832112676056</td>
+<td>3</td>
+<td>36</td>
+<td>1.02141936948119e-23</td>
+<td>partial eta-squared</td>
+<td>0.95158012466413</td>
 </tr>
 <tr class="odd">
 <td>expression</td>
 <td>ko</td>
 <td>wt</td>
+<td>wt - ko</td>
 <td>10</td>
 <td>10</td>
 <td>Tukey’s HSD</td>
@@ -2329,11 +2378,19 @@ Important
 <td>0</td>
 <td>****</td>
 <td>TRUE</td>
+<td>one-way ANOVA</td>
+<td>235.832112676056</td>
+<td>3</td>
+<td>36</td>
+<td>1.02141936948119e-23</td>
+<td>partial eta-squared</td>
+<td>0.95158012466413</td>
 </tr>
 <tr class="even">
 <td>expression</td>
 <td>rescue</td>
 <td>wt</td>
+<td>wt - rescue</td>
 <td>10</td>
 <td>10</td>
 <td>Tukey’s HSD</td>
@@ -2341,6 +2398,13 @@ Important
 <td>0.685794789730678</td>
 <td>ns</td>
 <td>FALSE</td>
+<td>one-way ANOVA</td>
+<td>235.832112676056</td>
+<td>3</td>
+<td>36</td>
+<td>1.02141936948119e-23</td>
+<td>partial eta-squared</td>
+<td>0.95158012466413</td>
 </tr>
 </tbody>
 </table>
@@ -2377,7 +2441,7 @@ Important
 </tr>
 <tr class="odd">
 <td>git_commit</td>
-<td>1b8bb2fd31d9315d60137be3bc664c2a3e33f671</td>
+<td>a9f218358c74881d725e4bdcd4c40be832ba06c8</td>
 </tr>
 <tr class="even">
 <td>git_dirty</td>

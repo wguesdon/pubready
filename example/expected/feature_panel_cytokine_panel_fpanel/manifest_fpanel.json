@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "feature_panel",
@@ -69,7 +69,7 @@
     {
       "file": "figure_cytokine_panel_fpanel.pdf",
       "bytes": 34295,
-      "sha256": "ad5a2fe54b502652b88fd2c8a79dbda320b7ee101763dd7b9f26c32f4bd9904c"
+      "sha256": "d2c45538a708b257e1663a7bc0fb41b321a24e91a6a47372f76c16bc1a15a88b"
     },
     {
       "file": "figure_cytokine_panel_fpanel.png",
@@ -94,22 +94,22 @@
     {
       "file": "qc_normality_fpanel.pdf",
       "bytes": 49622,
-      "sha256": "3376f2f496a01e8ccabbc14271af03477114eed1916c3ca1e105db28a56f6f1c"
+      "sha256": "ee91ee1d191fe3c76dfcf10d8ee69d0c5b5eedc2538d5be0cbe274996b2606fa"
     },
     {
       "file": "report.qmd",
-      "bytes": 4676,
-      "sha256": "fd8c39352a81eedd817da01eef7cf255b18e1c5f7312949d76c74161a8a77a56"
+      "bytes": 4674,
+      "sha256": "6796197066c2073d3eb5fcde66fd332f5125f75c7c9f69f43f9becb662171206"
     },
     {
       "file": "report.html",
-      "bytes": 1671993,
-      "sha256": "19ba26048ab182fedc389dcbec84c9c742f590f0f9e977a0e32787b14a99e729"
+      "bytes": 1671991,
+      "sha256": "6d71f74ce443bd35231038ee5a6b5449b8dcf7d91e87bda2a06c68877cb52c0c"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2049,
-      "sha256": "9d7c65f65a3e96742b0b0c958553fc6b540a5aec103228884ddfa281539cc5a9"
+      "sha256": "9c76fc6c0cf780253cb910200638330aa816860a0b151a12e7a537acd58769de"
     }
   ]
 }

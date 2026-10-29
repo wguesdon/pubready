@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "factorial_anova",
@@ -89,7 +89,7 @@
     {
       "file": "figure_response_twoway_py.pdf",
       "bytes": 16707,
-      "sha256": "630dd81a1154942dcb1987686dfd033598c8b28692fa7ef098f572d3927862b5"
+      "sha256": "2bf7abda88a4177b47be7b317b37e805d0e74437fd0fb8edf806941dfccb4534"
     },
     {
       "file": "figure_response_twoway_py.png",
@@ -99,7 +99,7 @@
     {
       "file": "figure_response_twoway_py.svg",
       "bytes": 48334,
-      "sha256": "1c96db9ccf340504c2e3e29ae168347328fa42be596ceb0e0915179213fd666f"
+      "sha256": "9cb90053b7b4cfa7834fc472ab3676f8f149d98c8bdece35be3fb68dae195a9e"
     },
     {
       "file": "packages_twoway_py.txt",
@@ -114,22 +114,22 @@
     {
       "file": "qc_normality_twoway_py.pdf",
       "bytes": 23419,
-      "sha256": "d09e626067f86a4c8d02c1f78f84426eef47cbdee6834be7ea7e0bb48fad4cd2"
+      "sha256": "c8e8ec3a4ce5b3338e20cf852b62ca345606543aad5380a78dd55c5f251501e6"
     },
     {
       "file": "report.qmd",
       "bytes": 3376,
-      "sha256": "48059876b51b513af9492c978b9a5d1c41a5ffd6de3ca1dfbce80e3225cf65b8"
+      "sha256": "337362d3dd2ad249335ce62e6c77dcb8faa4bf8f6e9733ec475e94712ba3ad16"
     },
     {
       "file": "report.html",
       "bytes": 1357872,
-      "sha256": "1b15212e1ff82f31ab6507962d3e0ef6785c97bcac5009e4a66d1c9c57fa00d8"
+      "sha256": "bb9a753f1a72adc2cac3f92ec820bb6f337d5778b432088b1380009b2c1c36a2"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2042,
-      "sha256": "69369639007b7c7533d095edad610ae37154ab51f29405650d852f80231dbc09"
+      "sha256": "f8849142784bb3097db092bd3680559e270ee1fdbe73ff011d48ad85446e4eff"
     }
   ]
 }

@@ -22,13 +22,13 @@ The report records the selected recipe and does not claim a new method.
 
 ## Statistical results
 
-| outcome | group1 | group2 | n1 | n2 | test | statistic | df | p_value | p_adjust_method | effect_size_name | effect_size | shapiro_p_group1 | shapiro_p_group2 | var_equal_p |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| volume | control | treated | 12 | 12 | Student's two-sample t-test | 10.0594513176191 | 22 | 1.08362054826232e-09 | none | Cohen's d | 4.10675380342244 | 0.999977135402283 | 0.98900356297023 | 0.456074848950434 |
+| outcome | group1 | group2 | contrast | n1 | n2 | test | statistic | df | p_value | p_adjust_method | effect_size_name | effect_size | shapiro_p_group1 | shapiro_p_group2 | var_equal_p |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| volume | control | treated | control - treated | 12 | 12 | Student's two-sample t-test | 10.0594513176191 | 22 | 1.08362054826232e-09 | none | Cohen's d | 4.10675380342244 | 0.999977135402283 | 0.98900356297023 | 0.456074848950434 |
 
 ## Methods
 
-Tumor volume (mm^3) was compared between the two groups with a Student's two-sample t-test. Normality was assessed with the Shapiro-Wilk test. Equal variances were assumed. Effect size is reported as Cohen's d = 4.11. Significance was set at P < 0.05. Analyses were performed in R 4.4.1 with rstatix 0.7.2; figures were produced with ggpubr 0.6.0 and ggprism 1.0.5. Group sizes were n = 12 and n = 12.
+Tumor volume (mm^3) was compared between the two groups with a Student's two-sample t-test. Normality was assessed with the Shapiro-Wilk test. Equal variances were assumed. Effect size is reported as Cohen's d = 4.11 (control minus treated). Significance was set at P < 0.05. Analyses were performed in R 4.4.1 with rstatix 0.7.2; figures were produced with ggpubr 0.6.0 and ggprism 1.0.5. Group sizes were n = 12 and n = 12.
 
 ## Plot configuration
 
@@ -40,7 +40,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |

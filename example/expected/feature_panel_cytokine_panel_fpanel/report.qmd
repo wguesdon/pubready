@@ -24,19 +24,19 @@ The report records the selected recipe and does not claim a new method.
 
 | feature | test | statistic | df1 | df2 | p_value | p_adj | p_adj_signif | effect_size | effect_size_name | n_Healthy control | n_Mild disease | n_Severe disease |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| IL-6 | Kruskal-Wallis test | 33.894059056614 | 2 |  | 4.36514416241489e-08 | 3.9286297461734e-07 | **** | 0.721150192693915 | epsilon squared | 16 | 16 | 16 |
-| TNF-alpha | Kruskal-Wallis test | 21.728379607013 | 2 |  | 1.91312046732669e-05 | 4.30452105148505e-05 | **** | 0.462305949085383 | epsilon squared | 16 | 16 | 16 |
-| IL-1beta | Kruskal-Wallis test | 20.9866071428571 | 2 |  | 2.77214639932302e-05 | 4.98986351878143e-05 | **** | 0.446523556231003 | epsilon squared | 16 | 16 | 16 |
-| IL-10 | Kruskal-Wallis test | 11.6114401834663 | 2 |  | 0.00301028629016358 | 0.00451542943524536 | ** | 0.247051918797155 | epsilon squared | 16 | 16 | 16 |
-| IFN-gamma | Kruskal-Wallis test | 0.677811024263157 | 2 |  | 0.712549773217701 | 0.801618494869913 | ns | 0.0144215111545353 | epsilon squared | 16 | 16 | 16 |
-| IL-8 | Kruskal-Wallis test | 25.6422193877551 | 2 |  | 2.70310432914328e-06 | 8.10931298742983e-06 | **** | 0.545579135909683 | epsilon squared | 16 | 16 | 16 |
-| IL-17A | Kruskal-Wallis test | 0.0401807523204812 | 2 |  | 0.980110090717326 | 0.980110090717326 | ns | 0.000854909623840025 | epsilon squared | 16 | 16 | 16 |
-| CXCL10 | Kruskal-Wallis test | 30.6906887755102 | 2 |  | 2.16571652082853e-07 | 9.74572434372838e-07 | **** | 0.652993378202345 | epsilon squared | 16 | 16 | 16 |
-| MCP-1 | Kruskal-Wallis test | 4.30357142857142 | 2 |  | 0.116276335959318 | 0.149498146233409 | ns | 0.0915653495440727 | epsilon squared | 16 | 16 | 16 |
+| IL-6 | Kruskal-Wallis test | 33.894059056614 | 2 |  | 4.36514416241489e-08 | 3.9286297461734e-07 | **** | 0.708756867924756 | eta-squared (H) | 16 | 16 | 16 |
+| TNF-alpha | Kruskal-Wallis test | 21.728379607013 | 2 |  | 1.91312046732669e-05 | 4.30452105148505e-05 | **** | 0.4384084357114 | eta-squared (H) | 16 | 16 | 16 |
+| IL-1beta | Kruskal-Wallis test | 20.9866071428571 | 2 |  | 2.77214639932302e-05 | 4.98986351878143e-05 | **** | 0.421924603174603 | eta-squared (H) | 16 | 16 | 16 |
+| IL-10 | Kruskal-Wallis test | 11.6114401834663 | 2 |  | 0.00301028629016358 | 0.00451542943524536 | ** | 0.213587559632585 | eta-squared (H) | 16 | 16 | 16 |
+| IFN-gamma | Kruskal-Wallis test | 0.677811024263157 | 2 |  | 0.712549773217701 | 0.801618494869913 | ns | -0.0293819772385965 | eta-squared (H) | 16 | 16 | 16 |
+| IL-8 | Kruskal-Wallis test | 25.6422193877551 | 2 |  | 2.70310432914328e-06 | 8.10931298742983e-06 | **** | 0.525382653061224 | eta-squared (H) | 16 | 16 | 16 |
+| IL-17A | Kruskal-Wallis test | 0.0401807523204812 | 2 |  | 0.980110090717326 | 0.980110090717326 | ns | -0.0435515388373226 | eta-squared (H) | 16 | 16 | 16 |
+| CXCL10 | Kruskal-Wallis test | 30.6906887755102 | 2 |  | 2.16571652082853e-07 | 9.74572434372838e-07 | **** | 0.637570861678005 | eta-squared (H) | 16 | 16 | 16 |
+| MCP-1 | Kruskal-Wallis test | 4.30357142857142 | 2 |  | 0.116276335959318 | 0.149498146233409 | ns | 0.0511904761904759 | eta-squared (H) | 16 | 16 | 16 |
 
 ## Methods
 
-Concentration (pg/mL) was compared between the levels of group (Healthy control, Mild disease, Severe disease) separately for each of 9 features. One test family was chosen for the whole panel: the Shapiro-Wilk test was run on each of the 27 feature-by-group samples, and because 15 of them departed from normality (P <= 0.05, or fewer than 3 values) the rank-based Kruskal-Wallis test was used for every feature. P values were adjusted across the 9 features with the Benjamini-Hochberg method; 6 features had an adjusted P (q) below 0.05. The effect size is epsilon squared. Group sizes per feature: Healthy control (n = 16), Mild disease (n = 16), Severe disease (n = 16). Drawn in R 4.4.1 with ggplot2 3.5.1.
+Concentration (pg/mL) was compared between the levels of group (Healthy control, Mild disease, Severe disease) separately for each of 9 features. One test family was chosen for the whole panel: the Shapiro-Wilk test was run on each of the 27 feature-by-group samples, and because 15 of them departed from normality (P <= 0.05, or fewer than 3 values) the rank-based Kruskal-Wallis test was used for every feature. P values were adjusted across the 9 features with the Benjamini-Hochberg method; 6 features had an adjusted P (q) below 0.05. The effect size is eta-squared (H). Group sizes per feature: Healthy control (n = 16), Mild disease (n = 16), Severe disease (n = 16). Drawn in R 4.4.1 with ggplot2 3.5.1.
 
 ## Plot configuration
 
@@ -48,7 +48,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |

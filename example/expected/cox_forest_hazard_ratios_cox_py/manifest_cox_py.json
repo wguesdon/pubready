@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "cox_forest",
@@ -37,8 +37,8 @@
       "stage"
     ],
     "proportional_hazards": {
-      "test": "proportional_hazard_test (min p)",
-      "p_value": 0.12256003845830177
+      "test": "cox.zph global",
+      "p_value": 0.5757260900037205
     },
     "hazard_ratios": [
       {
@@ -110,7 +110,7 @@
     {
       "file": "figure_hazard_ratios_cox_py.pdf",
       "bytes": 21470,
-      "sha256": "31b57c9ebb9845f0fac86ac916665a3ac25d23d738d983bce474339d74715aeb"
+      "sha256": "2996658080afcb482e4bcee14ffa8342fb6b7264e3af9343a975338c91f0f4c4"
     },
     {
       "file": "figure_hazard_ratios_cox_py.png",
@@ -120,7 +120,7 @@
     {
       "file": "figure_hazard_ratios_cox_py.svg",
       "bytes": 48520,
-      "sha256": "fe1e091db75af7aa1954c3ffffa76ee120f1c84309b33e6962d3a64849392ed5"
+      "sha256": "5ff6ee9ae80c6299ded0e969ddc2f2c82d238ee2a2eb449c89d65ec96b452d27"
     },
     {
       "file": "packages_cox_py.txt",
@@ -129,18 +129,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3429,
-      "sha256": "1baad734049292b3340146337bdc2f4c2d56ba8cb8a6741bea9e91f3ae0d2f47"
+      "bytes": 3418,
+      "sha256": "43da6406946539437434b429bb8ebac35d295dfc9bcb482eaf10249351040e1f"
     },
     {
       "file": "report.html",
-      "bytes": 1400864,
-      "sha256": "702f3efadac78057b8a5155db8cc525349f983475bc3becce1fe9811ef06481a"
+      "bytes": 1400853,
+      "sha256": "01692774cbbffb92d84d328b422eb61612ba01194c351151d2bdd8ac306bbb6c"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2075,
-      "sha256": "b2b86b9b171e61ef189ad18c67543b7e16d19a1fb341e5f48f7cf7d87e2bfd38"
+      "sha256": "166f2bf1c7f2192f946fa584268e3e5bf51d37e6cf66a093c991af8b75e45a66"
     }
   ]
 }

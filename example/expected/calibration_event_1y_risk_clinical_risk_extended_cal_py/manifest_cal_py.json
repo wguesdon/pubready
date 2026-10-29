@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "calibration",
@@ -91,7 +91,7 @@
     {
       "file": "figure_event_1y_risk_clinical_risk_extended_cal_py.pdf",
       "bytes": 21780,
-      "sha256": "2ab364b36995fda3b434b9a6eb59026e96255f294372e6d91b8f9671c57acf40"
+      "sha256": "00d9380817002787833cee76dd334ae2d9f10686cff7de1f4daaaa1bb55d63ea"
     },
     {
       "file": "figure_event_1y_risk_clinical_risk_extended_cal_py.png",
@@ -101,7 +101,7 @@
     {
       "file": "figure_event_1y_risk_clinical_risk_extended_cal_py.svg",
       "bytes": 99589,
-      "sha256": "dd498f48f3165373b4d1cd44a66f388e8d460777fc8bade4a730acf90586f865"
+      "sha256": "59e750573d6aacd118bbf18ccc20884d4bb07ab2ab202d1aff73543a1e85dc76"
     },
     {
       "file": "packages_cal_py.txt",
@@ -111,17 +111,17 @@
     {
       "file": "report.qmd",
       "bytes": 4666,
-      "sha256": "4dea6b0d0c7909ed33e91aa1c92f3c0da1c371bb0a9e17b1bd3d7261b3cd5c65"
+      "sha256": "3ce4b598bcee12f40cd10bc28f9d9220cbc1a9e3c213ce744aa0348183005f46"
     },
     {
       "file": "report.html",
       "bytes": 1478987,
-      "sha256": "78b710116a70d5f061919e7bd592fc32abeb8296767b0506149a607ba01d714c"
+      "sha256": "3a654e14c8a499543147922dec30800d4fbba6ff929449d13796b56e8f35aea7"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2058,
-      "sha256": "65fb2c828b2c005589ddfb55cf09589e105eb4f5427b3fb415744893af2b0782"
+      "sha256": "3adc238403b00524933d5011293f0f58cca3ef06509c279f7a5f5ae624e5377c"
     }
   ]
 }

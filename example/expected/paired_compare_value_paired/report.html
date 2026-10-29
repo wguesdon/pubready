@@ -2244,24 +2244,26 @@ Important
 <h2 class="anchored" data-anchor-id="statistical-results">Statistical results</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>outcome</th>
 <th>condition1</th>
 <th>condition2</th>
+<th>contrast</th>
 <th>n_pairs</th>
 <th>test</th>
 <th>statistic</th>
@@ -2278,6 +2280,7 @@ Important
 <td>value</td>
 <td>pre</td>
 <td>post</td>
+<td>post - pre</td>
 <td>22</td>
 <td>paired t-test</td>
 <td>-9.97292541186761</td>
@@ -2293,7 +2296,7 @@ Important
 </section>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
-<p>Marker (a.u.) was compared between pre and post within each subject with a paired t-test (n = 22 pairs). The test was chosen from the Shapiro-Wilk normality of the within-subject differences. Effect size is reported as Cohen’s dz = -2.13. Significance was set at P &lt; 0.05. Drawn in R 4.4.1 with ggplot2 3.5.1 and ggpubr 0.6.0.</p>
+<p>Marker (a.u.) was compared between pre and post within each subject with a paired t-test (n = 22 pairs). The test was chosen from the Shapiro-Wilk normality of the within-subject differences. Effect size is reported as Cohen’s dz = -2.13 (post minus pre). Significance was set at P &lt; 0.05. Drawn in R 4.4.1 with ggplot2 3.5.1 and ggpubr 0.6.0.</p>
 </section>
 <section id="plot-configuration" class="level2">
 <h2 class="anchored" data-anchor-id="plot-configuration">Plot configuration</h2>
@@ -2323,7 +2326,7 @@ Important
 </tr>
 <tr class="odd">
 <td>git_commit</td>
-<td>1b8bb2fd31d9315d60137be3bc664c2a3e33f671</td>
+<td>a9f218358c74881d725e4bdcd4c40be832ba06c8</td>
 </tr>
 <tr class="even">
 <td>git_dirty</td>

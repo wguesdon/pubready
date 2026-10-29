@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "correlation",
@@ -30,8 +30,8 @@
     "df": 58,
     "p_value": 2.0897966433035745e-10,
     "conf_int": {
-      "low": 0.56,
-      "high": 0.82
+      "low": 0.5566330866655288,
+      "high": 0.8168072497289761
     },
     "assumptions": {
       "normality": {
@@ -75,7 +75,7 @@
     {
       "file": "figure_gene_b_vs_gene_a_corr_py.pdf",
       "bytes": 16075,
-      "sha256": "54dffda9e339a13fb2c627e2b07bae05143427979240da5f280c9054ac97ac36"
+      "sha256": "94712eac94abbef1a47221391a259a2694135519056dfc2bb8ae466c5fd6969e"
     },
     {
       "file": "figure_gene_b_vs_gene_a_corr_py.png",
@@ -85,7 +85,7 @@
     {
       "file": "figure_gene_b_vs_gene_a_corr_py.svg",
       "bytes": 40472,
-      "sha256": "e01cb87948d1617b75f9c2cbea3a1670808551ee761f9c572cbefa7c3d944676"
+      "sha256": "7f8d9f1f8f0f49783e668d9266a5cc2553bb154f7d91f47319e2feb6066b81d4"
     },
     {
       "file": "packages_corr_py.txt",
@@ -100,22 +100,22 @@
     {
       "file": "qc_normality_corr_py.pdf",
       "bytes": 26372,
-      "sha256": "f287dc9f5cbef8df469c4498852875cbffa4932c062add81d615bf2732ba1025"
+      "sha256": "8c056013fe305b56893cc4d1e78b0eb106a2e95fa66f4f88a0d544f412d66e9e"
     },
     {
       "file": "report.qmd",
-      "bytes": 3160,
-      "sha256": "e10d220b1f119ad2c46db73d552cadfa2f706814cf84ba9692114b6d61a46b57"
+      "bytes": 3188,
+      "sha256": "a1b74bf5b14b364bb2f991e3958db116de37899fa4a8b46d20fd0ac786453efb"
     },
     {
       "file": "report.html",
-      "bytes": 1339850,
-      "sha256": "1d56f0c75fb6fe5bd27e52e5b90bf67014580be9f5a094be3e9b2ebdc0b1773b"
+      "bytes": 1339878,
+      "sha256": "96febe91f9045dc0683c231ca9c200e77037dbd12a6987c980efc125d46668ce"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2039,
-      "sha256": "eb949431d783e04948b1168ed4fac48cfeb6c28306ec2a81095083a42f6923a5"
+      "sha256": "41ab1e596a2cce401337e28d132d5db5700c697348e5519b9a397a4aa639751a"
     }
   ]
 }

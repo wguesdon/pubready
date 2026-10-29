@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "two_group_compare",
@@ -71,7 +71,7 @@
     {
       "file": "figure_volume_violin.pdf",
       "bytes": 18019,
-      "sha256": "211cfd0b7ff95d56f8152caaaf161eae17194463d24ccbb8ae94626e2d8f91c6"
+      "sha256": "9b9f93e92b2a2549568b9d411f8142ca9f96792e20088fadf95cf206cd242751"
     },
     {
       "file": "figure_volume_violin.png",
@@ -96,22 +96,22 @@
     {
       "file": "qc_normality_violin.pdf",
       "bytes": 28025,
-      "sha256": "f699e96b43d00541bbdb7c786a117bab9750f53bff956c96757a630122b9f32f"
+      "sha256": "e955c831b4125ac088dc39bb6f4eeb7fa6290e5db70b30b3b8f4c43fb4b948c6"
     },
     {
       "file": "report.qmd",
-      "bytes": 2893,
-      "sha256": "3b9bbcfb7598a266d2997ae65a27376ea500b81430097f30337c9ba1ef783ae6"
+      "bytes": 2954,
+      "sha256": "3e09c8b85be106482abc7693d2916696e59d46e04c34148c689fc8a5f05c3c21"
     },
     {
       "file": "report.html",
-      "bytes": 1307690,
-      "sha256": "74a4cafe0401891f4975535ccf6e3fcac4c2ad781ca3bd8f91801cf607551fec"
+      "bytes": 1307783,
+      "sha256": "1d37034cf25164ec6c6b3ecae3a825770f59b7186dfcfa52827836e3a7309139"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1666,
-      "sha256": "7598ab026a3ac72298b7df9984755b5bd11176877d77c5d6283e34bd228b3c86"
+      "sha256": "ca659a13844e259ba978333bcaea916eeff71861145ee0dda6a55793307ce40d"
     }
   ]
 }

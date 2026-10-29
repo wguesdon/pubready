@@ -22,13 +22,13 @@ The report records the selected recipe and does not claim a new method.
 
 ## Statistical results
 
-| outcome | group1 | group2 | n1 | n2 | test | statistic | df | p_value | p_adjust_method | effect_size_name | effect_size | shapiro_p_group1 | shapiro_p_group2 | var_equal_p |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| concentration | control | treated | 12 | 12 | Mann-Whitney U test | 11 |  | 0.000144222448704882 | none | rank-biserial r | -0.847222222222222 | 7.38580643594827e-06 | 7.85441727548186e-06 | 0.559146779868646 |
+| outcome | group1 | group2 | contrast | n1 | n2 | test | statistic | df | p_value | p_adjust_method | effect_size_name | effect_size | shapiro_p_group1 | shapiro_p_group2 | var_equal_p |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| concentration | control | treated | control - treated | 12 | 12 | Mann-Whitney U test | 11 |  | 0.000144222448704882 | none | rank-biserial r | -0.847222222222222 | 7.38580643594827e-06 | 7.85441727548186e-06 | 0.559146779868646 |
 
 ## Methods
 
-IL-6 (pg/mL) was compared between the two groups with a Mann-Whitney U test. Normality was assessed with the Shapiro-Wilk test. A non-parametric test was used because the normality assumption was not met. Effect size is reported as rank-biserial r = -0.85. Significance was set at P < 0.05. Analyses were performed in R 4.4.1 with rstatix 0.7.2; figures were produced with ggpubr 0.6.0 and ggprism 1.0.5. Group sizes were n = 12 and n = 12.
+IL-6 (pg/mL) was compared between the two groups with a Mann-Whitney U test. Normality was assessed with the Shapiro-Wilk test. A non-parametric test was used because the normality assumption was not met. Effect size is reported as rank-biserial r = -0.85 (control minus treated). Significance was set at P < 0.05. Analyses were performed in R 4.4.1 with rstatix 0.7.2; figures were produced with ggpubr 0.6.0 and ggprism 1.0.5. Group sizes were n = 12 and n = 12.
 
 ## Plot configuration
 
@@ -40,7 +40,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |

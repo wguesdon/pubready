@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "ma_plot",
@@ -62,7 +62,7 @@
     {
       "file": "figure_de_basemean_ma.pdf",
       "bytes": 183144,
-      "sha256": "4c5ab8413237a49546ac5051a9979cde8de6a564562d040afe42bcb05ef2c459"
+      "sha256": "1ba7e5be1b5c915426e3deda57e668dc81a79cb37d189d1b4b9df66189daaba5"
     },
     {
       "file": "figure_de_basemean_ma.png",
@@ -82,17 +82,17 @@
     {
       "file": "report.qmd",
       "bytes": 8745,
-      "sha256": "7ce4241191b1082ae70523315c5e1267e7878cd90cabf39cbbd59656ad4755c4"
+      "sha256": "b6453d90e0f718ebfbb3c942a0c0cb2f92a0bb7996d431b7cb7610247978ebfc"
     },
     {
       "file": "report.html",
       "bytes": 1397743,
-      "sha256": "b8500467a4f82fc9f29e0e26266c7d8658d44f34daf40e93f7a39c1ad377534e"
+      "sha256": "b262346a4fddf23ad7bb5e71e2c695792998524062f4e6dd28f4823df92deb96"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1983,
-      "sha256": "17424b40531d29c9adc6d5f597a81f6eb2d7d1d04820c415c64fcea552c0b155"
+      "sha256": "c628a1107af32c83889423f5d2129a99b6c1d43f71e77709bfe7f6903dd92248"
     }
   ]
 }

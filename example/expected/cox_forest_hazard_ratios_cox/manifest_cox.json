@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "cox_forest",
@@ -100,7 +100,7 @@
     {
       "file": "figure_hazard_ratios_cox.pdf",
       "bytes": 11178,
-      "sha256": "f8f144ed517d054e94b140ca9821c54a80604fd58abe53750834baf60dc17497"
+      "sha256": "417f577295a9f521fa99f3971a9c0655e8f05f164fa8ab1b2873b36aa44fba1e"
     },
     {
       "file": "figure_hazard_ratios_cox.png",
@@ -120,17 +120,17 @@
     {
       "file": "report.qmd",
       "bytes": 3276,
-      "sha256": "df40a7acf8dcd3993452107c8843b17f0255fbb6d84526959cd2def57a7c9bbb"
+      "sha256": "2a994ab6eaa578d7189cea98cd69cfc7cc00dd2ac9414a9b9118b4f86d7fc6a4"
     },
     {
       "file": "report.html",
       "bytes": 1342986,
-      "sha256": "7a72c6007e1462c40fa3060b6f7426765d1394049e78d381cbd8729eabd46e44"
+      "sha256": "86d038757a042c8072667b39f6c9511d2713b1521cb70e0a41ae1c60a50e5925"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2025,
-      "sha256": "29fab6172c68c8f23c39d9de2e999f6be0d92218b81041ad5b27997da061a83e"
+      "sha256": "39ae4d76b45a08125bb284c9c7a7a4461b02bf8e28b7ec573a1fcedec92c9c9b"
     }
   ]
 }

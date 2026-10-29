@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "enzyme_kinetics",
@@ -99,7 +99,7 @@
     {
       "file": "figure_rate_enzyme.pdf",
       "bytes": 15627,
-      "sha256": "500e36e79ee255f2659e161423fddf3836262ddbdc84df09d2aeb60143fe2b23"
+      "sha256": "aea6fca11a66a58ce01ce8b3f1376effb5a3b4123e564616aa1018133e77e796"
     },
     {
       "file": "figure_rate_enzyme.png",
@@ -118,18 +118,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4174,
-      "sha256": "cb762688f4f9a5f4f7e6e04109397e6cf6ce048784c11818c00efaa5b26b4da5"
+      "bytes": 4290,
+      "sha256": "d17fdd58ec1f9a7e311d2f534b139aa2cd4bf4a9986914e3bec963ec58f9619b"
     },
     {
       "file": "report.html",
-      "bytes": 1414195,
-      "sha256": "d6580b74f93514a4369b57f168c9c894c4a0cee78aa3d2dd33cc296e86dcee99"
+      "bytes": 1414311,
+      "sha256": "40e930d3a31cbf4b3a13b5d65a0e12a233403c83aaf7f99f7e5ca2ab1929740e"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2043,
-      "sha256": "9a88b5bca4e2c7bb8dce3e18dbb039375f1f86218f2a68c5c0b9a6f87578a102"
+      "sha256": "30722b4aee2aea41f46a80f7409d2079c18dfc0b7109fd8e2149b2d92d43bb77"
     }
   ]
 }

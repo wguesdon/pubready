@@ -28,7 +28,7 @@ The report records the selected recipe and does not claim a new statistical meth
 
 ## Methods
 
-Agreement between new_assay and reference_assay was assessed by the method of Bland and Altman (n = 40 pairs). The mean difference (new_assay - reference_assay) was 5.93 (95% CI 4.42 to 7.45) with a standard deviation of 4.74. The 95% limits of agreement were -3.36 (95% CI -5.97 to -0.744) and 15.2 (95% CI 12.6 to 17.8), computed as the mean difference plus or minus 1.96 standard deviations, with confidence intervals from the standard error of Bland and Altman (1999). A linear regression of the difference on the mean gave a slope of 0.045 (P = 0.001) as a test of proportional bias. The normality of the differences, which the limits assume, was checked with the Shapiro-Wilk test (P = 0.67). Computed in Python 3.10.12 with scipy 1.15.3 and drawn with matplotlib 3.10.9.
+Agreement between new_assay and reference_assay was assessed by the method of Bland and Altman (n = 40 pairs). The mean difference (new_assay - reference_assay) was 5.93 (95% CI 4.42 to 7.45) with a standard deviation of 4.74. The 95% limits of agreement were -3.36 (95% CI -5.97 to -0.744) and 15.2 (95% CI 12.6 to 17.8), computed as the mean difference plus or minus 1.96 standard deviations, with confidence intervals from the standard error of Bland and Altman (1999). A linear regression of the difference on the mean gave a slope of 0.045 (P = 0.0010) as a test of proportional bias. The normality of the differences, which the limits assume, was checked with the Shapiro-Wilk test (P = 0.67). Computed in Python 3.10.12 with scipy 1.15.3 and drawn with matplotlib 3.10.9.
 
 ## Plot configuration
 
@@ -40,7 +40,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | False |
 | llm_provider | none |
 | llm_model | none |

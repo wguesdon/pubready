@@ -22,13 +22,13 @@ The report records the selected recipe and does not claim a new method.
 
 ## Statistical results
 
-| outcome | condition1 | condition2 | n_pairs | test | statistic | df | p_value | mean_diff | effect_size_name | effect_size | shapiro_p_diff |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| value | pre | post | 22 | paired t-test | -9.97292541186761 | 21 | 2.03157966031198e-09 | -11.1909090909091 | Cohen's dz | -2.12623484197124 | 0.691077410102849 |
+| outcome | condition1 | condition2 | contrast | n_pairs | test | statistic | df | p_value | mean_diff | effect_size_name | effect_size | shapiro_p_diff |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| value | pre | post | post - pre | 22 | paired t-test | -9.97292541186761 | 21 | 2.03157966031198e-09 | -11.1909090909091 | Cohen's dz | -2.12623484197124 | 0.691077410102849 |
 
 ## Methods
 
-Marker (a.u.) was compared between pre and post within each subject with a paired t-test (n = 22 pairs). The test was chosen from the Shapiro-Wilk normality of the within-subject differences. Effect size is reported as Cohen's dz = -2.13. Significance was set at P < 0.05. Drawn in R 4.4.1 with ggplot2 3.5.1 and ggpubr 0.6.0.
+Marker (a.u.) was compared between pre and post within each subject with a paired t-test (n = 22 pairs). The test was chosen from the Shapiro-Wilk normality of the within-subject differences. Effect size is reported as Cohen's dz = -2.13 (post minus pre). Significance was set at P < 0.05. Drawn in R 4.4.1 with ggplot2 3.5.1 and ggpubr 0.6.0.
 
 ## Plot configuration
 
@@ -40,7 +40,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |

@@ -55,7 +55,7 @@ The report records the selected recipe and does not claim a new statistical meth
 
 ## Methods
 
-Pairwise pearson correlations among 8 variables were computed and drawn as a clustered heatmap with seaborn. Variables were hierarchically clustered on both axes. Each cell shows the coefficient with Benjamini-Hochberg adjusted significance stars (15 of the 28 pairs were significant at adjusted P < 0.05). Rendered in Python 3.10.12 with seaborn 0.13.2.
+Pairwise Pearson correlations among 8 variables were computed and drawn as a clustered heatmap with seaborn. Variables were hierarchically clustered on both axes. Each cell shows the coefficient with Benjamini-Hochberg adjusted significance stars (15 of the 28 pairs were significant at adjusted P < 0.05). Rendered in Python 3.10.12 with seaborn 0.13.2.
 
 ## Plot configuration
 
@@ -67,7 +67,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | False |
 | llm_provider | none |
 | llm_model | none |

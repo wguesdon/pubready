@@ -22,26 +22,26 @@ The report records the selected recipe and does not claim a new method.
 
 ## Statistical results
 
-| from_visit | to_visit | from_state | to_state | n |
-| --- | --- | --- | --- | --- |
-| 8 | 16 | complete response | complete response | 3 |
-| 8 | 16 | partial response | complete response | 4 |
-| 8 | 16 | partial response | partial response | 10 |
-| 8 | 16 | partial response | stable disease | 3 |
-| 8 | 16 | partial response | progressive disease | 1 |
-| 8 | 16 | stable disease | partial response | 5 |
-| 8 | 16 | stable disease | stable disease | 25 |
-| 8 | 16 | stable disease | progressive disease | 5 |
-| 8 | 16 | progressive disease | progressive disease | 3 |
-| 16 | 24 | complete response | complete response | 6 |
-| 16 | 24 | complete response | partial response | 1 |
-| 16 | 24 | partial response | complete response | 4 |
-| 16 | 24 | partial response | partial response | 9 |
-| 16 | 24 | partial response | stable disease | 2 |
-| 16 | 24 | stable disease | partial response | 2 |
-| 16 | 24 | stable disease | stable disease | 17 |
-| 16 | 24 | stable disease | progressive disease | 5 |
-| 16 | 24 | progressive disease | progressive disease | 3 |
+| from_visit | to_visit | from_state | to_state | n | omnibus_test | omnibus_statistic | omnibus_df1 | omnibus_df2 | omnibus_p |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 8 | 16 | complete response | complete response | 3 |  |  |  |  |  |
+| 8 | 16 | partial response | complete response | 4 |  |  |  |  |  |
+| 8 | 16 | partial response | partial response | 10 |  |  |  |  |  |
+| 8 | 16 | partial response | stable disease | 3 |  |  |  |  |  |
+| 8 | 16 | partial response | progressive disease | 1 |  |  |  |  |  |
+| 8 | 16 | stable disease | partial response | 5 |  |  |  |  |  |
+| 8 | 16 | stable disease | stable disease | 25 |  |  |  |  |  |
+| 8 | 16 | stable disease | progressive disease | 5 |  |  |  |  |  |
+| 8 | 16 | progressive disease | progressive disease | 3 |  |  |  |  |  |
+| 16 | 24 | complete response | complete response | 6 |  |  |  |  |  |
+| 16 | 24 | complete response | partial response | 1 |  |  |  |  |  |
+| 16 | 24 | partial response | complete response | 4 |  |  |  |  |  |
+| 16 | 24 | partial response | partial response | 9 |  |  |  |  |  |
+| 16 | 24 | partial response | stable disease | 2 |  |  |  |  |  |
+| 16 | 24 | stable disease | partial response | 2 |  |  |  |  |  |
+| 16 | 24 | stable disease | stable disease | 17 |  |  |  |  |  |
+| 16 | 24 | stable disease | progressive disease | 5 |  |  |  |  |  |
+| 16 | 24 | progressive disease | progressive disease | 3 |  |  |  |  |  |
 
 ## Methods
 
@@ -57,7 +57,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |

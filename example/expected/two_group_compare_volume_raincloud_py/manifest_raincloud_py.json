@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "two_group_compare",
@@ -76,7 +76,7 @@
     {
       "file": "figure_volume_raincloud_py.pdf",
       "bytes": 15802,
-      "sha256": "1a87810cc93e4a78c075f086ee43b8d93a29121a6e012291b2bc9b444f0b9aa3"
+      "sha256": "3460f6fda491468379d4ec079298ec5dff75832c06b04ad249f3d6591f2e1b0b"
     },
     {
       "file": "figure_volume_raincloud_py.png",
@@ -86,7 +86,7 @@
     {
       "file": "figure_volume_raincloud_py.svg",
       "bytes": 37736,
-      "sha256": "7ca04953dd2e22eebc4cdb7bf3f4105dda1ea19e6c19169470f4f44cd899fe88"
+      "sha256": "76e81cb584199792755d516e7e6ac45f2d0d5a325e8f0b10f81feefa512a02f8"
     },
     {
       "file": "packages_raincloud_py.txt",
@@ -101,22 +101,22 @@
     {
       "file": "qc_normality_raincloud_py.pdf",
       "bytes": 25226,
-      "sha256": "858cd0671fa28b11d5dc2f9e956d7a7701871162f21fd3b7dadf59f07de44f6c"
+      "sha256": "4c1030b52dfd8e1ba3e17a2175273d97822275872b427d9c836a5feb9337d667"
     },
     {
       "file": "report.qmd",
-      "bytes": 3267,
-      "sha256": "2b1c84a71d74c8eab0b5e779e42b0ccf3f7a1661eb6f3875b38e1f3527355e29"
+      "bytes": 3328,
+      "sha256": "fbf287f6ca9e75acd0db1eea3b4d34f282a3fe3fdd1e063bd4e3138c362d4a3e"
     },
     {
       "file": "report.html",
-      "bytes": 1281870,
-      "sha256": "9b2e4b8b03304e500b9cf764c9fe2f225ef79318c6929e8b7afb5e6e05eb08de"
+      "bytes": 1281963,
+      "sha256": "5519ee58831b2f2682271ef6cb98ac2d8c2a20b43fb2971542ded92e55a00c71"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2039,
-      "sha256": "81ccccc78d913ce1983eff0570370ee7b36615dc265ed9a02e94af27d0385566"
+      "sha256": "92d0064e86af56b493f1147d72ea6cc6a134b600317882ce3e17c0e669ca087d"
     }
   ]
 }

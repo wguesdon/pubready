@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "two_group_compare",
@@ -76,7 +76,7 @@
     {
       "file": "figure_concentration_mwu_py.pdf",
       "bytes": 13145,
-      "sha256": "502bfa3c46efee8ba9b6da8110f79fe1c71b45db32f087969bb46efbce6bfd44"
+      "sha256": "db0fd4e5a786483b063b869261ed9d0a7a3591a5f95de0ac8b5e1133bef11136"
     },
     {
       "file": "figure_concentration_mwu_py.png",
@@ -86,7 +86,7 @@
     {
       "file": "figure_concentration_mwu_py.svg",
       "bytes": 26749,
-      "sha256": "d43c4ef1c68c54170df549e9201b1dadd2a7162c0ba9f6d4e8e19d9e9657773d"
+      "sha256": "f42282befb35eb63deac5dabea6531d958e12cc204f62539de29d95b32d0dd76"
     },
     {
       "file": "packages_mwu_py.txt",
@@ -101,22 +101,22 @@
     {
       "file": "qc_normality_mwu_py.pdf",
       "bytes": 24933,
-      "sha256": "6c17fee4a45a4765a85df40ae0eff235cc30e2c77a74d51bdf6f4d8ce1c52993"
+      "sha256": "3bf922b7155106d6e92d9d1c7c0c9494e3f6f0ed31173cf2c3629e61f5036bdf"
     },
     {
       "file": "report.qmd",
-      "bytes": 3310,
-      "sha256": "e7a67e4864cfed80d9b9c5bfabbf106704653e5914fbfeb2368c53587c4e5f97"
+      "bytes": 3371,
+      "sha256": "e848c445505512cd27c8d9bed90c2530917bc22ce9ad6f478ec7e3f147b98f1a"
     },
     {
       "file": "report.html",
-      "bytes": 1264624,
-      "sha256": "0ed5c3d0f2bf323489d1a03c01623ce004f92d24c6007618671bdf074203b9bf"
+      "bytes": 1264717,
+      "sha256": "65492861a2f50b184ee3298b9bc488a113b4050d13bd0744cfcde144eba99152"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2045,
-      "sha256": "c3662b80a365a0f5f0064c1d40a449f2228b68babb1b3e361251c7107b6d15aa"
+      "sha256": "c005f53b982d4516420dc9aa9fc66792c57412d896e4909853c3c3774fec7f99"
     }
   ]
 }

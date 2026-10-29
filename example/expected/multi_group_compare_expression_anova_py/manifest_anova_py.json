@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "multi_group_compare",
@@ -83,7 +83,7 @@
     {
       "file": "figure_expression_anova_py.pdf",
       "bytes": 16460,
-      "sha256": "1c89a85445cbb7e8e736e898b367b1383b861d7b683ba2b620e66aca7279adfb"
+      "sha256": "e868c18566dd878f1cf9f50e7a369a019e4ae4933b23a09a8afcd156128d026c"
     },
     {
       "file": "figure_expression_anova_py.png",
@@ -93,7 +93,7 @@
     {
       "file": "figure_expression_anova_py.svg",
       "bytes": 41844,
-      "sha256": "567f455f5a18f750f241c2976811eea3f2d5cf00b3e80caf117e3f15d2ffa7b7"
+      "sha256": "9d2925f2721ebdf01bf7e4fc1ec9c231e99cf21fba98708e09b8522ba375e553"
     },
     {
       "file": "packages_anova_py.txt",
@@ -108,22 +108,22 @@
     {
       "file": "qc_normality_anova_py.pdf",
       "bytes": 26691,
-      "sha256": "2cc9a8eba71fbee3863208e801e3784b3fb9bf35d9a9c6cc49ac6ed63b098661"
+      "sha256": "3db865db1985cc641e997d0f36de82c3597c843fa5238d446eb9daa6117b58a4"
     },
     {
       "file": "report.qmd",
-      "bytes": 3681,
-      "sha256": "8d0d333f4b3c5b8abfb7d60afe14962714cdcc46eda8464b53d00f4f74c22472"
+      "bytes": 4623,
+      "sha256": "68f17fe9f4127889b1cc3c2d2db03ca0104927e499ec78e1f7b1a9e8b9eaa3d6"
     },
     {
       "file": "report.html",
-      "bytes": 1329598,
-      "sha256": "3535f5bea867a9e3a61b74ef208387e4570511d4d29af4e54041dffe457b0a24"
+      "bytes": 1331066,
+      "sha256": "14d0306b74acb685b70f3c3ea7838d5292dde2f88d40f3ca99c9e7f2a0570545"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2055,
-      "sha256": "5325cca55504c83c4722a9633c2a55a8bb4829cbf747820701518ead49f0add3"
+      "sha256": "066c10be4d3b052aa91050d4cce527e8c8641c1f5987dfea36ac38ba9d4346ee"
     }
   ]
 }

@@ -57,7 +57,7 @@ The report records the selected recipe and does not claim a new statistical meth
 
 ## Methods
 
-A heatmap of 30 features across 20 samples was drawn with PyComplexHeatmap. Values were z-scored across samples within each feature (row scaling). Rows and columns were hierarchically clustered. Clustering used complete linkage on the Euclidean distance of the displayed values, and at each merge the branch with the higher mean of the unscaled values was drawn first. A per-feature Welch t-test (control vs treated), BH-adjusted was applied per feature; 20 feature(s) were significant (adjusted P < 0.05) and are marked with stars. Rendered in Python 3.10.12 with PyComplexHeatmap 1.8.5.
+A heatmap of 30 features across 20 samples was drawn with PyComplexHeatmap. Values were z-scored across samples within each feature (row scaling). Rows and columns were hierarchically clustered. Clustering used complete linkage on the Euclidean distance of the displayed values, and at each merge the branch with the higher mean of the unscaled values was drawn first. Each feature was compared between control and treated with a Welch two-sample t-test, which treats the samples as independent, and the P values were adjusted across the 30 features with the Benjamini-Hochberg method; 20 of the 30 features had an adjusted P below 0.05 and are marked with stars. Rendered in Python 3.10.12 with PyComplexHeatmap 1.8.5.
 
 ## Plot configuration
 
@@ -69,7 +69,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | False |
 | llm_provider | none |
 | llm_model | none |

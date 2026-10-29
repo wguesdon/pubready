@@ -22,13 +22,13 @@ The report records the selected recipe and does not claim a new statistical meth
 
 ## Statistical results
 
-| outcome | group1 | group2 | n1 | n2 | test | statistic | df | p_value | p_adjust_method | effect_size_name | effect_size | shapiro_p_group1 | shapiro_p_group2 | var_equal_p |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| concentration | control | treated | 12 | 12 | Mann-Whitney U test | 11.0 | nan | 0.00014422244870488242 | none | rank-biserial r | -0.8472222222222222 | 7.385806425474998e-06 | 7.854417264035744e-06 | 0.5591467798686465 |
+| outcome | group1 | group2 | contrast | n1 | n2 | test | statistic | df | p_value | p_adjust_method | effect_size_name | effect_size | shapiro_p_group1 | shapiro_p_group2 | var_equal_p |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| concentration | control | treated | control - treated | 12 | 12 | Mann-Whitney U test | 11.0 | nan | 0.00014422244870488242 | none | rank-biserial r | -0.8472222222222222 | 7.385806425474998e-06 | 7.854417264035744e-06 | 0.5591467798686465 |
 
 ## Methods
 
-IL-6 (pg/mL) was compared between the two groups with a Mann-Whitney U test. Normality was assessed with the Shapiro-Wilk test. A non-parametric test was used because the normality assumption was not met. Effect size is reported as rank-biserial r = -0.85. Significance was set at P < 0.05. Analyses were performed in Python 3.10.12 with pingouin 0.6.1; figures were produced with seaborn 0.13.2 and statannotations 0.7.2. Group sizes were n = 12 and n = 12.
+IL-6 (pg/mL) was compared between the two groups with a Mann-Whitney U test. Normality was assessed with the Shapiro-Wilk test. A non-parametric test was used because the normality assumption was not met. Effect size is reported as rank-biserial r = -0.85 (control minus treated). Significance was set at P < 0.05. Analyses were performed in Python 3.10.12 with pingouin 0.6.1; figures were produced with seaborn 0.13.2 and statannotations 0.7.2. Group sizes were n = 12 and n = 12.
 
 ## Plot configuration
 
@@ -40,7 +40,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 2.0.0 |
-| git_commit | 1b8bb2fd31d9315d60137be3bc664c2a3e33f671 |
+| git_commit | a9f218358c74881d725e4bdcd4c40be832ba06c8 |
 | git_dirty | False |
 | llm_provider | none |
 | llm_model | none |

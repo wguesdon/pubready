@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "timecourse",
@@ -98,18 +98,18 @@
   "output_checksums": [
     {
       "file": "figure_volume_mm3_tc_py.pdf",
-      "bytes": 17271,
-      "sha256": "6d8a59de72a0222acc1803832d262b384f3930c0c6b3556f08939bc12030c936"
+      "bytes": 17276,
+      "sha256": "33b0976766edb30a004d161a8f25b61b7d1a4881ad7c7634b51e7202f619eb3b"
     },
     {
       "file": "figure_volume_mm3_tc_py.png",
-      "bytes": 254438,
-      "sha256": "a784a7f6590abcbcbd43073c8f7ae99bc27736c6f9d7cb23ac7aac36bb52a825"
+      "bytes": 257968,
+      "sha256": "b0e80d970321466b407e697f08be3891640998fc4cf8e0257f709dd214b6c0e5"
     },
     {
       "file": "figure_volume_mm3_tc_py.svg",
       "bytes": 47780,
-      "sha256": "d165b731040f861ebcf9554696ff09d3fd5ec2b6c6974ce458b3df4256d8fe6d"
+      "sha256": "78552f2c7abfe3395483d58781c7653b1b4f90a6bed86f1b3b08c1d772c64449"
     },
     {
       "file": "packages_tc_py.txt",
@@ -124,22 +124,22 @@
     {
       "file": "qc_normality_tc_py.pdf",
       "bytes": 26548,
-      "sha256": "7e4d26866613f7066a4fa760da427545dc948b7f3dd9dea55278343db5fe4d10"
+      "sha256": "9fdcbb6a4eaae4aad919674853b35f62edf08e0c89daba9f569129faf76d6efb"
     },
     {
       "file": "report.qmd",
       "bytes": 3859,
-      "sha256": "bf5facdd47bbce21c0b5466b1f5fb18578872f87c0153fd253ebd6618a22a3b2"
+      "sha256": "249a9342a517f854ca15b410f6acdb3b65e9226aeb0e3147691479a5e1d2c345"
     },
     {
       "file": "report.html",
-      "bytes": 1533218,
-      "sha256": "b5a4a0fbe8a140a59f553f15246ac10be34c17991bd5c852ec1d9b2d156e7fcd"
+      "bytes": 1537926,
+      "sha256": "92bf0e658a1f5b0933ee2da18f1d19bed6f74093bbb10684605bf878325f6b16"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2031,
-      "sha256": "098e5fc18c29d4bbefc807df089685cc419da533eb4e111174ece5a7376cf50b"
+      "sha256": "316b24b99ff32059e25fd68ee6f77e16ac12bdf4b647c79416cec70e563f83d3"
     }
   ]
 }

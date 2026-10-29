@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "two_group_compare",
@@ -76,7 +76,7 @@
     {
       "file": "figure_volume_prism_py.pdf",
       "bytes": 14515,
-      "sha256": "762771ec30169030f81bbc45d2e077502884d4ed337d429b670a4115ea0912a5"
+      "sha256": "13927ad70067d316c7953c81dbd622dcb1c154a4299d4b41e9cbc148d490ca61"
     },
     {
       "file": "figure_volume_prism_py.png",
@@ -86,7 +86,7 @@
     {
       "file": "figure_volume_prism_py.svg",
       "bytes": 27696,
-      "sha256": "78cbb5fc9ff4719be875cf38aecbf0ee7d87c018d36f240ddcc1638b7e4d64be"
+      "sha256": "711c8a278c4f7e1b6425c708c8b136a11043eac398886a1b33fd3bf919c5a224"
     },
     {
       "file": "packages_prism_py.txt",
@@ -101,22 +101,22 @@
     {
       "file": "qc_normality_prism_py.pdf",
       "bytes": 25226,
-      "sha256": "d917e999de4fb93c118b20ce4b5e28cae57defea4ccd1773ea10dfb15b7dd216"
+      "sha256": "93c15ce25b8615949c8bfcebda17cff2c67c459cc9697d36188f9563077f6366"
     },
     {
       "file": "report.qmd",
-      "bytes": 3251,
-      "sha256": "76984be1a0bbb0d864207dc56b8887377448908475b48f3ef293a61532cf727d"
+      "bytes": 3312,
+      "sha256": "a861216a833d11dacf52e4395cd5c0df71bcaf4a25b428bde555b6620bf4d61f"
     },
     {
       "file": "report.html",
-      "bytes": 1284046,
-      "sha256": "41e5a0b83e3f026bba928ddba6f8a0f863214e83d00d08d6545aea96097cd8eb"
+      "bytes": 1284139,
+      "sha256": "7a003f1f32d7da43702b2b15348740d10810c90bb90c01aeae50ee971ebaad99"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2027,
-      "sha256": "ab2e534cb8b4a97773a3f5ecf2eb1b84ad3e729182684ebe5fc34dd075808c00"
+      "sha256": "1635c2ffd2e66cc112be0a23c2d5509a8140d3e89daeed01e13d3b94e039f455"
     }
   ]
 }

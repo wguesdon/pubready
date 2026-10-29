@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "spider_response",
@@ -60,7 +60,7 @@
     {
       "file": "figure_target_lesion_mm_spider.pdf",
       "bytes": 9795,
-      "sha256": "0aa4b5410611704eb0516207299284e6d1a5269acac1fc987176c7fc93385be7"
+      "sha256": "dfb450aaa8dbc3bf94039d0b09bf8b3ce27b032bcbb43ca1a7e8b9092b4aa967"
     },
     {
       "file": "figure_target_lesion_mm_spider.png",
@@ -80,17 +80,17 @@
     {
       "file": "report.qmd",
       "bytes": 5202,
-      "sha256": "4611f698f97d997e6ce20a3a5d2d0ccec4f13d7e49e4daad08c8aad0bd240200"
+      "sha256": "8bb4d8c5bb15003ae5ce95fb596ac535b56c07aa81e62230d13fae743689b079"
     },
     {
       "file": "report.html",
       "bytes": 1504825,
-      "sha256": "48feb11ab3d26a5bdcab780bf9750493dd77542a478bfa7e9e209d81db97543f"
+      "sha256": "1ddb8559214b8c3ed7a38243945ab98f849ac04cf020a207506d8e67fba0ec52"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2032,
-      "sha256": "16b35641e04846acfd46b82a351bee85ef82d595088ebb6c1b4fd11435a4eea2"
+      "sha256": "fb9a32f2b9853952ec8b81bab71810f66783ca6fbb5e73ddccb705e7e274580f"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "multi_group_compare",
@@ -83,7 +83,7 @@
     {
       "file": "figure_expression_bar_py.pdf",
       "bytes": 15567,
-      "sha256": "c42d4efdd43cb2237e8b08c26f924b31ed041d57432775401e276f1fce3a6f02"
+      "sha256": "52b1fb073f1729d2e22950994c518c64b007023d22de2b33d29b523e020ab0d6"
     },
     {
       "file": "figure_expression_bar_py.png",
@@ -93,7 +93,7 @@
     {
       "file": "figure_expression_bar_py.svg",
       "bytes": 38432,
-      "sha256": "8374d60838e208182013a9f8c7a8aa085919670b803b6cef8e9279f63bda9fdb"
+      "sha256": "c7bb4ccc08423124eb5f9f9bf7604716aa4f43fe38a2cbc8b26922319f7d81e0"
     },
     {
       "file": "packages_bar_py.txt",
@@ -108,22 +108,22 @@
     {
       "file": "qc_normality_bar_py.pdf",
       "bytes": 26691,
-      "sha256": "9af8dc674d3aa3f6bd6968b0163e457b663d131a59a125da040add94644af336"
+      "sha256": "6d34abe80527389afdf279538a9f87f2e65388ce17c5c39b5a861a6c5aebb9ec"
     },
     {
       "file": "report.qmd",
-      "bytes": 3673,
-      "sha256": "5b5c760e2b99ab92341f20b5ef741a83fec683e2071c5e39208caf8f357040e3"
+      "bytes": 4615,
+      "sha256": "01c603cc1ec5a55e21f1761d7935b88a480b43945c7fba1af4bd5060a1a45f15"
     },
     {
       "file": "report.html",
-      "bytes": 1321820,
-      "sha256": "f807ac32e6e3b3c8eca1d563b08cd14649213b152081c18a253d6ee04c6ddced"
+      "bytes": 1323288,
+      "sha256": "31a6eea61495f1f70b3823b6dc3f464595e3d3d6af546132fe9f77e3d6be8cd3"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2049,
-      "sha256": "5465eac4e998cc572332ca11546adfb22d1c839e1334453024b39ef37cb91490"
+      "sha256": "d59a95246ace0b4f8addf23563e54dd3dfadd694be570a4528c138481cd4930c"
     }
   ]
 }

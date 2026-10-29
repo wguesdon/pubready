@@ -1,6 +1,6 @@
 {
   "pubready_version": "2.0.0",
-  "pubready_git_commit": "1b8bb2fd31d9315d60137be3bc664c2a3e33f671",
+  "pubready_git_commit": "a9f218358c74881d725e4bdcd4c40be832ba06c8",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "correlation_heatmap",
@@ -25,7 +25,27 @@
     "clustering": "both",
     "n_variables": 8,
     "n_pairs": 28,
-    "n_significant": 15
+    "n_significant": 15,
+    "row_order": [
+      "tnf",
+      "il1b",
+      "il6",
+      "crp",
+      "ifng",
+      "il4",
+      "tgfb",
+      "il10"
+    ],
+    "column_order": [
+      "tnf",
+      "il1b",
+      "il6",
+      "crp",
+      "ifng",
+      "il4",
+      "tgfb",
+      "il10"
+    ]
   },
   "container": {
     "image": "localhost/pubready:2.0.0",
@@ -56,7 +76,7 @@
     {
       "file": "figure_correlation_vars_corrhm.pdf",
       "bytes": 11982,
-      "sha256": "2b0ea58dec1df62e92674b6a48f273bfe3190b60fc44b01e2dbfa34693f76bb5"
+      "sha256": "3bb3b101677911228bb9c23fa59e8c13afdd83aedf6713223caec47c001491de"
     },
     {
       "file": "figure_correlation_vars_corrhm.png",
@@ -76,17 +96,17 @@
     {
       "file": "report.qmd",
       "bytes": 5093,
-      "sha256": "a1e2572abe6d703e1d69a019af887a05255a2a047133c489cbd95d9eb08bfeae"
+      "sha256": "b6813cfe3477da400f655fface4807901fadf324008d2edbf435c2e37faf24fd"
     },
     {
       "file": "report.html",
       "bytes": 1372641,
-      "sha256": "462bce1dd4586a0d0c6b6797ace7d3fbe9908ee1afaf9a7ff8a5c2f1769ccb9c"
+      "sha256": "bf840362a37bbb9604fc2ac471e388d72b6ba97cdfefb8c416a5bca6dcb4885e"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2017,
-      "sha256": "815721b673226b8c19a1172f1b20c4a26df73d8615a77b41fcaee34ca27c53d1"
+      "sha256": "eaff68fbbb98aa31ff9eb3a4cd19322422c7eec93db039e52f2527a2790f45cd"
     }
   ]
 }
