@@ -13,8 +13,9 @@ shared EC50 fits the data as well as one EC50 per curve.
 Both engines compute the same starting values and minimise the same residual sum
 of squares, so they converge to the same estimates.
 
-A curve whose mean responses vary by less than 10% of the response range is flat
-and gets no fit (is_flat). A curve whose fit fails the rule of status_reason is
+A curve whose mean responses vary by less than 10% of the response range, or
+whose responses do not differ between the doses in a one-way ANOVA, is flat and
+gets no fit (flat_check). A curve whose fit fails the rule of status_reason is
 "not determined" too. Both are drawn as their mean +/- SEM without a curve.
 """
 import functools
@@ -121,6 +122,60 @@ def is_flat(lx, y, span_ref):
                 and means.max() - means.min() < MIN_SPAN * span_ref)
 
 
+ANOVA_REASON = "the responses do not differ between the doses (one-way ANOVA, P >= 0.05)"
+"""The reason of a curve that the dose ANOVA finds flat, as .drc_anova_reason() in R."""
+
+
+def dose_anova_p(lx, y):
+    """The P value of a one-way ANOVA of one curve across its doses.
+
+    The sums of squares are written out as in .drc_dose_anova_p() of the R
+    engine, so both engines compute the same value.
+
+    Args:
+        lx: The log10 doses of the curve.
+        y: The responses of the curve.
+
+    Returns:
+        float: The P value, or NaN when no dose has a replicate, as the ANOVA
+        then has no residual degree of freedom.
+    """
+    u = np.unique(lx)
+    k, n = len(u), len(y)
+    if k < 2 or n - k < 1:
+        return float("nan")
+    means = {v: y[lx == v].mean() for v in u}
+    fitted = np.array([means[v] for v in lx])
+    ssw = float(np.sum((y - fitted) ** 2))
+    ssb = float(np.sum((fitted - y.mean()) ** 2))
+    if ssw == 0:
+        return 0.0 if ssb > 0 else float("nan")
+    return float(stats.f.sf((ssb / (k - 1)) / (ssw / (n - k)), k - 1, n - k))
+
+
+def flat_check(lx, y, span_ref):
+    """Run the checks before the fit, as .drc_flat_check() in R.
+
+    The checks, in order, are the 10% range rule of is_flat and the one-way
+    ANOVA across the doses, which also covers a single curve.
+
+    Args:
+        lx: The log10 doses of the curve.
+        y: The responses of the curve.
+        span_ref: The range of the mean responses of all curves.
+
+    Returns:
+        str or None: The reason of a flat curve, or None when the curve goes to
+        the fit.
+    """
+    if is_flat(lx, y, span_ref):
+        return FLAT_REASON
+    p = dose_anova_p(lx, y)
+    if np.isfinite(p) and p >= 0.05:
+        return ANOVA_REASON
+    return None
+
+
 def status_reason(converged, bottom, top, log_ec50, lx, ci_low, ci_high, span_ref):
     """Say why a curve is "not determined", as .drc_status_reason() of the R engine.
 
@@ -152,7 +207,7 @@ def status_reason(converged, bottom, top, log_ec50, lx, ci_low, ci_high, span_re
     return None
 
 
-def curve_row(g, lx, y, popt, pcov, start, span_ref, flat=False):
+def curve_row(g, lx, y, popt, pcov, start, span_ref, flat_reason=None):
     """Summarise one curve as one row of the stats table.
 
     A flat curve, or a curve whose fit fails the rule of status_reason, keeps its
@@ -166,7 +221,8 @@ def curve_row(g, lx, y, popt, pcov, start, span_ref, flat=False):
         pcov: Their covariance, or None.
         start: The starting values, which give the direction of a failed fit.
         span_ref: The range of the mean responses of all curves.
-        flat: Whether is_flat found the curve flat, so that it was not fitted.
+        flat_reason: The reason of flat_check when it found the curve flat, so that
+            it was not fitted, or None.
 
     Returns:
         dict: The stats row.
@@ -178,7 +234,7 @@ def curve_row(g, lx, y, popt, pcov, start, span_ref, flat=False):
         "bottom": nan, "top": nan, "hill": nan, "log_ec50": nan, "se_log_ec50": nan,
         "ec50": nan, "ec50_ci_low": nan, "ec50_ci_high": nan, "r_squared": nan,
         "rss": nan, "df_resid": nan, "fit_status": "not determined",
-        "status_reason": FLAT_REASON if flat else "the fit did not converge",
+        "status_reason": flat_reason or "the fit did not converge",
     }
     if popt is None:
         return base
@@ -370,12 +426,12 @@ def recipe_dose_response(df, spec):
         if len(np.unique(lx)) < 4 or len(yy) < 5:
             raise ValueError(f"dose_response needs at least 4 distinct doses and 5 points per curve; "
                              f"curve '{g}' has {len(np.unique(lx))} dose(s) and {len(yy)} point(s)")
-        flat = is_flat(lx, yy, span_ref)
-        if flat:
+        flat_reason = flat_check(lx, yy, span_ref)
+        if flat_reason:
             popt, pcov, st, method = None, None, start_values(lx, yy), None
         else:
             popt, pcov, st, method = fit_curve(lx, yy)
-        row = curve_row(g, lx, yy, popt, pcov, st, span_ref, flat=flat)
+        row = curve_row(g, lx, yy, popt, pcov, st, span_ref, flat_reason=flat_reason)
         rows.append(row)
         if row["fit_status"] == "fitted":
             starts[g] = st
@@ -558,7 +614,8 @@ def _methods(rows, shared, n_points, spec, x, y):
         f"(n = {n_points} points, {len(rows)} curve(s)). The 95% confidence interval of the "
         "midpoint was computed on the log10 scale from the standard error of the fit and "
         "back-transformed. A curve whose mean responses varied by less than 10% of the range "
-        "of the mean responses of all curves was not fitted, and its midpoint was reported as "
+        "of the mean responses of all curves, or whose responses did not differ between the "
+        "doses in a one-way ANOVA (P >= 0.05), was not fitted, and its midpoint was reported as "
         "not determined. A midpoint was also reported as not determined when the fit did not "
         "converge, when the fitted span (top minus bottom) was below 10% of the range of the mean "
         "responses, when the midpoint lay outside the tested doses, or when its 95% CI was not "

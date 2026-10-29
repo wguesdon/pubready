@@ -123,10 +123,13 @@ tag move together.
   sets the number. The title states how many intersections are not shown. The
   stats table still lists every intersection, and `n_intersections_shown` in the
   manifest gives the number drawn.
-- A `dose_response` curve is "not determined" in five cases. A check before the
-  fit finds a flat curve, whose mean responses vary by less than 10% of the
-  range of the mean responses of all curves, and gives it no fit. The check uses
-  no fitted value, so both engines give the same reason for a flat curve. Before
+- A `dose_response` curve is "not determined" in six cases. Two checks before
+  the fit find a flat curve and give it no fit. The first finds a curve whose
+  mean responses vary by less than 10% of the range of the mean responses of
+  all curves. The second finds a curve whose responses do not differ between
+  the doses in a one-way ANOVA (P >= 0.05), and it also covers a single curve.
+  It needs a replicate at one dose or more. The checks use no fitted value, so
+  both engines give the same reason for a flat curve. Before
   the check, R `nls` failed on a flat curve and Python converged, so the two
   reasons differed. A curve is also not determined when its fit fails, when its
   fitted span is below 10% of the range of the mean responses, when its EC50 is

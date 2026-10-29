@@ -11,8 +11,9 @@
 # Both engines compute the same starting values and minimise the same residual
 # sum of squares, so they converge to the same estimates.
 #
-# A curve whose mean responses vary by less than 10% of the response range is
-# flat, and it gets no fit (.drc_is_flat). A curve whose fit fails, whose fitted
+# A curve whose mean responses vary by less than 10% of the response range, or
+# whose responses do not differ between the doses in a one-way ANOVA, is flat,
+# and it gets no fit (.drc_flat_check). A curve whose fit fails, whose fitted
 # span is below 10% of the response range, whose EC50 lies outside the tested
 # doses or whose CI is not finite is reported as "not determined"
 # (.drc_status_reason). Both are drawn as their mean +/- SEM without a curve,
@@ -89,10 +90,40 @@
   is.finite(span_ref) && span_ref > 0 && diff(range(means)) < .drc_min_span() * span_ref
 }
 
-# The fit result of a flat curve: no fit, and the starting values for its
-# direction.
-.drc_flat_result <- function(lx, y) {
-  list(fit = NULL, start = .drc_start(lx, y), algorithm = NA_character_, flat = TRUE)
+.drc_anova_reason <- function() {
+  "the responses do not differ between the doses (one-way ANOVA, P >= 0.05)"
+}
+
+# The P value of a one-way ANOVA of the responses of one curve across its doses,
+# or NA when no dose has a replicate, as the ANOVA then has no residual degree
+# of freedom. The sums of squares are written out, so the Python engine computes
+# the same value.
+.drc_dose_anova_p <- function(lx, y) {
+  u <- unique(lx)
+  k <- length(u); n <- length(y)
+  if (k < 2 || n - k < 1) return(NA_real_)
+  fitted <- vapply(u, .drc_mean_at, numeric(1), lx = lx, y = y)[match(lx, u)]
+  ssw <- sum((y - fitted)^2)
+  ssb <- sum((fitted - mean(y))^2)
+  if (ssw == 0) return(if (ssb > 0) 0 else NA_real_)
+  stats::pf((ssb / (k - 1)) / (ssw / (n - k)), k - 1, n - k, lower.tail = FALSE)
+}
+
+# The checks before the fit, in order: the 10% range rule of .drc_is_flat, then
+# the one-way ANOVA across the doses, which also covers a single curve. Returns
+# the reason of a flat curve, or NA when the curve goes to the fit.
+.drc_flat_check <- function(lx, y, span_ref) {
+  if (.drc_is_flat(lx, y, span_ref)) return(.drc_flat_reason())
+  p <- .drc_dose_anova_p(lx, y)
+  if (is.finite(p) && p >= 0.05) return(.drc_anova_reason())
+  NA_character_
+}
+
+# The fit result of a flat curve: no fit, the starting values for its direction
+# and the reason of the check before the fit.
+.drc_flat_result <- function(lx, y, reason) {
+  list(fit = NULL, start = .drc_start(lx, y), algorithm = NA_character_, flat = TRUE,
+       reason = reason)
 }
 
 .drc_na_se <- function(e) c(bottom = NA_real_, top = NA_real_, log_ec50 = NA_real_, hill = NA_real_)
@@ -127,7 +158,7 @@
                      ec50_ci_low = NA_real_, ec50_ci_high = NA_real_,
                      r_squared = NA_real_, rss = NA_real_, df_resid = NA_integer_,
                      fit_status = "not determined",
-                     status_reason = if (isTRUE(fitres$flat)) .drc_flat_reason() else "the fit did not converge",
+                     status_reason = if (isTRUE(fitres$flat)) fitres$reason else "the fit did not converge",
                      stringsAsFactors = FALSE)
   if (is.null(fit)) return(base)
   cf <- .drc_canonical(stats::coef(fit))
@@ -260,8 +291,9 @@ recipe_dose_response <- function(df, spec) {
       stop(sprintf("dose_response needs at least 4 distinct doses and 5 points per curve; curve '%s' has %d dose(s) and %d point(s)",
                    g, length(unique(d$lx[sel])), sum(sel)))
     }
-    fr <- if (.drc_is_flat(d$lx[sel], d$y[sel], span_ref)) {
-      .drc_flat_result(d$lx[sel], d$y[sel])
+    flat_reason <- .drc_flat_check(d$lx[sel], d$y[sel], span_ref)
+    fr <- if (!is.na(flat_reason)) {
+      .drc_flat_result(d$lx[sel], d$y[sel], flat_reason)
     } else {
       .drc_fit_curve(d$lx[sel], d$y[sel])
     }
@@ -419,7 +451,7 @@ recipe_dose_response <- function(df, spec) {
     sprintf("%s was modelled as a function of %s with a four-parameter logistic curve (variable Hill slope) fitted by nonlinear least squares on log10 dose (n = %d points, %d curve(s)). ",
             cap_first(y_lab), x_lab, nrow(d), nrow(rows)),
     "The 95% confidence interval of the midpoint was computed on the log10 scale from the standard error of the fit and back-transformed. ",
-    "A curve whose mean responses varied by less than 10% of the range of the mean responses of all curves was not fitted, and its midpoint was reported as not determined. ",
+    "A curve whose mean responses varied by less than 10% of the range of the mean responses of all curves, or whose responses did not differ between the doses in a one-way ANOVA (P >= 0.05), was not fitted, and its midpoint was reported as not determined. ",
     "A midpoint was also reported as not determined when the fit did not converge, when the fitted span (top minus bottom) was below 10% of the range of the mean responses, when the midpoint lay outside the tested doses, or when its 95% CI was not finite. ",
     fits, nd_txt, shared_txt,
     sprintf(" Fitted in R %s with stats::nls and drawn with ggplot2 %s.", rver, v$ggplot2))

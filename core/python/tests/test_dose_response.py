@@ -86,3 +86,23 @@ def test_the_legend_key_of_a_fitted_curve_shows_a_point_on_a_line():
     assert [k.get_marker() for k in keys[:2]] == ["o", "o"]
     assert [k.get_linestyle() for k in keys[:2]] == ["-", "-"]
     assert legend.get_texts()[2].get_text() == "inactive (not determined)"
+
+
+def test_a_single_flat_curve_is_not_determined_by_the_dose_anova_as_in_r():
+    d = pd.DataFrame({"dose": np.repeat([0.01, 0.1, 1, 10, 100], 3),
+                      "response": 100 + np.tile([1.0, -1.0, 0.0], 5)})
+    st = recipe_dose_response(d, drc_spec(x="dose", y="response"))["stats"]
+    assert st["fit_status"].iloc[0] == "not determined"
+    assert (st["status_reason"].iloc[0]
+            == "the responses do not differ between the doses (one-way ANOVA, P >= 0.05)")
+
+
+def test_the_dose_anova_matches_scipy_and_needs_a_replicate():
+    from scipy import stats
+
+    from pubready.recipes.dose_response import dose_anova_p
+    lx = np.repeat([-2.0, -1.0, 0.0, 1.0], 3)
+    y = np.array([1, 2, 3, 2, 3, 4, 5, 6, 7, 3, 3, 4.0])
+    ref = stats.f_oneway(*[y[lx == v] for v in np.unique(lx)]).pvalue
+    assert dose_anova_p(lx, y) == pytest.approx(ref, rel=1e-12)
+    assert np.isnan(dose_anova_p(np.array([-2.0, -1.0, 0.0, 1.0]), np.array([1, 2, 3, 4.0])))

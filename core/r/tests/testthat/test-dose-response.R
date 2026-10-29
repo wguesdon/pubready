@@ -58,3 +58,20 @@ test_that("the check before the fit finds a flat curve as the Python engine does
   y <- c(100, 101, 100, 101, 101, 102, 100, 101)
   expect_false(.drc_is_flat(lx, y, 1.5))
 })
+
+test_that("a single flat curve is not determined by the dose ANOVA, as in Python", {
+  d <- data.frame(dose = rep(c(0.01, 0.1, 1, 10, 100), each = 3),
+                  response = 100 + rep(c(1, -1, 0), 5))
+  res <- recipe_dose_response(d, drc_spec(x = "dose", y = "response"))
+  expect_equal(res$stats$fit_status, "not determined")
+  expect_equal(res$stats$status_reason,
+               "the responses do not differ between the doses (one-way ANOVA, P >= 0.05)")
+})
+
+test_that("the dose ANOVA matches stats::anova and needs a replicate", {
+  lx <- rep(c(-2, -1, 0, 1), each = 3)
+  y <- c(1, 2, 3, 2, 3, 4, 5, 6, 7, 3, 3, 4)
+  ref <- stats::anova(stats::lm(y ~ factor(lx)))[["Pr(>F)"]][1]
+  expect_equal(.drc_dose_anova_p(lx, y), ref, tolerance = 1e-12)
+  expect_true(is.na(.drc_dose_anova_p(c(-2, -1, 0, 1), c(1, 2, 3, 4))))
+})
