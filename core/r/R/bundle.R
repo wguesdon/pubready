@@ -281,7 +281,7 @@ reproduce_md <- function(container, git_commit, script_name) {
     "From inside this folder:",
     "",
     "```bash",
-    sprintf("podman run --rm -v \"$PWD\":/work -w /work \\"),
+    "podman run --rm --security-opt label=disable -v \"$PWD\":/work -w /work \\",
     sprintf("  %s Rscript %s", container$image %||% "localhost/pubready:1.0.0", script_name),
     "```",
     "",

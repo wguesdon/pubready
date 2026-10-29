@@ -35,7 +35,7 @@ add_stub_podman() {
   cat > "$1/podman" <<'EOF'
 #!/usr/bin/env bash
 # Stub podman. STUB_PODMAN is one of: ok, rootful, no_ranges, no_service,
-# no_image, selinux_denied, no_machine, machine_stopped.
+# no_image, mount_denied, no_machine, machine_stopped.
 mode="${STUB_PODMAN:-ok}"
 case "${1:-}" in --log-level=*) shift ;; esac
 case "${1:-} ${2:-}" in
@@ -58,16 +58,17 @@ fi
 case "${1:-} ${2:-}" in
   "info --format")
     case "$mode" in
-      rootful) echo "false 1 false" ;;
-      no_ranges) echo "true 1 false" ;;
-      selinux_denied) echo "true 2 true" ;;
-      *) echo "true 2 false" ;;
+      rootful) echo "false 1" ;;
+      no_ranges) echo "true 1" ;;
+      *) echo "true 2" ;;
     esac
     ;;
   "image exists") [ "$mode" = no_image ] && exit 1; exit 0 ;;
   "image inspect") echo "sha256:stub" ;;
   "run "*)
-    if [ "$mode" = selinux_denied ]; then
+    # STUB_LOG, when set, records the arguments of each run.
+    [ -z "${STUB_LOG:-}" ] || printf '%s\n' "$*" >> "$STUB_LOG"
+    if [ "$mode" = mount_denied ]; then
       echo "ls: cannot open directory '/work': Permission denied" >&2
       exit 2
     fi
@@ -208,11 +209,11 @@ expect_out "is not built"
 expect_out "fix: figkit build"
 expect_out "skip  test container"
 
-echo "[15] doctor, SELinux blocks the mount"
-STUB_PODMAN=selinux_denied run_figkit "$STUB" doctor
+echo "[15] doctor, the test container cannot read the mounts"
+STUB_PODMAN=mount_denied run_figkit "$STUB" doctor
 expect_rc 1
 expect_out "FAIL  a test container cannot read the mounted folders"
-expect_out "SELinux is on"
+expect_out "fix: run figkit outside the sandbox"
 
 echo "[16] doctor, macOS with no Podman machine"
 STUB_UNAME=Darwin STUB_PODMAN=no_machine run_figkit "$STUB" doctor
@@ -237,7 +238,18 @@ HOME="$TMP" STUB_UNAME=Darwin STUB_PODMAN=ok run_figkit "$STUB" doctor
 expect_rc 0
 expect_out "warn  the current folder or the pubready files are outside"
 
-echo "[20] doctor on the real host"
+echo "[20] each podman run turns off SELinux labeling"
+STUB_LOG="$TMP/run.log" STUB_PODMAN=ok run_figkit "$STUB" "${INSPECT[@]}"
+STUB_LOG="$TMP/run.log" STUB_PODMAN=ok run_figkit "$STUB" doctor
+OUT="$(cat "$TMP/run.log" 2>/dev/null)"
+expect_out "run --rm --security-opt label=disable"
+if [ "$(grep -c '^run ' "$TMP/run.log")" -eq "$(grep -c 'label=disable' "$TMP/run.log")" ]; then
+  echo "PASS: every recorded run has the option"
+else
+  echo "FAIL: a recorded run lacks --security-opt label=disable"; fail=1
+fi
+
+echo "[21] doctor on the real host"
 if command -v podman >/dev/null 2>&1 && podman image exists "localhost/pubready:$(cat VERSION)" 2>/dev/null; then
   RC=0
   OUT="$(./cli/figkit doctor 2>&1)" || RC=$?

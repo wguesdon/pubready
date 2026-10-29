@@ -405,7 +405,7 @@ def reproduce_md(container, git_commit, script_name):
         "## 2. Run the standalone script\n\n"
         "From inside this folder:\n\n"
         "```bash\n"
-        f'podman run --rm -v "$PWD":/work -w /work \\\n'
+        'podman run --rm --security-opt label=disable -v "$PWD":/work -w /work \\\n'
         f"  {img} python3 {script_name}\n"
         "```\n\n"
         "The script reads the bundled input copy, reruns the analysis, and redraws\n"

@@ -27,7 +27,7 @@ To export the datasets and compute the reference values again, run the exporter
 in the pinned image from the repository root:
 
 ```bash
-podman run --rm -v "$PWD":/work -w /work localhost/pubready:<version> \
+podman run --rm --security-opt label=disable -v "$PWD":/work -w /work localhost/pubready:<version> \
   Rscript tools/make_benchmarks/make_benchmark_data.R
 ```
 

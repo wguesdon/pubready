@@ -11,7 +11,7 @@ input CSV into `example/`, the file a scientist would drop in. Run one inside th
 pinned container from the repo root:
 
 ```bash
-podman run --rm -v "$PWD":/work -w /work localhost/pubready:1.0.0 \
+podman run --rm --security-opt label=disable -v "$PWD":/work -w /work localhost/pubready:1.0.0 \
   Rscript tools/make_examples/make_survival_data.R
 ```
 

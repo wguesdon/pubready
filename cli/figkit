@@ -254,9 +254,13 @@ require_image() {
 }
 
 # Shared podman run for either engine. $1 = interpreter+script; rest = args.
+# Every podman run of figkit turns off SELinux labeling for its container, so a
+# host in enforcing mode, such as Fedora, lets the container read the mounted
+# folders without a relabel of the user's files. The option does nothing on a
+# host without SELinux.
 container_run() {
   require_image
-  podman --log-level=error run --rm \
+  podman --log-level=error run --rm --security-opt label=disable \
     -v "$PWD":/work -w /work \
     -v "$CORE_DIR":/opt/pubready/core:ro \
     -e PUBREADY_CORE=/opt/pubready/core \
@@ -285,7 +289,7 @@ run_py() { local e="$1"; shift; [ "$e" = "inspect" ] && e="inspect_data"; contai
 run_tests() {
   require_image
   echo "== R engine (testthat) =="
-  podman --log-level=error run --rm \
+  podman --log-level=error run --rm --security-opt label=disable \
     -v "$CORE_DIR":/opt/pubready/core:ro \
     -v "$REPO_ROOT/benchmarks":/opt/pubready/benchmarks:ro \
     -e PUBREADY_CORE=/opt/pubready/core \
@@ -294,7 +298,7 @@ run_tests() {
     "$IMAGE" Rscript /opt/pubready/core/r/tests/run_tests.R
   echo
   echo "== Python engine (pytest) =="
-  podman --log-level=error run --rm \
+  podman --log-level=error run --rm --security-opt label=disable \
     -v "$CORE_DIR":/opt/pubready/core:ro \
     -v "$REPO_ROOT/benchmarks":/opt/pubready/benchmarks:ro \
     -e PYTHONPATH=/opt/pubready/core/python \
@@ -341,7 +345,7 @@ doctor_fail() { DOCTOR_FAILS=$((DOCTOR_FAILS + 1)); doctor_line FAIL "$1" "${2:-
 doctor_skip() { doctor_line skip "$1"; }
 
 # One field of the `podman info` line that doctor_service stores: 1 = rootless,
-# 2 = count of UID map entries, 3 = SELinux enabled.
+# 2 = count of UID map entries.
 doctor_info_field() {
   printf '%s\n' "$DOCTOR_INFO" | awk -v f="$1" '{print $f}'
 }
@@ -395,7 +399,7 @@ doctor_machine() {
 
 doctor_service() {
   local rc=0 err
-  DOCTOR_INFO="$(podman info --format '{{.Host.Security.Rootless}} {{len .Host.IDMappings.UIDMap}} {{.Host.Security.SELinuxEnabled}}' 2>/dev/null)" || rc=$?
+  DOCTOR_INFO="$(podman info --format '{{.Host.Security.Rootless}} {{len .Host.IDMappings.UIDMap}}' 2>/dev/null)" || rc=$?
   if [ "$rc" -ne 0 ]; then
     # Only stderr: a remote client prints its own details on stdout first.
     err="$(podman info 2>&1 >/dev/null | grep -v '^$' | head -1 || true)"
@@ -480,12 +484,12 @@ doctor_image() {
   esac
 }
 
-# Start the image with the mounts of figkit plot and list both mounted folders.
-# This finds a blocked user namespace, such as an agent sandbox, a folder that
-# the macOS machine does not mount and an SELinux denial.
+# Start the image with the mounts and the options of figkit plot and list both
+# mounted folders. This finds a blocked user namespace, such as an agent
+# sandbox, and a folder that the macOS machine does not mount.
 doctor_container() {
-  local out rc=0 fix
-  out="$(podman --log-level=error run --rm \
+  local out rc=0
+  out="$(podman --log-level=error run --rm --security-opt label=disable \
     -v "$PWD":/work -w /work \
     -v "$CORE_DIR":/opt/pubready/core:ro \
     "$IMAGE" ls /work /opt/pubready/core 2>&1)" || rc=$?
@@ -493,11 +497,8 @@ doctor_container() {
     doctor_ok "a test container reads the current folder and the pubready files"
     return 0
   fi
-  fix="run figkit outside the sandbox of the agent or the terminal, then run figkit doctor again"
-  if [ "$(doctor_info_field 3)" = true ]; then
-    fix="SELinux is on and can block the mount. figkit sets no SELinux label yet"
-  fi
-  doctor_fail "a test container cannot read the mounted folders: $(printf '%s\n' "$out" | grep -v '^$' | tail -1)" "$fix"
+  doctor_fail "a test container cannot read the mounted folders: $(printf '%s\n' "$out" | grep -v '^$' | tail -1)" \
+    "run figkit outside the sandbox of the agent or the terminal, then run figkit doctor again"
 }
 
 run_doctor() {
@@ -576,7 +577,7 @@ case "$cmd" in
   where)   echo "$REPO_ROOT" ;;
   shell)
     require_image
-    podman --log-level=error run --rm -it \
+    podman --log-level=error run --rm --security-opt label=disable -it \
       -v "$PWD":/work -w /work \
       -v "$CORE_DIR":/opt/pubready/core:ro \
       -e PUBREADY_CORE=/opt/pubready/core \

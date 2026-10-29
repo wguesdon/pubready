@@ -168,6 +168,11 @@ tag move together.
   its group or cell, the rule of the raincloud points. Both engines use the same
   offsets, so the two-group and multi-group points sit at the same places in R
   and Python. The emitted scripts use the same rule.
+- On a host with SELinux in enforcing mode, such as Fedora, the containers of
+  `figkit` could not read the mounted folders. Each `podman run` of `figkit`,
+  the `REPRODUCE.md` command of each bundle and the maintainer commands now
+  pass `--security-opt label=disable`. Podman does not relabel the user's
+  files, and the option does nothing on a host without SELinux.
 - The Python `correlation` band came from the bootstrap of seaborn `regplot`,
   so it moved on each run and differed from the R band. The Python engine now
   draws the t-based 95% CI of the fitted mean on 80 points, the band of R

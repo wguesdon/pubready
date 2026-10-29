@@ -148,8 +148,11 @@ PATH, they print the install command of the platform. If Podman cannot reach its
 service, for example when the macOS machine is stopped, they tell the user to run
 `figkit doctor`. Only a missing image gives the hint `figkit build`.
 
-figkit sets no SELinux label on its mounts. On a host with SELinux in enforcing
-mode, the test container can fail. Doctor then states that SELinux is on.
+Each `podman run` of figkit has the option `--security-opt label=disable`. On a
+host with SELinux in enforcing mode, such as Fedora, the container can then read
+the mounted folders, and Podman does not relabel your files. The option does
+nothing on a host without SELinux. The `REPRODUCE.md` command of each bundle has
+the same option.
 
 ## The recipes
 
