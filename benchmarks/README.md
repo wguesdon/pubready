@@ -66,6 +66,11 @@ podman run --rm -v "$PWD":/work -w /work localhost/pubready:<version> \
 | `veteran_km` | `veteran.csv` | `survival_km --x celltype` | `survival::survdiff` |
 | `veteran_cox` | `veteran.csv` | `cox_forest` | `survival::coxph` |
 | `state_correlation_heatmap` | `state_x77.csv` | `correlation_heatmap` | `stats::cor`, `stats::cor.test`, `stats::p.adjust(method = "BH")` |
+| `airway_ma` | `airway_de.csv` | `ma_plot` | the DESeq2 genes at padj of 0.05 or less and an absolute log2FC of 1 or more |
+| `gwas_manhattan` | `gwas_results.csv` | `manhattan --group CHR --x BP --y P --label SNP` | the median of `qchisq(1 - p, 1)` over `qchisq(0.5, 1)`, the counts below 5e-8 and 1e-5, the smallest p |
+| `iris_feature_panel_kruskal` | `iris.csv` | `feature_panel --x Species` | `stats::kruskal.test` for each measurement, `stats::p.adjust(method = "BH")` |
+| `iris_feature_panel_anova` | `iris.csv` | `feature_panel --x Species --test anova` | `stats::oneway.test(var.equal = TRUE)` for each measurement, `stats::p.adjust(method = "BH")` |
+| `iris_embedding` | `iris.csv` | `embedding --x Petal.Length --y Petal.Width --group Species` | `cluster::silhouette` on the two petal measurements |
 
 ## Tolerances
 
@@ -106,7 +111,8 @@ below make a dataset readable by a recipe. Each change is in
 - **`airway_de.csv`.** The exporter runs DESeq2 on the `airway` data with the
   design `~ cell + dex`, so the test blocks the donor. The file keeps the 12,625
   genes that have an adjusted p and a mean count of 50 or more. This limit keeps
-  the file at 444 KB.
+  the file at 544 KB. The file holds the `baseMean` of each gene, so the
+  `ma_plot` case reads the same table as the `volcano` case.
 - **`airway_heatmap.csv` and `airway_pca.csv`.** These files hold the
   variance-stabilised counts of `DESeq2::vst`. The heatmap file holds the 40 genes
   with the smallest adjusted p and an absolute log2FC of 1 or more. The PCA file
@@ -125,6 +131,14 @@ below make a dataset readable by a recipe. Each change is in
   the pubready code. The exporter writes `trt` as `standard` and `test`.
 - **`state_x77.csv`.** The file keeps the column names `Life Exp` and `HS Grad`
   as R distributes them. The case therefore also tests a column name with a space.
+- **`gwas_results.csv`.** This file is the `gwasResults` data of the qqman
+  package as the package distributes it. The positions count the SNPs on each
+  chromosome, because the data is simulated.
+- **`iris.csv` for `feature_panel` and `embedding`.** The feature panel reads
+  the file in wide form, so each of the four measurements is a feature. The
+  embedding case uses the petal length and the petal width as the two
+  coordinates. A silhouette on these two columns describes the separation of the
+  species on two measurements and not on a computed embedding.
 
 ## Sources
 
@@ -154,3 +168,4 @@ license of that package applies to the data.
 | `anorexia_ft.csv` | MASS | Hand, D. J., Daly, F., McConway, K., Lunn, D. and Ostrowski, E. eds (1993) A Handbook of Small Data Sets. Chapman and Hall, data set 285. |
 | `veteran.csv` | survival | Kalbfleisch, J. D. and Prentice, R. L. (1980) The Statistical Analysis of Failure Time Data. Wiley. |
 | `state_x77.csv` | datasets | U.S. Department of Commerce, Bureau of the Census (1977) Statistical Abstract of the United States. |
+| `gwas_results.csv` | qqman | Turner, S. D. (2018) qqman: an R package for visualizing GWAS results using Q-Q and manhattan plots. Journal of Open Source Software 3(25), 731. |

@@ -48,6 +48,12 @@ expand_table <- function(tab) {
   d[rep(seq_len(nrow(d)), d$Freq), setdiff(names(d), "Freq"), drop = FALSE]
 }
 
+# The Kruskal-Wallis and the one-way ANOVA of one column across a grouping.
+kruskal_of <- function(col, d, grp) stats::kruskal.test(d[[col]], factor(d[[grp]]))
+oneway_of <- function(col, d, grp) {
+  stats::oneway.test(d[[col]] ~ factor(d[[grp]]), var.equal = TRUE)
+}
+
 # 1. sleep: Cushny and Peebles (1905), the data of Student (1908).
 sleep_df <- write_data(datasets::sleep[, c("ID", "group", "extra")], "sleep")
 g1 <- sleep_df$extra[sleep_df$group == 1]
@@ -330,7 +336,8 @@ sym <- AnnotationDbi::mapIds(org.Hs.eg.db, keys = res$ensembl, column = "SYMBOL"
 res$gene <- ifelse(is.na(sym), res$ensembl, sym)
 res <- res[!is.na(res$padj) & res$baseMean >= 50, ]
 res <- res[order(res$padj, res$ensembl), ]
-de_df <- write_data(data.frame(gene = res$gene, log2FoldChange = signif(res$log2FoldChange, 5),
+de_df <- write_data(data.frame(gene = res$gene, baseMean = signif(res$baseMean, 6),
+                               log2FoldChange = signif(res$log2FoldChange, 5),
                                pvalue = signif(res$pvalue, 5), padj = signif(res$padj, 5)),
                     "airway_de")
 add_ref("airway_volcano", "n_up", sum(de_df$log2FoldChange >= 1 & de_df$padj <= 0.05),
@@ -338,6 +345,12 @@ add_ref("airway_volcano", "n_up", sum(de_df$log2FoldChange >= 1 & de_df$padj <= 
 add_ref("airway_volcano", "n_down", sum(de_df$log2FoldChange <= -1 & de_df$padj <= 0.05),
         "DESeq2 results, padj <= 0.05 and log2FC <= -1")
 add_ref("airway_volcano", "n_total", nrow(de_df), "DESeq2 results, rows tested")
+# The MA plot reads the same table with baseMean as the mean expression.
+add_ref("airway_ma", "n_up", sum(de_df$log2FoldChange >= 1 & de_df$padj <= 0.05),
+        "DESeq2 results, padj <= 0.05 and log2FC >= 1")
+add_ref("airway_ma", "n_down", sum(de_df$log2FoldChange <= -1 & de_df$padj <= 0.05),
+        "DESeq2 results, padj <= 0.05 and log2FC <= -1")
+add_ref("airway_ma", "n_total", sum(de_df$baseMean > 0), "DESeq2 results, rows with a baseMean above 0")
 
 # The variance-stabilised counts give the heatmap of the 40 strongest
 # differentially expressed genes and the PCA of the 500 most variable genes.
@@ -458,6 +471,49 @@ add_ref("state_correlation_heatmap", "padj_murder_life_exp",
         st_p$padj[st_p$a == "Life Exp" & st_p$b == "Murder"], "stats::cor.test(), p.adjust(BH)")
 add_ref("state_correlation_heatmap", "r_illiteracy_frost", stats::cor(st_num$Illiteracy, st_num$Frost),
         "stats::cor()")
+
+# 22. gwasResults: the simulated GWAS of the qqman package, Turner (2018),
+# 16,470 SNPs on 22 chromosomes with one strong locus on chromosome 3.
+data("gwasResults", package = "qqman", envir = environment())
+gw_df <- write_data(gwasResults, "gwas_results")
+add_ref("gwas_manhattan", "lambda_gc",
+        stats::median(stats::qchisq(1 - gw_df$P, 1)) / stats::qchisq(0.5, 1),
+        "median(qchisq(1 - p, 1)) / qchisq(0.5, 1)")
+add_ref("gwas_manhattan", "n_genome_wide", sum(gw_df$P < 5e-8), "count of p < 5e-8")
+add_ref("gwas_manhattan", "n_suggestive", sum(gw_df$P < 1e-5), "count of p < 1e-5")
+add_ref("gwas_manhattan", "min_p", min(gw_df$P), "base::min()")
+
+# 23. iris as a feature panel: the four measurements across the three species,
+# one test for each measurement and the Benjamini-Hochberg adjustment across them.
+iris_feats <- c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
+iris_kw <- lapply(iris_feats, kruskal_of, d = ir, grp = "Species")
+iris_kw_p <- vapply(iris_kw, `[[`, numeric(1), "p.value")
+iris_kw_q <- stats::p.adjust(iris_kw_p, method = "BH")
+iris_ow <- lapply(iris_feats, oneway_of, d = ir, grp = "Species")
+iris_ow_q <- stats::p.adjust(vapply(iris_ow, `[[`, numeric(1), "p.value"), method = "BH")
+for (i in seq_along(iris_feats)) {
+  add_ref("iris_feature_panel_kruskal", paste0("H_", iris_feats[i]), iris_kw[[i]]$statistic,
+          "stats::kruskal.test()")
+  add_ref("iris_feature_panel_kruskal", paste0("p_", iris_feats[i]), iris_kw_p[i],
+          "stats::kruskal.test()")
+  add_ref("iris_feature_panel_kruskal", paste0("p_adj_", iris_feats[i]), iris_kw_q[i],
+          "stats::kruskal.test(), stats::p.adjust(method = 'BH')")
+  add_ref("iris_feature_panel_anova", paste0("F_", iris_feats[i]), iris_ow[[i]]$statistic,
+          "stats::oneway.test(var.equal = TRUE)")
+  add_ref("iris_feature_panel_anova", paste0("p_adj_", iris_feats[i]), iris_ow_q[i],
+          "stats::oneway.test(var.equal = TRUE), stats::p.adjust(method = 'BH')")
+}
+
+# 24. iris as a 2D embedding: the petal length and width as the two coordinates
+# and the species as the cluster, with the silhouette widths of the cluster package.
+iris_species <- factor(ir$Species)
+iris_sil <- summary(cluster::silhouette(as.integer(iris_species),
+                                        stats::dist(ir[, c("Petal.Length", "Petal.Width")])))
+for (k in seq_along(levels(iris_species))) {
+  add_ref("iris_embedding", paste0("silhouette_", levels(iris_species)[k]),
+          iris_sil$clus.avg.widths[[k]], "cluster::silhouette()")
+}
+add_ref("iris_embedding", "silhouette_overall", iris_sil$avg.width, "cluster::silhouette()")
 
 ref_df <- do.call(rbind, refs)
 utils::write.csv(ref_df, file.path("benchmarks", "reference_values.csv"), row.names = FALSE)
