@@ -102,6 +102,37 @@ def log_ticks(lo, hi):
     return inside
 
 
+def log_ticks_ref(lo, hi, ref=1.0):
+    """Log-axis ticks of the 1-2-5 sequence for a plot with a reference line.
+
+    The ticks inside the data range are kept. When the data reach past ``ref``
+    on one side but no tick lies on that side, the next value of the sequence on
+    that side is added, so the axis reads on both sides of the line. More than 7
+    ticks are thinned to the powers of ten. The R engine has the same rule in
+    log_ticks_ref().
+
+    Args:
+        lo: The smallest value to show.
+        hi: The largest value to show.
+        ref: The reference value, for example 1 for a ratio.
+
+    Returns:
+        list: The sorted tick positions.
+    """
+    import numpy as np
+    seq = sorted(m * 10.0 ** k for k in range(-4, 5) for m in (1, 2, 5))
+    tol = 1e-9
+    lo2, hi2 = min(lo, ref), max(hi, ref)
+    ticks = [v for v in seq if lo2 * (1 - tol) <= v <= hi2 * (1 + tol)]
+    if hi > ref and not any(t > ref * (1 + tol) for t in ticks):
+        ticks.append(min(v for v in seq if v > ref * (1 + tol)))
+    if lo < ref and not any(t < ref * (1 - tol) for t in ticks):
+        ticks.insert(0, max(v for v in seq if v < ref * (1 - tol)))
+    if len(ticks) > 7:
+        ticks = [t for t in ticks if abs(np.log10(t) - round(np.log10(t))) < 1e-9]
+    return sorted(set(ticks))
+
+
 def plain_log_axis(axis):
     """Label a log-scaled matplotlib axis with plain numbers.
 

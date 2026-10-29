@@ -27,6 +27,29 @@ theme_pubready <- function(base_size = 13) {
     )
 }
 
+# Log-axis ticks of the 1-2-5 sequence for a plot with a reference line `ref`
+# (the null value of a ratio, 1). The ticks inside the data range are kept. When
+# the data reach past `ref` on one side but no tick lies on that side, the next
+# value of the sequence on that side is added, so the axis reads on both sides
+# of the line. More than 7 ticks are thinned to the powers of ten. Python has
+# the same rule in theme.log_ticks_ref().
+log_ticks_ref <- function(lo, hi, ref = 1) {
+  seq125 <- sort(as.vector(outer(c(1, 2, 5), 10^(-4:4))))
+  tol <- 1e-9
+  lo2 <- min(lo, ref); hi2 <- max(hi, ref)
+  ticks <- seq125[seq125 >= lo2 * (1 - tol) & seq125 <= hi2 * (1 + tol)]
+  if (hi > ref && !any(ticks > ref * (1 + tol))) {
+    ticks <- c(ticks, min(seq125[seq125 > ref * (1 + tol)]))
+  }
+  if (lo < ref && !any(ticks < ref * (1 - tol))) {
+    ticks <- c(max(seq125[seq125 < ref * (1 - tol)]), ticks)
+  }
+  if (length(ticks) > 7) {
+    ticks <- ticks[abs(log10(ticks) - round(log10(ticks))) < 1e-9]
+  }
+  sort(unique(ticks))
+}
+
 # Add the distribution geom for the comparison recipes, plus optional points.
 # geom is one of box | violin | bar | raincloud. `x` is the grouping column name;
 # fill is mapped per layer so the significance-bracket layer is not affected.
