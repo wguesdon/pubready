@@ -113,7 +113,8 @@ recipe_correlation <- function(df, spec) {
       normality = list(test = "shapiro-wilk", p_x = x_norm$p, p_y = y_norm$p)))
 
   methods <- .cor_methods(resolved, stats_df, spec)
-  build_script <- function(in_name, fig_stub) .cor_emit_script(spec, resolved, point_col, in_name, fig_stub)
+  build_script <- list(fn = .cor_emit_script,
+                       args = list(spec = spec, resolved = resolved, point_col = point_col))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,

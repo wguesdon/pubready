@@ -78,8 +78,8 @@ recipe_multi_group_compare <- function(df, spec) {
   fml <- stats::as.formula(sprintf("`%s` ~ `%s`", y, x))
   by_group <- split(df[[y]], df[[x]])
   norm <- lapply(by_group, shapiro_safe)
-  all_normal <- all(vapply(norm, function(n) isTRUE(n$normal), logical(1)))
-  lev_p <- tryCatch(rstatix::levene_test(df, fml)$p[1], error = function(e) NA_real_)
+  all_normal <- all(vapply(norm, is_normal_check, logical(1)))
+  lev_p <- tryCatch(rstatix::levene_test(df, fml)$p[1], error = na_on_error)
   equal_var <- is.na(lev_p) || lev_p > 0.05
 
   resolved <- resolve_multi_group_method(spec$test$method, all_normal, equal_var)
@@ -100,7 +100,7 @@ recipe_multi_group_compare <- function(df, spec) {
     ph <- .mg_games_howell(by_group, lvls)
   } else {
     kt <- stats::kruskal.test(fml, data = df)
-    ke <- tryCatch(as.data.frame(rstatix::kruskal_effsize(df, fml)), error = function(e) NULL)
+    ke <- tryCatch(as.data.frame(rstatix::kruskal_effsize(df, fml)), error = null_on_error)
     omnibus <- list(statistic = unname(kt$statistic), df1 = unname(kt$parameter), df2 = NA_real_,
                     p = kt$p.value,
                     effect_size = if (!is.null(ke)) list(name = "eta-squared (H)", value = ke$effsize[1]) else NULL)

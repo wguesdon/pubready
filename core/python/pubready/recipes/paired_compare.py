@@ -2,6 +2,8 @@
 (--id) is measured under two conditions (--x), and a line connects the subject's
 two points. The paired t-test or the Wilcoxon signed-rank test is chosen from the
 normality of the within-subject differences."""
+import functools
+
 import numpy as np
 import pandas as pd
 from scipy import stats as ss
@@ -107,7 +109,7 @@ def recipe_paired_compare(df, spec):
         "df_used": m, "clean_steps": steps, "label": slugify(y),
         "width": w, "height": h,
         "qc": {"quantity": "within-subject differences", "panels": {"differences": diffs}},
-        "build_script": lambda in_name, fig_stub: _script(spec, family, lv, in_name, fig_stub),
+        "build_script": functools.partial(_script, spec, family, lv),
     }
 
 

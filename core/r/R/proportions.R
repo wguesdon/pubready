@@ -72,7 +72,7 @@ recipe_proportions <- function(df, spec) {
                     n = sum(tab), any_expected_below_5 = small)
   resolved <- list(family = "proportions", label = test_label)
   methods  <- .prop_methods(test_label, nrow(tab), ncol(tab), sum(tab), pval, or, is2x2)
-  build_script <- function(in_name, fig_stub) .prop_emit_script(spec, use_fisher, in_name, fig_stub)
+  build_script <- list(fn = .prop_emit_script, args = list(spec = spec, use_fisher = use_fisher))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,

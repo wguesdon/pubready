@@ -23,10 +23,10 @@ recipe_two_group_compare <- function(df, spec) {
   fml <- stats::as.formula(sprintf("`%s` ~ `%s`", y, x))
   by_group <- split(df[[y]], df[[x]])
   norm <- lapply(by_group, shapiro_safe)
-  all_normal <- all(vapply(norm, function(n) isTRUE(n$normal), logical(1)))
+  all_normal <- all(vapply(norm, is_normal_check, logical(1)))
   var_p <- tryCatch(
     rstatix::levene_test(df, fml)$p[1],
-    error = function(e) NA_real_
+    error = na_on_error
   )
   equal_var <- is.na(var_p) || var_p > 0.05
 
@@ -36,7 +36,7 @@ recipe_two_group_compare <- function(df, spec) {
     stat <- rstatix::t_test(df, fml, paired = paired, var.equal = isTRUE(resolved$var_equal))
     eff  <- tryCatch(
       rstatix::cohens_d(df, fml, paired = paired),
-      error = function(e) NULL
+      error = null_on_error
     )
     eff_name <- "Cohen's d"
     eff_val <- if (!is.null(eff) && "effsize" %in% names(eff)) eff$effsize[1] else NA_real_
@@ -67,15 +67,16 @@ recipe_two_group_compare <- function(df, spec) {
         suppressWarnings(stats::wilcox.test(g1v, g2v, paired = paired)$p.value)
       }
     },
-    error = function(e) NA_real_
+    error = na_on_error
   )
   if (!is.na(p_full)) stat$p <- p_full
 
   stat <- rstatix::add_significance(stat)
-  stat <- tryCatch(
+  xy <- tryCatch(
     rstatix::add_xy_position(stat, x = x),
-    error = function(e) { stat$y.position <- max(df[[y]], na.rm = TRUE) * 1.08; stat }
+    error = null_on_error
   )
+  if (!is.null(xy)) stat <- xy
   if (is.null(stat$y.position)) stat$y.position <- max(df[[y]], na.rm = TRUE) * 1.08
 
   bracket_label <- spec$appearance$bracket$label %||% "p.signif"
@@ -156,7 +157,7 @@ recipe_two_group_compare <- function(df, spec) {
   )
 
   methods <- methods_paragraph(resolved, stats_df, test_meta, spec)
-  build_script <- function(in_name, fig_stub) emit_script(spec, resolved, in_name, fig_stub)
+  build_script <- list(fn = emit_script, args = list(spec = spec, resolved = resolved))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,

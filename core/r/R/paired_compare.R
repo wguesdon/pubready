@@ -96,7 +96,7 @@ recipe_paired_compare <- function(df, spec) {
 
   resolved <- list(family = family, label = label)
   methods  <- .paired_methods(label, lv, nrow(m), pval, eff_name, eff, spec)
-  build_script <- function(in_name, fig_stub) .paired_emit_script(spec, family, lv, in_name, fig_stub)
+  build_script <- list(fn = .paired_emit_script, args = list(spec = spec, family = family, lv = lv))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,

@@ -2,13 +2,24 @@
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
 
+# Condition handlers for tryCatch, at module level so no recipe defines a
+# function inside another one.
+na_on_error <- function(e) NA_real_
+null_on_error <- function(e) NULL
+
+# Whether one shapiro_safe() result says the values look normal.
+is_normal_check <- function(n) isTRUE(n$normal)
+
+# The installed version of one package, as a string.
+pkg_version_string <- function(p) as.character(utils::packageVersion(p))
+
 # Shapiro-Wilk normality on a numeric vector, guarded for small and large n.
 shapiro_safe <- function(v) {
   v <- v[is.finite(v)]
   n <- length(v)
   if (n < 3)   return(list(test = "shapiro-wilk", n = n, p = NA_real_, normal = NA))
   if (n > 5000) return(list(test = "shapiro-wilk", n = n, p = NA_real_, normal = TRUE))
-  p <- tryCatch(stats::shapiro.test(v)$p.value, error = function(e) NA_real_)
+  p <- tryCatch(stats::shapiro.test(v)$p.value, error = na_on_error)
   list(test = "shapiro-wilk", n = n, p = p, normal = isTRUE(p > 0.05))
 }
 
@@ -61,7 +72,7 @@ resolve_two_group_method <- function(method, all_normal, equal_var, paired) {
 
 # Installed versions of the named packages, as a named list of strings.
 pkg_versions <- function(pkgs) {
-  out <- lapply(pkgs, function(p) as.character(utils::packageVersion(p)))
+  out <- lapply(pkgs, pkg_version_string)
   names(out) <- pkgs
   out
 }

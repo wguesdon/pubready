@@ -1,6 +1,8 @@
 """Recipe: compare two groups on one continuous outcome. Mirrors the R recipe:
 picks t-test or Mann-Whitney from the assumption checks, box/violin with points
 and a significance bracket on top."""
+import functools
+
 import numpy as np
 import pandas as pd
 import pingouin as pg
@@ -122,7 +124,7 @@ def recipe_two_group_compare(df, spec):
         "methods": methods, "df_used": df, "clean_steps": steps,
         "width": w, "height": h,
         "qc": {"quantity": "group values", "panels": {lv[0]: a, lv[1]: b}},
-        "build_script": lambda in_name, fig_stub: _script(spec, r, lv, pal, in_name, fig_stub, ann),
+        "build_script": functools.partial(_script, spec, r, lv, pal, ann=ann),
     }
 
 

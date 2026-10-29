@@ -3,6 +3,7 @@ the R recipe: a chi-squared test of independence, or Fisher's exact when any
 expected cell is below 5 (or forced); an odds ratio for a 2x2 table. Figure: a
 100% stacked bar of the outcome proportions within each group. (scipy's exact
 test is 2x2 only, so larger tables fall back to chi-squared.)"""
+import functools
 import os
 
 import matplotlib.pyplot as plt
@@ -105,7 +106,7 @@ def recipe_proportions(df, spec):
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": d.reset_index(drop=True), "clean_steps": steps, "label": slugify(y),
         "width": w, "height": h,
-        "build_script": lambda in_name, fig_stub: _script(spec, use_fisher and is2x2, in_name, fig_stub),
+        "build_script": functools.partial(_script, spec, use_fisher and is2x2),
     }
 
 
