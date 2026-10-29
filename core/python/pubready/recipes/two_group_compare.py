@@ -12,7 +12,7 @@ from statannotations.Annotator import Annotator
 
 from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, new_fig, palette, plain_number_axis,
-                     wrap_labels)
+                     script_geom_code, wrap_labels)
 from ..util import (cap_first, cohens_d_r, mann_whitney_r, p_stars, rank_biserial_paired,
                     rank_biserial_unpaired, shapiro_normal, wilcoxon_signed_rank_r)
 
@@ -183,17 +183,14 @@ def _script(spec, r, lv, pal, in_name, fig_stub, ann):
             '       else ss.mannwhitneyu(a, b, alternative="two-sided", method="asymptotic",\n'
             '                            use_continuity=True))\n'
             'p = float(res.pvalue)')
-    geom_line = (f'sns.violinplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, hue_order=order, '
-                 f'palette={pal}, ax=ax, legend=False, cut=0, inner=None)'
-                 if geom == "violin" else
-                 f'sns.boxplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, hue_order=order, '
-                 f'palette={pal}, ax=ax, legend=False, width=0.6, fliersize=0)')
+    geom_code = script_geom_code(x, y, pal, geom, ap.get("show_points", True))
     return f'''#!/usr/bin/env python3
 # Standalone reproduction. Run inside the pinned pubready container
 # (see REPRODUCE.md) from this bundle folder.
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd, seaborn as sns, pingouin as pg
 from scipy import stats as ss
 from statannotations.Annotator import Annotator
@@ -206,9 +203,7 @@ b = df.loc[df["{x}"] == order[1], "{y}"].to_numpy()
 {test_line}
 
 fig, ax = plt.subplots(figsize=(3.8, 4.0))
-{geom_line}
-sns.stripplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, hue_order=order, palette={pal},
-              ax=ax, legend=False, size=4, alpha=0.75, edgecolor="black", linewidth=0.3, jitter=0.12)
+{geom_code}
 annot = Annotator(ax, [(order[0], order[1])], data=df, x="{x}", y="{y}", order=order)
 annot.configure(line_width=1.0, fontsize=12)
 annot.set_custom_annotations(["{ann}"])

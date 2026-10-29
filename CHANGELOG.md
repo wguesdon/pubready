@@ -153,6 +153,11 @@ tag move together.
   Podman that does not answer now points to `figkit doctor`. Only a missing image
   gives the hint `figkit build`. `figkit version` prints "podman: not found" in
   place of an empty version.
+- The emitted scripts of `two_group_compare` and `multi_group_compare` drew a
+  box for the bar and the raincloud geoms, in both engines. Each script now
+  draws the geom of the figure, with the same layer settings, and it leaves out
+  the points when the figure has none. A new test in each engine runs the
+  emitted script of each geom and checks that it writes the figure.
 - The Python `dose_response` legend drew a fitted curve as a line only. The key
   now shows the point on the line, as the R key does, and the mean points have
   the size of the R points.

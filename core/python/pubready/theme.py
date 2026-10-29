@@ -370,6 +370,71 @@ def _raincloud(ax, data, x, y, order, pal, show_points=True):
     ax.set_xticks(range(len(order))); ax.set_xticklabels(order)
 
 
+def script_geom_code(x, y, pal, geom="box", show_points=True):
+    """Write the distribution geom of an emitted comparison script.
+
+    The code draws what add_dist_geom draws, so the script and the figure agree.
+    It expects df, order, ax, np and sns to exist in the script.
+
+    Args:
+        x: The group column.
+        y: The value column.
+        pal: The colours, in the order of the groups.
+        geom: box, violin, bar or raincloud.
+        show_points: Whether the points are drawn.
+
+    Returns:
+        str: The code lines.
+    """
+    common = (f'data=df, x="{x}", y="{y}", hue="{x}", order=order, hue_order=order, '
+              f'palette={pal!r}, ax=ax, legend=False')
+    if geom == "raincloud":
+        lines = [
+            "# A half violin, a narrow box and the rain to the left of the box.",
+            f"pal = {pal!r}",
+            "for i, g in enumerate(order):",
+            f'    vals = df.loc[df["{x}"] == g, "{y}"].dropna().to_numpy()',
+            "    if len(vals) < 2:",
+            "        continue",
+            "    v = ax.violinplot([vals], positions=[i], showextrema=False, widths=0.6)",
+            '    for body in v["bodies"]:',
+            "        verts = body.get_paths()[0].vertices",
+            "        verts[:, 0] = np.clip(verts[:, 0], i, np.inf)  # keep the right half",
+            '        body.set_facecolor(pal[i]); body.set_edgecolor("none"); body.set_alpha(0.85)',
+            "    bp = ax.boxplot([vals], positions=[i], widths=0.1, patch_artist=True,",
+            "                    showfliers=False, manage_ticks=False)",
+            '    for patch in bp["boxes"]:',
+            "        patch.set_facecolor(pal[i]); patch.set_alpha(0.9)",
+            '    for med in bp["medians"]:',
+            '        med.set_color("black")',
+        ]
+        if show_points:
+            lines += [
+                "    k = np.arange(1, len(vals) + 1)",
+                "    jit = -0.18 + 0.12 * np.mod(k * 0.6180339887498949, 1.0)",
+                "    ax.scatter(np.full(len(vals), i) + jit, vals, s=10, color=pal[i], alpha=0.6,",
+                '               edgecolors="black", linewidths=0.2, zorder=3)',
+            ]
+        lines.append("ax.set_xticks(range(len(order))); ax.set_xticklabels(order)")
+        return "\n".join(lines)
+    if geom == "violin":
+        lines = [f"sns.violinplot({common}, cut=0, inner=None, alpha=0.9)"]
+    elif geom == "bar":
+        lines = [
+            f'means = [df.loc[df["{x}"] == g, "{y}"].mean() for g in order]',
+            f'sems = [df.loc[df["{x}"] == g, "{y}"].sem() for g in order]',
+            f'ax.bar(range(len(order)), means, yerr=sems, width=0.6, color={pal!r}, edgecolor="black",',
+            "       linewidth=0.5, alpha=0.9, capsize=4)",
+            "ax.set_xticks(range(len(order))); ax.set_xticklabels(order)",
+        ]
+    else:
+        lines = [f"sns.boxplot({common}, width=0.6, fliersize=0)"]
+    if show_points:
+        lines.append(f'sns.stripplot({common}, size=4, alpha=0.7, edgecolor="black", '
+                     "linewidth=0.3, jitter=0.12)")
+    return "\n".join(lines)
+
+
 def add_dist_geom(ax, data, x, y, order, pal, geom="box", show_points=True):
     """Draw the distribution geom for the comparison recipes: box | violin | bar |
     raincloud, plus optional jittered points."""

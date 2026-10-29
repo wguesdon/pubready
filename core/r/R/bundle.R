@@ -164,6 +164,36 @@ methods_paragraph <- function(resolved, stats_df, test_meta, spec) {
   )
 }
 
+# The distribution geom of an emitted comparison script, as add_dist_geom() draws
+# it: box | violin | bar | raincloud, plus the points unless show_points is
+# FALSE. `prep` holds the lines that set the raincloud offsets on df before the
+# plot; `layers` holds the ggplot2 layer lines, each ending in " +".
+script_geom_lines <- function(x, geom = "box", show_points = TRUE) {
+  fill <- sprintf('aes(fill = .data[["%s"]])', x)
+  layers <- switch(geom,
+    violin = sprintf("  geom_violin(%s, trim = FALSE, width = 0.7, alpha = 0.9) +", fill),
+    bar = c(
+      sprintf('  stat_summary(%s, fun = mean, geom = "bar", width = 0.6, alpha = 0.9, colour = "black", linewidth = 0.3) +', fill),
+      '  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.2) +'),
+    raincloud = c(
+      sprintf("  ggdist::stat_halfeye(%s, adjust = 0.6, width = 0.6, .width = 0, justification = -0.2, point_colour = NA, alpha = 0.85) +", fill),
+      sprintf("  geom_boxplot(%s, width = 0.12, outlier.shape = NA, alpha = 0.9) +", fill)),
+    sprintf("  geom_boxplot(%s, width = 0.6, outlier.shape = NA, alpha = 0.9) +", fill))
+  prep <- character(0)
+  if (isTRUE(show_points) && geom == "raincloud") {
+    # The golden-ratio offsets of rain_offsets(): the rain falls left of the box.
+    prep <- c(
+      sprintf('rain_k <- ave(seq_len(nrow(df)), df[["%s"]], FUN = seq_along)', x),
+      sprintf('df$.rain_x <- as.integer(df[["%s"]]) - 0.18 + 0.12 * ((rain_k * 0.6180339887498949) %%%% 1)', x))
+    layers <- c(layers, sprintf(
+      '  geom_point(aes(x = .rain_x, fill = .data[["%s"]]), size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3) +', x))
+  } else if (isTRUE(show_points)) {
+    layers <- c(layers, sprintf(
+      "  geom_jitter(%s, width = 0.12, size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3) +", fill))
+  }
+  list(prep = prep, layers = layers)
+}
+
 # A standalone, readable script that reproduces the figure from the bundled
 # input using the concrete resolved parameters.
 emit_script <- function(spec, resolved, in_name, fig_stub) {
@@ -188,11 +218,7 @@ emit_script <- function(spec, resolved, in_name, fig_stub) {
   } else {
     sprintf('stat <- rstatix::wilcox_test(df, %s ~ %s, paired = %s)', y, x, paired)
   }
-  geom_line <- if (geom == "violin") {
-    sprintf('geom_violin(aes(fill = .data[["%s"]]), trim = FALSE, width = 0.7, alpha = 0.9)', x)
-  } else {
-    sprintf('geom_boxplot(aes(fill = .data[["%s"]]), width = 0.6, outlier.shape = NA, alpha = 0.9)', x)
-  }
+  gl <- script_geom_lines(x, geom, spec$appearance$show_points %||% TRUE)
 
   c(
     "#!/usr/bin/env Rscript",
@@ -211,9 +237,9 @@ emit_script <- function(spec, resolved, in_name, fig_stub) {
     sprintf('stat <- rstatix::add_xy_position(stat, x = "%s")', x),
     plabel_line,
     "",
+    gl$prep,
     sprintf('p <- ggplot(df, aes(x = .data[["%s"]], y = .data[["%s"]])) +', x, y),
-    sprintf("  %s +", geom_line),
-    sprintf('  geom_jitter(aes(fill = .data[["%s"]]), width = 0.12, size = 1.6, alpha = 0.75, shape = 21, stroke = 0.3) +', x),
+    gl$layers,
     sprintf("  scale_fill_manual(values = %s) +", pal_str),
     sprintf('  stat_pvalue_manual(stat, label = "%s", tip.length = 0.01, bracket.size = 0.4) +',
             label_arg),

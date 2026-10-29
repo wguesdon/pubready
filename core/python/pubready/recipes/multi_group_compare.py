@@ -13,7 +13,7 @@ from scipy import stats
 
 from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, category_width, geom_top, new_fig, palette,
-                     plain_number_axis, wrap_labels)
+                     plain_number_axis, script_geom_code, wrap_labels)
 from ..util import cap_first, cld_letters, p_stars, shapiro_normal
 
 MAX_BRACKETS = 6
@@ -270,9 +270,7 @@ def _script(spec, fam, label, lv, pal, letters, w, in_name, fig_stub, blabel="p.
         ph_line = (f'import itertools, scikit_posthocs as sp; '
                    f'm = sp.posthoc_dunn(df, val_col="{y}", group_col="{x}", p_adjust="fdr_bh"); '
                    f'pairs = [(str(i), str(j), float(m.loc[i, j])) for i, j in itertools.combinations(list(m.index), 2)]')
-    geom_line = (f'sns.violinplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, hue_order=order, palette={pal}, ax=ax, legend=False, cut=0, inner=None)'
-                 if geom == "violin" else
-                 f'sns.boxplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, hue_order=order, palette={pal}, ax=ax, legend=False, width=0.6, fliersize=0)')
+    geom_code = script_geom_code(x, y, pal, geom, ap.get("show_points", True))
     lab_expr = 'f"p = {{p:.2g}}"' if blabel == "p.format" else "stars(p)"  # escaped for format()
     if letters is not None:
         # With more than six significant pairs the figure shows letters.
@@ -293,6 +291,7 @@ def _script(spec, fam, label, lv, pal, letters, w, in_name, fig_stub, blabel="p.
 # Standalone reproduction. Run inside the pinned pubready container.
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd, seaborn as sns, pingouin as pg
 
 
@@ -312,9 +311,7 @@ order = {lv}
 sig = [(a, b, p) for a, b, p in pairs if p < 0.05]
 
 fig, ax = plt.subplots(figsize=({w:.1f}, 4.2))
-{geom_line}
-sns.stripplot(data=df, x="{x}", y="{y}", hue="{x}", order=order, hue_order=order, palette={pal}, ax=ax,
-              legend=False, size=3.5, alpha=0.7, edgecolor="black", linewidth=0.3, jitter=0.12)
+{geom_code}
 {annot}
 ax.set_xlabel("{ap.get('x_label') or x}"); ax.set_ylabel("{ap.get('y_label') or y}")
 ax.set_title("{cap_first(label)}, P = %s" % format(omni_p, ".2g"), fontsize=10, color="#4d4d4d")

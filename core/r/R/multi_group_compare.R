@@ -274,12 +274,8 @@ recipe_multi_group_compare <- function(df, spec) {
 .mg_emit_script <- function(spec, resolved, pal, cld, width, in_name, fig_stub) {
   x <- spec$data$x; y <- spec$data$y
   pal_str <- paste0("c(", paste(sprintf('"%s"', pal), collapse = ", "), ")")
-  geom <- spec$appearance$geom %||% "box"
-  geom_line <- if (geom == "violin") {
-    sprintf('geom_violin(aes(fill = .data[["%s"]]), trim = FALSE, width = 0.7, alpha = 0.9)', x)
-  } else {
-    sprintf('geom_boxplot(aes(fill = .data[["%s"]]), width = 0.6, outlier.shape = NA, alpha = 0.9)', x)
-  }
+  gl <- script_geom_lines(x, spec$appearance$geom %||% "box",
+                          spec$appearance$show_points %||% TRUE)
   posthoc_line <- switch(resolved$posthoc,
     tukey        = sprintf('ph <- rstatix::tukey_hsd(df, %s ~ %s)', y, x),
     games_howell = sprintf('ph <- rstatix::games_howell_test(df, %s ~ %s)', y, x),
@@ -334,9 +330,9 @@ recipe_multi_group_compare <- function(df, spec) {
     omni_line,
     sprintf('subtitle_txt <- paste0("%s, P = ", formatC(omni$p[1], format = "g", digits = 2))', omni_name),
     "",
+    gl$prep,
     sprintf('p <- ggplot(df, aes(x = .data[["%s"]], y = .data[["%s"]])) +', x, y),
-    sprintf("  %s +", geom_line),
-    sprintf('  geom_jitter(aes(fill = .data[["%s"]]), width = 0.12, size = 1.4, alpha = 0.7, shape = 21, stroke = 0.3) +', x),
+    gl$layers,
     sprintf("  scale_fill_manual(values = %s) +", pal_str),
     sprintf('  labs(x = "%s", y = "%s", subtitle = subtitle_txt) +',
             spec$appearance$x_label %||% x, spec$appearance$y_label %||% y),
