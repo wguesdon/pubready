@@ -72,6 +72,9 @@ podman run --rm -v "$PWD":/work -w /work localhost/pubready:<version> \
 | `chickwts_estimation` | `chickwts.csv` | `estimation_plot --ref casein` | the mean difference, `stats::t.test(var.equal = FALSE)` for each feed |
 | `puromycin_kinetics` | `puromycin.csv` | `enzyme_kinetics --group state` | `stats::nls` for each state, `stats::anova` of the shared-K and the shared-Vm model |
 | `dnase_standard_curve` | `dnase_standard_curve.csv` | `standard_curve --id sample` | the inverse of the `stats::nls` fit with `SSfpl` to the run 1 standards |
+| `mgus2_cif` | `mgus2.csv` | `cumulative_incidence --x sex` | `cmprsk::cuminc` (Gray's test), `cmprsk::timepoints` |
+| `pima_calibration` | `pima_te.csv` | `calibration --positive Yes` | `ResourceSelection::hoslem.test(g = 10)`, `stats::glm` |
+| `pbcseq_sankey` | `pbcseq_edema.csv` | `sankey --x year --y edema` | `stats::mcnemar.test(correct = FALSE)` |
 
 ## Tolerances
 
@@ -153,6 +156,17 @@ below make a dataset readable by a recipe. Each change is in
 - **`dnase_standard_curve.csv`.** Run 1 of `DNase` gives the 16 standards. The
   16 densities of run 2, with an empty concentration, are the unknowns. The
   `sample` column names each row.
+- **`mgus2.csv`.** The file follows the survival vignette "compete". The time is
+  the time to progression for a patient who progressed, else the follow-up time.
+  The event is 1 for a progression to a plasma cell malignancy, 2 for a death
+  without progression and 0 for a censored patient.
+- **`pima_te.csv`.** The exporter fits the logistic model
+  `type ~ npreg + glu + bmi + ped + age` to `MASS::Pima.tr`. The file holds
+  `MASS::Pima.te` with the predicted risk of each woman in the column `predicted`.
+- **`pbcseq_edema.csv`.** The file holds the edema score of each patient at the
+  first visit, as `year = 0`, and at the visit closest to day 730 among the visits
+  from day 365 to day 1095, as `year = 2`. A patient without such a visit has only
+  the first row, so the test uses the 249 patients with both visits.
 
 ## Sources
 
@@ -187,3 +201,6 @@ license of that package applies to the data.
 | `chickwts.csv` | datasets | Anonymous (1948) Biometrika 35, 214. McNeil, D. R. (1977) Interactive Data Analysis. Wiley. |
 | `puromycin.csv` | datasets | Treloar, M. A. (1974) Effects of Puromycin on Galactosyltransferase in Golgi Membranes. M.Sc. Thesis, University of Toronto. Bates, D. M. and Watts, D. G. (1988) Nonlinear Regression Analysis and Its Applications. Wiley. |
 | `dnase_standard_curve.csv` | datasets | Davidian, M. and Giltinan, D. M. (1995) Nonlinear Models for Repeated Measurement Data. Chapman and Hall, section 5.2.4. |
+| `mgus2.csv` | survival | Kyle, R. A. et al. (2002) A long-term study of prognosis in monoclonal gammopathy of undetermined significance. New England Journal of Medicine 346, 564-569. |
+| `pima_te.csv` | MASS | Smith, J. W. et al. (1988) Using the ADAP learning algorithm to forecast the onset of diabetes mellitus. Proceedings of the Annual Symposium on Computer Application in Medical Care, 261-265. |
+| `pbcseq_edema.csv` | survival | Murtaugh, P. A. et al. (1994) Primary biliary cirrhosis: prediction of short-term survival based on repeated patient visits. Hepatology 20(1), 126-134. |

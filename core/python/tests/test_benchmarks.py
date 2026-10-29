@@ -12,10 +12,12 @@ import pytest
 from pubready.io import read_tidy
 from pubready.recipes.bland_altman import recipe_bland_altman
 from pubready.recipes.composition import recipe_composition
+from pubready.recipes.calibration import recipe_calibration
 from pubready.recipes.correlation import recipe_correlation
 from pubready.recipes.correlation_heatmap import recipe_correlation_heatmap
 from pubready.recipes.cox_forest import recipe_cox_forest
 from pubready.recipes.distribution import recipe_distribution
+from pubready.recipes.cumulative_incidence import cif_value_at, recipe_cumulative_incidence
 from pubready.recipes.dose_response import recipe_dose_response
 from pubready.recipes.enrichment_dot import recipe_enrichment_dot
 from pubready.recipes.enzyme_kinetics import recipe_enzyme_kinetics
@@ -29,6 +31,7 @@ from pubready.recipes.pca import recipe_pca
 from pubready.recipes.proportions import recipe_proportions
 from pubready.recipes.roc_curve import recipe_roc_curve
 from pubready.recipes.standard_curve import recipe_standard_curve
+from pubready.recipes.sankey import recipe_sankey
 from pubready.recipes.survival_km import recipe_survival_km
 from pubready.recipes.swimmer import recipe_swimmer
 from pubready.recipes.timecourse import recipe_timecourse
@@ -440,3 +443,42 @@ def test_dnase_standard_curve_inverts_ssfpl():
     st = res["stats"].set_index("id")
     for q in conc_q:
         expect_ref(st.loc[q[len("conc_"):], "concentration"], "dnase_standard_curve", q)
+
+
+def test_mgus2_gray_test_and_cumulative_incidence():
+    """mgus2: Gray's test and the CIF at 120 and 240 months match cmprsk."""
+    res = recipe_cumulative_incidence(bench_data("mgus2"), bench_spec(
+        "cumulative_incidence", time="etime", event="event", x="sex"))
+    st, cv = res["stats"], res["curves"]
+    for cause in ("1", "2"):
+        r = st[st["cause"] == cause].iloc[0]
+        expect_ref(r["gray_statistic"], "mgus2_cif", f"gray_stat_{cause}")
+        expect_ref(r["gray_p"], "mgus2_cif", f"gray_p_{cause}")
+        for g in ("F", "M"):
+            c = cv[(cv["cause"] == cause) & (cv["group"] == g)]
+            for t in (120, 240):
+                expect_ref(cif_value_at(t, c["time"].to_numpy(), c["est"].to_numpy()),
+                           "mgus2_cif", f"cif_{g}_{cause}_{t}")
+
+
+def test_pima_calibration_statistics():
+    """Pima.te: the calibration statistics match hoslem.test and glm."""
+    res = recipe_calibration(bench_data("pima_te"), bench_spec(
+        "calibration", y="type", x="predicted", positive="Yes"))
+    row = res["stats"].iloc[0]
+    for q in ("hl_statistic", "hl_df", "hl_p", "brier", "slope", "intercept"):
+        expect_ref(row[q], "pima_calibration", q)
+
+
+def test_pbcseq_bowker_test_of_edema():
+    """pbcseq: Bowker's test of edema matches stats::mcnemar.test."""
+    res = recipe_sankey(bench_data("pbcseq_edema"), bench_spec(
+        "sankey", id="id", x="year", y="edema"))
+    meta, st = res["test_meta"], res["stats"]
+    assert meta["name"] == "Bowker's test of symmetry"
+    for q in ("statistic", "df", "p_value", "n_paired"):
+        expect_ref(meta[q], "pbcseq_sankey", q)
+    expect_ref(st.loc[(st["from_state"] == "0") & (st["to_state"] == "0.5"), "n"].iloc[0],
+               "pbcseq_sankey", "n_0_to_0.5")
+    expect_ref(st.loc[(st["from_state"] == "0.5") & (st["to_state"] == "0"), "n"].iloc[0],
+               "pbcseq_sankey", "n_0.5_to_0")

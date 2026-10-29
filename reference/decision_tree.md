@@ -102,6 +102,17 @@ the threshold that maximises the Youden index. Two or more markers on the same
 subjects are compared with the first marker by DeLong's test for correlated ROC
 curves.
 
+### Predicted risks against the observed outcome → `calibration`
+Use this recipe when a model gives each subject a predicted probability and the
+question is whether the predictions match the observed event rates. The ROC curve
+measures discrimination, and calibration measures agreement. The outcome must
+have exactly two levels, and `--positive` names the event level as for
+`roc_curve`. Each `--x` column holds the predictions of one model, between 0 and
+1. The recipe reports the Brier score, the calibration intercept and the
+calibration slope with 95% Wald CIs, and the Hosmer-Lemeshow test with 10 groups.
+An intercept near 0 and a slope near 1 show good calibration. A slope below 1
+shows predictions that are too extreme, which is the usual sign of overfitting.
+
 ## Combining studies → `forest_meta`
 Each row is one study with its estimate and 95% CI, or its standard error. A
 ratio (odds, risk or hazard ratio) is pooled on the log scale. `--measure auto`
@@ -130,6 +141,15 @@ then:
 A 2x2 table also reports an odds ratio. The figure is a 100% stacked bar of the
 outcome proportions per group. Force with `--test chisq | fisher`.
 
+### The same patients in a category at each visit → `sankey`
+Use this recipe when each patient has a category at two or more visits, for
+example a response category or a toxicity grade. Give one row for each patient and
+visit with `--id --x --y`. The figure shows the transitions between consecutive
+visits. With exactly two visits that carry the same categories, Bowker's test of
+symmetry asks whether the patients move in one direction more than in the other.
+With two categories, this test is McNemar's test. Neither test applies a
+continuity correction. With three visits or more, the figure is descriptive.
+
 ## Time to event
 
 ### Group comparison → `survival_km`
@@ -142,6 +162,15 @@ Cox proportional-hazards model over one or more covariates, drawn as a forest of
 hazard ratios with 95% confidence intervals. A global cox.zph test checks the
 proportional-hazards assumption and its p-value is reported. Input `--time
 --event --covariates "a,b,c"`.
+
+### Competing events → `cumulative_incidence`
+Use this recipe when another event can prevent the event of interest, for example
+a death before a relapse. Kaplan-Meier treats the competing event as censoring and
+overestimates the probability of the event of interest. Code the status as 0 for
+a censored subject and as one code for each event type, and name the cause of
+interest with `--cause`. The recipe estimates the cumulative incidence of each
+cause in each group with the Aalen-Johansen estimator, and Gray's test compares
+the groups for each cause. Input `--time --event [--x --cause]`.
 
 ## Descriptive figures (no test chosen from assumptions)
 These recipes show structure rather than run an inferential test:

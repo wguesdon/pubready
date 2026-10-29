@@ -146,6 +146,14 @@ rm -rf "$OUT"
   --x conc_ng_ml --y absorbance --id sample \
   --xlab "IL-6 (ng/mL)" --ylab "Absorbance at 450 nm" --stamp stdcurve --out "$OUT"
 
+# Clinical recipes: competing risks, calibration and state transitions
+./cli/figkit plot --recipe cumulative_incidence --data example/cumulative_incidence.csv \
+  --time months --event status --x arm --xlab "Months after transplant" --stamp cif --out "$OUT"
+./cli/figkit plot --recipe calibration --data example/calibration.csv \
+  --y event_1y --x risk_clinical,risk_extended --positive yes --stamp cal --out "$OUT"
+./cli/figkit plot --recipe sankey --data example/sankey.csv \
+  --id patient --x week --y response --xlab "Week" --stamp sankey --out "$OUT"
+
 # Raincloud and bar geoms on the comparison recipes
 ./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
   --x group --y volume --ylab "Tumor volume (mm^3)" --geom raincloud --stamp raincloud --out "$OUT"
@@ -232,6 +240,12 @@ PY="--engine python"
 ./cli/figkit plot $PY --recipe standard_curve --data example/standard_curve.csv \
   --x conc_ng_ml --y absorbance --id sample \
   --xlab "IL-6 (ng/mL)" --ylab "Absorbance at 450 nm" --stamp stdcurve_py --out "$OUT"
+./cli/figkit plot $PY --recipe cumulative_incidence --data example/cumulative_incidence.csv \
+  --time months --event status --x arm --xlab "Months after transplant" --stamp cif_py --out "$OUT"
+./cli/figkit plot $PY --recipe calibration --data example/calibration.csv \
+  --y event_1y --x risk_clinical,risk_extended --positive yes --stamp cal_py --out "$OUT"
+./cli/figkit plot $PY --recipe sankey --data example/sankey.csv \
+  --id patient --x week --y response --xlab "Week" --stamp sankey_py --out "$OUT"
 
 rm -rf "$FINAL"
 mv "$OUT" "$FINAL"

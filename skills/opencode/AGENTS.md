@@ -1,4 +1,7 @@
 # pubready (opencode adapter)
+| `cumulative_incidence` | time, status (0 = censored, other codes = causes)[, group] | `--time --event [--x --cause]` | Aalen-Johansen cumulative incidence of each cause, Gray's test across groups, number at risk |
+| `calibration` | binary outcome, predicted probabilities | `--y --x "p1,p2" [--positive]` | Brier score, calibration intercept and slope, Hosmer-Lemeshow test, decile plot with a lowess smooth |
+| `sankey` | patient, visit, state (one row per patient visit) | `--id --x --y` | state transitions across visits; Bowker's or McNemar's test for two visits |
 
 When the user has tidy data and wants a publication figure, use pubready. It makes
 a publication-ready figure with the statistical test drawn on top. A small
@@ -79,7 +82,8 @@ Common options: `--engine r|python` (default r), `--geom box|violin|bar|rainclou
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
 `pearson|spearman|kendall`; proportions: `chisq|fisher`; timecourse:
 `gg|uncorrected`), `--scale`/`--cluster` (heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n`
-(volcano), `--id --group --label`, `--positive LEVEL` (roc_curve case level),
+(volcano), `--id --group --label`, `--positive LEVEL` (roc_curve case level, calibration event level),
+`--cause CODE` (cumulative_incidence cause of interest, default 1),
 `--ci_low --ci_high --se --measure ratio|difference` (forest_meta),
 `--pd_threshold --pr_threshold` (spider_response, waterfall), `--markers "a,b"`
 (swimmer event-time columns),
@@ -96,6 +100,13 @@ The figure shows the effect size and its bootstrap CI, and the stats table gives
 the t-test. For `standard_curve`, leave the concentration empty on each unknown
 row. The recipe does not extrapolate. It flags each unknown outside the range of
 the standards and gives it no concentration.
+
+For `cumulative_incidence`, code the status as 0 for a censored subject and as
+one code for each event type. Name the cause of interest with `--cause`. For
+`calibration`, give the predicted probabilities between 0 and 1, and confirm the
+event level as for `roc_curve`. For `sankey`, give one row for each patient and
+visit. Numeric states sort as numbers, and text states keep the order of their
+first appearance in the data.
 
 ## Choosing the test
 

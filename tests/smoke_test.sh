@@ -381,6 +381,39 @@ else
   echo "FAIL: expected the 4PL and the range flags"; fail=1
 fi
 
+echo "[29] cumulative incidence of competing risks (expect Gray's test)"
+./cli/figkit plot --recipe cumulative_incidence --data example/cumulative_incidence.csv \
+  --time months --event status --x arm --xlab "Months after transplant" --out "$OUT/cif"
+check_bundle "$OUT/cif" "cumulative_incidence"
+if compgen -G "$OUT/cif/*/stats_*.csv" > /dev/null && grep -q "gray_p" "$OUT"/cif/*/stats_*.csv && \
+   grep -q "Gray's k-sample test" "$OUT"/cif/*/methods_*.md; then
+  echo "PASS: cumulative incidence with Gray's test"
+else
+  echo "FAIL: expected the cumulative incidence and Gray's test"; fail=1
+fi
+
+echo "[30] calibration of two risk models (expect Hosmer-Lemeshow)"
+./cli/figkit plot --recipe calibration --data example/calibration.csv \
+  --y event_1y --x risk_clinical,risk_extended --positive yes --out "$OUT/cal"
+check_bundle "$OUT/cal" "calibration"
+if compgen -G "$OUT/cal/*/stats_*.csv" > /dev/null && grep -q "hl_p" "$OUT"/cal/*/stats_*.csv && \
+   grep -q "Hosmer-Lemeshow" "$OUT"/cal/*/methods_*.md; then
+  echo "PASS: calibration with the Hosmer-Lemeshow test"
+else
+  echo "FAIL: expected the calibration statistics"; fail=1
+fi
+
+echo "[31] Sankey diagram of response transitions (expect descriptive, three visits)"
+./cli/figkit plot --recipe sankey --data example/sankey.csv \
+  --id patient --x week --y response --xlab "Week" --out "$OUT/sankey"
+check_bundle "$OUT/sankey" "sankey"
+if compgen -G "$OUT/sankey/*/stats_*.csv" > /dev/null && grep -q "from_state" "$OUT"/sankey/*/stats_*.csv && \
+   grep -q "Sankey diagram (descriptive)" "$OUT"/sankey/*/manifest_*.json; then
+  echo "PASS: Sankey transitions table, descriptive"
+else
+  echo "FAIL: expected the Sankey transitions table"; fail=1
+fi
+
 echo "--- Python engine (all recipes) ---"
 pyc() {  # $1 = short label; rest = plot args
   local label="$1"; shift
@@ -425,6 +458,9 @@ pyc estimation --recipe estimation_plot  --data example/estimation_plot.csv  --x
 pyc est_paired --recipe estimation_plot  --data example/paired_response.csv  --x condition --y value --id subject --paired --ref pre
 pyc enzyme  --recipe enzyme_kinetics     --data example/enzyme_kinetics.csv  --x substrate_um --y rate --group inhibitor
 pyc stdcurve --recipe standard_curve     --data example/standard_curve.csv   --x conc_ng_ml --y absorbance --id sample
+pyc cif     --recipe cumulative_incidence --data example/cumulative_incidence.csv --time months --event status --x arm
+pyc cal     --recipe calibration         --data example/calibration.csv      --y event_1y --x risk_clinical,risk_extended --positive yes
+pyc sankey  --recipe sankey              --data example/sankey.csv           --id patient --x week --y response
 
 # Engine parity on the non-parametric paths. Both engines must report the same
 # p-value and the same effect size to six significant digits.
