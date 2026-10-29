@@ -14,6 +14,76 @@ from ..theme import R_POINT_PT, apply_pub_style, new_fig, palette
 from ..util import shapiro_normal
 
 
+def fisher_ci(r, n):
+    """The 95% confidence interval of a Pearson r from the Fisher z transform.
+
+    The interval of stats::cor.test: tanh(atanh(r) +/- qnorm(0.975) / sqrt(n - 3)).
+
+    Args:
+        r: The Pearson correlation.
+        n: The count of pairs.
+
+    Returns:
+        tuple: The lower and the upper bound, or two NaN values when n < 4.
+    """
+    if n < 4 or not np.isfinite(r) or abs(r) >= 1:
+        return np.nan, np.nan
+    half = stats.norm.ppf(0.975) / np.sqrt(n - 3)
+    z = np.arctanh(r)
+    return float(np.tanh(z - half)), float(np.tanh(z + half))
+
+
+def spearman_s(rho, n):
+    """The S statistic of stats::cor.test for a Spearman correlation.
+
+    Args:
+        rho: The Spearman correlation.
+        n: The count of pairs.
+
+    Returns:
+        float: (n^3 - n) (1 - rho) / 6.
+    """
+    return float((n ** 3 - n) * (1 - rho) / 6)
+
+
+def kendall_statistic(x, y, tau):
+    """The statistic of stats::cor.test for a Kendall correlation.
+
+    R reports T, the count of concordant pairs, when the exact test applies
+    (fewer than 50 pairs and no tie), and else the normal score z with the tie
+    correction of the variance.
+
+    Args:
+        x: The x values.
+        y: The y values.
+        tau: The Kendall tau-b.
+
+    Returns:
+        float: T or z.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    n = len(x)
+    x_ties = pd.Series(x).value_counts().to_numpy()
+    y_ties = pd.Series(y).value_counts().to_numpy()
+    x_ties, y_ties = x_ties[x_ties > 1], y_ties[y_ties > 1]
+    if n < 50 and len(x_ties) == 0 and len(y_ties) == 0:
+        return float(np.round((tau + 1) * n * (n - 1) / 4))
+    t0 = n * (n - 1) / 2
+    t1 = np.sum(x_ties * (x_ties - 1)) / 2
+    t2 = np.sum(y_ties * (y_ties - 1)) / 2
+    s = tau * np.sqrt((t0 - t1) * (t0 - t2))
+    v0 = n * (n - 1) * (2 * n + 5)
+    vt = np.sum(x_ties * (x_ties - 1) * (2 * x_ties + 5))
+    vu = np.sum(y_ties * (y_ties - 1) * (2 * y_ties + 5))
+    v1 = np.sum(x_ties * (x_ties - 1)) * np.sum(y_ties * (y_ties - 1))
+    v2 = (np.sum(x_ties * (x_ties - 1) * (x_ties - 2))
+          * np.sum(y_ties * (y_ties - 1) * (y_ties - 2)))
+    var_s = ((v0 - vt - vu) / 18 + v1 / (2 * n * (n - 1))
+             + v2 / (9 * n * (n - 1) * (n - 2)))
+    return float(s / np.sqrt(var_s))
+
+
 def lm_band(x, y, n=80):
     """The least-squares line and its 95% confidence band over the range of x.
 
@@ -100,17 +170,18 @@ def recipe_correlation(df, spec):
     res = pg.corr(xv, yv, method=r["method"])
     estimate = float(res["r"].iloc[0])
     pval = float(res["p_val"].iloc[0])
-    if "CI95" in res:
-        ci = res["CI95"].iloc[0]
-        ci_low, ci_high = float(ci[0]), float(ci[1])
-    else:
-        ci_low, ci_high = np.nan, np.nan
+    # The same statistic and interval as stats::cor.test: t, df and the Fisher z
+    # CI for Pearson; S for Spearman and T or z for Kendall, with no CI.
+    ci_low, ci_high = np.nan, np.nan
     if r["method"] == "pearson":
         dof = len(xv) - 2
         statistic = (estimate * np.sqrt(dof / (1 - estimate ** 2))
                      if abs(estimate) < 1 else np.inf)
+        ci_low, ci_high = fisher_ci(estimate, len(xv))
+    elif r["method"] == "spearman":
+        dof, statistic = np.nan, spearman_s(estimate, len(xv))
     else:
-        dof, statistic = np.nan, np.nan
+        dof, statistic = np.nan, kendall_statistic(xv, yv, estimate)
 
     ap = spec["appearance"]
     pal = palette(1, ap.get("palette"))

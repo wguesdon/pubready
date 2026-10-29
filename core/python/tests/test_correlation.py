@@ -87,3 +87,15 @@ def test_the_emitted_script_draws_the_same_band_and_runs(tmp_path):
                          text=True, check=False)
     assert run.returncode == 0, run.stderr
     assert (tmp_path / "figure.pdf").exists()
+
+
+def test_correlation_statistic_and_ci_match_stats_cor_test():
+    from pubready.recipes.correlation import fisher_ci, kendall_statistic, spearman_s
+    # mtcars wt and mpg: the conf.int of stats::cor.test(method = "pearson").
+    low, high = fisher_ci(-0.8676593765172278, 32)
+    assert low == pytest.approx(-0.9338264132849942, rel=1e-9)
+    assert high == pytest.approx(-0.7440871964601128, rel=1e-9)
+    # airquality Temp and Ozone: the S of stats::cor.test(method = "spearman").
+    assert spearman_s(0.7740429554613013, 116) == pytest.approx(58778.20599585169, rel=1e-9)
+    # Without a tie and below 50 pairs, R reports T, the count of concordant pairs.
+    assert kendall_statistic([1, 2, 3, 4, 5], [1, 3, 2, 5, 4], 0.6) == 8

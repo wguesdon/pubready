@@ -72,6 +72,12 @@ tag move together.
   120%" when 2 levels were not read back at all, because their mean signals lie
   outside the signal range of the curve. The text read as two failed standards.
   It now counts only the levels that were read back and names the others.
+- The Python `correlation` stats table now has the statistic and the interval of
+  `stats::cor.test`, as the R table has. For Spearman it writes S and for
+  Kendall T or z, where it wrote nothing before. For Pearson it writes the
+  Fisher z CI at full precision, where it wrote the 2-digit CI of pingouin. For
+  Spearman and Kendall it writes no CI, as R does. On the `airquality` and
+  `mtcars` benchmarks, the two tables now agree to 1e-15.
 
 ## [2.0.0] - 2026-10-29
 
