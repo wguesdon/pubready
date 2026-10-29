@@ -128,6 +128,7 @@ recipe_two_group_compare <- function(df, spec) {
     outcome          = y,
     group1           = g1,
     group2           = g2,
+    contrast         = paste(g1, "-", g2),
     n1               = if (!is.null(stat$n1)) stat$n1[1] else length(by_group[[g1]]),
     n2               = if (!is.null(stat$n2)) stat$n2[1] else length(by_group[[g2]]),
     test             = resolved$label,

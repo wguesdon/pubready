@@ -83,7 +83,8 @@ recipe_paired_compare <- function(df, spec) {
     pub_theme(spec$appearance$theme)
 
   stats_df <- data.frame(
-    outcome = y, condition1 = lv[1], condition2 = lv[2], n_pairs = nrow(m),
+    outcome = y, condition1 = lv[1], condition2 = lv[2], contrast = paste(lv[2], "-", lv[1]),
+    n_pairs = nrow(m),
     test = label, statistic = stat, df = dfree, p_value = pval,
     mean_diff = mean(diffs), effect_size_name = eff_name, effect_size = eff,
     shapiro_p_diff = norm$p, stringsAsFactors = FALSE)
@@ -116,8 +117,8 @@ recipe_paired_compare <- function(df, spec) {
     if (tolower(spec$test$method %||% "auto") == "auto") {
       "The test was chosen from the Shapiro-Wilk normality of the within-subject differences. "
     } else "The test was set by the user. ",
-    sprintf("Effect size is reported as %s = %s. Significance was set at P < 0.05. ",
-            eff_name, formatC(eff, format = "f", digits = 2)),
+    sprintf("Effect size is reported as %s = %s (%s minus %s). Significance was set at P < 0.05. ",
+            eff_name, formatC(eff, format = "f", digits = 2), lv[2], lv[1]),
     sprintf("Drawn in R %s with ggplot2 %s and ggpubr %s.", rver, v$ggplot2, v$ggpubr))
 }
 

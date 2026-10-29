@@ -115,6 +115,7 @@ recipe_multi_group_compare <- function(df, spec) {
     outcome      = y,
     group1       = ph$group1,
     group2       = ph$group2,
+    contrast     = paste(ph$group2, "-", ph$group1),
     n1           = vapply(ph$group1, .mg_group_n, integer(1), by_group = by_group),
     n2           = vapply(ph$group2, .mg_group_n, integer(1), by_group = by_group),
     post_hoc     = resolved$posthoc_label,

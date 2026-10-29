@@ -143,10 +143,11 @@ methods_paragraph <- function(resolved, stats_df, test_meta, spec) {
     # own. The Python engine writes the same sentence.
     eff_v <- test_meta$effect_size$value
     if (is.null(eff_v) || !is.finite(eff_v)) {
-      sprintf(" Effect size is reported as %s.", test_meta$effect_size$name)
+      sprintf(" Effect size is reported as %s (%s minus %s).", test_meta$effect_size$name,
+              stats_df$group1[1], stats_df$group2[1])
     } else {
-      sprintf(" Effect size is reported as %s = %s.", test_meta$effect_size$name,
-              formatC(eff_v, format = "f", digits = 2))
+      sprintf(" Effect size is reported as %s = %s (%s minus %s).", test_meta$effect_size$name,
+              formatC(eff_v, format = "f", digits = 2), stats_df$group1[1], stats_df$group2[1])
     }
   } else ""
   adj_txt <- if (!identical(spec$test$p_adjust, "none")) {

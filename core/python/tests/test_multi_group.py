@@ -69,3 +69,8 @@ def test_multi_group_compare_keeps_brackets_for_a_few_pairs():
     assert res["test_meta"]["display"] == "brackets"
     texts = [t.get_text() for t in res["fig"].axes[0].texts]
     assert texts.count("****") == 2
+
+
+def test_multi_group_compare_names_the_direction_of_each_estimate():
+    st = recipe_multi_group_compare(six_groups(), mg_spec())["stats"]
+    assert list(st["contrast"]) == [f"{b} - {a}" for a, b in zip(st["group1"], st["group2"])]

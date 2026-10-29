@@ -92,7 +92,8 @@ def recipe_paired_compare(df, spec):
     fig.tight_layout()
 
     stats_df = pd.DataFrame([{
-        "outcome": y, "condition1": lv[0], "condition2": lv[1], "n_pairs": len(m),
+        "outcome": y, "condition1": lv[0], "condition2": lv[1], "contrast": f"{lv[1]} - {lv[0]}",
+        "n_pairs": len(m),
         "test": label, "statistic": stat, "df": dof, "p_value": pval,
         "mean_diff": float(np.mean(diffs)), "effect_size_name": eff_name,
         "effect_size": eff, "shapiro_p_diff": pdiff,
@@ -125,7 +126,7 @@ def _methods(label, lv, n, eff_name, eff, spec):
     return (
         f"{cap_first(y_lab)} was compared between {lv[0]} and {lv[1]} within each subject with a "
         f"{label} (n = {n} pairs). {choice}"
-        f"Effect size is reported as {eff_name} = {eff:.2f}. "
+        f"Effect size is reported as {eff_name} = {eff:.2f} ({lv[1]} minus {lv[0]}). "
         "Significance was set at P < 0.05. "
         f"Analyses were performed in Python {platform.python_version()} with scipy {v('scipy')}; "
         f"the figure was produced with matplotlib {v('matplotlib')}."

@@ -70,3 +70,23 @@ def test_two_group_methods_say_when_the_user_set_the_test():
     assert "normality assumption was not met" not in mw["methods"]
     auto = recipe_two_group_compare(df, spec_from_args(SimpleNamespace(**base, test="auto")))
     assert "set by the user" not in auto["methods"]
+
+
+def test_two_group_and_paired_name_the_direction_of_the_effect():
+    from pubready.recipes.paired_compare import recipe_paired_compare
+    df = pd.DataFrame({"group": ["ctrl"] * 8 + ["treat"] * 8,
+                       "value": [10, 11, 12, 13, 14, 10.5, 11.5, 12.5,
+                                 20, 21, 22, 23, 24, 20.5, 21.5, 22.5]})
+    res = recipe_two_group_compare(df, spec_from_args(SimpleNamespace(
+        recipe="two_group_compare", data="toy.csv", x="group", y="value", test="welch_t",
+        paired=False, p_adjust="none")))
+    assert res["stats"]["contrast"].iloc[0] == "ctrl - treat"
+    assert "(ctrl minus treat)" in res["methods"]
+    pdf = pd.DataFrame({"subject": [f"s{i}" for i in range(8)] * 2,
+                        "condition": ["pre"] * 8 + ["post"] * 8,
+                        "value": list(range(1, 9)) + [v + d for v, d in
+                                                      zip(range(1, 9), [2, 3, 2, 4, 3, 2, 3, 4])]})
+    pres = recipe_paired_compare(pdf, spec_from_args(SimpleNamespace(
+        recipe="paired_compare", data="p.csv", x="condition", y="value", id="subject", test="t")))
+    assert pres["stats"]["contrast"].iloc[0] == "post - pre"
+    assert "(post minus pre)" in pres["methods"]

@@ -54,3 +54,10 @@ test_that("multi_group_compare keeps brackets for a few pairs, one level each", 
   expect_equal(rows$y.position, c(10.8, 12.1))
   expect_equal(rows$lab, c("**", "****"))
 })
+
+test_that("multi_group_compare names the direction of each estimate", {
+  spec <- spec_from_opt(list(recipe = "multi_group_compare", data = "d.csv", x = "group",
+                             y = "value", test = "anova"))
+  res <- recipe_multi_group_compare(six_groups(), spec)
+  expect_equal(res$stats$contrast, paste(res$stats$group2, "-", res$stats$group1))
+})

@@ -67,3 +67,20 @@ test_that("two_group_compare methods say when the user set the test", {
   auto <- recipe_two_group_compare(df, spec_from_opt(c(base, test = "auto")))
   expect_false(grepl("set by the user", auto$methods))
 })
+
+test_that("two_group_compare and paired_compare name the direction of the effect", {
+  df <- data.frame(group = rep(c("ctrl", "treat"), each = 8),
+                   value = c(10, 11, 12, 13, 14, 10.5, 11.5, 12.5,
+                             20, 21, 22, 23, 24, 20.5, 21.5, 22.5))
+  res <- recipe_two_group_compare(df, spec_from_opt(list(
+    recipe = "two_group_compare", data = "toy.csv", x = "group", y = "value",
+    test = "welch_t", paired = FALSE, p_adjust = "none")))
+  expect_equal(res$stats$contrast, "ctrl - treat")
+  expect_match(res$methods, "(ctrl minus treat)", fixed = TRUE)
+  pdf <- data.frame(subject = rep(paste0("s", 1:8), 2), condition = rep(c("pre", "post"), each = 8),
+                    value = c(1:8, (1:8) + c(2, 3, 2, 4, 3, 2, 3, 4)), stringsAsFactors = FALSE)
+  pres <- recipe_paired_compare(pdf, spec_from_opt(list(
+    recipe = "paired_compare", data = "p.csv", x = "condition", y = "value", id = "subject", test = "t")))
+  expect_equal(pres$stats$contrast, "post - pre")
+  expect_match(pres$methods, "(post minus pre)", fixed = TRUE)
+})

@@ -101,7 +101,8 @@ def recipe_two_group_compare(df, spec):
     fig.tight_layout()
 
     stats_df = pd.DataFrame([{
-        "outcome": y, "group1": lv[0], "group2": lv[1], "n1": len(a), "n2": len(b),
+        "outcome": y, "group1": lv[0], "group2": lv[1], "contrast": f"{lv[0]} - {lv[1]}",
+        "n1": len(a), "n2": len(b),
         "test": r["label"], "statistic": statistic, "df": dof, "p_value": pval,
         "p_adjust_method": spec["test"].get("p_adjust", "none"),
         "effect_size_name": eff_name, "effect_size": eff,
@@ -147,7 +148,8 @@ def _methods(r, stats_df, eff_name, eff_value, spec):
     return (
         f"{cap_first(y_label)} was compared between the two groups with a {r['label']}."
         " Normality was assessed with the Shapiro-Wilk test." + var_txt +
-        f" Effect size is reported as {eff_txt}."
+        f" Effect size is reported as {eff_txt} ({stats_df['group1'].iloc[0]} minus "
+        f"{stats_df['group2'].iloc[0]})."
         " Significance was set at P < 0.05."
         f" Analyses were performed in Python {_pyver()} with pingouin {v('pingouin')};"
         f" figures were produced with seaborn {v('seaborn')} and statannotations {v('statannotations')}."

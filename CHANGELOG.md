@@ -13,6 +13,17 @@ tag move together.
 
 ## [Unreleased]
 
+### Changed
+- The stats tables of `two_group_compare`, `paired_compare` and
+  `multi_group_compare` have a new `contrast` column, for example "1 - 2", and
+  the methods paragraph names the direction of the effect size, for example
+  "Cohen's d = -0.83 (1 minus 2)". The recipes keep their sign conventions:
+  `two_group_compare` reports group 1 minus group 2, `paired_compare` reports
+  condition 2 minus condition 1, and the Tukey estimate of
+  `multi_group_compare` is group 2 minus group 1. On the same `sleep` data,
+  Cohen's d is -0.83 and Cohen's dz is +1.28, and before this change no text
+  said why the signs differ.
+
 ### Fixed
 - `paired_compare` wrote "The test was chosen from the Shapiro-Wilk normality
   of the within-subject differences" also when `--test` set the test. The

@@ -123,7 +123,7 @@ def recipe_multi_group_compare(df, spec):
     sizes = df.groupby(x)[y].size()
     means = df.groupby(x)[y].mean()
     stats_df = pd.DataFrame([{
-        "outcome": y, "group1": a, "group2": b,
+        "outcome": y, "group1": a, "group2": b, "contrast": f"{b} - {a}",
         "n1": int(sizes[a]), "n2": int(sizes[b]), "post_hoc": posthoc_label,
         "estimate": float(means[b] - means[a]) if fam != "kruskal" else np.nan,
         "p_adj": p, "p_adj_signif": p_stars(p), "displayed": p < 0.05,
