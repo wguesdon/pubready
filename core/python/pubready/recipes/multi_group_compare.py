@@ -129,6 +129,9 @@ def recipe_multi_group_compare(df, spec):
         "n1": int(sizes[a]), "n2": int(sizes[b]), "post_hoc": posthoc_label,
         "estimate": float(means[b] - means[a]) if fam != "kruskal" else np.nan,
         "p_adj": p, "p_adj_signif": p_stars(p), "displayed": p < 0.05,
+        "omnibus_test": label, "omnibus_statistic": omni["stat"], "omnibus_df1": omni["df1"],
+        "omnibus_df2": omni["df2"], "omnibus_p": omni["p"],
+        "omnibus_effect_size_name": omni["eff_name"], "omnibus_effect_size": omni["eff"],
     } for a, b, p in pairs])
 
     n_by = {g: int(len(gr)) for g, gr in zip(lv, groups)}

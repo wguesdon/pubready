@@ -451,8 +451,13 @@ def recipe_sankey(df, spec):
             "table": [dict(zip(test["states"], map(int, row))) for row in test["table"]]})
     else:
         test_meta["no_test_reason"] = test["reason"]
+    stats_df = trans.assign(
+        omnibus_test=test["name"] if has_test else None,
+        omnibus_statistic=test["statistic"] if has_test else np.nan,
+        omnibus_df1=test["df"] if has_test else np.nan, omnibus_df2=np.nan,
+        omnibus_p=test["p_value"] if has_test else np.nan)
     return {
-        "fig": fig, "stats": trans, "test_meta": test_meta,
+        "fig": fig, "stats": stats_df, "test_meta": test_meta,
         "methods": _methods(test, trans, visits, n_pat, idc, x, y,
                             states if levels else None),
         "df_used": d, "clean_steps": steps, "label": slugify(y),

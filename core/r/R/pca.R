@@ -112,7 +112,11 @@ recipe_pca <- function(df, spec) {
 
   k <- min(5, length(ve))
   stats_df <- data.frame(PC = paste0("PC", seq_len(k)),
-                         variance_explained_pct = round(ve[seq_len(k)], 3))
+                         variance_explained_pct = round(ve[seq_len(k)], 3),
+                         omnibus_test = "PERMANOVA", omnibus_statistic = perm$F,
+                         omnibus_df1 = nlevels(grp) - 1, omnibus_df2 = nrow(mat) - nlevels(grp),
+                         omnibus_p = perm$p, omnibus_method = perm$method,
+                         omnibus_permutations = perm$permutations, stringsAsFactors = FALSE)
   test_meta <- list(name = "PCA with PERMANOVA",
                     pc1_variance_pct = ve[1], pc2_variance_pct = ve[2],
                     n_samples = nrow(mat), n_features = ncol(mat),

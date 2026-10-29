@@ -123,6 +123,13 @@ recipe_multi_group_compare <- function(df, spec) {
     p_adj        = ph$p.adj,
     p_adj_signif = ph$p.adj.signif,
     displayed    = ph$p.adj < 0.05,
+    omnibus_test = resolved$label,
+    omnibus_statistic = omnibus$statistic,
+    omnibus_df1  = omnibus$df1,
+    omnibus_df2  = omnibus$df2,
+    omnibus_p    = omnibus$p,
+    omnibus_effect_size_name = if (is.null(omnibus$effect_size)) NA_character_ else omnibus$effect_size$name,
+    omnibus_effect_size = if (is.null(omnibus$effect_size)) NA_real_ else omnibus$effect_size$value,
     stringsAsFactors = FALSE
   )
 

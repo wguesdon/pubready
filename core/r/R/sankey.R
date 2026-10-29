@@ -306,6 +306,12 @@ recipe_sankey <- function(df, spec) {
   stats_df <- trans
   rownames(stats_df) <- NULL
   has_test <- !is.null(test$statistic)
+  nr <- nrow(stats_df)
+  stats_df$omnibus_test <- rep(if (has_test) test$name else NA_character_, nr)
+  stats_df$omnibus_statistic <- rep(if (has_test) test$statistic else NA_real_, nr)
+  stats_df$omnibus_df1 <- rep(if (has_test) test$df else NA_real_, nr)
+  stats_df$omnibus_df2 <- rep(NA_real_, nr)
+  stats_df$omnibus_p <- rep(if (has_test) test$p_value else NA_real_, nr)
   test_meta <- list(
     name = if (has_test) test$name else "Sankey diagram (descriptive)",
     n_patients = n_pat, n_visits = length(visits), visits = as.list(visits),

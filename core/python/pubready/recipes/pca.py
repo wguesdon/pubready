@@ -174,8 +174,13 @@ def recipe_pca(df, spec):
     fig.tight_layout()
 
     k = min(5, len(ve))
+    n_groups = len(pd.unique(groups))
     stats_df = pd.DataFrame({"PC": [f"PC{i + 1}" for i in range(k)],
-                             "variance_explained_pct": np.round(ve[:k], 3)})
+                             "variance_explained_pct": np.round(ve[:k], 3),
+                             "omnibus_test": "PERMANOVA", "omnibus_statistic": fstat,
+                             "omnibus_df1": n_groups - 1, "omnibus_df2": X.shape[0] - n_groups,
+                             "omnibus_p": pval, "omnibus_method": pm_method,
+                             "omnibus_permutations": pm_count})
     test_meta = {"name": "PCA with PERMANOVA",
                  "pc1_variance_pct": float(ve[0]), "pc2_variance_pct": float(ve[1]),
                  "n_samples": int(X.shape[0]), "n_features": int(X.shape[1]),

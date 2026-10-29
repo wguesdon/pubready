@@ -93,7 +93,9 @@ def recipe_proportions(df, spec):
     fig.tight_layout()
 
     stats_df = pd.DataFrame([
-        {"group": g, "outcome": oc, "n": int(tab.loc[g, oc]), "proportion": float(prop.loc[g, oc])}
+        {"group": g, "outcome": oc, "n": int(tab.loc[g, oc]), "proportion": float(prop.loc[g, oc]),
+         "omnibus_test": test_label, "omnibus_statistic": stat, "omnibus_df1": dof_out,
+         "omnibus_df2": np.nan, "omnibus_p": float(pval), "odds_ratio": orr}
         for g in groups for oc in outcomes])
     test_meta = {"name": test_label, "statistic": None if np.isnan(stat) else float(stat),
                  "df": None if dof_out is None or (isinstance(dof_out, float) and np.isnan(dof_out)) else int(dof_out),
@@ -101,7 +103,8 @@ def recipe_proportions(df, spec):
                  "or_conf_low": None if np.isnan(or_ci[0]) else or_ci[0],
                  "or_conf_high": None if np.isnan(or_ci[1]) else or_ci[1],
                  "n": int(tab.to_numpy().sum()), "any_expected_below_5": small}
-    methods = _methods(test_label, tab.shape[0], tab.shape[1], int(tab.to_numpy().sum()), pval, orr, is2x2)
+    methods = _methods(test_label, tab.shape[0], tab.shape[1], int(tab.to_numpy().sum()), pval, orr,
+                       is2x2, stat, dof_out, list(tab.index), list(tab.columns))
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": d.reset_index(drop=True), "clean_steps": steps, "label": slugify(y),
@@ -110,13 +113,19 @@ def recipe_proportions(df, spec):
     }
 
 
-def _methods(test_label, n_grp, n_out, n, pval, orr, is2x2):
+def _methods(test_label, n_grp, n_out, n, pval, orr, is2x2, stat, dof, groups, outcomes):
     from importlib.metadata import version as v
     import platform
-    or_txt = f" The odds ratio was {orr:.2f}." if (is2x2 and np.isfinite(orr)) else ""
+    # The odds ratio is the odds of the first outcome in the first group over the
+    # odds in the second group, so the text names the outcome and both groups.
+    or_txt = (f" The odds ratio of {outcomes[0]} for {groups[0]} versus {groups[1]} was {orr:.2f}."
+              if (is2x2 and np.isfinite(orr)) else "")
+    p_txt = f"P = {pval:.2g}"
+    if stat is not None and np.isfinite(stat):
+        p_txt = f"chi-square({int(dof)}) = {stat:.2f}, {p_txt}"
     return (
         f"The distribution of the outcome ({n_out} categories) across {n_grp} groups (n = {n}) "
-        f"was tested with {test_label} (P = {pval:.2g}).{or_txt} Proportions are shown as a 100% "
+        f"was tested with {test_label} ({p_txt}).{or_txt} Proportions are shown as a 100% "
         "stacked bar per group. "
         f"Analyses were performed in Python {platform.python_version()} with scipy {v('scipy')}; "
         f"the figure was produced with matplotlib {v('matplotlib')}."

@@ -27,3 +27,25 @@ test_that("the first outcome sits on top of the stack, as in the legend", {
   expect_equal(first$ymax[first$fill == pubready_palette[1]], 1)
   expect_equal(first$ymin[first$fill == pubready_palette[2]], 0)
 })
+
+test_that("proportions writes the omnibus test and names the odds ratio", {
+  df <- data.frame(arm = c(rep("control", 20), rep("treated", 20)),
+                   response = c(rep("no", 15), rep("yes", 5), rep("no", 5), rep("yes", 15)),
+                   stringsAsFactors = FALSE)
+  res <- recipe_proportions(df, spec_from_opt(list(recipe = "proportions", data = "p.csv",
+                                                   x = "arm", y = "response", test = "chisq")))
+  expect_equal(unique(res$stats$omnibus_statistic), res$test_meta$statistic)
+  expect_equal(unique(res$stats$omnibus_p), res$test_meta$p_value)
+  expect_match(res$methods, "(chi-square(1) = ", fixed = TRUE)
+  expect_match(res$methods, "The odds ratio of no for control versus treated was 9.00.", fixed = TRUE)
+})
+
+test_that("multi_group_compare writes the omnibus test on each row", {
+  spec <- spec_from_opt(list(recipe = "multi_group_compare", data = "d.csv", x = "group",
+                             y = "value", test = "anova"))
+  df <- data.frame(group = rep(c("a", "b", "c"), each = 6),
+                   value = c(1:6, (1:6) + 2, (1:6) + 5))
+  res <- recipe_multi_group_compare(df, spec)
+  expect_equal(unique(res$stats$omnibus_p), res$test_meta$omnibus$p_value)
+  expect_equal(unique(res$stats$omnibus_df2), 15)
+})

@@ -28,6 +28,15 @@ tag move together.
   H / (n - 1). `multi_group_compare` already reports eta-squared (H), so the two
   recipes now give one value for the same test. The values change, for example
   from 0.651 to 0.646 for the sepal length of `iris`.
+- The stats tables of `multi_group_compare`, `pca`, `proportions` and `sankey`
+  now hold the omnibus test on each row: `omnibus_test`, `omnibus_statistic`,
+  `omnibus_df1`, `omnibus_df2` and `omnibus_p`. `multi_group_compare` adds the
+  omnibus effect size, `pca` adds the PERMANOVA method and the count of
+  permutations, and `proportions` adds the odds ratio of a 2 x 2 table. Before,
+  only the manifest and the figure title held these numbers.
+- The `proportions` methods paragraph now gives the chi-square statistic and
+  its df, and it names the direction of the odds ratio, for example "The odds
+  ratio of Admitted for Male versus Female was 1.84".
 
 ### Fixed
 - `paired_compare` wrote "The test was chosen from the Shapiro-Wilk normality

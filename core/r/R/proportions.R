@@ -67,11 +67,18 @@ recipe_proportions <- function(df, spec) {
                    plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"))
 
   stats_df <- cnt[, c("group", "outcome", "n", "proportion")]
+  stats_df$omnibus_test <- test_label
+  stats_df$omnibus_statistic <- stat
+  stats_df$omnibus_df1 <- dfree
+  stats_df$omnibus_df2 <- NA_real_
+  stats_df$omnibus_p <- pval
+  stats_df$odds_ratio <- or
   test_meta <- list(name = test_label, statistic = stat, df = dfree, p_value = pval,
                     odds_ratio = or, or_conf_low = or_ci[1], or_conf_high = or_ci[2],
                     n = sum(tab), any_expected_below_5 = small)
   resolved <- list(family = "proportions", label = test_label)
-  methods  <- .prop_methods(test_label, nrow(tab), ncol(tab), sum(tab), pval, or, is2x2)
+  methods  <- .prop_methods(test_label, nrow(tab), ncol(tab), sum(tab), pval, or, is2x2,
+                            stat, dfree, rownames(tab), colnames(tab))
   build_script <- list(fn = .prop_emit_script, args = list(spec = spec, use_fisher = use_fisher))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
@@ -82,13 +89,20 @@ recipe_proportions <- function(df, spec) {
        height = 4.2)
 }
 
-.prop_methods <- function(test_label, n_grp, n_out, n, pval, or, is2x2) {
+.prop_methods <- function(test_label, n_grp, n_out, n, pval, or, is2x2, stat, dfree, groups, outcomes) {
   v    <- pkg_versions("ggplot2")
   rver <- paste(R.version$major, R.version$minor, sep = ".")
-  or_txt <- if (is2x2 && is.finite(or)) sprintf(" The odds ratio was %s.", formatC(or, format = "f", digits = 2)) else ""
+  # The odds ratio is the odds of the first outcome in the first group over the
+  # odds in the second group, so the text names the outcome and both groups.
+  or_txt <- if (is2x2 && is.finite(or)) {
+    sprintf(" The odds ratio of %s for %s versus %s was %s.", outcomes[1], groups[1], groups[2],
+            formatC(or, format = "f", digits = 2))
+  } else ""
+  p_txt <- sprintf("P = %s", formatC(pval, format = "g", digits = 2))
+  if (is.finite(stat)) p_txt <- sprintf("chi-square(%d) = %.2f, %s", as.integer(dfree), stat, p_txt)
   paste0(
-    sprintf("The distribution of the outcome (%d categories) across %d groups (n = %d) was tested with %s (P = %s).",
-            n_out, n_grp, n, test_label, formatC(pval, format = "g", digits = 2)),
+    sprintf("The distribution of the outcome (%d categories) across %d groups (n = %d) was tested with %s (%s).",
+            n_out, n_grp, n, test_label, p_txt),
     or_txt,
     " Proportions are shown as a 100% stacked bar per group.",
     sprintf(" Drawn in R %s with ggplot2 %s.", rver, v$ggplot2))
