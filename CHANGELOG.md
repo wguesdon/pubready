@@ -30,11 +30,6 @@ tag move together.
 - The Python `heatmap` did not draw the significance stars that R draws when the
   annotation has two groups. It now writes them between the heatmap and the row
   names, with the same BH-adjusted Welch t thresholds as R.
-- `upset` drew every intersection. Seven sets gave 89 bars in a figure too wide
-  to read. Both engines now draw the 15 largest intersections, and `--top_n`
-  sets the number. The title states how many intersections are not shown. The
-  stats table still lists every intersection, and `n_intersections_shown` in the
-  manifest gives the number drawn.
 - The two `upset` engines did not agree on the layout. R rotated the counts over
   the bars by 45 degrees and the set-size axis labels by 90 degrees, and it gave
   no set-size numbers. Python put the set sizes on the left, where the numbers
@@ -72,6 +67,13 @@ tag move together.
   Arm B, Arm A. Both engines now sort the arms as the other recipes sort their
   groups, so the colours and the legend follow that order. The R legend text
   was 10.4 pt and the title 13 pt. They are now 9 pt and 10 pt, as in Python.
+
+### Changed
+- `upset` drew every intersection. Seven sets gave 89 bars in a figure too wide
+  to read. Both engines now draw the 15 largest intersections, and `--top_n`
+  sets the number. The title states how many intersections are not shown. The
+  stats table still lists every intersection, and `n_intersections_shown` in the
+  manifest gives the number drawn.
 
 ## [1.0.0] - 2026-10-07
 
