@@ -167,7 +167,7 @@ engines. Pick the engine per figure with `--engine`.
 | `survival_km` | `time, event, group` | Kaplan-Meier with a log-rank test | step curves, log-rank p, number-at-risk table (time >= t), legend right of the panel |
 | `cox_forest` | `time, event, covariate…` | Cox proportional hazards | forest plot of hazard ratios with 95% CI |
 | `heatmap` | matrix CSV + annotation CSV | per-feature Welch t-test when the annotation has two groups | clustered heatmap, z-scored, group annotation bar |
-| `correlation` | `x, y` (two numeric columns) | Pearson / Spearman / Kendall, chosen from normality | scatter with a linear fit, CI band, method, coefficient and P in the subtitle |
+| `correlation` | `x, y` (two numeric columns) | Pearson / Spearman / Kendall, chosen from normality | scatter with method, coefficient and P in the subtitle; a Pearson scatter also has the least-squares line and its 95% CI band, and a rank correlation has no line |
 | `correlation_heatmap` | table of numeric variables | pairwise correlation, BH-adjusted | clustered correlation matrix, coefficients + significance stars |
 | `upset` | binary membership matrix | descriptive (intersection sizes, no test) | UpSet plot of the largest set intersections, 15 by default |
 | `volcano` | DE table (log2FC + p) | thresholds on fold change and p (test is upstream) | EnhancedVolcano-style four-color scatter, top hits labeled |

@@ -99,3 +99,13 @@ def test_correlation_statistic_and_ci_match_stats_cor_test():
     assert spearman_s(0.7740429554613013, 116) == pytest.approx(58778.20599585169, rel=1e-9)
     # Without a tie and below 50 pairs, R reports T, the count of concordant pairs.
     assert kendall_statistic([1, 2, 3, 4, 5], [1, 3, 2, 5, 4], 0.6) == 8
+
+
+def test_a_rank_correlation_scatter_gets_no_fitted_line():
+    df = pd.DataFrame({"a": np.arange(1, 31), "b": np.arange(1, 31) ** 2.0})
+    base = dict(recipe="correlation", data="c.csv", x="a", y="b")
+    sp = recipe_correlation(df, spec_from_args(SimpleNamespace(**base, test="spearman")))
+    assert len(sp["fig"].axes[0].lines) == 0
+    assert "No line is drawn" in sp["methods"]
+    pe = recipe_correlation(df, spec_from_args(SimpleNamespace(**base, test="pearson")))
+    assert len(pe["fig"].axes[0].lines) == 1

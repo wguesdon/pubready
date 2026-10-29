@@ -93,7 +93,8 @@ differentially expressed by construction; 21-30 are not.
 Two co-expressed genes (`gene_a`, `gene_b`) with a clear positive association.
 Both variables are roughly normal, so the `auto` resolver picks **Pearson**; force
 Spearman or Kendall with `--test`. The figure is a scatter with a linear fit, a
-95% CI band, and the coefficient and p annotated.
+95% CI band, and the coefficient and p annotated. A Spearman or a Kendall
+scatter has no line.
 
 ```bash
 figkit plot --recipe correlation --data example/correlation_xy.csv \

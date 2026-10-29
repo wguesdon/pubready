@@ -1,7 +1,7 @@
 # Recipe: correlation between two continuous variables.
 # Chooses Pearson or Spearman from the normality of each variable (unless the
-# caller forces the method), draws a scatter with a linear fit and CI band, and
-# annotates the coefficient and p on the plot. Returns the plot, a tidy stats
+# caller forces the method), draws a scatter (with a linear fit and CI band for
+# Pearson only, because a rank correlation describes no line), and annotates the coefficient and p on the plot. Returns the plot, a tidy stats
 # table, and test metadata.
 
 # Resolve which correlation method to run from the request and the normality of
@@ -67,10 +67,15 @@ recipe_correlation <- function(df, spec) {
 
   # The method, the coefficient and the P value go in a subtitle, in the style of
   # the other recipes and in the same words as the Python engine.
+  # A least-squares line describes a Pearson correlation only. A rank correlation
+  # measures a monotonic association, so its scatter gets no fitted line.
   p <- ggplot2::ggplot(df_used, ggplot2::aes(x = .data[[x]], y = .data[[y]])) +
-    ggplot2::geom_point(colour = point_col, size = 2, alpha = 0.8) +
-    ggplot2::geom_smooth(method = "lm", formula = y ~ x, se = TRUE,
-                         colour = "#333333", fill = "grey75", linewidth = 0.6) +
+    ggplot2::geom_point(colour = point_col, size = 2, alpha = 0.8)
+  if (resolved$method == "pearson") {
+    p <- p + ggplot2::geom_smooth(method = "lm", formula = y ~ x, se = TRUE,
+                                  colour = "#333333", fill = "grey75", linewidth = 0.6)
+  }
+  p <- p +
     ggplot2::labs(
       x        = spec$appearance$x_label %||% x,
       y        = spec$appearance$y_label %||% y,
@@ -139,8 +144,8 @@ recipe_correlation <- function(df, spec) {
     sprintf("The association between %s and %s was assessed with a %s (n = %d).",
             x_lab, y_lab, resolved$label, stats_df$n[1]),
     auto_txt,
-    sprintf(" The correlation was %s = %s (P = %s), with a linear fit and 95%% confidence band shown.",
-            resolved$estimate_name, est, pv),
+    sprintf(" The correlation was %s = %s (P = %s)%s",
+            resolved$estimate_name, est, pv, .cor_line_text(resolved$method)),
     " Significance was set at P < 0.05.",
     sprintf(" Rendered in R %s with ggplot2 %s.", rver, v$ggplot2))
 }
@@ -167,10 +172,20 @@ recipe_correlation <- function(df, spec) {
     "",
     "p <- ggplot(df, aes(x = x, y = y)) +",
     sprintf('  geom_point(colour = "%s", size = 2, alpha = 0.8) +', point_col),
-    '  geom_smooth(method = "lm", formula = y ~ x, se = TRUE, colour = "#333333", fill = "grey75") +',
+    if (resolved$method == "pearson") {
+      '  geom_smooth(method = "lm", formula = y ~ x, se = TRUE, colour = "#333333", fill = "grey75") +'
+    },
     sprintf('  labs(x = "%s", y = "%s", subtitle = sub) + theme_classic() +', xlab, ylab),
     '  theme(plot.subtitle = element_text(hjust = 0.5, size = 10, colour = "grey30"))',
     sprintf('ggsave("%s.pdf", p, width = 4.6, height = 4.2)', fig_stub),
     'cat("Reproduced figure.\\n")'
   )
+}
+
+# The end of the result sentence: a Pearson scatter shows the least-squares line
+# and its band, and a rank correlation shows the points only.
+.cor_line_text <- function(method) {
+  if (method == "pearson") {
+    ", with a linear fit and 95% confidence band shown."
+  } else ". No line is drawn, because a rank correlation measures a monotonic association and not a straight line."
 }

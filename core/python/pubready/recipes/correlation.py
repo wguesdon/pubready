@@ -1,6 +1,7 @@
 """Recipe: correlation between two continuous variables. Mirrors the R recipe:
 picks Pearson or Spearman from the normality of each variable (unless forced),
-scatter with a linear fit and CI band, method, coefficient and P in a subtitle."""
+scatter with a linear fit and CI band for Pearson only (a rank correlation describes
+no line), method, coefficient and P in a subtitle."""
 import functools
 import inspect
 
@@ -189,10 +190,13 @@ def recipe_correlation(df, spec):
     fig, ax = new_fig(w, h)
     # The points, then the line and its analytic 95% band on top, as R draws
     # geom_point(size = 2) and geom_smooth(method = "lm", fill = "grey75").
+    # A least-squares line describes a Pearson correlation only. A rank
+    # correlation measures a monotonic association, so its scatter gets no line.
     ax.scatter(xv, yv, s=(2 * R_POINT_PT) ** 2, color=pal[0], alpha=0.8, edgecolors="none")
-    grid, fit, lo, hi = lm_band(xv, yv)
-    ax.fill_between(grid, lo, hi, color="#BFBFBF", alpha=0.4, linewidth=0)
-    ax.plot(grid, fit, color="#333333", linewidth=1.4)
+    if r["method"] == "pearson":
+        grid, fit, lo, hi = lm_band(xv, yv)
+        ax.fill_between(grid, lo, hi, color="#BFBFBF", alpha=0.4, linewidth=0)
+        ax.plot(grid, fit, color="#333333", linewidth=1.4)
     # The method, the coefficient and the P value go in a subtitle, in the style
     # of the other recipes and in the same words as the R engine.
     ax.set_title(cor_label(r["label"], r["estimate_name"], estimate, pval),
@@ -233,6 +237,21 @@ def recipe_correlation(df, spec):
     }
 
 
+def _line_text(method):
+    """End the result sentence with what the scatter shows.
+
+    Args:
+        method: pearson, spearman or kendall.
+
+    Returns:
+        str: The end of the sentence, with its full stop.
+    """
+    if method == "pearson":
+        return ", with a linear fit and 95% confidence band shown."
+    return (". No line is drawn, because a rank correlation measures a monotonic association "
+            "and not a straight line.")
+
+
 def _methods(r, stats_df, spec):
     from importlib.metadata import version as v
     import platform
@@ -245,8 +264,8 @@ def _methods(r, stats_df, spec):
     return (
         f"The association between {x_lab} and {y_lab} was assessed with a "
         f"{r['label']} (n = {int(stats_df['n'].iloc[0])})." + auto_txt +
-        f" The correlation was {r['estimate_name']} = {est} (P = {pv}), with a linear fit and "
-        "95% confidence band shown. Significance was set at P < 0.05."
+        f" The correlation was {r['estimate_name']} = {est} (P = {pv}){_line_text(r['method'])}"
+        " Significance was set at P < 0.05."
         f" Analyses were performed in Python {platform.python_version()} with pingouin {v('pingouin')};"
         f" the figure was produced with matplotlib {v('matplotlib')}."
     )
@@ -255,6 +274,9 @@ def _methods(r, stats_df, spec):
 def _script(spec, r, color, in_name, fig_stub):
     x, y = spec["data"]["x"], spec["data"]["y"]
     ap = spec["appearance"]
+    line = ("grid, fit, lo, hi = lm_band(x, y)\n"
+            "ax.fill_between(grid, lo, hi, color=\"#BFBFBF\", alpha=0.4, linewidth=0)\n"
+            "ax.plot(grid, fit, color=\"#333333\", linewidth=1.4)\n") if r["method"] == "pearson" else ""
     return f'''#!/usr/bin/env python3
 # Standalone reproduction. Run inside the pinned pubready container
 # (see REPRODUCE.md) from this bundle folder.
@@ -277,10 +299,7 @@ sub = "{r['label']}, {r['estimate_name']} = %.2f, P = %.2g" % (res["r"].iloc[0],
 
 fig, ax = plt.subplots(figsize=(4.6, 4.2))
 ax.scatter(x, y, s={(2 * R_POINT_PT) ** 2:.2f}, color="{color}", alpha=0.8, edgecolors="none")
-grid, fit, lo, hi = lm_band(x, y)
-ax.fill_between(grid, lo, hi, color="#BFBFBF", alpha=0.4, linewidth=0)
-ax.plot(grid, fit, color="#333333", linewidth=1.4)
-ax.set_xlabel("{ap.get('x_label') or x}"); ax.set_ylabel("{ap.get('y_label') or y}")
+{line}ax.set_xlabel("{ap.get('x_label') or x}"); ax.set_ylabel("{ap.get('y_label') or y}")
 ax.set_title(sub, fontsize=10, color="#4d4d4d")
 for s in ("top", "right"): ax.spines[s].set_visible(False)
 fig.tight_layout()

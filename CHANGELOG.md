@@ -28,6 +28,11 @@ tag move together.
   H / (n - 1). `multi_group_compare` already reports eta-squared (H), so the two
   recipes now give one value for the same test. The values change, for example
   from 0.651 to 0.646 for the sepal length of `iris`.
+- A Spearman or a Kendall `correlation` scatter has no least-squares line and
+  no band now. A rank correlation measures a monotonic association, and on the
+  `airquality` benchmark the line predicted a negative ozone level below 60 F.
+  The methods paragraph says that no line is drawn. A Pearson scatter keeps the
+  line and its 95% band.
 - The stats tables of `multi_group_compare`, `pca`, `proportions` and `sankey`
   now hold the omnibus test on each row: `omnibus_test`, `omnibus_statistic`,
   `omnibus_df1`, `omnibus_df2` and `omnibus_p`. `multi_group_compare` adds the

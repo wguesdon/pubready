@@ -38,3 +38,15 @@ test_that("the correlation subtitle names the method, the coefficient and P as P
   res <- recipe_correlation(df, spec)
   expect_match(res$plot$labels$subtitle, "^Kendall rank correlation, tau = ")
 })
+
+test_that("a rank correlation scatter gets no fitted line", {
+  set.seed(4)
+  df <- data.frame(a = 1:30, b = (1:30)^2 + stats::rnorm(30))
+  base <- list(recipe = "correlation", data = "c.csv", x = "a", y = "b")
+  geoms <- function(res) vapply(res$plot$layers, function(l) class(l$geom)[1], character(1))
+  sp <- recipe_correlation(df, spec_from_opt(c(base, test = "spearman")))
+  expect_false("GeomSmooth" %in% geoms(sp))
+  expect_match(sp$methods, "No line is drawn", fixed = TRUE)
+  pe <- recipe_correlation(df, spec_from_opt(c(base, test = "pearson")))
+  expect_true("GeomSmooth" %in% geoms(pe))
+})

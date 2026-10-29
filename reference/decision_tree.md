@@ -128,8 +128,10 @@ Check normality of each variable (Shapiro-Wilk).
 - Otherwise → Spearman rank correlation (rho).
 - Kendall rank correlation (tau) only when forced.
 
-Scatter with a linear fit and a 95% confidence band, the coefficient and p
-annotated. Force with `--test pearson | spearman | kendall`.
+A scatter with the coefficient and p annotated. A Pearson scatter also has a
+linear fit and a 95% confidence band. A Spearman or a Kendall scatter has no
+line, because a rank correlation measures a monotonic association and not a
+straight line. Force with `--test pearson | spearman | kendall`.
 
 ## Proportion or category → `proportions`
 Raw rows with a group column and an outcome column. Build the contingency table,
