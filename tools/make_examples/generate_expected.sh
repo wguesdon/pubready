@@ -154,6 +154,16 @@ rm -rf "$OUT"
 ./cli/figkit plot --recipe sankey --data example/sankey.csv \
   --id patient --x week --y response --xlab "Week" --stamp sankey --out "$OUT"
 
+# Omics recipes: MA plot, Manhattan and QQ plot, feature panel, embedding
+./cli/figkit plot --recipe ma_plot --data example/de_basemean.csv --stamp ma --out "$OUT"
+./cli/figkit plot --recipe manhattan --data example/gwas_summary.csv \
+  --group chr --x pos --y p --label snp --stamp manhattan --out "$OUT"
+./cli/figkit plot --recipe feature_panel --data example/cytokine_panel.csv \
+  --x group --y concentration_pg_ml --facet cytokine --xlab "Group" \
+  --ylab "Concentration (pg/mL)" --stamp fpanel --out "$OUT"
+./cli/figkit plot --recipe embedding --data example/umap_clusters.csv \
+  --x UMAP_1 --y UMAP_2 --group cell_type --stamp embedding --out "$OUT"
+
 # Raincloud and bar geoms on the comparison recipes
 ./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
   --x group --y volume --ylab "Tumor volume (mm^3)" --geom raincloud --stamp raincloud --out "$OUT"
@@ -246,6 +256,14 @@ PY="--engine python"
   --y event_1y --x risk_clinical,risk_extended --positive yes --stamp cal_py --out "$OUT"
 ./cli/figkit plot $PY --recipe sankey --data example/sankey.csv \
   --id patient --x week --y response --xlab "Week" --stamp sankey_py --out "$OUT"
+./cli/figkit plot $PY --recipe ma_plot --data example/de_basemean.csv --stamp ma_py --out "$OUT"
+./cli/figkit plot $PY --recipe manhattan --data example/gwas_summary.csv \
+  --group chr --x pos --y p --label snp --stamp manhattan_py --out "$OUT"
+./cli/figkit plot $PY --recipe feature_panel --data example/cytokine_panel.csv \
+  --x group --y concentration_pg_ml --facet cytokine --xlab "Group" \
+  --ylab "Concentration (pg/mL)" --stamp fpanel_py --out "$OUT"
+./cli/figkit plot $PY --recipe embedding --data example/umap_clusters.csv \
+  --x UMAP_1 --y UMAP_2 --group cell_type --stamp embedding_py --out "$OUT"
 
 rm -rf "$FINAL"
 mv "$OUT" "$FINAL"

@@ -140,6 +140,17 @@ bench pima_calibration "Hosmer-Lemeshow" --recipe calibration --data $D/pima_te.
 bench pbcseq_sankey "Bowker" --recipe sankey --data $D/pbcseq_edema.csv \
   --id id --x year --y edema
 
+echo "--- Omics recipes on public datasets ---"
+bench airway_ma "MA plot" --recipe ma_plot --data $D/airway_de.csv
+bench gwas_manhattan "lambda_GC" --recipe manhattan --data $D/gwas_results.csv \
+  --group CHR --x BP --y P --label SNP
+bench iris_feature_panel_kruskal "Kruskal-Wallis" --recipe feature_panel --data $D/iris.csv \
+  --x Species
+bench iris_feature_panel_anova "one-way ANOVA" --recipe feature_panel --data $D/iris.csv \
+  --x Species --test anova
+bench iris_embedding "silhouette" --recipe embedding --data $D/iris.csv \
+  --x Petal.Length --y Petal.Width --group Species
+
 echo
 if [ "$ran" -eq 0 ]; then
   echo "NO BENCHMARK MATCHED '$FILTER'"; exit 1

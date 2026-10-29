@@ -454,3 +454,59 @@ test_that("pbcseq (Murtaugh 1994): Bowker's test of edema matches stats::mcnemar
   expect_ref(st$n[st$from_state == "0" & st$to_state == "0.5"], "pbcseq_sankey", "n_0_to_0.5")
   expect_ref(st$n[st$from_state == "0.5" & st$to_state == "0"], "pbcseq_sankey", "n_0.5_to_0")
 })
+
+test_that("airway: the MA plot counts match the DESeq2 table at padj <= 0.05 and |log2FC| >= 1", {
+  bench_skip()
+  res <- recipe_ma_plot(bench_data("airway_de"), bench_spec("ma_plot"))
+  expect_equal(res$test_meta$mean_column, "baseMean")
+  expect_equal(res$test_meta$p_column, "padj")
+  for (q in c("n_up", "n_down", "n_total")) expect_ref(res$test_meta[[q]], "airway_ma", q)
+  expect_equal(nrow(res$stats), res$test_meta$n_up + res$test_meta$n_down)
+})
+
+test_that("qqman gwasResults: lambda_GC, the counts and the smallest p match the reference", {
+  bench_skip()
+  res <- recipe_manhattan(bench_data("gwas_results"),
+                          bench_spec("manhattan", group = "CHR", x = "BP", y = "P", label = "SNP"))
+  for (q in c("lambda_gc", "n_genome_wide", "n_suggestive", "min_p")) {
+    expect_ref(res$test_meta[[q]], "gwas_manhattan", q)
+  }
+  genome <- res$stats[res$stats$row_type == "genome", ]
+  expect_ref(genome$lambda_gc, "gwas_manhattan", "lambda_gc")
+  expect_ref(genome$p_value, "gwas_manhattan", "min_p")
+})
+
+iris_features <- c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
+
+test_that("iris: the feature panel picks Kruskal-Wallis and matches kruskal.test with BH", {
+  bench_skip()
+  res <- recipe_feature_panel(bench_data("iris"), bench_spec("feature_panel", x = "Species"))
+  expect_equal(res$test_meta$test, "kruskal")
+  for (f in iris_features) {
+    r <- res$stats[res$stats$feature == f, ]
+    expect_ref(r$statistic, "iris_feature_panel_kruskal", paste0("H_", f))
+    expect_ref(r$p_value, "iris_feature_panel_kruskal", paste0("p_", f))
+    expect_ref(r$p_adj, "iris_feature_panel_kruskal", paste0("p_adj_", f))
+  }
+})
+
+test_that("iris: the feature panel with --test anova matches oneway.test with BH", {
+  bench_skip()
+  res <- recipe_feature_panel(bench_data("iris"), bench_spec("feature_panel", x = "Species", test = "anova"))
+  for (f in iris_features) {
+    r <- res$stats[res$stats$feature == f, ]
+    expect_ref(r$statistic, "iris_feature_panel_anova", paste0("F_", f))
+    expect_ref(r$p_adj, "iris_feature_panel_anova", paste0("p_adj_", f))
+  }
+})
+
+test_that("iris: the embedding silhouettes match cluster::silhouette", {
+  bench_skip()
+  res <- recipe_embedding(bench_data("iris"),
+                          bench_spec("embedding", x = "Petal.Length", y = "Petal.Width", group = "Species"))
+  for (sp in c("setosa", "versicolor", "virginica")) {
+    expect_ref(res$stats$mean_silhouette[res$stats$cluster == sp], "iris_embedding",
+               paste0("silhouette_", sp))
+  }
+  expect_ref(res$test_meta$mean_silhouette, "iris_embedding", "silhouette_overall")
+})

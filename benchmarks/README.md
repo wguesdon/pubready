@@ -75,6 +75,11 @@ podman run --rm -v "$PWD":/work -w /work localhost/pubready:<version> \
 | `mgus2_cif` | `mgus2.csv` | `cumulative_incidence --x sex` | `cmprsk::cuminc` (Gray's test), `cmprsk::timepoints` |
 | `pima_calibration` | `pima_te.csv` | `calibration --positive Yes` | `ResourceSelection::hoslem.test(g = 10)`, `stats::glm` |
 | `pbcseq_sankey` | `pbcseq_edema.csv` | `sankey --x year --y edema` | `stats::mcnemar.test(correct = FALSE)` |
+| `airway_ma` | `airway_de.csv` | `ma_plot` | the DESeq2 genes at padj of 0.05 or less and an absolute log2FC of 1 or more |
+| `gwas_manhattan` | `gwas_results.csv` | `manhattan --group CHR --x BP --y P --label SNP` | the median of `qchisq(1 - p, 1)` over `qchisq(0.5, 1)`, the counts below 5e-8 and 1e-5, the smallest p |
+| `iris_feature_panel_kruskal` | `iris.csv` | `feature_panel --x Species` | `stats::kruskal.test` for each measurement, `stats::p.adjust(method = "BH")` |
+| `iris_feature_panel_anova` | `iris.csv` | `feature_panel --x Species --test anova` | `stats::oneway.test(var.equal = TRUE)` for each measurement, `stats::p.adjust(method = "BH")` |
+| `iris_embedding` | `iris.csv` | `embedding --x Petal.Length --y Petal.Width --group Species` | `cluster::silhouette` on the two petal measurements |
 
 ## Tolerances
 
@@ -118,7 +123,8 @@ below make a dataset readable by a recipe. Each change is in
 - **`airway_de.csv`.** The exporter runs DESeq2 on the `airway` data with the
   design `~ cell + dex`, so the test blocks the donor. The file keeps the 12,625
   genes that have an adjusted p and a mean count of 50 or more. This limit keeps
-  the file at 444 KB.
+  the file at 544 KB. The file holds the `baseMean` of each gene, so the
+  `ma_plot` case reads the same table as the `volcano` case.
 - **`airway_heatmap.csv` and `airway_pca.csv`.** These files hold the
   variance-stabilised counts of `DESeq2::vst`. The heatmap file holds the 40 genes
   with the smallest adjusted p and an absolute log2FC of 1 or more. The PCA file
@@ -167,6 +173,14 @@ below make a dataset readable by a recipe. Each change is in
   first visit, as `year = 0`, and at the visit closest to day 730 among the visits
   from day 365 to day 1095, as `year = 2`. A patient without such a visit has only
   the first row, so the test uses the 249 patients with both visits.
+- **`gwas_results.csv`.** This file is the `gwasResults` data of the qqman
+  package as the package distributes it. The positions count the SNPs on each
+  chromosome, because the data is simulated.
+- **`iris.csv` for `feature_panel` and `embedding`.** The feature panel reads
+  the file in wide form, so each of the four measurements is a feature. The
+  embedding case uses the petal length and the petal width as the two
+  coordinates. A silhouette on these two columns describes the separation of the
+  species on two measurements and not on a computed embedding.
 
 ## Sources
 
@@ -204,3 +218,4 @@ license of that package applies to the data.
 | `mgus2.csv` | survival | Kyle, R. A. et al. (2002) A long-term study of prognosis in monoclonal gammopathy of undetermined significance. New England Journal of Medicine 346, 564-569. |
 | `pima_te.csv` | MASS | Smith, J. W. et al. (1988) Using the ADAP learning algorithm to forecast the onset of diabetes mellitus. Proceedings of the Annual Symposium on Computer Application in Medical Care, 261-265. |
 | `pbcseq_edema.csv` | survival | Murtaugh, P. A. et al. (1994) Primary biliary cirrhosis: prediction of short-term survival based on repeated patient visits. Hepatology 20(1), 126-134. |
+| `gwas_results.csv` | qqman | Turner, S. D. (2018) qqman: an R package for visualizing GWAS results using Q-Q and manhattan plots. Journal of Open Source Software 3(25), 731. |

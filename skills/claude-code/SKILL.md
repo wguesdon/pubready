@@ -13,6 +13,10 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 | `cumulative_incidence` | time, status (0 = censored, other codes = causes)[, group] | `--time --event [--x --cause]` | Aalen-Johansen cumulative incidence of each cause, Gray's test across groups, number at risk |
 | `calibration` | binary outcome, predicted probabilities | `--y --x "p1,p2" [--positive]` | Brier score, calibration intercept and slope, Hosmer-Lemeshow test, decile plot with a lowess smooth |
 | `sankey` | patient, visit, state (one row per patient visit) | `--id --x --y` | state transitions across visits; Bowker's or McNemar's test for two visits |
+| `ma_plot` | DE table: log2FC, p, mean expression (`baseMean`, `AveExpr` or `logCPM`) | `--data [--x MEAN --y P --label]` | M against A, up and down genes coloured, top hits labeled (the test is upstream) |
+| `manhattan` | one row per SNP: chromosome, position, p | `--group --x --y [--label]` | Manhattan and QQ plot, 5e-8 and 1e-5 lines, lead SNPs, lambda_GC |
+| `feature_panel` | group, value, feature (long) or one column per feature (wide) | `--x [--y --facet]` | one panel per feature; Welch t or Mann-Whitney, ANOVA or Kruskal-Wallis; BH across the features |
+| `embedding` | UMAP or t-SNE coordinates and a cluster, computed upstream | `--x --y --group` | scatter by cluster, labels at the medians, silhouette width per cluster (no test) |
 
 # pubready
 
@@ -95,7 +99,7 @@ Common options: `--engine r|python` (default r), `--geom box|violin|bar|rainclou
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
 `pearson|spearman|kendall`; proportions: `chisq|fisher`; timecourse:
 `gg|uncorrected`), `--scale`/`--cluster` (heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n`
-(volcano), `--id --group --label`, `--positive LEVEL` (roc_curve case level, calibration event level),
+(volcano, ma_plot), `--id --group --label`, `--positive LEVEL` (roc_curve case level, calibration event level),
 `--cause CODE` (cumulative_incidence cause of interest, default 1),
 `--ci_low --ci_high --se --measure ratio|difference` (forest_meta),
 `--pd_threshold --pr_threshold` (spider_response, waterfall), `--markers "a,b"`

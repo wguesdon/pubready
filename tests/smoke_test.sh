@@ -414,6 +414,49 @@ else
   echo "FAIL: expected the Sankey transitions table"; fail=1
 fi
 
+echo "[29] MA plot of a DESeq2 table (expect baseMean on the log10 scale)"
+./cli/figkit plot --recipe ma_plot --data example/de_basemean.csv --out "$OUT/ma_plot"
+check_bundle "$OUT/ma_plot" "ma_plot"
+if compgen -G "$OUT/ma_plot/*/methods_*.md" > /dev/null && \
+   grep -q "MA plot" "$OUT"/ma_plot/*/methods_*.md && grep -q "log10 mean of normalized counts" "$OUT"/ma_plot/*/methods_*.md; then
+  echo "PASS: MA plot against log10 baseMean"
+else
+  echo "FAIL: expected an MA plot against log10 baseMean"; fail=1
+fi
+
+echo "[30] Manhattan and QQ plot (expect lambda_GC and lead SNPs)"
+./cli/figkit plot --recipe manhattan --data example/gwas_summary.csv \
+  --group chr --x pos --y p --label snp --out "$OUT/manhattan"
+check_bundle "$OUT/manhattan" "manhattan"
+if compgen -G "$OUT/manhattan/*/stats_*.csv" > /dev/null && \
+   grep -q "lambda_gc" "$OUT"/manhattan/*/stats_*.csv && grep -q "^lead" "$OUT"/manhattan/*/stats_*.csv; then
+  echo "PASS: Manhattan summary and lead SNPs"
+else
+  echo "FAIL: expected the Manhattan summary and lead SNPs"; fail=1
+fi
+
+echo "[31] feature panel of cytokines (expect Kruskal-Wallis with BH)"
+./cli/figkit plot --recipe feature_panel --data example/cytokine_panel.csv \
+  --x group --y concentration_pg_ml --facet cytokine --out "$OUT/feature_panel"
+check_bundle "$OUT/feature_panel" "feature_panel"
+if compgen -G "$OUT/feature_panel/*/stats_*.csv" > /dev/null && \
+   grep -q "Kruskal-Wallis test" "$OUT"/feature_panel/*/stats_*.csv && grep -q "p_adj" "$OUT"/feature_panel/*/stats_*.csv; then
+  echo "PASS: chose Kruskal-Wallis for every feature"
+else
+  echo "FAIL: expected Kruskal-Wallis with BH-adjusted p"; fail=1
+fi
+
+echo "[32] embedding coloured by cluster (expect silhouette widths)"
+./cli/figkit plot --recipe embedding --data example/umap_clusters.csv \
+  --x UMAP_1 --y UMAP_2 --group cell_type --out "$OUT/embedding"
+check_bundle "$OUT/embedding" "embedding"
+if compgen -G "$OUT/embedding/*/stats_*.csv" > /dev/null && \
+   grep -q "mean_silhouette" "$OUT"/embedding/*/stats_*.csv && grep -q "CD4 T cells" "$OUT"/embedding/*/stats_*.csv; then
+  echo "PASS: embedding with per-cluster silhouettes"
+else
+  echo "FAIL: expected the per-cluster silhouette table"; fail=1
+fi
+
 echo "--- Python engine (all recipes) ---"
 pyc() {  # $1 = short label; rest = plot args
   local label="$1"; shift
@@ -461,6 +504,10 @@ pyc stdcurve --recipe standard_curve     --data example/standard_curve.csv   --x
 pyc cif     --recipe cumulative_incidence --data example/cumulative_incidence.csv --time months --event status --x arm
 pyc cal     --recipe calibration         --data example/calibration.csv      --y event_1y --x risk_clinical,risk_extended --positive yes
 pyc sankey  --recipe sankey              --data example/sankey.csv           --id patient --x week --y response
+pyc ma_plot --recipe ma_plot             --data example/de_basemean.csv
+pyc manhattan --recipe manhattan         --data example/gwas_summary.csv     --group chr --x pos --y p --label snp
+pyc fpanel  --recipe feature_panel       --data example/cytokine_panel.csv   --x group --y concentration_pg_ml --facet cytokine
+pyc embed   --recipe embedding           --data example/umap_clusters.csv    --x UMAP_1 --y UMAP_2 --group cell_type
 
 # Engine parity on the non-parametric paths. Both engines must report the same
 # p-value and the same effect size to six significant digits.

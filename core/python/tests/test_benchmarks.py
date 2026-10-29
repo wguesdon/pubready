@@ -19,12 +19,16 @@ from pubready.recipes.cox_forest import recipe_cox_forest
 from pubready.recipes.distribution import recipe_distribution
 from pubready.recipes.cumulative_incidence import cif_value_at, recipe_cumulative_incidence
 from pubready.recipes.dose_response import recipe_dose_response
+from pubready.recipes.embedding import recipe_embedding
 from pubready.recipes.enrichment_dot import recipe_enrichment_dot
 from pubready.recipes.enzyme_kinetics import recipe_enzyme_kinetics
 from pubready.recipes.estimation_plot import recipe_estimation_plot
 from pubready.recipes.factorial_anova import recipe_factorial_anova
+from pubready.recipes.feature_panel import recipe_feature_panel
 from pubready.recipes.forest_meta import recipe_forest_meta
 from pubready.recipes.heatmap import recipe_heatmap
+from pubready.recipes.ma_plot import recipe_ma_plot
+from pubready.recipes.manhattan import recipe_manhattan
 from pubready.recipes.multi_group_compare import recipe_multi_group_compare
 from pubready.recipes.paired_compare import recipe_paired_compare
 from pubready.recipes.pca import recipe_pca
@@ -482,3 +486,59 @@ def test_pbcseq_bowker_test_of_edema():
                "pbcseq_sankey", "n_0_to_0.5")
     expect_ref(st.loc[(st["from_state"] == "0.5") & (st["to_state"] == "0"), "n"].iloc[0],
                "pbcseq_sankey", "n_0.5_to_0")
+
+
+def test_airway_ma_plot_counts():
+    """Check the airway MA plot counts against the DESeq2 table."""
+    res = recipe_ma_plot(bench_data("airway_de"), bench_spec("ma_plot"))
+    tm = res["test_meta"]
+    assert tm["mean_column"] == "baseMean"
+    assert tm["p_column"] == "padj"
+    for q in ("n_up", "n_down", "n_total"):
+        expect_ref(tm[q], "airway_ma", q)
+    assert len(res["stats"]) == tm["n_up"] + tm["n_down"]
+
+
+def test_gwas_results_manhattan_lambda_and_counts():
+    """Check lambda_GC and the counts of the qqman GWAS data."""
+    res = recipe_manhattan(bench_data("gwas_results"), bench_spec(
+        "manhattan", group="CHR", x="BP", y="P", label="SNP"))
+    for q in ("lambda_gc", "n_genome_wide", "n_suggestive", "min_p"):
+        expect_ref(res["test_meta"][q], "gwas_manhattan", q)
+    genome = res["stats"][res["stats"]["row_type"] == "genome"].iloc[0]
+    expect_ref(genome["lambda_gc"], "gwas_manhattan", "lambda_gc")
+    expect_ref(genome["p_value"], "gwas_manhattan", "min_p")
+
+
+IRIS_FEATURES = ("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
+
+
+def test_iris_feature_panel_kruskal_with_bh():
+    """Check the iris Kruskal-Wallis tests and their BH adjustment."""
+    res = recipe_feature_panel(bench_data("iris"), bench_spec("feature_panel", x="Species"))
+    assert res["test_meta"]["test"] == "kruskal"
+    st = res["stats"].set_index("feature")
+    for f in IRIS_FEATURES:
+        expect_ref(st.loc[f, "statistic"], "iris_feature_panel_kruskal", f"H_{f}")
+        expect_ref(st.loc[f, "p_value"], "iris_feature_panel_kruskal", f"p_{f}")
+        expect_ref(st.loc[f, "p_adj"], "iris_feature_panel_kruskal", f"p_adj_{f}")
+
+
+def test_iris_feature_panel_anova_with_bh():
+    """Check the iris one-way ANOVAs and their BH adjustment."""
+    res = recipe_feature_panel(bench_data("iris"), bench_spec("feature_panel", x="Species",
+                                                              test="anova"))
+    st = res["stats"].set_index("feature")
+    for f in IRIS_FEATURES:
+        expect_ref(st.loc[f, "statistic"], "iris_feature_panel_anova", f"F_{f}")
+        expect_ref(st.loc[f, "p_adj"], "iris_feature_panel_anova", f"p_adj_{f}")
+
+
+def test_iris_embedding_silhouettes():
+    """Check the iris silhouettes against cluster::silhouette."""
+    res = recipe_embedding(bench_data("iris"), bench_spec(
+        "embedding", x="Petal.Length", y="Petal.Width", group="Species"))
+    st = res["stats"].set_index("cluster")
+    for sp in ("setosa", "versicolor", "virginica"):
+        expect_ref(st.loc[sp, "mean_silhouette"], "iris_embedding", f"silhouette_{sp}")
+    expect_ref(res["test_meta"]["mean_silhouette"], "iris_embedding", "silhouette_overall")
