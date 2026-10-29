@@ -125,7 +125,9 @@ recipe_ma_plot <- function(df, spec) {
 
   plab <- if (cols$p %in% .ma_rawp_cols) "p" else cols$p
   a_title <- if (cols$a %in% names(.ma_mean_titles)) .ma_mean_titles[[cols$a]] else cols$a
-  ylim <- max(abs(fc), 1.5 * fcc) * 1.06
+  # The y range covers the data and both cutoff lines, with a 6% margin.
+  ylo <- min(fc, -1.5 * fcc); yhi <- max(fc, 1.5 * fcc)
+  ylim <- c(ylo, yhi) + c(-0.06, 0.06) * (yhi - ylo)
   pal <- c(NS = "grey70", Down = "#3B6DB3", Up = "#C1432B")
   sub <- sprintf("%d up / %d down (%s <= %s, |log2FC| >= %s)", n_up, n_down, plab,
                  format(pcc), format(fcc))
@@ -146,7 +148,7 @@ recipe_ma_plot <- function(df, spec) {
     ggplot2::scale_colour_manual(values = pal, drop = FALSE, name = NULL,
                                  labels = c(NS = "Not significant", Down = "Down", Up = "Up")) +
     ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = 2.4, alpha = 1))) +
-    ggplot2::scale_y_continuous(limits = c(-ylim, ylim), breaks = scales::breaks_extended(7)) +
+    ggplot2::scale_y_continuous(limits = ylim, breaks = scales::breaks_extended(7)) +
     ggplot2::scale_x_continuous(breaks = scales::breaks_extended(6)) +
     ggplot2::labs(x = spec$appearance$x_label %||% a_title,
                   y = spec$appearance$y_label %||% "log2 fold change",
@@ -212,14 +214,14 @@ recipe_ma_plot <- function(df, spec) {
     "d <- data.frame(A = a, M = m, cat = cat, lab = lab)",
     'hits <- d[d$cat != "NS", ]; hits <- hits[order(p[d$cat != "NS"], -abs(hits$M)), ]',
     sprintf("top <- head(hits, %d)", topn),
-    "lim <- max(abs(m), 1.5 * fcc) * 1.06",
+    "lo <- min(m, -1.5 * fcc); hi <- max(m, 1.5 * fcc); lim <- c(lo, hi) + c(-0.06, 0.06) * (hi - lo)",
     "g <- ggplot(d, aes(A, M, colour = cat)) +",
     '  geom_point(data = d[d$cat == "NS", ], size = 0.45, shape = 16) +',
     '  geom_hline(yintercept = 0) + geom_hline(yintercept = c(-fcc, fcc), linetype = "dashed", colour = "grey40") +',
     '  geom_point(data = hits, size = 1.2, alpha = 0.85, shape = 16) +',
     '  geom_text_repel(data = top, aes(label = lab), colour = "black", size = 3, seed = 1, max.overlaps = Inf) +',
     '  scale_colour_manual(values = c(NS = "grey70", Down = "#3B6DB3", Up = "#C1432B"), drop = FALSE, name = NULL) +',
-    sprintf('  scale_y_continuous(limits = c(-lim, lim)) + labs(x = "%s", y = "log2 fold change") +', a_title),
+    sprintf('  scale_y_continuous(limits = lim) + labs(x = "%s", y = "log2 fold change") +', a_title),
     '  theme_classic(base_size = 13) + theme(legend.position = "bottom")',
     sprintf('ggsave("%s.pdf", g, width = 6, height = 5.4)', fig_stub),
     'cat("Reproduced figure.\\n")'

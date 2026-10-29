@@ -212,7 +212,9 @@ def recipe_ma_plot(df, spec):
 
     plab = "p" if cols["p"] in RAWP_COLS else cols["p"]
     a_title = MEAN_TITLES.get(cols["a"], cols["a"])
-    ylim = max(float(np.max(np.abs(fc))), 1.5 * fcc) * 1.06
+    # The y range covers the data and both cutoff lines, with a 6% margin.
+    ylo, yhi = min(float(fc.min()), -1.5 * fcc), max(float(fc.max()), 1.5 * fcc)
+    ylim = (ylo - 0.06 * (yhi - ylo), yhi + 0.06 * (yhi - ylo))
 
     w, h = 6.0, 5.4
     fig, ax = new_fig(w, h)
@@ -224,7 +226,7 @@ def recipe_ma_plot(df, spec):
     if len(order):
         ax.scatter(a[order], fc[order], s=9, alpha=0.85, linewidths=0, zorder=3,
                    c=[COLOURS[c] for c in cat[order]])
-    ax.set_ylim(-ylim, ylim)
+    ax.set_ylim(*ylim)
     ax.yaxis.set_major_locator(MaxNLocator(nbins=7, steps=[1, 2, 2.5, 5, 10]))
     ax.xaxis.set_major_locator(MaxNLocator(nbins=6, steps=[1, 2, 2.5, 5, 10]))
     label_points(ax, a[top], fc[top], [short_label(s) for s in lab[top]],
@@ -344,8 +346,8 @@ ax.scatter(a[up], m[up], s=9, c="#C1432B", linewidths=0, label="Up")
 ax.scatter(a[down], m[down], s=9, c="#3B6DB3", linewidths=0, label="Down")
 for i in hit[:{topn}]:
     ax.annotate(lab[i], (a[i], m[i]), fontsize=8)
-lim = max(np.abs(m).max(), 1.5 * fcc) * 1.06
-ax.set_ylim(-lim, lim)
+lo, hi = min(m.min(), -1.5 * fcc), max(m.max(), 1.5 * fcc)
+ax.set_ylim(lo - 0.06 * (hi - lo), hi + 0.06 * (hi - lo))
 ax.set_xlabel("{a_title}"); ax.set_ylabel("log2 fold change")
 for s in ("top", "right"): ax.spines[s].set_visible(False)
 ax.legend(frameon=False)
