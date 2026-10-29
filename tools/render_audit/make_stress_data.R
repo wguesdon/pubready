@@ -44,6 +44,47 @@ dose_curve <- function(i, cmpds, ec50, doses) {
                                      stats::rnorm(length(d), 0, 4), 1))
 }
 
+# One Michaelis-Menten curve in duplicate.
+mm_curve <- function(i, cond, km, vm, s) {
+  ss <- rep(s, each = 2)
+  data.frame(condition = cond[i], substrate_um = ss,
+             rate = round(vm[i] * ss / (km[i] + ss) * exp(stats::rnorm(length(ss), 0, 0.05)), 2))
+}
+
+# The optical density of an ELISA standard on a 4PL curve.
+elisa_signal <- function(conc) {
+  0.05 + (3.1 - 0.05) / (1 + (2.5 / conc)^1.2)
+}
+
+# The response states of one patient over up to five visits.
+sankey_patient <- function(i, states) {
+  n_visit <- sample(2:5, 1, prob = c(0.1, 0.15, 0.25, 0.5))
+  st <- sample(states, 1, prob = c(0.05, 0.25, 0.45, 0.2, 0.05))
+  rows <- vector("list", n_visit)
+  for (v in seq_len(n_visit)) {
+    if (v > 1 && stats::runif(1) < 0.35) st <- sample(states, 1)
+    rows[[v]] <- data.frame(patient = sprintf("PT-%03d", i), cycle = v * 2, best_response = st)
+  }
+  do.call(rbind, rows)
+}
+
+# One group of the distribution stress case: a skewed sample of size n[i].
+dist_group <- function(i, n) {
+  data.frame(cohort = sprintf("Cohort %d (n = %d)", i, n[i]),
+             value = round(stats::rgamma(n[i], shape = 1 + i, rate = 0.5), 3))
+}
+
+# The cell-type counts of one sample in one of three conditions.
+comp_sample <- function(i) {
+  types <- c("CD4 naive T", "CD4 memory T", "CD8 naive T", "CD8 effector memory T",
+             "Regulatory T", "gamma-delta T", "NK CD56 bright", "NK CD56 dim",
+             "Naive B", "Memory B", "Classical monocyte", "Plasmacytoid DC")
+  cond <- c("Healthy donor", "Rheumatoid arthritis", "Systemic lupus erythematosus")[(i - 1) %% 3 + 1]
+  w <- stats::rgamma(length(types), shape = 4) * (1 + (cond != "Healthy donor") * (seq_along(types) %% 4 == 0))
+  data.frame(sample = sprintf("S%02d", i), condition = cond, cell_type = types,
+             n_cells = stats::rmultinom(1, 3000, w)[, 1])
+}
+
 # The tumour volumes of one mouse, eight mice to an arm.
 tumour_mouse <- function(i, arms, days) {
   a <- arms[(i - 1) %/% 8 + 1]
@@ -248,5 +289,96 @@ tc_days <- c(0, 2, 4, 7, 9, 11, 14, 16, 18, 21)
 tc_arms <- c("vehicle", "drug 1 mg/kg", "drug 3 mg/kg", "drug 10 mg/kg")
 tc <- do.call(rbind, lapply(seq_len(32), tumour_mouse, arms = tc_arms, days = tc_days))
 write_csv(tc, "timecourse_four_arms.csv")
+
+# The datasets below stress the recipes added after v1.0.0.
+
+# Five Michaelis-Menten curves with long condition names, in duplicate.
+mm_s <- c(0.5, 1, 2, 5, 10, 20, 50, 100, 200)
+mm_cond <- c("No inhibitor", "Inhibitor A 1 uM (competitive)", "Inhibitor A 5 uM (competitive)",
+             "Inhibitor B 2 uM (non-competitive)", "Inhibitor B 10 uM (non-competitive)")
+mm_km <- c(8, 16, 40, 8, 8); mm_vm <- c(100, 100, 100, 60, 30)
+write_csv(do.call(rbind, lapply(seq_along(mm_cond), mm_curve, cond = mm_cond, km = mm_km,
+                                vm = mm_vm, s = mm_s)),
+          "enzyme_five_conditions.csv")
+
+# An ELISA plate: 8 standards in triplicate and 40 unknowns, some outside range.
+sc_conc <- c(0.05, 0.15, 0.4, 1.2, 3.5, 10, 30, 90)
+sc_sig <- elisa_signal(sc_conc)
+write_csv(rbind(
+  data.frame(well = sprintf("STD-%02d-%d", rep(seq_along(sc_conc), each = 3), rep(1:3, 8)),
+             conc_ng_ml = rep(sc_conc, each = 3),
+             od450 = round(rep(sc_sig, each = 3) * exp(stats::rnorm(24, 0, 0.03)), 3)),
+  data.frame(well = sprintf("Patient sample %02d (diluted 1:10)", 1:40), conc_ng_ml = NA,
+             od450 = round(stats::runif(40, 0.02, 3.3), 3))),
+  "standard_curve_plate.csv")
+
+# Competing risks with three causes and four arms with long names.
+cr_n <- 4 * 80
+cr_arm <- rep(arms, each = 80)
+cr_t1 <- stats::rexp(cr_n, rep(c(0.03, 0.025, 0.02, 0.015), each = 80))
+cr_t2 <- stats::rexp(cr_n, 0.012)
+cr_t3 <- stats::rexp(cr_n, 0.006)
+cr_c <- stats::runif(cr_n, 12, 72)
+cr_tm <- pmin(cr_t1, cr_t2, cr_t3, cr_c)
+cr_st <- ifelse(cr_tm == cr_c, 0L, ifelse(cr_tm == cr_t1, 1L, ifelse(cr_tm == cr_t2, 2L, 3L)))
+write_csv(data.frame(months = round(cr_tm, 2), status = cr_st, arm = cr_arm),
+          "cumulative_incidence_three_causes.csv")
+
+# Three risk models on 90 patients: one calibrated, one too extreme, one shifted.
+cal_lp <- stats::rnorm(90, -1, 1.2)
+cal_y <- stats::rbinom(90, 1, stats::plogis(cal_lp))
+write_csv(data.frame(outcome = ifelse(cal_y == 1, "event", "no event"),
+                     model_calibrated = round(stats::plogis(cal_lp), 4),
+                     model_overfit = round(stats::plogis(2 * cal_lp + 1), 4),
+                     model_shifted = round(stats::plogis(cal_lp + 1), 4)),
+          "calibration_three_models.csv")
+
+# Five visits, five states and 150 patients, some of whom leave early.
+sk_states <- c("complete response", "partial response", "stable disease",
+               "progressive disease", "not evaluable")
+write_csv(do.call(rbind, lapply(seq_len(150), sankey_patient, states = sk_states)),
+          "sankey_five_visits.csv")
+
+# A DESeq2-style table of 20000 genes with baseMean, p = 0 and large fold changes.
+write_csv(data.frame(de, baseMean = round(10^stats::runif(ng, -0.5, 5.5), 2)),
+          "ma_extreme.csv")
+
+# 200000 SNPs on chr-prefixed chromosomes with a few p = 0.
+gw_chr <- sample(c(1:22, "X"), 2e5, replace = TRUE, prob = c(rev(seq(0.5, 2.6, by = 0.1)), 1.5))
+gw_p <- stats::runif(2e5)
+gw_hit <- sample(2e5, 30)
+gw_p[gw_hit] <- 10^-stats::runif(30, 8, 40)
+gw_p[gw_hit[1:3]] <- 0
+write_csv(data.frame(snp = sprintf("rs%d", sample(1e6:9e6, 2e5)), chrom = paste0("chr", gw_chr),
+                     bp = sample(1:2.4e8, 2e5, replace = TRUE), pval = signif(gw_p, 4)),
+          "manhattan_200k.csv")
+
+# A wide panel of 24 features across four groups with long labels.
+fp_groups <- c("Healthy volunteer", "Mild COVID-19 (outpatient)", "Severe COVID-19 (ward)",
+               "Critical COVID-19 (ICU)")
+fp <- data.frame(group = rep(fp_groups, each = 12))
+for (k in 1:24) {
+  fp[[sprintf("analyte_%02d_pg_ml", k)]] <- round(stats::rlnorm(48, log(10) + (k %% 3) *
+                                                                 (match(fp$group, fp_groups) - 1) * 0.3,
+                                                               0.5), 2)
+}
+write_csv(fp, "feature_panel_wide.csv")
+
+# 30000 cells in 25 clusters on a 2D embedding.
+em_k <- 25
+em_cx <- stats::runif(em_k, -15, 15); em_cy <- stats::runif(em_k, -15, 15)
+em_cl <- sample(seq_len(em_k), 30000, replace = TRUE, prob = stats::rexp(em_k))
+write_csv(data.frame(UMAP_1 = round(em_cx[em_cl] + stats::rnorm(30000, 0, 1), 3),
+                     UMAP_2 = round(em_cy[em_cl] + stats::rnorm(30000, 0, 1), 3),
+                     seurat_clusters = em_cl - 1L),
+          "embedding_25_clusters.csv")
+
+# Eight groups from n = 3 to n = 2000 for the distribution recipe.
+ds_n <- c(3, 8, 20, 50, 150, 400, 1000, 2000)
+write_csv(do.call(rbind, lapply(seq_along(ds_n), dist_group, n = ds_n)),
+          "distribution_eight_groups.csv")
+
+# 40 samples with 12 cell types in three conditions.
+write_csv(do.call(rbind, lapply(seq_len(40), comp_sample)), "composition_forty_samples.csv")
 
 cat(sprintf("Wrote the stress datasets to %s\n", out))
