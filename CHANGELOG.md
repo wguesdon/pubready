@@ -43,6 +43,14 @@ tag move together.
   with the set sizes on the right. Both engines write horizontal counts and
   set-size numbers. Both sort the intersections by size, then by degree, then by
   set name, and the stats table uses the same order.
+- The R `enrichment_dot` gave the whole width to long GO term names, and the dot
+  panel shrank to nothing with 25 terms of up to 90 characters. Both engines now
+  wrap each label into balanced lines of at most 45 characters. The figure
+  height grows with the number of label lines, and the width grows with the
+  longest line.
+- The Python `enrichment_dot` put the count legend inside the plot area, where
+  it could cover dots. The count legend and the colour bar now sit right of the
+  panel, as in R.
 
 ## [1.0.0] - 2026-10-07
 

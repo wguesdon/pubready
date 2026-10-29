@@ -32,3 +32,17 @@ test_that("the stats table lists the terms in the order of the adjusted p", {
   expect_equal(res$stats$term, paste0("term", 1:4))
   expect_equal(res$stats$p_adjust, c(1e-6, 1e-5, 1e-4, 1e-3))
 })
+
+# Long GO terms wrap into balanced lines of at most 45 characters; the Python
+# engine has the same cases in test_enrichment_dot.py.
+test_that(".enrich_wrap balances long labels", {
+  expect_equal(.enrich_wrap("glycolytic process"), "glycolytic process")
+  expect_equal(.enrich_wrap("regulation of transcription by RNA polymerase II"),
+               "regulation of transcription\nby RNA polymerase II")
+  expect_equal(.enrich_wrap(paste("negative regulation of extrinsic apoptotic signaling",
+                                  "pathway via death domain receptors")),
+               paste0("negative regulation of extrinsic apoptotic\n",
+                      "signaling pathway via death domain receptors"))
+  size <- .enrich_size(c("a\nb", "short"))
+  expect_equal(size$height, 4.0)
+})
