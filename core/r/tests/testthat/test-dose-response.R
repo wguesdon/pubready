@@ -75,3 +75,10 @@ test_that("the dose ANOVA matches stats::anova and needs a replicate", {
   expect_equal(.drc_dose_anova_p(lx, y), ref, tolerance = 1e-12)
   expect_true(is.na(.drc_dose_anova_p(c(-2, -1, 0, 1), c(1, 2, 3, 4))))
 })
+
+test_that("the dose and kinetics methods say what each point shows", {
+  expect_match(.drc_points_text(TRUE), "mean +/- SEM of the replicates", fixed = TRUE)
+  expect_match(.drc_points_text(FALSE), "single response", fixed = TRUE)
+  expect_match(.enz_points_text(TRUE), "small points show each replicate", fixed = TRUE)
+  expect_match(.enz_points_text(FALSE), "single rate", fixed = TRUE)
+})

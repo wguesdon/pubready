@@ -106,3 +106,11 @@ def test_the_dose_anova_matches_scipy_and_needs_a_replicate():
     ref = stats.f_oneway(*[y[lx == v] for v in np.unique(lx)]).pvalue
     assert dose_anova_p(lx, y) == pytest.approx(ref, rel=1e-12)
     assert np.isnan(dose_anova_p(np.array([-2.0, -1.0, 0.0, 1.0]), np.array([1, 2, 3, 4.0])))
+
+
+def test_dose_and_kinetics_methods_say_what_each_point_shows():
+    from pubready.recipes import dose_response, enzyme_kinetics
+    assert "mean +/- SEM of the replicates" in dose_response._points_text(True)
+    assert "single response" in dose_response._points_text(False)
+    assert "small points show each replicate" in enzyme_kinetics._points_text(True)
+    assert "single rate" in enzyme_kinetics._points_text(False)

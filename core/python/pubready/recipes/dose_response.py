@@ -502,7 +502,7 @@ def recipe_dose_response(df, spec):
     df_used = pd.DataFrame({"group": d["group"], "dose": d["dose"], "response": d["y"]})
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
-        "methods": _methods(stats_df, shared, len(d), spec, x, y),
+        "methods": _methods(stats_df, shared, len(d), spec, x, y, replicated),
         "df_used": df_used, "clean_steps": steps, "label": slugify(y),
         "width": w, "height": h,
         "build_script": functools.partial(_script, spec, starts, methods, has_group),
@@ -561,7 +561,23 @@ def _subtitle(rows, shared, mid_name, has_group):
     return f"{first}\n{second}"
 
 
-def _methods(rows, shared, n_points, spec, x, y):
+def _points_text(replicated):
+    """Say what each point of the figure shows.
+
+    The figure draws error bars only when a dose has replicates.
+
+    Args:
+        replicated: True when a dose of a curve has more than one response.
+
+    Returns:
+        str: The sentence, with a trailing space.
+    """
+    if replicated:
+        return "Points show the mean +/- SEM of the replicates at each dose. "
+    return "Each point is the single response at its dose. "
+
+
+def _methods(rows, shared, n_points, spec, x, y, replicated):
     """Write the methods paragraph.
 
     Args:
@@ -571,6 +587,7 @@ def _methods(rows, shared, n_points, spec, x, y):
         spec: The figure specification.
         x: The dose column.
         y: The response column.
+        replicated: True when a dose of a curve has more than one response.
 
     Returns:
         str: The paragraph.
@@ -613,7 +630,8 @@ def _methods(rows, shared, n_points, spec, x, y):
         "curve (variable Hill slope) fitted by nonlinear least squares on log10 dose "
         f"(n = {n_points} points, {len(rows)} curve(s)). The 95% confidence interval of the "
         "midpoint was computed on the log10 scale from the standard error of the fit and "
-        "back-transformed. A curve whose mean responses varied by less than 10% of the range "
+        f"back-transformed. {_points_text(replicated)}A curve whose mean responses varied by "
+        "less than 10% of the range "
         "of the mean responses of all curves, or whose responses did not differ between the "
         "doses in a one-way ANOVA (P >= 0.05), was not fitted, and its midpoint was reported as "
         "not determined. A midpoint was also reported as not determined when the fit did not "

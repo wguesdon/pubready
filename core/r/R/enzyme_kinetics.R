@@ -227,7 +227,7 @@ recipe_enzyme_kinetics <- function(df, spec) {
   df_used <- data.frame(group = d$group, substrate = d$s, rate = d$v, stringsAsFactors = FALSE)
   list(plot = p, stats = stats_df, test_meta = test_meta,
        resolved = list(family = "enzyme_kinetics", label = test_meta$name),
-       methods = .enz_methods(stats_df, shared_km, shared_vmax, nrow(d), spec, x, y, grp),
+       methods = .enz_methods(stats_df, shared_km, shared_vmax, nrow(d), spec, x, y, grp, replicated),
        build_script = list(fn = .enz_emit_script,
                            args = list(spec = spec, starts = starts, algos = algos,
                                        has_group = has_group)),
@@ -243,7 +243,7 @@ recipe_enzyme_kinetics <- function(df, spec) {
        r_squared = r$r_squared)
 }
 
-.enz_methods <- function(rows, shared_km, shared_vmax, n_points, spec, x, y, grp) {
+.enz_methods <- function(rows, shared_km, shared_vmax, n_points, spec, x, y, grp, replicated) {
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   v <- pkg_versions("ggplot2")
   y_lab <- spec$appearance$y_label %||% y
@@ -266,6 +266,7 @@ recipe_enzyme_kinetics <- function(df, spec) {
             n_points),
     "The starting values were the largest rate for Vmax and, for Km, the substrate concentration whose mean rate is nearest half of it. ",
     "Each 95% confidence interval is the estimate plus or minus t(0.975, n - 2) times its asymptotic standard error. ",
+    .enz_points_text(replicated),
     fits, ".", shared_txt,
     sprintf(" Fitted in R %s with stats::nls and drawn with ggplot2 %s.", rver, v$ggplot2))
 }
@@ -313,4 +314,12 @@ recipe_enzyme_kinetics <- function(df, spec) {
 .enz_start_literal <- function(g, starts) {
   s <- starts[[g]]
   sprintf('"%s" = list(vmax = %.17g, km = %.17g)', g, s$vmax, s$km)
+}
+
+# The figure draws the replicates and the error bars only when a concentration
+# has replicates, so the methods paragraph says what each point shows.
+.enz_points_text <- function(replicated) {
+  if (replicated) {
+    "Large points show the mean +/- SEM of the replicates at each concentration, and small points show each replicate. "
+  } else "Each point is the single rate at its concentration. "
 }

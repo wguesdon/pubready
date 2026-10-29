@@ -28,6 +28,9 @@ tag move together.
   the legend do. It also states the label rule: the significant features with
   the largest product of the absolute log2 fold change and -log10 p are
   labelled. The R and the Python text now print the cutoffs in the same form.
+- The `dose_response` and `enzyme_kinetics` methods paragraphs did not say that
+  the points and the error bars show the mean +/- SEM of the replicates. They
+  now say what each point shows, also for data without replicates.
 
 ## [2.0.0] - 2026-10-29
 

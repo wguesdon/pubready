@@ -295,7 +295,8 @@ def recipe_enzyme_kinetics(df, spec):
     df_used = pd.DataFrame({"group": d["group"], "substrate": d["s"], "rate": d["v"]})
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
-        "methods": _methods(stats_df, shared_km, shared_vmax, len(d), spec, x, y, grp),
+        "methods": _methods(stats_df, shared_km, shared_vmax, len(d), spec, x, y, grp,
+                            bool((conc_summary(d)["n"] > 1).any())),
         "df_used": df_used, "clean_steps": steps, "label": slugify(y),
         "width": w, "height": h,
         "build_script": functools.partial(_script, spec, starts, methods, has_group),
@@ -380,7 +381,25 @@ def _test_text(name, t):
     return f"{name} F({t['df1']}, {t['df2']}) = {t['statistic']:.2f}, P = {t['p_value']:.2g}"
 
 
-def _methods(rows, shared_km, shared_vmax, n_points, spec, x, y, grp):
+def _points_text(replicated):
+    """Say what each point of the figure shows.
+
+    The figure draws the replicates and the error bars only when a
+    concentration has replicates.
+
+    Args:
+        replicated: True when a concentration of a curve has more than one rate.
+
+    Returns:
+        str: The sentence, with a trailing space.
+    """
+    if replicated:
+        return ("Large points show the mean +/- SEM of the replicates at each concentration, "
+                "and small points show each replicate. ")
+    return "Each point is the single rate at its concentration. "
+
+
+def _methods(rows, shared_km, shared_vmax, n_points, spec, x, y, grp, replicated):
     """Write the methods paragraph, with the same sentences as the R engine.
 
     Args:
@@ -392,6 +411,7 @@ def _methods(rows, shared_km, shared_vmax, n_points, spec, x, y, grp):
         x: The substrate column.
         y: The rate column.
         grp: The curve column, or None.
+        replicated: True when a concentration of a curve has more than one rate.
 
     Returns:
         str: The paragraph.
@@ -418,7 +438,8 @@ def _methods(rows, shared_km, shared_vmax, n_points, spec, x, y, grp):
         f"(n = {n_points} points). The starting values were the largest rate for Vmax and, for "
         "Km, the substrate concentration whose mean rate is nearest half of it. Each 95% "
         "confidence interval is the estimate plus or minus t(0.975, n - 2) times its asymptotic "
-        f"standard error. {fits}.{shared_txt} Fitted in Python {platform.python_version()} with "
+        f"standard error. {_points_text(replicated)}{fits}.{shared_txt} Fitted in Python "
+        f"{platform.python_version()} with "
         f"scipy {v('scipy')} (curve_fit) and drawn with matplotlib {v('matplotlib')}."
     )
 
