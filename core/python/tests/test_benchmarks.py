@@ -374,6 +374,7 @@ def test_state_x77_correlation_matrix_keeps_spaced_names():
 
 
 def test_airway_ma_plot_counts():
+    """Check the airway MA plot counts against the DESeq2 table."""
     res = recipe_ma_plot(bench_data("airway_de"), bench_spec("ma_plot"))
     tm = res["test_meta"]
     assert tm["mean_column"] == "baseMean"
@@ -384,6 +385,7 @@ def test_airway_ma_plot_counts():
 
 
 def test_gwas_results_manhattan_lambda_and_counts():
+    """Check lambda_GC and the counts of the qqman GWAS data."""
     res = recipe_manhattan(bench_data("gwas_results"), bench_spec(
         "manhattan", group="CHR", x="BP", y="P", label="SNP"))
     for q in ("lambda_gc", "n_genome_wide", "n_suggestive", "min_p"):
@@ -397,6 +399,7 @@ IRIS_FEATURES = ("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
 
 
 def test_iris_feature_panel_kruskal_with_bh():
+    """Check the iris Kruskal-Wallis tests and their BH adjustment."""
     res = recipe_feature_panel(bench_data("iris"), bench_spec("feature_panel", x="Species"))
     assert res["test_meta"]["test"] == "kruskal"
     st = res["stats"].set_index("feature")
@@ -407,6 +410,7 @@ def test_iris_feature_panel_kruskal_with_bh():
 
 
 def test_iris_feature_panel_anova_with_bh():
+    """Check the iris one-way ANOVAs and their BH adjustment."""
     res = recipe_feature_panel(bench_data("iris"), bench_spec("feature_panel", x="Species",
                                                               test="anova"))
     st = res["stats"].set_index("feature")
@@ -416,6 +420,7 @@ def test_iris_feature_panel_anova_with_bh():
 
 
 def test_iris_embedding_silhouettes():
+    """Check the iris silhouettes against cluster::silhouette."""
     res = recipe_embedding(bench_data("iris"), bench_spec(
         "embedding", x="Petal.Length", y="Petal.Width", group="Species"))
     st = res["stats"].set_index("cluster")

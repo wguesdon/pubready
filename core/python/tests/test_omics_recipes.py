@@ -31,6 +31,7 @@ def omics_spec(recipe, **kw):
 
 
 def test_ma_plot_reads_limma_names_and_keeps_missing_p_as_not_significant():
+    """Check that the MA plot reads limma names and keeps missing p as not significant."""
     df = pd.DataFrame({"ID": [f"g{i}" for i in range(1, 7)],
                        "logFC": [2, -3, 0.2, 1.5, -1.2, 4], "AveExpr": [5, 6, 7, 8, 9, 10],
                        "adj.P.Val": [1e-4, 1e-6, 0.5, 0.2, 0.01, np.nan]})
@@ -45,6 +46,7 @@ def test_ma_plot_reads_limma_names_and_keeps_missing_p_as_not_significant():
 
 
 def test_ma_plot_logs_basemean_and_drops_a_zero_mean():
+    """Check that the MA plot logs basemean and drops a zero mean."""
     df = pd.DataFrame({"gene": ["a", "b", "c"], "baseMean": [100, 0, 1000],
                        "log2FoldChange": [1.5, 2, -0.1], "padj": [0.01, 0.01, 0.9]})
     res = recipe_ma_plot(df, omics_spec("ma_plot"))
@@ -55,12 +57,14 @@ def test_ma_plot_logs_basemean_and_drops_a_zero_mean():
 
 
 def test_ma_plot_needs_a_mean_column():
+    """Check that the MA plot needs a mean column."""
     df = pd.DataFrame({"gene": ["a"], "log2FoldChange": [1.0], "padj": [0.01]})
     with pytest.raises(ValueError, match="no mean-expression column"):
         recipe_ma_plot(df, omics_spec("ma_plot"))
 
 
 def test_manhattan_natural_order_and_one_lead_per_chromosome():
+    """Check the natural chromosome order and one lead SNP per chromosome."""
     df = pd.DataFrame({"snp": [f"rs{i}" for i in range(1, 9)],
                        "chr": ["chrX", "chr10", "chr2", "chr2", "chrMT", "chr1", "chr10", "chr22"],
                        "pos": [5, 10, 20, 30, 1, 7, 40, 3],
@@ -77,6 +81,7 @@ def test_manhattan_natural_order_and_one_lead_per_chromosome():
 
 
 def test_manhattan_zero_p_and_p_above_one():
+    """Check the handling of a p of zero and of a p above one."""
     df = pd.DataFrame({"chr": [1, 1, 2, 2], "pos": [1, 2, 3, 4], "p": [0, 0.5, 0.2, 0.9]})
     res = recipe_manhattan(df, omics_spec("manhattan", group="chr", x="pos", y="p"))
     assert res["test_meta"]["n_zero_p"] == 1
@@ -87,6 +92,7 @@ def test_manhattan_zero_p_and_p_above_one():
 
 
 def test_manhattan_thins_only_large_p_and_keeps_lambda_on_all():
+    """Check that the Manhattan plot thins only large p and keeps lambda on all SNPs."""
     rng = np.random.default_rng(7)
     n = 60000
     p = rng.uniform(size=n)
@@ -101,6 +107,7 @@ def test_manhattan_thins_only_large_p_and_keeps_lambda_on_all():
 
 
 def test_feature_panel_welch_t_and_bh():
+    """Check the Welch t-test and the BH adjustment of the feature panel."""
     rng = np.random.default_rng(11)
     df = pd.DataFrame({"group": ["ctrl"] * 12 + ["trt"] * 12, "f1": rng.normal(size=24),
                        "f2": rng.normal(size=24) + np.repeat([0, 2], 12), "f3": rng.normal(size=24)})
@@ -114,6 +121,7 @@ def test_feature_panel_welch_t_and_bh():
 
 
 def test_bh_adjust_matches_the_rules_of_p_adjust():
+    """Check that bh adjust matches the rules of p adjust."""
     p = np.array([0.01, 0.04, np.nan, 0.03, 0.5])
     q = bh_adjust(p)
     assert np.isnan(q[2])
@@ -121,6 +129,7 @@ def test_bh_adjust_matches_the_rules_of_p_adjust():
 
 
 def test_feature_panel_long_data_with_the_exact_wilcoxon_rule():
+    """Check long data and the exact Wilcoxon rule of the feature panel."""
     df = pd.DataFrame({"gene": ["A"] * 10 + ["B"] * 10,
                        "arm": (["x"] * 5 + ["y"] * 5) * 2,
                        "value": list(range(1, 11)) + [1, 3, 5, 7, 9, 2, 4, 6, 8, 10]})
@@ -132,6 +141,7 @@ def test_feature_panel_long_data_with_the_exact_wilcoxon_rule():
 
 
 def test_feature_panel_refuses_too_many_features_and_a_wrong_test():
+    """Check that feature panel refuses too many features and a wrong test."""
     rng = np.random.default_rng(1)
     wide = pd.DataFrame(rng.normal(size=(6, 37)), columns=[f"V{i}" for i in range(37)])
     wide["group"] = ["a", "b"] * 3
@@ -143,6 +153,7 @@ def test_feature_panel_refuses_too_many_features_and_a_wrong_test():
 
 
 def test_silhouette_widths_follow_the_rules_of_cluster_silhouette():
+    """Check that silhouette widths follow the rules of cluster silhouette."""
     xy = np.array([[0.0, 0.0], [0.0, 1.0], [5.0, 0.0], [9.0, 9.0]])
     codes = np.array([0, 0, 1, 2])
     s = silhouette_widths(xy, codes, 3)
@@ -153,6 +164,7 @@ def test_silhouette_widths_follow_the_rules_of_cluster_silhouette():
 
 
 def test_embedding_ids_and_scores():
+    """Check that whole-number ids are clusters and a score is continuous."""
     rng = np.random.default_rng(6)
     ids = pd.DataFrame({"x": rng.normal(size=200), "y": rng.normal(size=200),
                         "k": np.tile(np.arange(20), 10)})
@@ -168,6 +180,7 @@ def test_embedding_ids_and_scores():
 
 
 def test_embedding_subsamples_the_silhouette_above_5000_cells():
+    """Check that embedding subsamples the silhouette above 5000 cells."""
     rng = np.random.default_rng(8)
     n = 12001
     df = pd.DataFrame({"x": rng.normal(size=n), "y": rng.normal(size=n),
