@@ -22,6 +22,79 @@ def p_stars(p):
     return "ns"
 
 
+def _cld_absorb(m):
+    """Drop the redundant columns of a letter matrix (the absorb step).
+
+    A column goes when it is a proper subset of another column, when it equals
+    an earlier column, or when it is empty, as .cld_absorb() of the R engine.
+
+    Args:
+        m: A boolean matrix, one row per group and one column per letter.
+
+    Returns:
+        numpy.ndarray: The matrix without the redundant columns.
+    """
+    k = m.shape[1]
+    keep = np.ones(k, dtype=bool)
+    for a in range(k):
+        if not m[:, a].any():
+            keep[a] = False
+            continue
+        for b in range(k):
+            if a == b or not m[m[:, a], b].all():
+                continue
+            if m[~m[:, a], b].any() or b < a:
+                keep[a] = False
+                break
+    return m[:, keep]
+
+
+def cld_letters(levels, group1, group2, p, alpha=0.05):
+    """Compact letter display by the insert-and-absorb algorithm of Piepho (2004).
+
+    This is the algorithm of multcompView::multcompLetters, with the same steps
+    as cld_letters() of the R engine. Each pair that differs (p < alpha) splits
+    every letter column that holds both groups into two, one without each group;
+    then the redundant columns are absorbed. The pairs are taken in the order of
+    the levels, the columns are sorted so that "a" starts at the first group, and
+    the letters run a-z then A-Z. Groups that share a letter do not differ.
+
+    Args:
+        levels: The groups, in the order of the figure.
+        group1: The first group of each pair.
+        group2: The second group of each pair.
+        p: The adjusted P value of each pair.
+        alpha: The significance level.
+
+    Returns:
+        dict: The letters of each group, in the order of ``levels``.
+    """
+    import string
+    levels = [str(g) for g in levels]
+    pos = {g: i for i, g in enumerate(levels)}
+    m = np.ones((len(levels), 1), dtype=bool)
+    pairs = []
+    for a, b, pv in zip(group1, group2, p):
+        a, b = str(a), str(b)
+        if pv is None or not np.isfinite(pv) or not pv < alpha or a not in pos or b not in pos:
+            continue
+        pairs.append((min(pos[a], pos[b]), max(pos[a], pos[b])))
+    for i, j in sorted(pairs):
+        both = np.where(m[i, :] & m[j, :])[0]
+        if len(both) == 0:
+            continue
+        dup = m[:, both].copy()
+        dup[i, :] = False
+        m[j, both] = False
+        m = _cld_absorb(np.hstack([m, dup]))
+    keys = ["".join("0" if v else "1" for v in m[:, c]) for c in range(m.shape[1])]
+    m = m[:, sorted(range(m.shape[1]), key=keys.__getitem__)]
+    pool = list(string.ascii_lowercase + string.ascii_uppercase)
+    if m.shape[1] > len(pool):
+        pool += [f"z{i + 1}" for i in range(m.shape[1] - len(pool))]
+    return {g: "".join(pool[c] for c in np.where(m[i, :])[0]) for i, g in enumerate(levels)}
+
+
 def format_p(p, digits=2):
     if p is None or (isinstance(p, float) and np.isnan(p)):
         return "NA"

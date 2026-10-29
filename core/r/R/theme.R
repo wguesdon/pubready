@@ -27,6 +27,121 @@ theme_pubready <- function(base_size = 13) {
     )
 }
 
+# Wrap one label at the spaces so that no line is longer than `width`
+# characters. A word longer than `width` stays whole on its own line. The Python
+# engine has the same greedy rule (theme.wrap_label), so both engines break a
+# label at the same places.
+wrap_label <- function(s, width = 12) {
+  s <- as.character(s)
+  if (is.na(s) || nchar(s) <= width) return(s)
+  words <- strsplit(s, " ", fixed = TRUE)[[1]]
+  words <- words[nzchar(words)]
+  if (length(words) == 0) return(s)
+  lines <- character(0)
+  cur <- words[1]
+  for (w in words[-1]) {
+    if (nchar(cur) + 1 + nchar(w) <= width) {
+      cur <- paste(cur, w)
+    } else {
+      lines <- c(lines, cur)
+      cur <- w
+    }
+  }
+  paste(c(lines, cur), collapse = "\n")
+}
+
+# Vectorised wrap_label, for the category labels of an axis or a legend.
+wrap_labels <- function(x, width = 12) {
+  vapply(as.character(x), wrap_label, character(1), width = width, USE.NAMES = FALSE)
+}
+
+# The length in characters of the longest line of a wrapped label.
+longest_line <- function(s) {
+  max(nchar(strsplit(as.character(s), "\n", fixed = TRUE)[[1]]), 0L)
+}
+
+# The figure width of a category axis: 1.1 in per group plus 1 in for the axis,
+# and never less than `min_width`. A wrapped label whose longest line (a long
+# word) is wider than the slot widens every slot to 0.085 in per character.
+# Python uses the same formula.
+category_width <- function(n, labels = NULL, min_width = 4.2) {
+  chars <- if (length(labels)) max(vapply(labels, longest_line, integer(1))) else 0L
+  max(min_width, max(1.1, 0.085 * chars) * n + 1.0)
+}
+
+# The width of a legend right of the panel: the key plus 0.075 in per character
+# of its longest line or of its title. Python uses the same formula.
+legend_width <- function(labels, title = "") {
+  chars <- max(vapply(as.character(labels), longest_line, integer(1)), nchar(title), 0L)
+  0.55 + 0.075 * chars
+}
+
+# Format axis breaks as plain numbers with a comma between the thousands, never
+# in scientific notation. The count of decimals is the smallest one that shows
+# every break exactly (at most 6). Python has the same rule in
+# theme.PlainNumberFormatter.
+plain_number_labels <- function(x) {
+  fin <- x[is.finite(x)]
+  digits <- 0L
+  while (digits < 6L && length(fin) > 0 &&
+         any(abs(round(fin, digits) - fin) > 1e-9 * pmax(1, abs(fin)))) {
+    digits <- digits + 1L
+  }
+  out <- formatC(x + 0, format = "f", digits = digits, big.mark = ",")
+  out[!is.finite(x)] <- NA_character_
+  out
+}
+
+# Log-axis ticks of the 1-2-5 sequence for a plot with a reference line `ref`
+# (the null value of a ratio, 1). The ticks inside the data range are kept. When
+# the data reach past `ref` on one side but no tick lies on that side, the next
+# value of the sequence on that side is added, so the axis reads on both sides
+# of the line. More than 7 ticks are thinned to the powers of ten. Python has
+# the same rule in theme.log_ticks_ref().
+log_ticks_ref <- function(lo, hi, ref = 1) {
+  seq125 <- sort(as.vector(outer(c(1, 2, 5), 10^(-4:4))))
+  tol <- 1e-9
+  lo2 <- min(lo, ref); hi2 <- max(hi, ref)
+  ticks <- seq125[seq125 >= lo2 * (1 - tol) & seq125 <= hi2 * (1 + tol)]
+  if (hi > ref && !any(ticks > ref * (1 + tol))) {
+    ticks <- c(ticks, min(seq125[seq125 > ref * (1 + tol)]))
+  }
+  if (lo < ref && !any(ticks < ref * (1 - tol))) {
+    ticks <- c(max(seq125[seq125 < ref * (1 - tol)]), ticks)
+  }
+  if (length(ticks) > 7) {
+    ticks <- ticks[abs(log10(ticks) - round(log10(ticks))) < 1e-9]
+  }
+  sort(unique(ticks))
+}
+
+# The top of the drawn geom of one group, so that a bracket or a letter sits
+# above what the reader sees. A violin with trim = FALSE reaches 3 bandwidths
+# (stats::bw.nrd0, the ggplot2 default) past the largest value; a bar ends at
+# the mean plus its standard error when no point is higher.
+geom_top <- function(v, geom = "box") {
+  v <- v[is.finite(v)]
+  if (length(v) == 0) return(NA_real_)
+  top <- max(v)
+  if (identical(geom, "violin") && length(v) >= 2) {
+    bw <- tryCatch(stats::bw.nrd0(v), error = .theme_na)
+    if (is.finite(bw)) top <- top + 3 * bw
+  } else if (identical(geom, "bar") && length(v) >= 2) {
+    top <- max(top, mean(v) + stats::sd(v) / sqrt(length(v)))
+  }
+  top
+}
+
+.theme_na <- function(e) NA_real_
+
+# Deterministic horizontal offsets for the points of a raincloud: n values in
+# [lo, hi] from the golden-ratio sequence, so the points spread to the left of
+# the box without a random seed. Python uses the same sequence.
+rain_offsets <- function(n, lo = -0.18, hi = -0.06) {
+  if (n == 0) return(numeric(0))
+  lo + (hi - lo) * ((seq_len(n) * 0.6180339887498949) %% 1)
+}
+
 # Add the distribution geom for the comparison recipes, plus optional points.
 # geom is one of box | violin | bar | raincloud. `x` is the grouping column name;
 # fill is mapped per layer so the significance-bracket layer is not affected.
@@ -47,9 +162,15 @@ add_dist_geom <- function(p, x, geom = "box", show_points = TRUE) {
   } else {
     p + ggplot2::geom_boxplot(fill, width = 0.6, outlier.shape = NA, alpha = 0.9)
   }
-  if (isTRUE(show_points)) {
-    jit <- if (geom == "raincloud") 0.06 else 0.12
-    p <- p + ggplot2::geom_jitter(fill, width = jit, size = 1.5, alpha = 0.7,
+  if (isTRUE(show_points) && geom == "raincloud") {
+    # The rain falls to the left of the box, so the points never hide it.
+    d <- p$data
+    idx <- stats::ave(seq_len(nrow(d)), d[[x]], FUN = seq_along)
+    d$.rain_x <- as.integer(d[[x]]) + rain_offsets(max(idx, 0))[idx]
+    p <- p + ggplot2::geom_point(data = d, ggplot2::aes(x = .data$.rain_x, fill = .data[[x]]),
+                                 size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3)
+  } else if (isTRUE(show_points)) {
+    p <- p + ggplot2::geom_jitter(fill, width = 0.12, size = 1.5, alpha = 0.7,
                                   shape = 21, stroke = 0.3)
   }
   p

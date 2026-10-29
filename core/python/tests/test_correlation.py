@@ -40,3 +40,16 @@ def test_recipe_correlation_needs_present_columns():
     spec = spec_from_args(a)
     with pytest.raises(ValueError, match="not found"):
         recipe_correlation(df, spec)
+
+
+def test_the_correlation_subtitle_names_the_method_the_coefficient_and_p():
+    from pubready.recipes.correlation import cor_label
+    assert (cor_label("Pearson correlation", "r", 0.7123, 2.1e-10)
+            == "Pearson correlation, r = 0.71, P = 2.1e-10")
+    assert (cor_label("Spearman rank correlation", "rho", -0.456, 0.0312)
+            == "Spearman rank correlation, rho = -0.46, P = 0.031")
+    x = np.arange(1, 21, dtype=float)
+    df = pd.DataFrame({"x": x, "y": x + np.sin(x)})
+    a = SimpleNamespace(recipe="correlation", data="toy.csv", x="x", y="y", test="kendall")
+    res = recipe_correlation(df, spec_from_args(a))
+    assert res["fig"].axes[0].get_title().startswith("Kendall rank correlation, tau = ")

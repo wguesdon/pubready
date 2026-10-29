@@ -61,8 +61,9 @@ recipe_paired_compare <- function(df, spec) {
   plong$cond <- factor(plong$cond, levels = lv)
 
   pal <- spec$appearance$palette %||% pubready_palette[seq_len(2)]
-  star <- if (is.na(pval)) "ns" else if (pval < 0.001) "***" else
-          if (pval < 0.01) "**" else if (pval < 0.05) "*" else "ns"
+  # The same star scale as every other recipe and the Python engine: **** for
+  # P < 1e-4.
+  star <- p_stars(pval)
   blabel <- spec$appearance$bracket$label %||% "p.signif"
   brk <- if (blabel == "p.format") paste0("p = ", formatC(pval, format = "g", digits = 2)) else star
   ypos <- max(plong$v, na.rm = TRUE) + 0.06 * diff(range(plong$v, na.rm = TRUE))
@@ -72,6 +73,8 @@ recipe_paired_compare <- function(df, spec) {
                        linewidth = 0.4, alpha = 0.8) +
     ggplot2::geom_point(ggplot2::aes(colour = cond), size = 2.4, alpha = 0.9) +
     ggplot2::scale_colour_manual(values = pal) +
+    ggplot2::scale_x_discrete(labels = stats::setNames(wrap_labels(lv), lv)) +
+    ggplot2::scale_y_continuous(labels = plain_number_labels) +
     ggpubr::geom_bracket(xmin = lv[1], xmax = lv[2], y.position = ypos,
                          label = brk, tip.length = 0.02) +
     ggplot2::labs(x = spec$appearance$x_label %||% x,
@@ -93,7 +96,7 @@ recipe_paired_compare <- function(df, spec) {
 
   resolved <- list(family = family, label = label)
   methods  <- .paired_methods(label, lv, nrow(m), pval, eff_name, eff, spec)
-  build_script <- function(in_name, fig_stub) .paired_emit_script(spec, family, lv, in_name, fig_stub)
+  build_script <- list(fn = .paired_emit_script, args = list(spec = spec, family = family, lv = lv))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,

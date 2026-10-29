@@ -152,8 +152,13 @@ recipe_forest_meta <- function(df, spec) {
                    axis.text.y = ggplot2::element_text(hjust = 0, size = 10),
                    plot.subtitle = ggplot2::element_text(size = 9.5, colour = "grey30"))
   if (measure == "ratio") {
+    # The same 1-2-5 ticks as the Python engine, with at least one tick on each
+    # side of the null line, and the axis widened to show every tick.
+    lo <- min(c(studies$ci_low, pooled$ci_low)); hi <- max(c(studies$ci_high, pooled$ci_high))
+    ticks <- log_ticks_ref(lo, hi, 1)
     forest <- forest +
-      ggplot2::scale_x_log10(labels = scales::label_number(drop0trailing = TRUE))
+      ggplot2::scale_x_log10(breaks = ticks, limits = c(min(lo, ticks), max(hi, ticks)),
+                             labels = scales::label_number(drop0trailing = TRUE, big.mark = ""))
   }
 
   table <- ggplot2::ggplot(txt, ggplot2::aes(y = y)) +
@@ -185,8 +190,9 @@ recipe_forest_meta <- function(df, spec) {
             y, pooled$estimate[1], pooled$ci_low[1], pooled$ci_high[1], sprintf("%.2g", pooled$p_value[1])),
     sprintf("and the DerSimonian-Laird random-effects estimate was %.3f (95%% CI %.3f to %.3f, P = %s). ",
             pooled$estimate[2], pooled$ci_low[2], pooled$ci_high[2], sprintf("%.2g", pooled$p_value[2])),
-    sprintf("Heterogeneity was assessed with Cochran's Q (Q = %.2f, df = %d, P = %s), I2 = %.1f%% and tau2 = %.4f. ",
+    sprintf("Heterogeneity was assessed with Cochran's Q (Q = %.2f, df = %d, P = %s), I2 = %.1f%% and tau2 = %.4f; ",
             pooled$q[2], as.integer(pooled$q_df[2]), sprintf("%.2g", pooled$q_p[2]), pooled$i2[2], pooled$tau2[2]),
+    "the DerSimonian-Laird tau2 was truncated at zero, so I2 is 0% when Q is below its degrees of freedom. ",
     "Squares are sized by the random-effects weight and the diamonds show the pooled estimates. ",
     sprintf("Computed in R %s with metafor %s and drawn with ggplot2 %s.", rver, v$metafor, v$ggplot2))
 }

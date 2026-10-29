@@ -2,6 +2,7 @@
 import matplotlib
 matplotlib.use("Agg")  # headless container
 import matplotlib.pyplot as plt
+from matplotlib.ticker import Formatter
 
 # The first six colours are the house palette. The fourteen after them keep a
 # figure with up to twenty groups distinct; palette() cycles past twenty.
@@ -102,6 +103,227 @@ def log_ticks(lo, hi):
     return inside
 
 
+def log_ticks_ref(lo, hi, ref=1.0):
+    """Log-axis ticks of the 1-2-5 sequence for a plot with a reference line.
+
+    The ticks inside the data range are kept. When the data reach past ``ref``
+    on one side but no tick lies on that side, the next value of the sequence on
+    that side is added, so the axis reads on both sides of the line. More than 7
+    ticks are thinned to the powers of ten. The R engine has the same rule in
+    log_ticks_ref().
+
+    Args:
+        lo: The smallest value to show.
+        hi: The largest value to show.
+        ref: The reference value, for example 1 for a ratio.
+
+    Returns:
+        list: The sorted tick positions.
+    """
+    import numpy as np
+    seq = sorted(m * 10.0 ** k for k in range(-4, 5) for m in (1, 2, 5))
+    tol = 1e-9
+    lo2, hi2 = min(lo, ref), max(hi, ref)
+    ticks = [v for v in seq if lo2 * (1 - tol) <= v <= hi2 * (1 + tol)]
+    if hi > ref and not any(t > ref * (1 + tol) for t in ticks):
+        ticks.append(min(v for v in seq if v > ref * (1 + tol)))
+    if lo < ref and not any(t < ref * (1 - tol) for t in ticks):
+        ticks.insert(0, max(v for v in seq if v < ref * (1 - tol)))
+    if len(ticks) > 7:
+        ticks = [t for t in ticks if abs(np.log10(t) - round(np.log10(t))) < 1e-9]
+    return sorted(set(ticks))
+
+
+def wrap_label(s, width=12):
+    """Wrap one label at the spaces so that no line is longer than ``width``.
+
+    A word longer than ``width`` stays whole on its own line. The R engine has
+    the same greedy rule (wrap_label), so both engines break a label at the same
+    places. ``textwrap`` is not used because it treats whitespace differently.
+
+    Args:
+        s: The label.
+        width: The largest count of characters on one line.
+
+    Returns:
+        str: The label with a newline at each break.
+    """
+    s = str(s)
+    if len(s) <= width:
+        return s
+    words = [w for w in s.split(" ") if w]
+    if not words:
+        return s
+    lines, cur = [], words[0]
+    for w in words[1:]:
+        if len(cur) + 1 + len(w) <= width:
+            cur = f"{cur} {w}"
+        else:
+            lines.append(cur)
+            cur = w
+    return "\n".join(lines + [cur])
+
+
+def wrap_labels(labels, width=12):
+    """Wrap each label of a list with wrap_label.
+
+    Args:
+        labels: The labels.
+        width: The largest count of characters on one line.
+
+    Returns:
+        list: The wrapped labels.
+    """
+    return [wrap_label(s, width) for s in labels]
+
+
+def longest_line(s):
+    """The length in characters of the longest line of a wrapped label.
+
+    Args:
+        s: The label.
+
+    Returns:
+        int: The length.
+    """
+    return max((len(part) for part in str(s).split("\n")), default=0)
+
+
+def category_width(n, labels=None, min_width=4.2):
+    """The figure width of a category axis, as the R engine computes it.
+
+    A wrapped label whose longest line (a long word) is wider than the slot
+    widens every slot to 0.085 in per character.
+
+    Args:
+        n: The count of categories.
+        labels: The wrapped labels, or None.
+        min_width: The smallest width in inches.
+
+    Returns:
+        float: 1.1 in per category plus 1 in, and never less than ``min_width``.
+    """
+    chars = max((longest_line(s) for s in labels), default=0) if labels else 0
+    return max(min_width, max(1.1, 0.085 * chars) * n + 1.0)
+
+
+def legend_width(labels, title=""):
+    """The width of a legend right of the panel, as legend_width() of the R engine.
+
+    Args:
+        labels: The legend labels.
+        title: The legend title.
+
+    Returns:
+        float: The key plus 0.075 in per character of the longest line or title.
+    """
+    chars = max([longest_line(s) for s in labels] + [len(str(title)), 0])
+    return 0.55 + 0.075 * chars
+
+
+def plain_number_labels(values):
+    """Format axis breaks as plain numbers with a comma between the thousands.
+
+    The count of decimals is the smallest one that shows every break exactly (at
+    most 6), never in scientific notation, as plain_number_labels() of the R
+    engine does.
+
+    Args:
+        values: The break values.
+
+    Returns:
+        list: The labels.
+    """
+    import numpy as np
+    vals = np.asarray(values, dtype=float)
+    fin = vals[np.isfinite(vals)]
+    digits = 0
+    while digits < 6 and len(fin) and np.any(
+            np.abs(np.round(fin, digits) - fin) > 1e-9 * np.maximum(1, np.abs(fin))):
+        digits += 1
+    return [f"{v + 0.0:,.{digits}f}" if np.isfinite(v) else "" for v in vals]
+
+
+class PlainNumberFormatter(Formatter):
+    """A matplotlib tick formatter that applies plain_number_labels to all ticks."""
+
+    def __init__(self):
+        self.locs = []
+
+    def set_locs(self, locs):
+        """Store the tick positions, so every label uses the same decimals.
+
+        Args:
+            locs: The tick positions.
+        """
+        self.locs = list(locs)
+
+    def __call__(self, x, pos=None):
+        """Format one tick.
+
+        Args:
+            x: The tick value.
+            pos: The tick index, unused.
+
+        Returns:
+            str: The label.
+        """
+        return plain_number_labels(list(self.locs) + [x])[-1]
+
+
+def plain_number_axis(axis):
+    """Label a linear matplotlib axis with plain numbers and thousands separators.
+
+    Args:
+        axis: The axis, for example ``ax.yaxis``.
+    """
+    axis.set_major_formatter(PlainNumberFormatter())
+
+
+def geom_top(values, geom="box"):
+    """The top of the drawn geom of one group, as geom_top() of the R engine.
+
+    The seaborn violin is cut at the data (cut=0), so it ends at the largest
+    value; a bar ends at the mean plus its standard error when no point is
+    higher.
+
+    Args:
+        values: The values of the group.
+        geom: The geometry: box, violin, bar or raincloud.
+
+    Returns:
+        float: The top, or NaN for an empty group.
+    """
+    import numpy as np
+    v = np.asarray(values, dtype=float)
+    v = v[np.isfinite(v)]
+    if len(v) == 0:
+        return float("nan")
+    top = float(v.max())
+    if geom == "bar" and len(v) >= 2:
+        top = max(top, float(v.mean() + v.std(ddof=1) / np.sqrt(len(v))))
+    return top
+
+
+def rain_offsets(n, lo=-0.18, hi=-0.06):
+    """Deterministic horizontal offsets for the points of a raincloud.
+
+    The n values in [lo, hi] come from the golden-ratio sequence, so the points
+    spread to the left of the box without a random seed, as in the R engine.
+
+    Args:
+        n: The count of points.
+        lo: The leftmost offset.
+        hi: The rightmost offset.
+
+    Returns:
+        numpy.ndarray: The offsets.
+    """
+    import numpy as np
+    k = np.arange(1, n + 1)
+    return lo + (hi - lo) * np.mod(k * 0.6180339887498949, 1.0)
+
+
 def plain_log_axis(axis):
     """Label a log-scaled matplotlib axis with plain numbers.
 
@@ -136,7 +358,7 @@ def _raincloud(ax, data, x, y, order, pal, show_points=True):
         for med in bp["medians"]:
             med.set_color("black")
         if show_points:
-            jit = np.random.RandomState(i).uniform(-0.18, -0.06, size=len(vals))
+            jit = rain_offsets(len(vals))
             ax.scatter(np.full(len(vals), i) + jit, vals, s=10, color=pal[i],
                        alpha=0.6, edgecolors="black", linewidths=0.2, zorder=3)
     ax.set_xticks(range(len(order))); ax.set_xticklabels(order)

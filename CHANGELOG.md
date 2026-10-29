@@ -32,7 +32,6 @@ tag move together.
   for each `--fill` level. The statistics do not change.
 - Three public benchmark cases: `faithful_distribution`,
   `tooth_growth_distribution` and `housing_composition`.
-
 - Three bench assay recipes, in both engines:
   - `estimation_plot` shows the mean difference of each group against a
     reference with a 95% BCa bootstrap CI. Two groups give the Gardner-Altman
@@ -49,7 +48,6 @@ tag move together.
     the QC of the fit.
 - Three public benchmark cases for these recipes: `chickwts_estimation`,
   `puromycin_kinetics` and `dnase_standard_curve`.
-
 - Three clinical recipes, in both engines:
   - `cumulative_incidence` estimates the cumulative incidence of each cause of a
     competing-risks outcome with the Aalen-Johansen estimator. Gray's test
@@ -71,7 +69,6 @@ tag move together.
 - Three public benchmark cases: `mgus2_cif` from `survival::mgus2`,
   `pima_calibration` from `MASS::Pima.te`, and `pbcseq_sankey` from
   `survival::pbcseq`. They add 3 datasets and 24 reference values.
-
 - Four omics recipes, in both engines:
   - `ma_plot` draws the log2 fold change against the mean expression of a
     DESeq2, limma or edgeR table. Up genes are red, down genes are blue and the
@@ -105,6 +102,28 @@ tag move together.
   sets the number. The title states how many intersections are not shown. The
   stats table still lists every intersection, and `n_intersections_shown` in the
   manifest gives the number drawn.
+- A `dose_response` curve is "not determined" when its fit fails, when its
+  fitted span is below 10% of the range of the mean responses, when its EC50 is
+  outside the tested doses, or when its 95% CI is not finite. The stats table
+  gives EC50 NA, a `fit_status` and a `status_reason` for that curve. The
+  figure draws its mean and SEM without a curve, and the legend labels it
+  "(not determined)". The shared-midpoint F test leaves it out, and the
+  subtitle and the methods paragraph say so.
+- `multi_group_compare` shows a compact letter display when more than six
+  pairs differ. Groups that share a letter do not differ. Both engines compute
+  the letters with the same insert-and-absorb algorithm of Piepho (2004).
+  `test_meta` records the display and the letters.
+- `correlation` shows one subtitle in both engines, with the method, the
+  coefficient symbol and the P value, for example "Pearson correlation,
+  r = 0.71, P = 2.1e-10". R no longer uses the ggpubr `stat_cor` label.
+- `survival_km` puts the legend to the right of the panel in both engines, and
+  wraps the group names at 24 characters. The risk table has a 10 pt title over
+  9 pt numbers, and a short line in the colour of each group. `test_meta`
+  records the at-risk counts.
+- The comparison recipes print the y axis as plain numbers with a comma between
+  the thousands, for example 300,000. The x labels wrap at 12 characters. The R
+  figure of `multi_group_compare` grows in width with the number of groups, as
+  the Python figure does.
 
 ### Fixed
 - The Python `factorial_anova` ignored `--geom bar` and drew a box plot. It now
@@ -163,6 +182,35 @@ tag move together.
   Arm B, Arm A. Both engines now sort the arms as the other recipes sort their
   groups, so the colours and the legend follow that order. The R legend text
   was 10.4 pt and the title 13 pt. They are now 9 pt and 10 pt, as in Python.
+- `forest_meta` in Python now truncates the DerSimonian-Laird tau2 at zero, as
+  metafor does. Before, a homogeneous set of studies gave a negative tau2, a
+  negative I2, negative study weights and a wrong random-effects estimate. On
+  the 25-study stress case, Python now gives tau2 = 0, I2 = 0% and
+  0.79 [0.71, 0.87], the same as R.
+- `survival_km` in Python counts the number at risk as the subjects whose time
+  is at or after each time point, as R and the definition do. Before, the
+  lifelines helper counted the subjects after the time point. On
+  `example/survival_trial.csv`, the treated arm now has 21 at risk at month 10
+  in both engines.
+- `survival_km` in R now shows the x axis up to the largest time, so the last
+  event is on the figure.
+- `paired_compare` in R now labels P < 1e-4 with four stars, as the other
+  recipes and the Python engine do. The new `p_stars()` helper of `util.R`
+  gives the same scale as `util.p_stars` of Python.
+- `dose_response` in R no longer stops when the fit of one curve fails. Python
+  no longer reports a meaningless EC50 for a flat curve.
+- `two_group_compare --geom raincloud` in R puts the points to the left of the
+  box, as Python does. The points no longer hide the box.
+- `two_group_compare --geom violin` in R puts the bracket above the drawn
+  violin. The bracket no longer cuts through the tail of the violin.
+- `multi_group_compare` spaces the brackets by the span of the drawn axis. A
+  star label no longer touches the next bracket line, also with `--geom bar`.
+- `proportions` in Python stacks the bars in the order of the legend, as R
+  does. The subtitle no longer touches the 100% tick label.
+- Long category labels no longer overlap on the x axis of `two_group_compare`,
+  `multi_group_compare`, `paired_compare` and `proportions`.
+- `forest_meta` gives both engines the same 1-2-5 ticks on the log axis, with
+  at least one tick on each side of the null line.
 
 ## [1.0.0] - 2026-10-07
 

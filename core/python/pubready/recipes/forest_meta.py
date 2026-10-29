@@ -13,11 +13,12 @@ import functools
 import numpy as np
 import pandas as pd
 from matplotlib.patches import Polygon
+from matplotlib.ticker import NullLocator
 from scipy import stats
 from statsmodels.stats.meta_analysis import combine_effects
 
 from ..bundle import slugify
-from ..theme import apply_pub_style, new_fig, palette, plain_log_axis
+from ..theme import apply_pub_style, log_ticks_ref, new_fig, palette, plain_log_axis
 
 Z975 = stats.norm.ppf(0.975)
 
@@ -61,6 +62,39 @@ def resolve_measure(measure, est, lo, hi):
     if asymmetry(np.log(est), np.log(lo), np.log(hi)) < asymmetry(est, lo, hi):
         return "ratio"
     return "difference"
+
+
+def dersimonian_laird(yi, vi):
+    """DerSimonian-Laird random-effects pooling, with the rules of metafor.
+
+    tau2 is the moment estimate (Q - df) / C truncated at zero, and I2 is
+    tau2 / (tau2 + s2) with the typical within-study variance s2, so I2 is zero
+    when Q is below its degrees of freedom. statsmodels combine_effects does not
+    truncate, which gives a negative tau2, a negative I2 and negative weights
+    for a homogeneous set of studies.
+
+    Args:
+        yi: The study estimates on the analysis scale.
+        vi: Their sampling variances.
+
+    Returns:
+        dict: q, tau2, i2 (in percent), the random-effects estimate and its
+        standard error.
+    """
+    yi = np.asarray(yi, dtype=float)
+    vi = np.asarray(vi, dtype=float)
+    w = 1.0 / vi
+    k = len(yi)
+    fe = float(np.sum(w * yi) / np.sum(w))
+    q = float(np.sum(w * (yi - fe) ** 2))
+    c = float(np.sum(w) - np.sum(w ** 2) / np.sum(w))
+    tau2 = max(0.0, (q - (k - 1)) / c) if c > 0 else 0.0
+    s2 = (k - 1) * np.sum(w) / (np.sum(w) ** 2 - np.sum(w ** 2)) if c > 0 else 0.0
+    i2 = 100.0 * tau2 / (tau2 + s2) if (tau2 + s2) > 0 else 0.0
+    w_re = 1.0 / (vi + tau2)
+    est = float(np.sum(w_re * yi) / np.sum(w_re))
+    return {"q": q, "tau2": tau2, "i2": i2, "estimate": est,
+            "se": float(np.sqrt(1.0 / np.sum(w_re)))}
 
 
 def back(v, measure):
@@ -141,25 +175,30 @@ def recipe_forest_meta(df, spec):
         steps.append("Derived each standard error from the 95% CI as (upper - lower) / (2 x 1.96) "
                      "on the analysis scale.")
 
+    # The fixed effect comes from statsmodels. The random-effects model is the
+    # DerSimonian-Laird estimate with tau2 truncated at zero, as metafor does;
+    # combine_effects lets tau2 go negative when Q is below its df.
     res = combine_effects(yi, sei ** 2, method_re="dl")
     sf = res.summary_frame()
+    dl = dersimonian_laird(yi, sei ** 2)
     k = len(yi)
-    q_p = float(stats.chi2.sf(res.q, k - 1))
+    q_p = float(stats.chi2.sf(dl["q"], k - 1))
     w_fe = 1 / sei ** 2
-    w_re = 1 / (sei ** 2 + res.tau2)
+    w_re = 1 / (sei ** 2 + dl["tau2"])
+    fe_eff = float(sf.loc["fixed effect", "eff"])
+    fe_se = float(sf.loc["fixed effect", "sd_eff"])
     pooled_rows = []
-    for name, key, wf, wr in (("Fixed effect", "fixed effect", 100.0, np.nan),
-                              ("Random effects (DerSimonian-Laird)", "random effect", np.nan, 100.0)):
-        eff, sd_eff = float(sf.loc[key, "eff"]), float(sf.loc[key, "sd_eff"])
+    for name, eff, sd_eff, wf, wr in (
+            ("Fixed effect", fe_eff, fe_se, 100.0, np.nan),
+            ("Random effects (DerSimonian-Laird)", dl["estimate"], dl["se"], np.nan, 100.0)):
         zval = eff / sd_eff
         pooled_rows.append({
             "row_type": "pooled", "label": name, "estimate": back(eff, measure),
-            "ci_low": back(float(sf.loc[key, "ci_low"]), measure),
-            "ci_high": back(float(sf.loc[key, "ci_upp"]), measure),
+            "ci_low": back(eff - Z975 * sd_eff, measure),
+            "ci_high": back(eff + Z975 * sd_eff, measure),
             "yi": eff, "se": sd_eff, "weight_fixed_pct": wf, "weight_random_pct": wr,
             "z": zval, "p_value": float(2 * stats.norm.sf(abs(zval))),
-            "q": float(res.q), "q_df": k - 1, "q_p": q_p, "i2": 100 * float(res.i2),
-            "tau2": float(res.tau2)})
+            "q": dl["q"], "q_df": k - 1, "q_p": q_p, "i2": dl["i2"], "tau2": dl["tau2"]})
     studies = pd.DataFrame({
         "row_type": "study", "label": labels, "estimate": est, "ci_low": lo, "ci_high": hi,
         "yi": yi, "se": sei, "weight_fixed_pct": 100 * w_fe / w_fe.sum(),
@@ -174,8 +213,8 @@ def recipe_forest_meta(df, spec):
         "measure": measure, "k": k,
         "fixed": {c: pooled_rows[0][c] for c in ("estimate", "ci_low", "ci_high", "p_value")},
         "random": {c: pooled_rows[1][c] for c in ("estimate", "ci_low", "ci_high", "p_value")},
-        "heterogeneity": {"q": float(res.q), "df": k - 1, "p_value": q_p,
-                          "i2": 100 * float(res.i2), "tau2": float(res.tau2)},
+        "heterogeneity": {"q": dl["q"], "df": k - 1, "p_value": q_p,
+                          "i2": dl["i2"], "tau2": dl["tau2"]},
     }
     df_used = pd.DataFrame({"label": labels, "estimate": est, "ci_low": lo, "ci_high": hi,
                             "yi": yi, "se": sei})
@@ -218,7 +257,17 @@ def _plot(studies, pooled, measure, spec):
                  (r["ci_high"], py[i]), (r["estimate"], py[i] - 0.32)]
         ax.add_patch(Polygon(verts, closed=True, facecolor=pal[1], edgecolor="0.15", lw=0.6))
     if measure == "ratio":
+        # The same 1-2-5 ticks as the R engine, with at least one tick on each
+        # side of the null line, and the axis widened to show every tick.
+        lo = float(min(studies["ci_low"].min(), pooled["ci_low"].min()))
+        hi = float(max(studies["ci_high"].max(), pooled["ci_high"].max()))
+        ticks = log_ticks_ref(lo, hi, 1.0)
+        llo, lhi = np.log10(min(lo, ticks[0])), np.log10(max(hi, ticks[-1]))
+        pad = 0.05 * (lhi - llo)
         ax.set_xscale("log")
+        ax.set_xlim(10 ** (llo - pad), 10 ** (lhi + pad))
+        ax.set_xticks(ticks)
+        ax.xaxis.set_minor_locator(NullLocator())
         plain_log_axis(ax.xaxis)
     ax.set_yticks(list(sy) + list(py))
     ax.set_yticklabels(list(studies["label"]) + ["Fixed effect", "Random effects (DL)"], fontsize=10)
@@ -271,9 +320,11 @@ def _methods(pooled, measure, k, y):
         f"estimate was {re['estimate']:.3f} (95% CI {re['ci_low']:.3f} to {re['ci_high']:.3f}, "
         f"P = {re['p_value']:.2g}). Heterogeneity was assessed with Cochran's Q (Q = {re['q']:.2f}, "
         f"df = {int(re['q_df'])}, P = {re['q_p']:.2g}), I2 = {re['i2']:.1f}% and tau2 = "
-        f"{re['tau2']:.4f}. Squares are sized by the random-effects weight and the diamonds show "
-        f"the pooled estimates. Computed in Python {platform.python_version()} with statsmodels "
-        f"{v('statsmodels')} (combine_effects) and drawn with matplotlib {v('matplotlib')}."
+        f"{re['tau2']:.4f}; the DerSimonian-Laird tau2 was truncated at zero, so I2 is 0% when Q "
+        "is below its degrees of freedom. Squares are sized by the random-effects weight and the "
+        f"diamonds show the pooled estimates. Computed in Python {platform.python_version()} with "
+        f"statsmodels {v('statsmodels')} (combine_effects for the fixed effect) and drawn with "
+        f"matplotlib {v('matplotlib')}."
     )
 
 

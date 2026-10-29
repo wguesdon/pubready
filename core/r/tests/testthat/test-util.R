@@ -62,3 +62,10 @@ test_that("rank_biserial_paired follows Kerby's formula and drops zeros", {
   expect_equal(rank_biserial_paired(c(0, 1, 2, 3, -4)), 0.2)
   expect_true(is.na(rank_biserial_paired(c(0, 0))))
 })
+
+test_that("p_stars mirrors util.p_stars of the Python engine", {
+  expect_equal(p_stars(c(1e-5, 5e-4, 5e-3, 2e-2, 0.2, NA)),
+               c("****", "***", "**", "*", "ns", "ns"))
+  expect_equal(p_stars(1e-4), "***")
+  expect_equal(p_stars(0.05), "ns")
+})

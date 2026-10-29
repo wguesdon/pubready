@@ -2,12 +2,14 @@
 (--id) is measured under two conditions (--x), and a line connects the subject's
 two points. The paired t-test or the Wilcoxon signed-rank test is chosen from the
 normality of the within-subject differences."""
+import functools
+
 import numpy as np
 import pandas as pd
 from scipy import stats as ss
 
 from ..bundle import slugify
-from ..theme import apply_pub_style, new_fig, palette
+from ..theme import apply_pub_style, new_fig, palette, plain_number_axis, wrap_labels
 from ..util import (cap_first, p_stars, rank_biserial_paired, shapiro_normal,
                     wilcoxon_signed_rank_r)
 
@@ -71,7 +73,8 @@ def recipe_paired_compare(df, spec):
         ax.plot([0, 1], [r["v1"], r["v2"]], color="grey", lw=0.6, alpha=0.7, zorder=1)
     ax.scatter([0] * len(m), m["v1"], color=pal[0], s=45, zorder=2, alpha=0.9)
     ax.scatter([1] * len(m), m["v2"], color=pal[1], s=45, zorder=2, alpha=0.9)
-    ax.set_xticks([0, 1]); ax.set_xticklabels(lv); ax.set_xlim(-0.4, 1.4)
+    ax.set_xticks([0, 1]); ax.set_xticklabels(wrap_labels(lv)); ax.set_xlim(-0.4, 1.4)
+    plain_number_axis(ax.yaxis)
 
     allv = np.r_[m["v1"].to_numpy(), m["v2"].to_numpy()]
     yr = float(np.nanmax(allv) - np.nanmin(allv)) or 1.0
@@ -106,7 +109,7 @@ def recipe_paired_compare(df, spec):
         "df_used": m, "clean_steps": steps, "label": slugify(y),
         "width": w, "height": h,
         "qc": {"quantity": "within-subject differences", "panels": {"differences": diffs}},
-        "build_script": lambda in_name, fig_stub: _script(spec, family, lv, in_name, fig_stub),
+        "build_script": functools.partial(_script, spec, family, lv),
     }
 
 

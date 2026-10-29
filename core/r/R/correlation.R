@@ -23,6 +23,12 @@ resolve_correlation_method <- function(method, x_normal, y_normal) {
   list(method = m, family = "correlation", label = label, estimate_name = estimate_name)
 }
 
+# The subtitle: the method, the coefficient symbol and the P value, for example
+# "Pearson correlation, r = 0.71, P = 2.1e-10". Python writes the same text.
+cor_label <- function(method_label, estimate_name, estimate, p) {
+  sprintf("%s, %s = %.2f, P = %s", method_label, estimate_name, estimate, sprintf("%.2g", p))
+}
+
 recipe_correlation <- function(df, spec) {
   x <- spec$data$x
   y <- spec$data$y
@@ -59,17 +65,19 @@ recipe_correlation <- function(df, spec) {
   pal <- spec$appearance$palette %||% pubready_palette
   point_col <- pal[1]
 
+  # The method, the coefficient and the P value go in a subtitle, in the style of
+  # the other recipes and in the same words as the Python engine.
   p <- ggplot2::ggplot(df_used, ggplot2::aes(x = .data[[x]], y = .data[[y]])) +
     ggplot2::geom_point(colour = point_col, size = 2, alpha = 0.8) +
     ggplot2::geom_smooth(method = "lm", formula = y ~ x, se = TRUE,
                          colour = "#333333", fill = "grey75", linewidth = 0.6) +
-    ggpubr::stat_cor(method = resolved$method, label.x.npc = "left",
-                     label.y.npc = "top", size = 3.6) +
     ggplot2::labs(
-      x     = spec$appearance$x_label %||% x,
-      y     = spec$appearance$y_label %||% y,
-      title = spec$appearance$title) +
-    pub_theme(spec$appearance$theme)
+      x        = spec$appearance$x_label %||% x,
+      y        = spec$appearance$y_label %||% y,
+      title    = spec$appearance$title,
+      subtitle = cor_label(resolved$label, resolved$estimate_name, estimate, ct$p.value)) +
+    pub_theme(spec$appearance$theme) +
+    ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"))
 
   ylim <- spec$appearance$y_limits
   ymin <- if (length(ylim) >= 1) ylim[[1]] else NULL
@@ -105,7 +113,8 @@ recipe_correlation <- function(df, spec) {
       normality = list(test = "shapiro-wilk", p_x = x_norm$p, p_y = y_norm$p)))
 
   methods <- .cor_methods(resolved, stats_df, spec)
-  build_script <- function(in_name, fig_stub) .cor_emit_script(spec, resolved, point_col, in_name, fig_stub)
+  build_script <- list(fn = .cor_emit_script,
+                       args = list(spec = spec, resolved = resolved, point_col = point_col))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
@@ -117,7 +126,7 @@ recipe_correlation <- function(df, spec) {
 }
 
 .cor_methods <- function(resolved, stats_df, spec) {
-  v    <- pkg_versions(c("ggplot2", "ggpubr"))
+  v    <- pkg_versions("ggplot2")
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   x_lab <- spec$appearance$x_label %||% stats_df$x[1]
   y_lab <- spec$appearance$y_label %||% stats_df$y[1]
@@ -125,7 +134,7 @@ recipe_correlation <- function(df, spec) {
     " The method was chosen from the Shapiro-Wilk normality of each variable."
   } else ""
   est <- formatC(stats_df$estimate[1], format = "f", digits = 2)
-  pv  <- formatC(stats_df$p_value[1], format = "g", digits = 2)
+  pv  <- sprintf("%.2g", stats_df$p_value[1])
   paste0(
     sprintf("The association between %s and %s was assessed with a %s (n = %d).",
             cap_first(x_lab), y_lab, resolved$label, stats_df$n[1]),
@@ -133,8 +142,7 @@ recipe_correlation <- function(df, spec) {
     sprintf(" The correlation was %s = %s (P = %s), with a linear fit and 95%% confidence band shown.",
             resolved$estimate_name, est, pv),
     " Significance was set at P < 0.05.",
-    sprintf(" Rendered in R %s with ggplot2 %s and ggpubr %s.",
-            rver, v$ggplot2, v$ggpubr))
+    sprintf(" Rendered in R %s with ggplot2 %s.", rver, v$ggplot2))
 }
 
 .cor_emit_script <- function(spec, resolved, point_col, in_name, fig_stub) {
@@ -145,7 +153,7 @@ recipe_correlation <- function(df, spec) {
     "#!/usr/bin/env Rscript",
     "# Standalone reproduction. Run inside the pinned pubready container",
     "# (see REPRODUCE.md) from this bundle folder.",
-    "suppressPackageStartupMessages({ library(ggplot2); library(ggpubr) })",
+    "suppressPackageStartupMessages(library(ggplot2))",
     "",
     sprintf('raw <- read.csv("%s", check.names = FALSE)', in_name),
     sprintf('x <- suppressWarnings(as.numeric(raw[["%s"]]))', x),
@@ -154,12 +162,14 @@ recipe_correlation <- function(df, spec) {
     "df <- data.frame(x = x[keep], y = y[keep])",
     sprintf('ct <- cor.test(df$x, df$y, method = "%s")', resolved$method),
     "print(ct)",
+    sprintf('sub <- sprintf("%s, %s = %%.2f, P = %%.2g", ct$estimate, ct$p.value)',
+            resolved$label, resolved$estimate_name),
     "",
     "p <- ggplot(df, aes(x = x, y = y)) +",
     sprintf('  geom_point(colour = "%s", size = 2, alpha = 0.8) +', point_col),
     '  geom_smooth(method = "lm", formula = y ~ x, se = TRUE, colour = "#333333", fill = "grey75") +',
-    sprintf('  stat_cor(method = "%s", label.x.npc = "left", label.y.npc = "top") +', resolved$method),
-    sprintf('  labs(x = "%s", y = "%s") + theme_classic()', xlab, ylab),
+    sprintf('  labs(x = "%s", y = "%s", subtitle = sub) + theme_classic() +', xlab, ylab),
+    '  theme(plot.subtitle = element_text(hjust = 0.5, size = 10, colour = "grey30"))',
     sprintf('ggsave("%s.pdf", p, width = 4.6, height = 4.2)', fig_stub),
     'cat("Reproduced figure.\\n")'
   )

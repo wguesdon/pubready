@@ -56,6 +56,7 @@ recipe_proportions <- function(df, spec) {
     ggplot2::geom_text(ggplot2::aes(label = ifelse(proportion >= 0.04,
                                                    scales::percent(proportion, accuracy = 1), "")),
                        position = ggplot2::position_stack(vjust = 0.5), size = 3, colour = "white") +
+    ggplot2::scale_x_discrete(labels = stats::setNames(wrap_labels(levels(cnt$group)), levels(cnt$group))) +
     ggplot2::scale_y_continuous(labels = scales::percent) +
     ggplot2::scale_fill_manual(values = pal) +
     ggplot2::labs(x = spec$appearance$x_label %||% x,
@@ -71,12 +72,14 @@ recipe_proportions <- function(df, spec) {
                     n = sum(tab), any_expected_below_5 = small)
   resolved <- list(family = "proportions", label = test_label)
   methods  <- .prop_methods(test_label, nrow(tab), ncol(tab), sum(tab), pval, or, is2x2)
-  build_script <- function(in_name, fig_stub) .prop_emit_script(spec, use_fisher, in_name, fig_stub)
+  build_script <- list(fn = .prop_emit_script, args = list(spec = spec, use_fisher = use_fisher))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
        label = slugify(y), df_used = df, clean_steps = clean_steps,
-       width = max(3.6, 1.1 * nrow(tab) + 1.8), height = 4.2)
+       width = max(3.6, category_width(nrow(tab), wrap_labels(levels(cnt$group)), 0) +
+                          legend_width(levels(cnt$outcome), y)),
+       height = 4.2)
 }
 
 .prop_methods <- function(test_label, n_grp, n_out, n, pval, or, is2x2) {

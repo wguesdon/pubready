@@ -1,6 +1,8 @@
 """Recipe: compare two groups on one continuous outcome. Mirrors the R recipe:
 picks t-test or Mann-Whitney from the assumption checks, box/violin with points
 and a significance bracket on top."""
+import functools
+
 import numpy as np
 import pandas as pd
 import pingouin as pg
@@ -9,7 +11,8 @@ from scipy import stats
 from statannotations.Annotator import Annotator
 
 from ..clean import clean_xy
-from ..theme import add_dist_geom, apply_pub_style, new_fig, palette
+from ..theme import (add_dist_geom, apply_pub_style, new_fig, palette, plain_number_axis,
+                     wrap_labels)
 from ..util import (cap_first, cohens_d_r, mann_whitney_r, p_stars, rank_biserial_paired,
                     rank_biserial_unpaired, shapiro_normal, wilcoxon_signed_rank_r)
 
@@ -83,6 +86,9 @@ def recipe_two_group_compare(df, spec):
     annot.configure(line_width=1.0, fontsize=12)
     annot.set_custom_annotations([ann])
     annot.annotate()
+    # Wrap long group names, after the brackets are placed on the categories.
+    ax.set_xticks(range(len(lv))); ax.set_xticklabels(wrap_labels(lv))
+    plain_number_axis(ax.yaxis)
 
     ax.set_xlabel(ap.get("x_label") or x)
     ax.set_ylabel(ap.get("y_label") or y)
@@ -118,7 +124,7 @@ def recipe_two_group_compare(df, spec):
         "methods": methods, "df_used": df, "clean_steps": steps,
         "width": w, "height": h,
         "qc": {"quantity": "group values", "panels": {lv[0]: a, lv[1]: b}},
-        "build_script": lambda in_name, fig_stub: _script(spec, r, lv, pal, in_name, fig_stub, ann),
+        "build_script": functools.partial(_script, spec, r, lv, pal, ann=ann),
     }
 
 

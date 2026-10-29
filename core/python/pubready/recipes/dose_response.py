@@ -87,21 +87,73 @@ def fit_curve(lx, y):
     return None, None, st, None
 
 
-def curve_row(g, lx, y, popt, pcov):
-    """Summarise one fitted curve as one row of the stats table.
+MIN_SPAN = 0.10
+"""The share of the response range below which a fitted curve counts as flat."""
+
+
+def status_reason(converged, bottom, top, log_ec50, lx, ci_low, ci_high, span_ref):
+    """Say why a curve is "not determined", as .drc_status_reason() of the R engine.
+
+    The rule: the fit did not converge, the fitted span (top minus bottom) is
+    below 10% of the range of the mean responses of all curves, the EC50 lies
+    outside the tested doses, or the 95% CI of the EC50 is not finite.
+
+    Args:
+        converged: Whether the fit converged.
+        bottom: The fitted lower plateau.
+        top: The fitted upper plateau.
+        log_ec50: The fitted log10 EC50.
+        lx: The log10 doses of the curve.
+        ci_low: The lower bound of the 95% CI of the EC50.
+        ci_high: The upper bound.
+        span_ref: The range of the mean responses of all curves.
+
+    Returns:
+        str or None: The reason, or None when the fit stands.
+    """
+    if not converged:
+        return "the fit did not converge"
+    if np.isfinite(span_ref) and span_ref > 0 and abs(top - bottom) < MIN_SPAN * span_ref:
+        return "the response span is below 10% of the data range"
+    if not np.isfinite(log_ec50) or log_ec50 < np.min(lx) or log_ec50 > np.max(lx):
+        return "the EC50 lies outside the tested doses"
+    if not np.isfinite(ci_low) or not np.isfinite(ci_high) or ci_low <= 0:
+        return "the 95% CI of the EC50 is not finite"
+    return None
+
+
+def curve_row(g, lx, y, popt, pcov, start, span_ref):
+    """Summarise one curve as one row of the stats table.
+
+    A curve whose fit fails the rule of status_reason keeps its sizes and its
+    direction but no fitted value, as in the R engine.
 
     Args:
         g: The curve name.
         lx: The log10 doses.
         y: The responses.
-        popt: The fitted bottom, top, log10 EC50 and Hill slope.
-        pcov: Their covariance.
+        popt: The fitted bottom, top, log10 EC50 and Hill slope, or None.
+        pcov: Their covariance, or None.
+        start: The starting values, which give the direction of a failed fit.
+        span_ref: The range of the mean responses of all curves.
 
     Returns:
         dict: The stats row.
     """
+    nan = float("nan")
+    base = {
+        "group": g, "n": int(len(y)), "doses": int(len(np.unique(lx))),
+        "midpoint": "IC50" if start["hill"] < 0 else "EC50",
+        "bottom": nan, "top": nan, "hill": nan, "log_ec50": nan, "se_log_ec50": nan,
+        "ec50": nan, "ec50_ci_low": nan, "ec50_ci_high": nan, "r_squared": nan,
+        "rss": nan, "df_resid": nan, "fit_status": "not determined",
+        "status_reason": "the fit did not converge",
+    }
+    if popt is None:
+        return base
     bottom, top, log_ec50, hill = (float(v) for v in popt)
-    se = np.sqrt(np.diag(pcov))
+    with np.errstate(invalid="ignore"):
+        se = np.sqrt(np.diag(pcov))
     # The plateaus swap when the slope changes sign; report bottom below top.
     if bottom > top:
         bottom, top, hill = top, bottom, -hill
@@ -109,16 +161,21 @@ def curve_row(g, lx, y, popt, pcov):
     rss = float(np.sum(resid ** 2))
     dfr = len(y) - 4
     tq = stats.t.ppf(0.975, dfr)
+    with np.errstate(over="ignore", invalid="ignore"):
+        ci_low = float(10 ** (log_ec50 - tq * se[2]))
+        ci_high = float(10 ** (log_ec50 + tq * se[2]))
+    reason = status_reason(True, bottom, top, log_ec50, lx, ci_low, ci_high, span_ref)
+    if reason is not None:
+        base["status_reason"] = reason
+        return base
     return {
         "group": g, "n": int(len(y)), "doses": int(len(np.unique(lx))),
         "midpoint": "IC50" if hill < 0 else "EC50",
         "bottom": bottom, "top": top, "hill": hill,
         "log_ec50": log_ec50, "se_log_ec50": float(se[2]),
-        "ec50": 10 ** log_ec50,
-        "ec50_ci_low": 10 ** (log_ec50 - tq * se[2]),
-        "ec50_ci_high": 10 ** (log_ec50 + tq * se[2]),
+        "ec50": 10 ** log_ec50, "ec50_ci_low": ci_low, "ec50_ci_high": ci_high,
         "r_squared": 1 - rss / float(np.sum((y - y.mean()) ** 2)),
-        "rss": rss, "df_resid": dfr,
+        "rss": rss, "df_resid": dfr, "fit_status": "fitted", "status_reason": None,
     }
 
 
@@ -226,6 +283,11 @@ def dose_summary(d):
 def recipe_dose_response(df, spec):
     """Fit and draw four-parameter logistic dose-response curves.
 
+    A curve whose fit fails, or whose midpoint is flat, outside the tested doses
+    or without a finite CI, is reported as not determined (see status_reason):
+    it is drawn as its mean +/- SEM without a curve and left out of the
+    shared-midpoint F test.
+
     Args:
         df: The tidy table, one row per measurement.
         spec: The figure specification.
@@ -234,8 +296,7 @@ def recipe_dose_response(df, spec):
         dict: The bundle payload.
 
     Raises:
-        ValueError: If a column is missing, if a curve has too few doses, or if a
-            fit does not converge.
+        ValueError: If a column is missing, or if a curve has too few doses.
     """
     x, y = spec["data"].get("x"), spec["data"].get("y")
     grp = spec["data"].get("group")
@@ -267,6 +328,10 @@ def recipe_dose_response(df, spec):
     d["lx"] = np.log10(d["dose"])
 
     groups = list(pd.unique(d["group"]))
+    # The span rule compares each fitted span with the range of the mean
+    # responses of all curves.
+    summ = dose_summary(d)
+    span_ref = float(summ["mean"].max() - summ["mean"].min())
     rows, starts, methods = [], {}, {}
     for g in groups:
         sel = d["group"] == g
@@ -275,58 +340,66 @@ def recipe_dose_response(df, spec):
             raise ValueError(f"dose_response needs at least 4 distinct doses and 5 points per curve; "
                              f"curve '{g}' has {len(np.unique(lx))} dose(s) and {len(yy)} point(s)")
         popt, pcov, st, method = fit_curve(lx, yy)
-        if popt is None:
-            raise ValueError(f"the four-parameter logistic did not converge for curve '{g}'")
-        rows.append(curve_row(g, lx, yy, popt, pcov))
-        starts[g] = st
-        methods[g] = method
+        row = curve_row(g, lx, yy, popt, pcov, st, span_ref)
+        rows.append(row)
+        if row["fit_status"] == "fitted":
+            starts[g] = st
+            methods[g] = method
     stats_df = pd.DataFrame(rows)
-    shared = shared_test(d, stats_df) if len(groups) >= 2 else None
+    det = (stats_df["fit_status"] == "fitted").to_numpy()
+    det_groups = [g for g, ok in zip(groups, det) if ok]
+    nd_groups = [g for g, ok in zip(groups, det) if not ok]
+    # A curve that is not determined stays out of the shared-midpoint test.
+    shared = None
+    if len(det_groups) >= 2:
+        shared = shared_test(d[d["group"].isin(det_groups)].reset_index(drop=True),
+                             stats_df[det].reset_index(drop=True))
 
     ap = spec["appearance"]
     pal = palette(len(groups), ap.get("palette"))
-    mid_name = "IC50" if (stats_df["midpoint"] == "IC50").all() else "EC50"
+    mid_name = _mid_name(stats_df)
     w, h = (6.2 if has_group else 4.6), 4.2
     fig, ax = new_fig(w, h)
-    summ = dose_summary(d)
     replicated = bool((summ["n"] > 1).any())
+    handles = []
     for i, g in enumerate(groups):
         r = stats_df.iloc[i]
-        lxg = d.loc[d["group"] == g, "lx"]
-        grid = np.linspace(lxg.min(), lxg.max(), 200)
-        cf = (r["bottom"], r["top"], r["log_ec50"], r["hill"])
-        label = f"{g} ({r['midpoint']} = {r['ec50']:.3g})"
-        ax.plot(10 ** grid, fpl(grid, *cf), color=pal[i], lw=1.6, label=label)
         s = summ[summ["group"] == g]
         if replicated:
             rep = s[s["n"] > 1]
             ax.errorbar(10 ** rep["lx"], rep["mean"], yerr=rep["sem"], fmt="none",
                         ecolor=pal[i], elinewidth=0.8, capsize=2)
-        ax.scatter(10 ** s["lx"], s["mean"], color=pal[i], s=22, zorder=3)
+        pts = ax.scatter(10 ** s["lx"], s["mean"], color=pal[i], s=22, zorder=3,
+                         label=f"{g} (not determined)")
+        if det[i]:
+            lxg = d.loc[d["group"] == g, "lx"]
+            grid = np.linspace(lxg.min(), lxg.max(), 200)
+            cf = (r["bottom"], r["top"], r["log_ec50"], r["hill"])
+            line, = ax.plot(10 ** grid, fpl(grid, *cf), color=pal[i], lw=1.6,
+                            label=f"{g} ({r['midpoint']} = {r['ec50']:.3g})")
+            handles.append(line)
+        else:
+            handles.append(pts)
     ax.set_xscale("log")
     plain_log_axis(ax.xaxis)
-    if shared is not None:
-        sub = (f"Shared {mid_name} F test: F({shared['df1']}, {shared['df2']}) = "
-               f"{shared['statistic']:.2f}, P = {shared['p_value']:.2g}")
-    else:
-        r = stats_df.iloc[0]
-        sub = (f"{r['midpoint']} = {r['ec50']:.3g} (95% CI {r['ec50_ci_low']:.3g} to "
-               f"{r['ec50_ci_high']:.3g})")
-    ax.set_title(sub, fontsize=10, color="#4d4d4d")
+    ax.set_title(_subtitle(stats_df, shared, mid_name, has_group), fontsize=10, color="#4d4d4d")
     if ap.get("title"):
         fig.suptitle(ap["title"], fontweight="bold")
     ax.set_xlabel(ap.get("x_label") or x)
     ax.set_ylabel(ap.get("y_label") or y)
     if has_group:
-        ax.legend(title=grp, loc="center left", bbox_to_anchor=(1.02, 0.5),
-                  frameon=False, fontsize=9)
+        ax.legend(handles=handles, labels=[hd.get_label() for hd in handles], title=grp,
+                  loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=9)
     apply_pub_style(ax, ap.get("theme"))
     fig.tight_layout()
 
     test_meta = {
         "name": "Four-parameter logistic fit",
         "n_curves": len(groups),
-        "curves": {r["group"]: {"midpoint": r["midpoint"], "ec50": r["ec50"],
+        "n_determined": len(det_groups),
+        "not_determined": nd_groups,
+        "curves": {r["group"]: {"midpoint": r["midpoint"], "fit_status": r["fit_status"],
+                                "status_reason": r["status_reason"], "ec50": r["ec50"],
                                 "ci_low": r["ec50_ci_low"], "ci_high": r["ec50_ci_high"],
                                 "hill": r["hill"], "bottom": r["bottom"], "top": r["top"],
                                 "r_squared": r["r_squared"]} for r in rows},
@@ -340,6 +413,58 @@ def recipe_dose_response(df, spec):
         "width": w, "height": h,
         "build_script": functools.partial(_script, spec, starts, methods, has_group),
     }
+
+
+def _mid_name(rows):
+    """IC50 when every determined curve falls, EC50 otherwise.
+
+    Args:
+        rows: The stats table.
+
+    Returns:
+        str: "IC50" or "EC50".
+    """
+    mids = rows.loc[rows["fit_status"] == "fitted", "midpoint"]
+    if len(mids) == 0:
+        mids = rows["midpoint"]
+    return "IC50" if (mids == "IC50").all() else "EC50"
+
+
+def _subtitle(rows, shared, mid_name, has_group):
+    """Write the subtitle, as .drc_subtitle() of the R engine does.
+
+    The first line gives the shared-midpoint test, or the midpoint of the one
+    determined curve; a second line names the curves left out as not determined.
+
+    Args:
+        rows: The stats table.
+        shared: The shared-EC50 F test, or None.
+        mid_name: "IC50" or "EC50".
+        has_group: Whether the data has a curve column.
+
+    Returns:
+        str: The subtitle.
+    """
+    det = (rows["fit_status"] == "fitted").to_numpy()
+    if shared is not None:
+        first = (f"Shared {mid_name} F test: F({shared['df1']}, {shared['df2']}) = "
+                 f"{shared['statistic']:.2f}, P = {shared['p_value']:.2g}")
+    elif det.any():
+        r = rows[det].iloc[0]
+        first = (f"{(str(r['group']) + ' ') if has_group else ''}{r['midpoint']} = {r['ec50']:.3g} "
+                 f"(95% CI {r['ec50_ci_low']:.3g} to {r['ec50_ci_high']:.3g})")
+    elif has_group:
+        first = f"{mid_name} not determined for any curve"
+    else:
+        first = f"{mid_name} not determined: {rows['status_reason'].iloc[0]}"
+    nd = list(rows.loc[~det, "group"])
+    if not has_group or not nd or not det.any():
+        return first
+    if len(nd) <= 2:
+        second = f"Not determined, left out of the test: {', '.join(str(g) for g in nd)}"
+    else:
+        second = f"{len(nd)} curves not determined, left out of the test"
+    return f"{first}\n{second}"
 
 
 def _methods(rows, shared, n_points, spec, x, y):
@@ -361,19 +486,32 @@ def _methods(rows, shared, n_points, spec, x, y):
     y_lab = spec["appearance"].get("y_label") or y
     x_lab = spec["appearance"].get("x_label") or x
     multi = len(rows) > 1
+    det = rows["fit_status"] == "fitted"
     fits = "; ".join(
         f"{(str(r['group']) + ': ') if multi else ''}{r['midpoint']} = {r['ec50']:.3g} "
         f"(95% CI {r['ec50_ci_low']:.3g} to {r['ec50_ci_high']:.3g}, Hill slope {r['hill']:.2f}, "
-        f"R2 = {r['r_squared']:.3f})" for _, r in rows.iterrows())
+        f"R2 = {r['r_squared']:.3f})" for _, r in rows[det].iterrows())
+    fits = f"{fits}." if fits else ""
+    nd = rows[~det]
+    nd_txt = ""
+    if len(nd):
+        nd_txt = " " + " ".join(
+            f"The {r['midpoint']}{(' of ' + str(r['group'])) if multi else ''} was not determined, "
+            f"because {r['status_reason']}." for _, r in nd.iterrows())
+        nd_txt += (" A curve that is not determined is drawn as its mean +/- SEM without a fit"
+                   + (" and is left out of the shared-midpoint F test." if multi else "."))
     shared_txt = ""
     if shared is not None:
-        mid = rows["midpoint"].iloc[0]
+        mid = _mid_name(rows)
         shared_txt = (f" An extra-sum-of-squares F test compared one shared {mid} with one {mid} "
-                      "per curve, with the shared fit profiled over the midpoint and each Hill "
-                      "slope held between 0.05 and 20 in magnitude: "
-                      f"F({shared['df1']}, {shared['df2']}) = {shared['statistic']:.2f}, "
+                      f"per curve over the {int(det.sum())} determined curves, with the shared fit "
+                      "profiled over the midpoint and each Hill slope held between 0.05 and 20 in "
+                      f"magnitude: F({shared['df1']}, {shared['df2']}) = {shared['statistic']:.2f}, "
                       f"P = {shared['p_value']:.2g}.")
-    elif len(rows) > 1:
+    elif multi and int(det.sum()) < 2:
+        shared_txt = (" The shared-midpoint F test was not run, because fewer than two curves "
+                      "were determined.")
+    elif multi:
         shared_txt = (" The shared-midpoint F test could not be computed, because the shared fit "
                       "did not converge.")
     return (
@@ -381,7 +519,10 @@ def _methods(rows, shared, n_points, spec, x, y):
         "curve (variable Hill slope) fitted by nonlinear least squares on log10 dose "
         f"(n = {n_points} points, {len(rows)} curve(s)). The 95% confidence interval of the "
         "midpoint was computed on the log10 scale from the standard error of the fit and "
-        f"back-transformed. {fits}.{shared_txt} Fitted in Python {platform.python_version()} with "
+        "back-transformed. A midpoint was reported as not determined when the fit did not "
+        "converge, when the fitted span (top minus bottom) was below 10% of the range of the mean "
+        "responses, when the midpoint lay outside the tested doses, or when its 95% CI was not "
+        f"finite. {fits}{nd_txt}{shared_txt} Fitted in Python {platform.python_version()} with "
         f"scipy {v('scipy')} (curve_fit) and drawn with matplotlib {v('matplotlib')}."
     )
 
@@ -438,6 +579,11 @@ for g, p0 in starts.items():
     grid = np.linspace(s["lx"].min(), s["lx"].max(), 200)
     ax.plot(10 ** grid, fpl(grid, *popt), label=g)
     ax.scatter(s["dose"], s["y"], s=14, alpha=0.6)
+# A curve whose midpoint is not determined is drawn as points only, as in the figure.
+for g in d["group"].unique():
+    if g not in starts:
+        s = d[d["group"] == g]
+        ax.scatter(s["dose"], s["y"], s=14, alpha=0.6, label=f"{{g}} (not determined)")
 ax.set_xscale("log")
 ax.set_xlabel("{ap.get('x_label') or x}"); ax.set_ylabel("{ap.get('y_label') or y}")
 for side in ("top", "right"): ax.spines[side].set_visible(False)
