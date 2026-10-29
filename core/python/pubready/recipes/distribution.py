@@ -157,6 +157,35 @@ def shapiro(v):
     return float(res.statistic), float(res.pvalue)
 
 
+def _num_label(v):
+    """Format one number as R's as.character does, with 15 significant digits.
+
+    Args:
+        v: The number.
+
+    Returns:
+        str: The label, "2" for 2.0 and "0.5" for 0.5.
+    """
+    return f"{v:.15g}"
+
+
+def as_labels(s):
+    """Turn a column into text labels that match the R engine.
+
+    pandas reads a numeric column with a missing value as float, so ``astype(str)``
+    gives "2.0" where R gives "2". Numbers are therefore formatted as R does.
+
+    Args:
+        s: The column, a pandas Series without missing values.
+
+    Returns:
+        pandas.Series: The labels.
+    """
+    if pd.api.types.is_numeric_dtype(s) and not pd.api.types.is_bool_dtype(s):
+        return s.map(_num_label)
+    return s.astype(str)
+
+
 def p_label(p):
     """Format a P value as the R engine does.
 
@@ -255,7 +284,7 @@ def recipe_distribution(df, spec):
     if (~keep).sum():
         steps.append(f"Dropped {int((~keep).sum())} row(s) with a missing value"
                      f"{' or group' if has_group else ''} ({n0} -> {int(keep.sum())} rows).")
-    d = pd.DataFrame({"group": grp[keep].astype(str).to_numpy(),
+    d = pd.DataFrame({"group": as_labels(grp[keep]).to_numpy(),
                       "value": yv[keep].to_numpy(dtype=float)})
     if len(d) < 2:
         raise ValueError("distribution needs at least 2 finite values")

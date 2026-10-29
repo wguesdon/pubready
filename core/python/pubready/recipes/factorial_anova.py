@@ -130,7 +130,7 @@ def _interaction_panel(ax, sub, y, f1, f2, f1_lv, f2_lv, pal):
         ax.scatter(x[ok], means[ok], s=36, color=pal[i], zorder=3)
     ax.set_xticks(base)
     ax.set_xlim(-0.6, len(f1_lv) - 0.4)
-    ax.yaxis.set_major_locator(MaxNLocator(nbins=6, steps=[1, 2, 2.5, 5, 10]))
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=6, steps=[1, 2, 2.5, 3, 5, 10]))
 
 
 def recipe_factorial_anova(df, spec):

@@ -42,6 +42,7 @@ def comp_data():
 
 
 def test_composition_compares_two_groups_with_the_r_wilcox_rule():
+    """Check that composition compares two groups with the r wilcox rule."""
     res = recipe_composition(comp_data(), comp_spec(id="sample", x="cell", y="n", group="condition"))
     long = res["df_used"]
     assert long.groupby("sample")["proportion"].sum().to_numpy() == pytest.approx(np.ones(10))
@@ -56,6 +57,7 @@ def test_composition_compares_two_groups_with_the_r_wilcox_rule():
 
 
 def test_bh_adjust_matches_r_and_skips_missing_values():
+    """Check that bh adjust matches r and skips missing values."""
     p = np.array([0.01, 0.04, np.nan, 0.03, 0.2])
     # p.adjust(c(0.01, 0.04, NA, 0.03, 0.2), "BH") in R
     expected = [0.04, 0.0533333333333333, np.nan, 0.0533333333333333, 0.2]
@@ -63,6 +65,7 @@ def test_bh_adjust_matches_r_and_skips_missing_values():
 
 
 def test_samples_sort_by_group_then_natural_name():
+    """Check that samples sort by group then natural name."""
     df = comp_data()
     df.loc[df["sample"] == "S1", "sample"] = "S10b"
     res = recipe_composition(df, comp_spec(id="sample", x="cell", y="n", group="condition"))
@@ -72,6 +75,7 @@ def test_samples_sort_by_group_then_natural_name():
 
 
 def test_rows_are_counted_without_y_and_three_groups_use_kruskal():
+    """Check that rows are counted without y and three groups use kruskal."""
     rng = np.random.default_rng(8)
     df = pd.DataFrame({"sample": np.repeat([f"s{i:02d}" for i in range(1, 10)], 30),
                        "cell": rng.choice(["x", "y", "z"], 270),
@@ -83,6 +87,7 @@ def test_rows_are_counted_without_y_and_three_groups_use_kruskal():
 
 
 def test_without_group_is_descriptive_and_a_sample_in_two_groups_is_refused():
+    """Check that without group is descriptive and a sample in two groups is refused."""
     df = comp_data()
     res = recipe_composition(df, comp_spec(id="sample", x="cell", y="n"))
     assert res["stats"]["p_value"].isna().all()

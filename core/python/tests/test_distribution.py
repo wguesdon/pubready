@@ -26,12 +26,14 @@ def dist_spec(**kw):
 
 
 def test_q7_matches_the_type_7_quantile():
+    """Check that q7 matches the type 7 quantile."""
     v = np.array([3.0, 1.0, 4.0, 1.5, 9.0, 2.6])
     for p in (0.1, 0.25, 0.5, 0.75, 0.9):
         assert q7(v, p) == pytest.approx(np.quantile(v, p), rel=1e-14)
 
 
 def test_distribution_uses_the_freedman_diaconis_width():
+    """Check that distribution uses the freedman diaconis width."""
     rng = np.random.default_rng(3)
     v = rng.normal(50, 10, 120)
     res = recipe_distribution(pd.DataFrame({"value": v}), dist_spec(y="value"))
@@ -44,6 +46,7 @@ def test_distribution_uses_the_freedman_diaconis_width():
 
 
 def test_bw_nrd0_restates_silverman_and_its_fallbacks():
+    """Check that bw nrd0 restates silverman and its fallbacks."""
     v = np.array([1.0, 2.0, 2.0, 2.0, 2.0, 3.0, 10.0])
     iqr = q7(v, 0.75) - q7(v, 0.25)
     lo = min(np.std(v, ddof=1), iqr / 1.34)
@@ -52,6 +55,7 @@ def test_bw_nrd0_restates_silverman_and_its_fallbacks():
 
 
 def test_bins_count_every_value_once_and_fall_back_to_sturges():
+    """Check that bins count every value once and fall back to sturges."""
     v = np.array([0, 1, 1, 2, 3, 3, 3, 4, 5, 8], dtype=float)
     b = fd_bins(v)
     assert bin_counts(v, b).sum() == len(v)
@@ -62,6 +66,7 @@ def test_bins_count_every_value_once_and_fall_back_to_sturges():
 
 
 def test_distribution_reports_each_group_and_skips_shapiro_below_three():
+    """Check that distribution reports each group and skips shapiro below three."""
     rng = np.random.default_rng(4)
     df = pd.DataFrame({"g": ["a"] * 30 + ["b"] * 2, "v": list(rng.normal(size=30)) + [0.1, 0.4]})
     res = recipe_distribution(df, dist_spec(x="g", y="v"))
@@ -71,3 +76,11 @@ def test_distribution_reports_each_group_and_skips_shapiro_below_three():
     assert np.isnan(st["shapiro_p"].iloc[1])
     assert st["bin_width"].nunique() == 1
     assert list(res["qc"]["panels"]) == ["a", "b"]
+
+
+def test_numeric_group_labels_match_the_r_engine():
+    """Check that numeric group labels match the r engine."""
+    df = pd.DataFrame({"dose": [0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, np.nan],
+                       "v": [1.0, 2.0, 3.0, 2.0, 3.0, 5.0, 4.0, 6.0, 7.0, 1.0]})
+    res = recipe_distribution(df, dist_spec(x="dose", y="v"))
+    assert list(res["stats"]["group"]) == ["0.5", "1", "2"]

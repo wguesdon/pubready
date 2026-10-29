@@ -25,6 +25,7 @@ from scipy import stats
 from ..bundle import slugify
 from ..theme import apply_pub_style, palette
 from ..util import mann_whitney_r
+from .distribution import as_labels
 
 
 def wrap_label(s, width):
@@ -199,7 +200,7 @@ def recipe_composition(df, spec):
                      f"or count ({n0} -> {int(keep.sum())} rows).")
     d = d[keep].reset_index(drop=True)
     for c in ("id", "category", "group"):
-        d[c] = d[c].astype(str)
+        d[c] = as_labels(d[c])
     if (d["count"] < 0).any():
         raise ValueError("composition needs counts of zero or more")
     if has_group:
@@ -472,7 +473,11 @@ lv = sorted(set(g))
 for c in cats if len(lv) >= 2 else []:
     v = prop[c].to_numpy()
     if len(lv) == 2:
-        print(c, stats.mannwhitneyu(v[g == lv[0]], v[g == lv[1]], alternative="two-sided"))
+        # The p-value rule of R's wilcox.test: exact below 50 per group without ties.
+        a, b = v[g == lv[0]], v[g == lv[1]]
+        exact = len(a) < 50 and len(b) < 50 and len(np.unique(v)) == len(v)
+        print(c, stats.mannwhitneyu(a, b, alternative="two-sided",
+                                    method="exact" if exact else "asymptotic", use_continuity=True))
     else:
         print(c, stats.kruskal(*[v[g == x] for x in lv]))
 order = np.argsort(g, kind="stable")

@@ -39,6 +39,7 @@ def fa_data():
 
 
 def test_interaction_geom_builds_and_keeps_the_box_statistics():
+    """Check that interaction geom builds and keeps the box statistics."""
     df = fa_data()
     box = recipe_factorial_anova(df, fa_spec(x="strain", fill="dose", y="y"))
     inter = recipe_factorial_anova(df, fa_spec(x="strain", fill="dose", y="y", geom="interaction"))
@@ -51,6 +52,7 @@ def test_interaction_geom_builds_and_keeps_the_box_statistics():
 
 
 def test_long_x_levels_wrap_at_twelve_and_the_figure_grows():
+    """Check that long x levels wrap at twelve and the figure grows."""
     assert wrap_x("NOD scid gamma (NSG)") == "NOD scid\ngamma (NSG)"
     assert not needs_wrap(["wt", "ko"])
     assert fig_size(["wt", "ko"], ["vehicle", "low", "high"], "treatment", 1, False) == (5.2, 4.4)
