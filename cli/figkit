@@ -23,6 +23,7 @@ Usage:
   figkit shell
   figkit test
   figkit version
+  figkit where          # the folder that holds the adapters, reference/ and docs/
 
 Common plot options:
   --engine r|python                        recipe engine (default r)
@@ -93,8 +94,29 @@ image_id()      { podman image inspect --format '{{.Id}}'     "$IMAGE" 2>/dev/nu
 image_digest()  { podman image inspect --format '{{.Digest}}' "$IMAGE" 2>/dev/null || echo ""; }
 podman_version(){ podman --version 2>/dev/null | awk '{print $3}'; }
 
+# True when REPO_ROOT is the top of a pubready Git checkout. An installed copy
+# (uv add or uv tool install) is not one, even when it sits inside another
+# repository, such as a home folder under version control.
+in_checkout() {
+  local top
+  top="$(git -C "$REPO_ROOT" rev-parse --show-toplevel 2>/dev/null)" || return 1
+  [ "$top" = "$(cd "$REPO_ROOT" && pwd -P)" ]
+}
+
+# The commit of the code that figkit mounts. An installed copy gets it from the
+# launcher, which reads the commit that uv recorded at install time.
+source_commit() {
+  if in_checkout; then
+    git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo unknown
+  else
+    echo "${PUBREADY_SOURCE_COMMIT:-unknown}"
+  fi
+}
+
 git_dirty() {
-  if [ -n "$(git -C "$REPO_ROOT" status --porcelain 2>/dev/null)" ]; then
+  if ! in_checkout; then
+    echo "${PUBREADY_SOURCE_DIRTY:-not_recorded}"
+  elif [ -n "$(git -C "$REPO_ROOT" status --porcelain 2>/dev/null)" ]; then
     echo true
   else
     echo false
@@ -102,9 +124,13 @@ git_dirty() {
 }
 
 require_tracked_report_source() {
-  if ! git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    echo "Report generation requires a Git checkout." >&2
-    exit 1
+  if ! in_checkout; then
+    if [ "${PUBREADY_SOURCE_COMMIT:-unknown}" = "unknown" ]; then
+      echo "Report generation needs a Git checkout of pubready, or an install from its Git URL:" >&2
+      echo "  uv tool install \"pubready @ git+https://github.com/wguesdon/pubready@<tag>\"" >&2
+      exit 1
+    fi
+    return 0
   fi
   local untracked
   untracked="$(git -C "$REPO_ROOT" ls-files --others --exclude-standard)"
@@ -164,7 +190,7 @@ container_run() {
     -e PUBREADY_IMAGE_ID="$(image_id)" \
     -e PUBREADY_IMAGE_DIGEST="$(image_digest)" \
     -e PUBREADY_PODMAN_VERSION="$(podman_version)" \
-    -e PUBREADY_GIT_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo unknown)" \
+    -e PUBREADY_GIT_COMMIT="$(source_commit)" \
     -e PUBREADY_GIT_DIRTY="$(git_dirty)" \
     -e PUBREADY_LLM_PROVIDER="$REPORT_LLM_PROVIDER" \
     -e PUBREADY_LLM_MODEL="$REPORT_LLM_MODEL" \
@@ -212,7 +238,7 @@ show_version() {
     echo "image:  $IMAGE (not built; run: figkit build)"
   fi
   echo "podman: $(podman_version)"
-  echo "commit: $(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+  local c; c="$(source_commit)"; echo "commit: ${c:0:7}"
 }
 
 # Read the value of --engine from the argument list (default r).
@@ -252,6 +278,7 @@ case "$cmd" in
     ;;
   test)    run_tests ;;
   version|--version|-v) show_version ;;
+  where)   echo "$REPO_ROOT" ;;
   shell)
     require_image
     podman --log-level=error run --rm -it \

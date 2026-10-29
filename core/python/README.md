@@ -9,6 +9,10 @@ Not meant to be installed standalone. The figkit CLI loads this package from a
 runtime mount (`PYTHONPATH`) inside the pinned container. This `pyproject.toml`
 exists for versioning, dependency declaration, and running the test suite.
 
+To install pubready with uv, use the package at the root of the repository. The
+root `README.md` gives the commands. That package installs the `figkit`
+command, and the command runs this engine inside the pinned image.
+
 ```bash
 figkit test          # runs this suite (pytest) and the R suite in-container
 ```

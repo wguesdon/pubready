@@ -29,6 +29,13 @@ fits, and say so when you do.
 Everything goes through `./cli/figkit`, which runs the pinned Podman image. Never
 call R or Python directly.
 
+In a clone of pubready, call `./cli/figkit` from the root of the repository.
+After a uv install, call `figkit`, or `uv run figkit` in a uv project. A uv
+install has no repository folder. `figkit where` prints the folder that holds
+`reference/` and `docs/`. Read those files from that folder.
+`figkit` mounts only the current folder into the container. The data file must
+be in that folder or below it.
+
 ```
 figkit build                                  # once, builds the image
 figkit inspect --data FILE [--format json]    # columns, types, group sizes, candidate x/y

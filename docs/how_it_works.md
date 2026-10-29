@@ -73,7 +73,18 @@ figkit build          # build or rebuild the container image
 figkit shell          # open a shell in the image
 figkit test           # run both engines' test suites in the image
 figkit version        # print version, image tag/digest, podman, git commit
+figkit where          # print the folder that holds core/, the adapters, reference/ and docs/
 ```
+
+A clone runs `./cli/figkit` from the repository root. A uv install puts a
+`figkit` command on the PATH. That command is a small launcher in
+`src/pubready_cli/`, and it runs the same `cli/figkit` from the files that the
+package carries. A uv install is not a Git checkout, so `cli/figkit` cannot ask
+Git for the commit. The launcher reads the commit that uv recorded in the
+`direct_url.json` file of the install, and it passes the commit in
+`PUBREADY_SOURCE_COMMIT`. Each bundle then records that commit and a dirty state
+of false. An install from a local folder has no recorded commit, so `figkit plot`
+and `figkit render` stop.
 
 Common options:
 

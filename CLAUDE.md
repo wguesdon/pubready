@@ -12,6 +12,9 @@ For work on the repository itself, follow the rules below.
 | Path | Contents |
 |---|---|
 | `cli/figkit` | The one command surface. It runs the pinned Podman image. |
+| `pyproject.toml`, `src/pubready_cli/` | The uv package. Its `figkit` launcher runs `cli/figkit` from the files that the wheel carries. |
+| `tests/install_test.sh` | The end-to-end test of a uv tool install of HEAD. |
+| `tools/render_audit/` | The stress datasets and the runner that renders every recipe with both engines for a visual review. |
 | `core/r/` | R recipes, built on ggpubr, rstatix and ggprism. |
 | `core/python/` | Python recipes, built on matplotlib, seaborn and pingouin. |
 | `container/` | The `Containerfile` and the pinned R and Python dependencies. |
@@ -42,7 +45,11 @@ For work on the repository itself, follow the rules below.
 4. Run `./tests/smoke_test.sh` after a change to `cli/figkit`, to a recipe or to
    the container. It asserts that each example writes a complete bundle and that
    the expected test is chosen. Run `./cli/figkit test` too. It compares every
-   recipe, in both engines, with the reference values in `benchmarks/`.
+   recipe, in both engines, with the reference values in `benchmarks/`. After a
+   change to `cli/figkit`, `pyproject.toml` or `src/pubready_cli/`, commit and
+   run `./tests/install_test.sh`. It installs HEAD with uv and draws a figure
+   from the installed `figkit`. A new top-level folder that `cli/figkit` mounts
+   must also go into the `force-include` table of `pyproject.toml`.
 5. Add a new recipe to the recipe table in all three adapters, to
    `docs/how_it_works.md`, to `example/README.md` and to the smoke test. Add a
    public benchmark case for it as `benchmarks/README.md` describes.

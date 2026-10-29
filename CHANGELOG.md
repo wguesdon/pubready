@@ -14,6 +14,15 @@ tag move together.
 ## [Unreleased]
 
 ### Added
+- pubready installs with uv from its Git URL, as a uv tool or as a dependency
+  of a uv project. The root `pyproject.toml` builds a package whose `figkit`
+  launcher runs the same `cli/figkit` and the same pinned image. The launcher
+  reads the commit that uv recorded at install time, so each bundle still names
+  the exact code. `figkit where` prints the folder that holds the adapters,
+  `reference/` and `docs/` of the install. `tests/install_test.sh` installs HEAD
+  with uv and checks a figure from the installed command.
+- `tools/render_audit/` writes stress datasets and renders every recipe with
+  both engines, and it puts the two figures of each case side by side.
 - The `distribution` recipe, in both engines, shows the shape of one numeric
   variable, overall or for each group. The figure is a histogram with a kernel
   density and a normal fit, with one panel for each group on a shared x axis.

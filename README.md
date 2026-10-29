@@ -10,6 +10,17 @@ on the host are **Podman** and **git**. The `./cli/figkit` command is a bash
 script, so you also need a POSIX shell: native on Linux and macOS, and WSL2 on
 Windows.
 
+You can get the `figkit` command in three ways. Each way runs the same pinned
+image, and each bundle records the commit of the code that drew the figure.
+
+| Way | Command | Use it when |
+|---|---|---|
+| uv tool | `uv tool install "pubready @ git+https://github.com/wguesdon/pubready@main"` | You want `figkit` in each folder of your machine. |
+| uv project | `uv add "pubready @ git+https://github.com/wguesdon/pubready@main"` | You want pubready pinned in the `pyproject.toml` of an analysis project. |
+| git clone | `git clone https://github.com/wguesdon/pubready.git` | You want to change pubready, or to run its tests and examples. |
+
+Step 2 below gives the details of each way.
+
 ### AWS SageMaker notebooks
 
 Use the notebook terminal to run the command line workflow. The container supports
@@ -73,10 +84,41 @@ Reboot, open the Ubuntu shell, and install Podman with the Ubuntu commands above
 Clone and run pubready from inside the WSL filesystem (your Linux home), not from a
 `/mnt/c/...` Windows path.
 
-### 2. Build the image
+### 2. Get figkit and build the image
 
-Clone this repo, then from its root build the image. The first build downloads
-the R and Python stacks and takes a few minutes; after that it is cached.
+The first build downloads the R and Python stacks. Later builds use the cache.
+
+#### With uv
+
+The uv install needs `uv` and Python 3.9 or later. It does not install the R
+engine or the Python engine on the host. It installs the files that `figkit`
+mounts into the image, and `figkit build` builds the image from them.
+
+Install `figkit` as a uv tool to use it in each folder of your machine:
+
+```bash
+uv tool install "pubready @ git+https://github.com/wguesdon/pubready@main"
+figkit build
+```
+
+Add pubready to a uv project to pin it with the other dependencies of the
+analysis. In the project, run `figkit` through `uv run`:
+
+```bash
+uv add "pubready @ git+https://github.com/wguesdon/pubready@main"
+uv run figkit build
+```
+
+To pin a release, replace `main` with the tag of that release. Release 1.0.0 and
+the releases before it do not have the uv install.
+
+uv records the installed commit, and `figkit` writes that commit into each
+bundle. An install from a local folder records no commit, so `figkit plot` stops
+and asks for an install from the Git URL.
+
+#### With git clone
+
+Clone the repository, then build the image from its root:
 
 ```bash
 git clone https://github.com/wguesdon/pubready.git
@@ -86,17 +128,33 @@ cd pubready
 
 ### 3. Install the skill in your agent
 
-| Host | Install (run from the repo root) |
-|---|---|
-| Claude Code | `mkdir -p .claude/skills && ln -s ../../skills/claude-code .claude/skills/pubready` |
-| Codex | `ln -s skills/codex/AGENTS.md AGENTS.md` (append if a root `AGENTS.md` exists) |
-| opencode | add `skills/opencode/AGENTS.md` to `instructions` in `opencode.json`; for the `/pubready` command also `mkdir -p .opencode/command && ln -s ../../skills/opencode/command/pubready.md .opencode/command/pubready.md` |
+Run the commands of a clone from the root of the repository. Run the commands of
+a uv install from the folder where you start the agent. `figkit where` prints the
+folder that holds the adapters of a uv install.
 
-Confirm the install by running `figkit` directly once:
+| Host | From a clone | From a uv install |
+|---|---|---|
+| Claude Code | `mkdir -p .claude/skills && ln -s ../../skills/claude-code .claude/skills/pubready` | `mkdir -p ~/.claude/skills && ln -s "$(figkit where)/skills/claude-code" ~/.claude/skills/pubready` |
+| Codex | `ln -s skills/codex/AGENTS.md AGENTS.md` (append if a root `AGENTS.md` exists) | `ln -s "$(figkit where)/skills/codex/AGENTS.md" AGENTS.md` |
+| opencode | add `skills/opencode/AGENTS.md` to `instructions` in `opencode.json`; for the `/pubready` command also `mkdir -p .opencode/command && ln -s ../../skills/opencode/command/pubready.md .opencode/command/pubready.md` | add the path that `echo "$(figkit where)/skills/opencode/AGENTS.md"` prints to `instructions` in `opencode.json`; for the `/pubready` command also `mkdir -p .opencode/command && ln -s "$(figkit where)/skills/opencode/command/pubready.md" .opencode/command/pubready.md` |
+
+If `figkit where` prints a different folder after `uv tool upgrade pubready`,
+make the links again.
+
+Confirm the install by running `figkit` directly once. From a clone:
 
 ```bash
 ./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
   --x group --y volume
+```
+
+From a uv install, copy the example data into the current folder first.
+`figkit` mounts only the current folder into the container, so the data file
+must be in that folder or below it.
+
+```bash
+cp "$(figkit where)/example/tumor_volume.csv" .
+figkit plot --recipe two_group_compare --data tumor_volume.csv --x group --y volume
 ```
 
 ### 4. Ask for a figure

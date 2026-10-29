@@ -1,0 +1,50 @@
+# The installable pubready: `uv add` or `uv tool install` from the Git URL puts
+# the figkit command on the PATH. The wheel carries the files that figkit mounts
+# into the pinned Podman image (core/, container/, benchmarks/) and the adapters,
+# so the installed figkit is the same program as ./cli/figkit in a clone. The
+# engine packages under core/ are not installed on the host; they run in the
+# image. The Python engine keeps its own pyproject.toml in core/python for its
+# test suite.
+[project]
+name = "pubready"
+dynamic = ["version"]
+description = "Publication-ready figures from tidy data with the statistical test drawn on top, run in a pinned Podman image."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "William Guesdon", email = "wguesdon@gmail.com" }]
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+figkit = "pubready_cli.launcher:main"
+
+[project.urls]
+Repository = "https://github.com/wguesdon/pubready"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# One version for the repository, both engines and the image tag.
+[tool.hatch.version]
+path = "core/python/pubready/version.py"
+pattern = "PUBREADY_VERSION = ['\"](?P<version>[^'\"]+)['\"]"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pubready_cli"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"VERSION" = "pubready_cli/tree/VERSION"
+"LICENSE" = "pubready_cli/tree/LICENSE"
+"cli/figkit" = "pubready_cli/tree/cli/figkit"
+"container" = "pubready_cli/tree/container"
+"core/r" = "pubready_cli/tree/core/r"
+"core/python/pubready" = "pubready_cli/tree/core/python/pubready"
+"core/python/entry" = "pubready_cli/tree/core/python/entry"
+"core/python/tests" = "pubready_cli/tree/core/python/tests"
+"benchmarks" = "pubready_cli/tree/benchmarks"
+"skills" = "pubready_cli/tree/skills"
+"reference" = "pubready_cli/tree/reference"
+"docs" = "pubready_cli/tree/docs"
+"example/tumor_volume.csv" = "pubready_cli/tree/example/tumor_volume.csv"
