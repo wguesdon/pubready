@@ -24,6 +24,12 @@ tag move together.
 - The hazard-ratio axis of `cox_forest` showed only 0.5 and 1 when a CI reached
   1.94. The axis now has 1-2-5 ticks that cover the CIs on both sides of 1, in
   both engines.
+- The Python `heatmap` put the group legend and the z-score colour bar on top of
+  the row names. PyComplexHeatmap measured the names before the first draw, when
+  they were still empty. The legends now go to the right of the row names.
+- The Python `heatmap` did not draw the significance stars that R draws when the
+  annotation has two groups. It now writes them between the heatmap and the row
+  names, with the same BH-adjusted Welch t thresholds as R.
 
 ## [1.0.0] - 2026-10-07
 

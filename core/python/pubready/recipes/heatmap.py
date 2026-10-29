@@ -1,7 +1,9 @@
 """Recipe: clustered heatmap of a features-by-samples matrix. Tries
 PyComplexHeatmap (to mirror the R ComplexHeatmap output); falls back to a seaborn
 clustermap if PyComplexHeatmap raises. Row z-score and clustering by default;
-a per-feature Welch t-test (BH) is computed when the annotation has two groups."""
+a per-feature Welch t-test (BH) is computed when the annotation has two groups,
+and its stars are drawn between the heatmap and the row names, as in R."""
+import functools
 import os
 
 import matplotlib.pyplot as plt
@@ -44,6 +46,102 @@ def level_colours(series):
     return {lvl: PALETTE[i % len(PALETTE)] for i, lvl in enumerate(sorted(series.unique()))}
 
 
+def heatmap_stars(padj):
+    """Significance stars of the BH-adjusted P values, as the R engine draws them.
+
+    Args:
+        padj: The adjusted P values, one per feature.
+
+    Returns:
+        list: "***" below 0.001, "**" below 0.01, "*" below 0.05, else "".
+    """
+    out = []
+    for p in padj:
+        if p is None or np.isnan(p):
+            out.append("")
+        elif p < 0.001:
+            out.append("***")
+        elif p < 0.01:
+            out.append("**")
+        elif p < 0.05:
+            out.append("*")
+        else:
+            out.append("")
+    return out
+
+
+def welch_p(row, ca, cb):
+    """The Welch t-test P value of one feature between two sample sets.
+
+    Args:
+        row: The values of one feature, indexed by sample.
+        ca: The samples of the first group.
+        cb: The samples of the second group.
+
+    Returns:
+        float: The two-sided P value.
+    """
+    return stats.ttest_ind(row[ca], row[cb], equal_var=False).pvalue
+
+
+# The gap in points between the heatmap and the row names when stars sit there.
+STAR_PAD = 20.0
+
+
+def add_row_stars(ax, star_of):
+    """Write the significance stars between the heatmap and its row names.
+
+    The row names move right by ``STAR_PAD`` points to make room, as the
+    ComplexHeatmap row annotation of the R engine does.
+
+    Args:
+        ax: The heatmap axes that carries the row names on its right.
+        star_of: The star text of each feature, keyed by feature name.
+    """
+    ax.yaxis.set_tick_params(pad=STAR_PAD)
+    for y_, lab in zip(ax.get_yticks(), ax.get_yticklabels()):
+        star = star_of.get(lab.get_text(), "")
+        if star:
+            ax.annotate(star, xy=(1.0, y_), xycoords=("axes fraction", "data"),
+                        xytext=(3, 0), textcoords="offset points", ha="left",
+                        va="center", fontsize=9, annotation_clip=False)
+
+
+def label_overhang(fig, axes):
+    """How far the row names reach past the right edge of the heatmap.
+
+    Args:
+        fig: The figure, drawn here so that the tick labels have their size.
+        axes: The heatmap axes that carry the row names.
+
+    Returns:
+        float: The overhang as a fraction of the figure width, at least 0.
+    """
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    right = max(a.get_window_extent(renderer).x1 for a in axes)
+    ends = [t.get_window_extent(renderer).x1 for a in axes for t in a.get_yticklabels()
+            if t.get_text() and t.get_visible()]
+    ends += [c.get_window_extent(renderer).x1 for a in axes for c in a.texts]
+    reach = max(ends) - right if ends else 0.0
+    return max(reach, 0.0) / fig.get_window_extent(renderer).width
+
+
+def row_label_axes(plotter):
+    """The heatmap axes of a PyComplexHeatmap plotter that carry the row names.
+
+    Args:
+        plotter: The ClusterMapPlotter.
+
+    Returns:
+        list: The right-most column of heatmap axes.
+    """
+    axes = getattr(plotter, "heatmap_axes", None)
+    if axes is None:
+        return [plotter.ax_heatmap]
+    return list(np.ravel(np.asarray(axes)[:, -1]))
+
+
 def recipe_heatmap(df, spec):
     feat = df.iloc[:, 0].astype(str)
     mat = df.iloc[:, 1:].apply(pd.to_numeric, errors="coerce")
@@ -78,13 +176,15 @@ def recipe_heatmap(df, spec):
         group_col = ann.columns[0]
 
     # Per-feature differential test when the primary annotation has two groups.
+    star_of = {}
     if ann is not None and ann[group_col].nunique() == 2:
         g = ann[group_col]
         lv = sorted(g.unique())
         ca = [c for c in mat.columns if g.loc[c] == lv[0]]
         cb = [c for c in mat.columns if g.loc[c] == lv[1]]
-        pvals = mat.apply(lambda r: stats.ttest_ind(r[ca], r[cb], equal_var=False).pvalue, axis=1).to_numpy()
+        pvals = mat.apply(welch_p, axis=1, args=(ca, cb)).to_numpy()
         padj = multipletests(pvals, method="fdr_bh")[1]
+        star_of = dict(zip(mat.index, heatmap_stars(padj)))
         stats_df = pd.DataFrame({
             "feature": mat.index, f"mean_{lv[0]}": mat[ca].mean(axis=1).to_numpy(),
             f"mean_{lv[1]}": mat[cb].mean(axis=1).to_numpy(),
@@ -115,7 +215,10 @@ def recipe_heatmap(df, spec):
                    for c in ann.columns},
                 axis=1, verbose=0)
         plt.figure(figsize=(w, h))
-        pch.ClusterMapPlotter(
+        # The legends are drawn after the row names are measured. PyComplexHeatmap
+        # measures them before the first draw, when they are still empty, and so
+        # puts the legends on top of them.
+        plotter = pch.ClusterMapPlotter(
             data=disp, top_annotation=col_ha,
             row_cluster=cluster_rows, col_cluster=cluster_cols,
             row_cluster_method="complete", col_cluster_method="complete",
@@ -124,8 +227,15 @@ def recipe_heatmap(df, spec):
             show_rownames=True, show_colnames=True,
             xticklabels=True, yticklabels=True,
             xticklabels_kws={"labelsize": 8}, yticklabels_kws={"labelsize": 8},
-            row_names_side="right", col_names_side="bottom", verbose=0)
+            row_names_side="right", col_names_side="bottom", plot_legend=False, verbose=0)
         fig = plt.gcf()
+        label_axes = row_label_axes(plotter)
+        if star_of:
+            for a in label_axes:
+                add_row_stars(a, star_of)
+        gap = 4.0 / 25.4 * fig.dpi / fig.get_window_extent().width
+        plotter.legend_delta_x = label_overhang(fig, label_axes) + gap
+        plotter.plot_legends(ax=plotter.ax_heatmap)
     except Exception as err:  # noqa: BLE001 - any PyComplexHeatmap failure falls back
         plt.close("all")
         used_pch = False
@@ -139,6 +249,8 @@ def recipe_heatmap(df, spec):
             col_colors=col_colors, figsize=(w, h), cbar_kws={"label": legend_name},
             xticklabels=True, yticklabels=True)
         fig = grid.figure
+        if star_of:
+            add_row_stars(grid.ax_heatmap, star_of)
 
     test_meta = {
         "name": "Clustered heatmap", "engine_lib": "PyComplexHeatmap" if used_pch else "seaborn.clustermap",
@@ -154,7 +266,8 @@ def recipe_heatmap(df, spec):
         "label": slugify(os.path.splitext(spec["data"]["file"])[0]),
         "extra_inputs": [spec["data"].get("annotation")],
         "width": w, "height": h,
-        "build_script": lambda in_name, fig_stub: _script(spec, scale_mode, cluster_rows, cluster_cols, legend_name, in_name, fig_stub),
+        "build_script": functools.partial(_script, spec, scale_mode, cluster_rows, cluster_cols,
+                                          legend_name),
     }
 
 
@@ -171,7 +284,7 @@ def _methods(scale_mode, cluster, n_feat, n_samp, test_label, n_sig, used_pch):
                  "columns": "Columns were hierarchically clustered.",
                  "none": "No clustering was applied."}.get(cluster)
     test_txt = (f" A {test_label} was applied per feature; {n_sig} feature(s) were significant "
-                "(adjusted P < 0.05)." if test_label else "")
+                "(adjusted P < 0.05) and are marked with stars." if test_label else "")
     return (
         f"A heatmap of {n_feat} features across {n_samp} samples was drawn with {lib}. "
         + scale_txt + " " + clust_txt + test_txt +

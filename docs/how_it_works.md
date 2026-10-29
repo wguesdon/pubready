@@ -284,9 +284,7 @@ the same numbers. The manifest records which engine drew the figure.
 Where Python has no faithful equivalent, pubready routes you to R rather than
 running something different. The one current case is the aligned rank transform
 for non-parametric factorial ANOVA: `--test art --engine python` errors and points
-to `--engine r`. The Python `heatmap` draws the clustered matrix and the group
-bar but keeps the per-feature significance stars in the stats table rather than on
-the figure. The `pca` PERMANOVA enumerates every labeling of the samples when there
+to `--engine r`. The `pca` PERMANOVA enumerates every labeling of the samples when there
 are 5000 or fewer, so the P value is exact and the same in both engines. A larger
 design uses 999 seeded permutations, and each engine draws its own, so the two P
 values differ by the Monte Carlo error.
