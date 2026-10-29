@@ -12,7 +12,7 @@ import pandas as pd
 from scipy import stats as ss
 
 from ..bundle import slugify
-from ..theme import apply_pub_style, palette
+from ..theme import apply_pub_style, category_width, legend_width, palette, wrap_labels
 
 
 def recipe_proportions(df, spec):
@@ -61,26 +61,34 @@ def recipe_proportions(df, spec):
     prop = tab.div(tab.sum(axis=1), axis=0)
     ap = spec["appearance"]
     pal = palette(len(outcomes), ap.get("palette"))
-    w = max(3.6, 1.1 * len(groups) + 1.8)
+    # The axis, a slot per group, and the legend, as in the R engine.
+    w = max(3.6, category_width(len(groups), wrap_labels(groups), 0) + legend_width(outcomes, y))
     h = 4.2
     fig, ax = plt.subplots(figsize=(w, h))
     xpos = np.arange(len(groups))
     bottom = np.zeros(len(groups))
-    for j, oc in enumerate(outcomes):
+    # The first outcome goes on top of the stack and the last at the bottom, as
+    # ggplot2 stacks them in R, so the stack reads in the order of the legend.
+    handles = {}
+    for j in reversed(range(len(outcomes))):
+        oc = outcomes[j]
         vals = prop[oc].to_numpy()
-        ax.bar(xpos, vals, bottom=bottom, width=0.7, color=pal[j], edgecolor="white", label=oc)
+        handles[oc] = ax.bar(xpos, vals, bottom=bottom, width=0.7, color=pal[j],
+                             edgecolor="white", label=oc)
         for i, v in enumerate(vals):
             if v >= 0.04:
                 ax.text(xpos[i], bottom[i] + v / 2, f"{v * 100:.0f}%",
                         ha="center", va="center", color="white", fontsize=9)
         bottom += vals
-    ax.set_xticks(xpos); ax.set_xticklabels(groups)
+    ax.set_xticks(xpos); ax.set_xticklabels(wrap_labels(groups))
     ax.set_ylim(0, 1); ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
     ax.set_xlabel(ap.get("x_label") or x)
     ax.set_ylabel(ap.get("y_label") or "proportion")
-    ax.set_title(f"{test_label}, P = {pval:.2g}", fontsize=10, color="#4d4d4d")
+    # The pad keeps the subtitle clear of the 100% tick label.
+    ax.set_title(f"{test_label}, P = {pval:.2g}", fontsize=10, color="#4d4d4d", pad=12)
     apply_pub_style(ax, ap.get("theme"))
-    ax.legend(title=y, loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=9)
+    ax.legend([handles[oc] for oc in outcomes], outcomes, title=y, loc="center left",
+              bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=9)
     fig.tight_layout()
 
     stats_df = pd.DataFrame([
