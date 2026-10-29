@@ -15,6 +15,7 @@ Imports:
     broom,
     car,
     circlize,
+    cluster,
     ComplexHeatmap,
     digest,
     ggdist,
