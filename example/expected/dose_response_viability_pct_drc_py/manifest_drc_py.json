@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "dose_response",
@@ -106,7 +106,7 @@
     {
       "file": "figure_viability_pct_drc_py.pdf",
       "bytes": 22933,
-      "sha256": "9a11d8f372d63ae34916560add445d703adc9fd58779ed3262450142b83e34c0"
+      "sha256": "57dfe04cb41d938afcc8049d81329e807dd1d52c860ad4fd6f208bccc7471944"
     },
     {
       "file": "figure_viability_pct_drc_py.png",
@@ -116,7 +116,7 @@
     {
       "file": "figure_viability_pct_drc_py.svg",
       "bytes": 61990,
-      "sha256": "aa349018e4ed5cd0a0c522ac51870025a987d17bca68e41a555b6ea7f31ac423"
+      "sha256": "3394780b643e0b1f01e22e5ee4556e6231ef3941753a53dec5db30b76968f7eb"
     },
     {
       "file": "packages_drc_py.txt",
@@ -125,18 +125,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4734,
-      "sha256": "27465d29d482fca0bd74f0e0d57bf488171723ce7aa54d4a02660bd3b7059120"
+      "bytes": 4819,
+      "sha256": "18655c6034b41d0980feece7a45f53f682b99f0dbb7a355dda7ea3339cf7347f"
     },
     {
       "file": "report.html",
-      "bytes": 1419742,
-      "sha256": "53f6bb1525825c1091cb52d3e5559949054ccef16fdc405b3cb100a4d5352224"
+      "bytes": 1419830,
+      "sha256": "b7c20adec3fc01cc2bb55f333bacf6a6a48d68cf8c76eecbae8074e9ea451501"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2067,
-      "sha256": "1b60ee80f4d5812a0cd170eb5545a81c27f69c17f81d93b81a8e7e811c04a7e2"
+      "sha256": "cd82f43c5e490c77042e086484fe942912d563c77ebaa017b9bf374a36dd5806"
     }
   ]
 }

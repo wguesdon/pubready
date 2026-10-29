@@ -5,8 +5,8 @@
 matplotlib==3.10.9
 numpy==1.26.4
 pandas==2.3.3
-seaborn==0.13.2
 pingouin==0.6.1
+scipy==1.15.3
 
 ## Full environment (every installed package)
 

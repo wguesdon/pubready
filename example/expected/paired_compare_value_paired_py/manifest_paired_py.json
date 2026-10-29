@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "paired_compare",
@@ -72,7 +72,7 @@
     {
       "file": "figure_value_paired_py.pdf",
       "bytes": 12422,
-      "sha256": "d67282b6d8f5c9940de189b62cb8b6da5afc055e8d2193c4df18d5a9537abd24"
+      "sha256": "ed311fcf032a39edbd83afe662e05915b2e2170e8121f9ece2d141462cfb8c17"
     },
     {
       "file": "figure_value_paired_py.png",
@@ -82,7 +82,7 @@
     {
       "file": "figure_value_paired_py.svg",
       "bytes": 30822,
-      "sha256": "1d39f5edf5386b15c9f46c746063cd73be78b831382af9e2791f8f0b074baa11"
+      "sha256": "8d9a0edcbf833fb46972efa9626f5acad2e73d1f3c470d3799b2be48c0ac77a5"
     },
     {
       "file": "packages_paired_py.txt",
@@ -97,22 +97,22 @@
     {
       "file": "qc_normality_paired_py.pdf",
       "bytes": 25797,
-      "sha256": "e4d1a3a09b11d4ac8826585512b0d5a860b27593700840aec848230f923fe11e"
+      "sha256": "147c3c8c4aca17d52620226a33c775961709be759e8baae666d7112913325e40"
     },
     {
       "file": "report.qmd",
       "bytes": 3112,
-      "sha256": "8e2b551ffc0d661ded5c9d3cbdde929e319928530d264fd94b84bb98d5abf008"
+      "sha256": "e3497bf8eff66b48084026fddd48a86287df48a24368f21e67d5bb4fe31e1610"
     },
     {
       "file": "report.html",
       "bytes": 1374579,
-      "sha256": "81814a40e7e9987103ab979282818b42ebeff9e17f5888f2f54eedd532d5a0ae"
+      "sha256": "63041249ed2c2fbb27c11d373e0901a6b9a4dabda23bf754f3f101213042d438"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2031,
-      "sha256": "9f063a6d228087c728907fdf35ccd1dfe9599bc09de83cf15120280271b85b0a"
+      "sha256": "885f615210626f0c5feeaced271733f4a6c2ff73befe89aaaf99d152a027dd63"
     }
   ]
 }

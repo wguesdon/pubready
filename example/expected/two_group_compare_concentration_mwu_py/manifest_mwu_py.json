@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "two_group_compare",
@@ -75,18 +75,18 @@
   "output_checksums": [
     {
       "file": "figure_concentration_mwu_py.pdf",
-      "bytes": 13301,
-      "sha256": "899940abe0f8857eafd58c84f85075deb8eccd072039e15ed5b4f53a030e773e"
+      "bytes": 13145,
+      "sha256": "35e6d47fbbd408eab341af532c228185a340d1a34602623e5a94c3be71ac6fb6"
     },
     {
       "file": "figure_concentration_mwu_py.png",
-      "bytes": 54389,
-      "sha256": "a6dba24458ed24d21d008b37dde144add16bceb3c7879d1ca356d171d8420790"
+      "bytes": 53471,
+      "sha256": "3bf4fc95ba6fecefec9b668857d562301e84694fee2d43b0c3f91132543c77fd"
     },
     {
       "file": "figure_concentration_mwu_py.svg",
-      "bytes": 27766,
-      "sha256": "8ffea84b8cae28c16653a68c592bb585f3121e3c8fa8da2ab2d8f7f95b0133d8"
+      "bytes": 26749,
+      "sha256": "9e4aaf29fd6c3515ac2e6693c2c21a72e83c27d25d8d74594705b7a6c6bca2fa"
     },
     {
       "file": "packages_mwu_py.txt",
@@ -101,22 +101,22 @@
     {
       "file": "qc_normality_mwu_py.pdf",
       "bytes": 24933,
-      "sha256": "356679bc1666b13301f90085c27b11f69de1013d55299f8d08ea533afd347200"
+      "sha256": "7abbc10089f82b2bc53a68237c867aa042d3b61af9300f8c93614f719ed1c88e"
     },
     {
       "file": "report.qmd",
       "bytes": 3310,
-      "sha256": "f18c901a839521ffdab3c460d2e97885ae9cb3ab6c8eaa16f9a9e11b7d6f8393"
+      "sha256": "5a9c24754c08b4ad192625c3745c3320bc123f7aafe50b81f9d69afab3658aec"
     },
     {
       "file": "report.html",
-      "bytes": 1265848,
-      "sha256": "5ab3ca60734a8c2ad0180f9eb9fdde2a9bb91a149be29dda960dba13eb60d2d7"
+      "bytes": 1264624,
+      "sha256": "1bfa361ad1da0ccab33051e6a99662dbb359fd36d5acd8e0f2dd5dddb9813eb7"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2045,
-      "sha256": "e69fba025be84e94f212b78ee73c8509b79e66a1836a09055420e38d3c89253d"
+      "sha256": "bd2091ba8782b4ad80c5ed16f06af1a93f97ef8c90478009039c93d6120f8694"
     }
   ]
 }

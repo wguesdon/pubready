@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "composition",
@@ -106,7 +106,7 @@
     {
       "file": "figure_cell_type_comp_py.pdf",
       "bytes": 20497,
-      "sha256": "628315ac02b39450884d747d12ca2d91008a632699ce482b6f03dcb099d4b6b5"
+      "sha256": "c5a0c2152499c9736286d93d8f09a96a5e8855beb44ebbe1f68f6dd79b5b0d0b"
     },
     {
       "file": "figure_cell_type_comp_py.png",
@@ -116,7 +116,7 @@
     {
       "file": "figure_cell_type_comp_py.svg",
       "bytes": 76923,
-      "sha256": "4a2a880d1f1dff6180ec854228cf72cd98abacf6a3cad41923b04e32b2f7894d"
+      "sha256": "4ed9ba2ab8824f1c2caea13378f77f84cd0388a190231e14a4550dde49fe5dea"
     },
     {
       "file": "packages_comp_py.txt",
@@ -126,17 +126,17 @@
     {
       "file": "report.qmd",
       "bytes": 6232,
-      "sha256": "939c9e5cd5d357649c3f6ac6795c34804d287cef6d224289835e99748c264590"
+      "sha256": "a1711dd7736607305e4485c1840d79cfeef20451a89a5a4af4e4d95bb205d3df"
     },
     {
       "file": "report.html",
       "bytes": 1390856,
-      "sha256": "c64474e62437ec6182d82ab7682251fba1d2d4b7443310955941c1783267dc2e"
+      "sha256": "b3a4f10c3701c2fef87f2a495834339e36529953c9638cc2aab5712fb293e7ad"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2022,
-      "sha256": "f22c445f891625bd918f60ef6035917702e9ae964ca42829dc952995329820c7"
+      "sha256": "a82904bdb684dea7c43c23e5c96bc8911ed115ab59a3733af92cdb150a54b593"
     }
   ]
 }

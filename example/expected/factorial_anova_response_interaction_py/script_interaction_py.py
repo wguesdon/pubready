@@ -2,6 +2,7 @@
 # Standalone reproduction (parametric ANOVA). Run inside the pinned container.
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt, matplotlib.patches as mpatches
+import numpy as np
 import pandas as pd, seaborn as sns
 import statsmodels.api as sm, statsmodels.formula.api as smf
 

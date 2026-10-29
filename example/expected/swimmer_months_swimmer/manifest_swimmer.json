@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "swimmer",
@@ -69,7 +69,7 @@
     {
       "file": "figure_months_swimmer.pdf",
       "bytes": 8757,
-      "sha256": "d9a2008aa8be8da6f4d0affb34f68e307d2c9d555f99260c94ea25e6d0e969ef"
+      "sha256": "fb8f003928699cb4d19b37a902cae446a2c390653560c321840ee87272cbc4b4"
     },
     {
       "file": "figure_months_swimmer.png",
@@ -89,17 +89,17 @@
     {
       "file": "report.qmd",
       "bytes": 3908,
-      "sha256": "271a1db3ab49f4c6d977f876928dd71347f3154ce7c9e45cdb07ebda929d4851"
+      "sha256": "90d9c7eed9b6a8d779e769ad5b7dca5955e9da6ff7bd1198cdfe74fa1c90a5cc"
     },
     {
       "file": "report.html",
       "bytes": 1351476,
-      "sha256": "0bceb27abe6a9fa3646b791aff25bbe9cfd7c8b7c9b3818e0be851f6bdee8327"
+      "sha256": "532c1387df8f77f519227c7d79368b9fcef206b2c4d669d0eb4e89325d4be7f5"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2065,
-      "sha256": "d7eb4742632d231d0667c10f5f808a73f91affc120d88adf69f5cd6e90e00f75"
+      "sha256": "b64b59ae3fb6368fe842acac845a7724278b47bc2ebb6974fb0a067b84fcf521"
     }
   ]
 }

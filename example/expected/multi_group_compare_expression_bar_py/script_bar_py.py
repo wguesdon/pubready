@@ -27,7 +27,14 @@ sems = [df.loc[df["genotype"] == g, "expression"].sem() for g in order]
 ax.bar(range(len(order)), means, yerr=sems, width=0.6, color=['#3B6DB3', '#C1432B', '#2E8B57', '#7A5195'], edgecolor="black",
        linewidth=0.5, alpha=0.9, capsize=4)
 ax.set_xticks(range(len(order))); ax.set_xticklabels(order)
-sns.stripplot(data=df, x="genotype", y="expression", hue="genotype", order=order, hue_order=order, palette=['#3B6DB3', '#C1432B', '#2E8B57', '#7A5195'], ax=ax, legend=False, size=4, alpha=0.7, edgecolor="black", linewidth=0.3, jitter=0.12)
+# Each point sits at a fixed golden-ratio offset by its row in its group.
+pal = ['#3B6DB3', '#C1432B', '#2E8B57', '#7A5195']
+for i, g in enumerate(order):
+    vals = df.loc[df["genotype"] == g, "expression"].to_numpy()
+    k = np.arange(1, len(vals) + 1)
+    jit = -0.12 + 0.24 * np.mod(k * 0.6180339887498949, 1.0)
+    ax.scatter(i + jit, vals, s=16, color=pal[i], alpha=0.7, edgecolors="black",
+               linewidths=0.3, zorder=3)
 span = df["expression"].max() - df["expression"].min(); top = df["expression"].max()
 pos = {g: i for i, g in enumerate(order)}
 sig.sort(key=bracket_key)

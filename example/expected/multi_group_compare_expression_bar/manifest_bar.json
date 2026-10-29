@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "multi_group_compare",
@@ -77,18 +77,18 @@
   "output_checksums": [
     {
       "file": "figure_expression_bar.pdf",
-      "bytes": 16007,
-      "sha256": "4abc170effffcb69f9160c1bb0105f9fe9df9944feda56ee709199794efbbbf2"
+      "bytes": 15998,
+      "sha256": "ce6548fe4b8cb888d0f488814a73d006cc469f1319ccd1921f1a53f151d9debd"
     },
     {
       "file": "figure_expression_bar.png",
-      "bytes": 69380,
-      "sha256": "fc35b3bc8b49d7021d90fce2390dc86ca873ebcbfbf84708b28ee30407b62e89"
+      "bytes": 69379,
+      "sha256": "b7585e0f5cfeff97732c9705e8b2e3119ddb6485337ff83d451c8af01223ebf8"
     },
     {
       "file": "figure_expression_bar.svg",
       "bytes": 14106,
-      "sha256": "fa834fa5a15a7a01d29efa94735ae2d3bb9f8c13c458610320b34f7715829fe2"
+      "sha256": "4810761c286daab3913d1389d60d385dd45051bd684abcad01f4e5f06a1f20d8"
     },
     {
       "file": "packages_bar.txt",
@@ -103,22 +103,22 @@
     {
       "file": "qc_normality_bar.pdf",
       "bytes": 28983,
-      "sha256": "440962f27d0a617f8c1cb15948914386ecb6457fefdd023b50f281313f56019a"
+      "sha256": "2a184d8ed720ca602ce7071d6fb261c8d795d4c310cccf51414ac182d6a45bf8"
     },
     {
       "file": "report.qmd",
       "bytes": 3386,
-      "sha256": "4f770e55e1c16ccb8e9685b178a3976d68711e35ce2c8cf4ffc5470422d7d034"
+      "sha256": "9a15e344ea9554e83e31e53e119971d5637ea4ec25dbdf09ef763372e81129a7"
     },
     {
       "file": "report.html",
       "bytes": 1286236,
-      "sha256": "94d9b8eba7bf52dfad37a22aa626bfb7aac5bf83f1f81ed9bd5a9ae6328fb524"
+      "sha256": "9428c6f5701db4bc8ff9b1d16de813a79d10bdfbfd614b7d23286c799b19ba10"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2039,
-      "sha256": "201bce9e2282b1c28335ce9806a6648c3a1dd9e70604b0758f132f3a68dc88e0"
+      "sha256": "4d5995bbddd7e0a6be97135c3742cd594ab8ac8fe107c69a72258865c9bb922e"
     }
   ]
 }

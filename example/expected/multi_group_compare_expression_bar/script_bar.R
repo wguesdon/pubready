@@ -16,10 +16,12 @@ sig <- ph[which(ph$p.adj < 0.05), , drop = FALSE]
 omni <- as.data.frame(rstatix::anova_test(df, expression ~ genotype))
 subtitle_txt <- paste0("One-way ANOVA, P = ", formatC(omni$p[1], format = "g", digits = 2))
 
+point_k <- ave(seq_len(nrow(df)), df[["genotype"]], FUN = seq_along)
+df$.point_x <- as.integer(df[["genotype"]]) + -0.12 + 0.24 * ((point_k * 0.6180339887498949) %% 1)
 p <- ggplot(df, aes(x = .data[["genotype"]], y = .data[["expression"]])) +
   stat_summary(aes(fill = .data[["genotype"]]), fun = mean, geom = "bar", width = 0.6, alpha = 0.9, colour = "black", linewidth = 0.3) +
   stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.2) +
-  geom_jitter(aes(fill = .data[["genotype"]]), width = 0.12, size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3) +
+  geom_point(aes(x = .point_x, fill = .data[["genotype"]]), size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3) +
   scale_fill_manual(values = c("#3B6DB3", "#C1432B", "#2E8B57", "#7A5195")) +
   labs(x = "genotype", y = "Expression (a.u.)", subtitle = subtitle_txt) +
   theme_classic(base_size = 13) +

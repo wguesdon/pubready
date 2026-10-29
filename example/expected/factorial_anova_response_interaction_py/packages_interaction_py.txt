@@ -3,6 +3,7 @@
 
 ## Used by this script
 matplotlib==3.10.9
+numpy==1.26.4
 pandas==2.3.3
 seaborn==0.13.2
 statsmodels==0.15.0

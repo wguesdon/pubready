@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "ma_plot",
@@ -67,7 +67,7 @@
     {
       "file": "figure_de_basemean_ma_py.pdf",
       "bytes": 110206,
-      "sha256": "eb2626d5e52cd66ac53568f490c8a2d0f8c81cacdc05ea93a3b4564735e9d884"
+      "sha256": "e447cc54be5e61f4969155a9c4847d443cfa5458fafeb744ace6e343d0991b5a"
     },
     {
       "file": "figure_de_basemean_ma_py.png",
@@ -77,7 +77,7 @@
     {
       "file": "figure_de_basemean_ma_py.svg",
       "bytes": 611697,
-      "sha256": "d82777aae0d04b63be5e274735f63d8704fbffb3280b13fa45813b822c1de9f2"
+      "sha256": "00bdf0b5113f9a33f123aebb8bbb44a5d5c8f219bb998d5f12f812b02f0e2307"
     },
     {
       "file": "packages_ma_py.txt",
@@ -87,17 +87,17 @@
     {
       "file": "report.qmd",
       "bytes": 9290,
-      "sha256": "124c6056cb31dcac8fe5b5727a4635a35d22362d5183b083345c71ea447fbc30"
+      "sha256": "3cf169a43bad71e9d869a852cbf60bedcc6601bb9cbac0a4c73d0fd392b166e5"
     },
     {
       "file": "report.html",
       "bytes": 1563189,
-      "sha256": "ffc1b12c41ff7b4e0da45f08c1eccc7152491870e23ab5dd97c6c03b29508223"
+      "sha256": "324db913dab4036151d1049df6e25a166c857028cf89c717b6d45e42a6eceff4"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1993,
-      "sha256": "9f65b17528f5d8f46717bb7b20fac647d07057056a542d3fb402385b8df3b68c"
+      "sha256": "63adf057e7978e69e5a0435d30cab88f72cdaa9a6cff9efdd71b6feeb2bf248d"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "two_group_compare",
@@ -75,18 +75,18 @@
   "output_checksums": [
     {
       "file": "figure_volume_prism_py.pdf",
-      "bytes": 14675,
-      "sha256": "3afd5ee1e4c8b4427fe6bf3a101828f547493a788933475458c14e62b63fbea5"
+      "bytes": 14515,
+      "sha256": "0693cc098c9810abab038fc0da28ccb05a669679f5ea4564cea3ccc7ee6b7f64"
     },
     {
       "file": "figure_volume_prism_py.png",
-      "bytes": 67954,
-      "sha256": "a7974c78db317868772e241dd6bda55e298b0775c8396b3680996cc806753af6"
+      "bytes": 68072,
+      "sha256": "717b46e9f6d6984cdec18a016520933411b4070bb8959ff2536c55e9cb4ac501"
     },
     {
       "file": "figure_volume_prism_py.svg",
-      "bytes": 28710,
-      "sha256": "9093d114282c68e23730fc9e548a4103667d3acae320a6f12abc44a0ac4ee475"
+      "bytes": 27696,
+      "sha256": "bc3d0476d493f8210f36861c8ae36b775180823290d06565dfd159299fffc253"
     },
     {
       "file": "packages_prism_py.txt",
@@ -101,22 +101,22 @@
     {
       "file": "qc_normality_prism_py.pdf",
       "bytes": 25226,
-      "sha256": "e90fbe5f3489f51b9f61921b089e393de909f6af3d206da88acae9200162f3f4"
+      "sha256": "a4ee1e815467d8eeeba75fcc91cc74a30ae3b3a53d5bf8d6abc4875c1090e318"
     },
     {
       "file": "report.qmd",
       "bytes": 3251,
-      "sha256": "dc34e75cede3472f6321595567d84a376f2204bcbff369073f8c9a79a3ff8ff4"
+      "sha256": "ae746cf0073052942864cfd6db80bdabbd36e5d6140327823198923539f0bb28"
     },
     {
       "file": "report.html",
-      "bytes": 1283890,
-      "sha256": "ca705f67a3878514658df8fa02b38be7625dbce1c0833372e88d7676a1800ba7"
+      "bytes": 1284046,
+      "sha256": "08189c9d7f49596d5ab759f10ed315f21bebb04839cc8f74b1cf37327e7b2e3b"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2027,
-      "sha256": "c994a727de9ad299975e57b4d07e5027183ab327b29b0e24c0f8bf5c30f95806"
+      "sha256": "74e91fc64cffa3c3b154d0b9f95e43ced646e95c0cb2ab5cef62680f5c20acdf"
     }
   ]
 }

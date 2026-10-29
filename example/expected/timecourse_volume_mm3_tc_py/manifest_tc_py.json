@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "timecourse",
@@ -99,7 +99,7 @@
     {
       "file": "figure_volume_mm3_tc_py.pdf",
       "bytes": 17271,
-      "sha256": "51b0db7d61eb54d0930405133c0f7eef36b2cd654df3794840c570befe86684f"
+      "sha256": "d1548d9ca585c6e39658e60adfbbaff9e89a63df19658b1cb23c4c143863aef8"
     },
     {
       "file": "figure_volume_mm3_tc_py.png",
@@ -109,7 +109,7 @@
     {
       "file": "figure_volume_mm3_tc_py.svg",
       "bytes": 47780,
-      "sha256": "b5a2de4f5a86b5a01ed4294d420c6d863808d116e7ca3146d317ea74eeb16182"
+      "sha256": "df090fc6ad6a3b984e5986cad8a572a9dc5e4d59ee1364b10cb67ed05e81ec5d"
     },
     {
       "file": "packages_tc_py.txt",
@@ -124,22 +124,22 @@
     {
       "file": "qc_normality_tc_py.pdf",
       "bytes": 26548,
-      "sha256": "e22d6ffea282620bb86f8dbaa262ca96565ce15888210d646e64d983f68cb96d"
+      "sha256": "c9d33c6eabc6c8c77a7ac468dbe8517bfd9e569d6adaa9ef0aee99ef68cbc94f"
     },
     {
       "file": "report.qmd",
       "bytes": 3859,
-      "sha256": "2c3090a2982e27c1bc161cab34007211fc2494aa2078560634973c2b569bcbd0"
+      "sha256": "deb7159a3a456b777b3b92c5408a19e2545be6b641e71bdfc58fcd9308264396"
     },
     {
       "file": "report.html",
       "bytes": 1533218,
-      "sha256": "478242e28941d5e58177ffa5caebee081d990e070122195ce0c664333f041669"
+      "sha256": "01a7bda1fc1c8910869bd539ab947a032e73c791b4e03928abcf3e119800c8c0"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2031,
-      "sha256": "7817c658e1b6778e0c7cace72a0fc167e7c0b4690e56d24fa875c3cd1355bda0"
+      "sha256": "579377bc2bf765ad5e71f88ec5ec710b0007f1286a779952d9578c2fe6786818"
     }
   ]
 }

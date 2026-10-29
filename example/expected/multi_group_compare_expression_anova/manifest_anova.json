@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "multi_group_compare",
@@ -77,18 +77,18 @@
   "output_checksums": [
     {
       "file": "figure_expression_anova.pdf",
-      "bytes": 16051,
-      "sha256": "bde128ccc8efabfac214a6a7b70cae87b30f5d7645c78116803577478ef65d5c"
+      "bytes": 16036,
+      "sha256": "955aba9e817b1270e6fcac6e5cf7e4fa9a49cb34bd940099bc635091cfebe991"
     },
     {
       "file": "figure_expression_anova.png",
-      "bytes": 73001,
-      "sha256": "d1ec3024df74bbdda2389ddb76fada4b8fcd42296cbf28f0b1c9f61efa96b541"
+      "bytes": 73274,
+      "sha256": "b37d81c2fad60695862b6924960a231b58666dd33361de4dcd46ca5a4cd8453d"
     },
     {
       "file": "figure_expression_anova.svg",
       "bytes": 14673,
-      "sha256": "b54f7e601507480b4cacbd9f69f459ca03660bf24487ab972cbfe0b33fa82706"
+      "sha256": "cb79e7028af3af579e04e786a8cba020fc4a84d825762e25520320cfcf29dc70"
     },
     {
       "file": "packages_anova.txt",
@@ -103,22 +103,22 @@
     {
       "file": "qc_normality_anova.pdf",
       "bytes": 28983,
-      "sha256": "d1f9f5227efe5c0d337628ffaea1156c6836ec53d29652a33f8c919566c6378c"
+      "sha256": "20587f841f00e70dd5c1a8f9ac05b70f99d8530672a8b3ff40e0b739527c8056"
     },
     {
       "file": "report.qmd",
       "bytes": 3394,
-      "sha256": "828b1d03a84678daa0e9d1e6803d6a9b8ad118c7165f00344fc8dfbd02e73653"
+      "sha256": "4d70ab9570b94dfb977d9b16f19ab9aca93bcc246ec272774b612bac2e87e33f"
     },
     {
       "file": "report.html",
-      "bytes": 1291074,
-      "sha256": "e38de84919883a7374a3db2ecd9afb51c4dae7f1a4569ee76e2173b4782a5eac"
+      "bytes": 1291438,
+      "sha256": "5ad5ae797fcf75ee57e74777a61ad722605e4c2b8c49a114c0476cd1492a3be6"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2045,
-      "sha256": "38578933d66f85aa76942ad9159dd533ad5e6a8a5894dd344e47d690a6a0a0bf"
+      "sha256": "c22655e391cd6fe54f4eeb5b9f36d9f9a1fb3594738b14a197d55f24f0268582"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "spider_response",
@@ -65,7 +65,7 @@
     {
       "file": "figure_target_lesion_mm_spider_py.pdf",
       "bytes": 21220,
-      "sha256": "463f6c76ec92f913ad79c7807a65f035a0d7dc6dae660c66b1561c55695c3980"
+      "sha256": "f3ed8b74757c62dae032cdb21a0e3c6076e91b6790412084a4676b11416b2949"
     },
     {
       "file": "figure_target_lesion_mm_spider_py.png",
@@ -75,7 +75,7 @@
     {
       "file": "figure_target_lesion_mm_spider_py.svg",
       "bytes": 46780,
-      "sha256": "79d37aea2de8faf26a19a3dfcb5314d0bb3382e39b291b37b478db028c6d162d"
+      "sha256": "a47382a03ffd08894d418693f400d4ae944c86d4c5806a23ca459f14753e45e0"
     },
     {
       "file": "packages_spider_py.txt",
@@ -85,17 +85,17 @@
     {
       "file": "report.qmd",
       "bytes": 5506,
-      "sha256": "5a4584b7a561120e3157cbe3c6b2e0d7a3e89aa71550b76fb7d0e45dafc7d930"
+      "sha256": "91d5c535cb8fdae7ddb83c31662bb20abc2d9be81d18de0cdcc608402263ae9c"
     },
     {
       "file": "report.html",
       "bytes": 1538250,
-      "sha256": "27603e351400aa783f6faa53e136bd79bea810e8d35e331e93a8db160c5e75fc"
+      "sha256": "e37716c68071e17cbc13a052b5aa0d4f958f01cf21b749ce1499822c4e2fc008"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2042,
-      "sha256": "0f48e6f6ab653522679de50b677f6fd7b7a710118e4404aea1b08257f9a7088d"
+      "sha256": "916f14d3b94998fc4337a902df1833efa2cd21095c90f7e580374cc3c3859d40"
     }
   ]
 }

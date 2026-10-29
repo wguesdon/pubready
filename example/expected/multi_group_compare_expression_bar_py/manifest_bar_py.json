@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "multi_group_compare",
@@ -82,18 +82,18 @@
   "output_checksums": [
     {
       "file": "figure_expression_bar_py.pdf",
-      "bytes": 15809,
-      "sha256": "c7f6626c8a2316430a16da98f07e916c72ddcc3c469106158f9a05bb202358f1"
+      "bytes": 15567,
+      "sha256": "5601a166cf96b748309f00ee029b40b91e83aae18df6c095dd121c5a8dce4d5f"
     },
     {
       "file": "figure_expression_bar_py.png",
-      "bytes": 95964,
-      "sha256": "a78883bd42d4c5ea7f282674755f13f2337cb156e5ac9e5e7defcacade6adddf"
+      "bytes": 95854,
+      "sha256": "ba25d155718f8733ca5c8f382870dd73c7e213e23351da54d2d05c4cf8a94782"
     },
     {
       "file": "figure_expression_bar_py.svg",
-      "bytes": 40047,
-      "sha256": "98bbbe178b1aefb8a89b05be7b1f00e5ad2e9c1b016449fee659e78911939428"
+      "bytes": 38432,
+      "sha256": "9d535b918ec8078eccfa3d82ea4c79c6e4f3da4a16ec9b13703adcf65de9b9de"
     },
     {
       "file": "packages_bar_py.txt",
@@ -108,22 +108,22 @@
     {
       "file": "qc_normality_bar_py.pdf",
       "bytes": 26691,
-      "sha256": "94177d90bd0fc89ad02447924a5955cea5e0f7021576044d8665ea0fe2d3965a"
+      "sha256": "8b4c87829b042e6d86013824ec4dd20ecfb19dbebc7b1a4663e565ba99b56f9d"
     },
     {
       "file": "report.qmd",
       "bytes": 3673,
-      "sha256": "653331b1bc88dc986670cb594f58def5636d726ed0edf228ae5a5a4d115b741d"
+      "sha256": "c3804e2d3824e9c23bbe909f9d31df4c9cec09059fa50eb669c722a1af2331b8"
     },
     {
       "file": "report.html",
-      "bytes": 1321964,
-      "sha256": "1cc95bb8fdf03d0a3623ac90eca203cfa4f4d38a465d069e2c6121d745ba9811"
+      "bytes": 1321820,
+      "sha256": "596b55c30ef8630254c5a131140a6e0075689317597b9448bb814d236d2d4546"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2049,
-      "sha256": "a2909709935d4007602df2c6be34fdfc8df8d1e29699dc8905845723d42eb864"
+      "sha256": "b6aef4d9ff0d8db385c427e29d6509751e7a92b161a837c24f82a9e12c7756c2"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "cumulative_incidence",
@@ -82,7 +82,7 @@
     {
       "file": "figure_status_cif_py.pdf",
       "bytes": 20938,
-      "sha256": "97f52ccd808b0b23e18c138add64a5c2f8628ba9939f5c6c31a91b41ff5a686b"
+      "sha256": "e4bd011699b084fed04ae18032453fb088872724095b56a0549c180e724464c1"
     },
     {
       "file": "figure_status_cif_py.png",
@@ -92,7 +92,7 @@
     {
       "file": "figure_status_cif_py.svg",
       "bytes": 61442,
-      "sha256": "8b5e2bb09b2a6484320c2fd4ceddb1267f51c796919d0ac18d402442d2f5079f"
+      "sha256": "20071325041f839032045b278c7aa6acbb8b0acc8f9c4bf10bef0f368779f27c"
     },
     {
       "file": "packages_cif_py.txt",
@@ -102,17 +102,17 @@
     {
       "file": "report.qmd",
       "bytes": 3895,
-      "sha256": "c06df9e50fd879b3bce1501215b169c7adca6855be4396073ac13d080ca3acee"
+      "sha256": "bd3537646dd171396c4b7b37cf7ab75ff32b25fcaa3f950eb774720b3fc2714a"
     },
     {
       "file": "report.html",
       "bytes": 1371643,
-      "sha256": "d756284827cedb33fed5923564a22a65a9705f3fe077ec1e154c268c76f9a868"
+      "sha256": "1bd7d003ddbef622332f02bf602d402e099c5a33be9e574c5f21034a76b15005"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2053,
-      "sha256": "f9004700722028d5b7eb3aacf8b2ae9e18621a89f2d0a5f5ac2033e2351ffc21"
+      "sha256": "ddc97df5a8a08f46293129f1ac537a9de120ec8b458719a5f3dbd034980244ac"
     }
   ]
 }

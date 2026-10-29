@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "survival_km",
@@ -77,7 +77,7 @@
     {
       "file": "figure_arm_km.pdf",
       "bytes": 18691,
-      "sha256": "1bcb4de3d6a4e142613067d62a77560d075a8e375a24b5006f95538227ba2d8f"
+      "sha256": "0101933f2db3cd0205839b2a89df98120d2ff9e7d0f94ac3c4bfeaf15e4299ee"
     },
     {
       "file": "figure_arm_km.png",
@@ -97,17 +97,17 @@
     {
       "file": "report.qmd",
       "bytes": 2873,
-      "sha256": "6ee81ce0c9de2395a6f6ba510f07580e5efc03f723f844d53ab687d31533cdf5"
+      "sha256": "695265e41270a33b283b23c38a3596378136787cf14a62f0d3681eb76bb9d440"
     },
     {
       "file": "report.html",
       "bytes": 1302269,
-      "sha256": "7c4ef5c3aec0f911822bdcb92014710ba5d61cda1124ac008285cecb2cc3f67f"
+      "sha256": "7810872d9bd87091683da3d0de780a747a231775cde79de0f6d91de890210ef1"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1996,
-      "sha256": "66f232b46de0fa9138c9e3b350f5c1fa5f995456987b11da11e6d951000c6dbe"
+      "sha256": "d0304e31ffe3eff5738778116984bb78a6aa7906911396b3fd7f89a522890832"
     }
   ]
 }

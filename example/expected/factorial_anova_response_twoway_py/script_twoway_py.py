@@ -2,6 +2,7 @@
 # Standalone reproduction (parametric ANOVA). Run inside the pinned container.
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt, matplotlib.patches as mpatches
+import numpy as np
 import pandas as pd, seaborn as sns
 import statsmodels.api as sm, statsmodels.formula.api as smf
 
@@ -26,7 +27,14 @@ axes = axes[0]
 for ax, fl in zip(axes, facet_lv):
     sub = df if fl is None else df[df["None"] == fl]
     sns.boxplot(data=sub, x="genotype", y="response", hue="treatment", order=f1_lv, hue_order=f2_lv, palette=['#3B6DB3', '#C1432B', '#2E8B57'], ax=ax, width=0.7, fliersize=0, legend=False)
-    sns.stripplot(data=sub, x="genotype", y="response", hue="treatment", order=f1_lv, hue_order=f2_lv, dodge=True, palette=['#3B6DB3', '#C1432B', '#2E8B57'], ax=ax, size=3, alpha=0.6, edgecolor="black", linewidth=0.3, legend=False)
+    # Each point sits at its dodged cell centre plus a fixed golden-ratio offset.
+    k = len(f2_lv); a = 0.15 / (k + 2)
+    for i, lv in enumerate(f2_lv):
+        for j, v in enumerate(f1_lv):
+            vals = sub.loc[(sub["treatment"] == lv) & (sub["genotype"] == v), "response"].to_numpy(dtype=float)
+            n = np.arange(1, len(vals) + 1)
+            x = j + (i + 0.5 - k / 2) * 0.7 / k - a + 2 * a * np.mod(n * 0.6180339887498949, 1.0)
+            ax.scatter(x, vals, s=10, color=['#3B6DB3', '#C1432B', '#2E8B57'][i], alpha=0.7, edgecolors="black", linewidths=0.3, zorder=3)
     if fl is not None: ax.set_title(str(fl))
     ax.set_xlabel("genotype"); ax.set_ylabel("Response (a.u.)" if ax is axes[0] else "")
     for s in ("top", "right"): ax.spines[s].set_visible(False)

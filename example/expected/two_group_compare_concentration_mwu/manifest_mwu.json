@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "two_group_compare",
@@ -70,18 +70,18 @@
   "output_checksums": [
     {
       "file": "figure_concentration_mwu.pdf",
-      "bytes": 7323,
-      "sha256": "ed93c29db4be3f5c702c5c478ecb455e6644738148958949ca00922b73e850ba"
+      "bytes": 7330,
+      "sha256": "acf0cb5f350f53985de2dc5dbffb58f1a17c8fee85affa6af05d087bb592cade"
     },
     {
       "file": "figure_concentration_mwu.png",
-      "bytes": 43528,
-      "sha256": "769235e89724e55ab6cd0cc7570a2311def4e62c81badda42ff9fe24f1acd102"
+      "bytes": 43169,
+      "sha256": "946c5406f310d3c8087615b4d762ce43ce5f06dfaabf5ea220e23b54257512ad"
     },
     {
       "file": "figure_concentration_mwu.svg",
-      "bytes": 8824,
-      "sha256": "7d478b29253de40f49c7baf1794f62a8acd4a5e8addbe1ee645007f8d293664e"
+      "bytes": 8827,
+      "sha256": "577e3bf2051f13f2ba77b91cab75c8e6fb54b8ef8cf4cd397b1d43dedad027f2"
     },
     {
       "file": "packages_mwu.txt",
@@ -96,22 +96,22 @@
     {
       "file": "qc_normality_mwu.pdf",
       "bytes": 27978,
-      "sha256": "36dca9dc49a728efe27ba1bf39dd30570925e3ffd915d8b31b0b1a6797dfd9be"
+      "sha256": "a99776f99ab68ab5010416e3f1945909dc70fdefc56f2cfbf3735036b4641c5f"
     },
     {
       "file": "report.qmd",
       "bytes": 3160,
-      "sha256": "2817f777007a0cc3b2ea4ded074a43d86c165e8a782c9ef604d3040e5851ea7d"
+      "sha256": "2a155af2114c75ecc5ee0358c5e053a7c863163014a72f2b35a769cefeb207e6"
     },
     {
       "file": "report.html",
-      "bytes": 1251221,
-      "sha256": "a76580c0b8b50de47617a16b31c56676ab3c50cb373ddb06e80ccc818da1de6c"
+      "bytes": 1250741,
+      "sha256": "d3f81a69369afc788a1a260620d2089ee35823f0301c94d776a82746589e863c"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2035,
-      "sha256": "27d1b66b13db548f2fc4891486a16f32918c78184428ef6acf4d27b0a7ee2a08"
+      "sha256": "06de3a619852fb525fa37d65ce440b25a656f9c0b65cd01504f59909534c0916"
     }
   ]
 }

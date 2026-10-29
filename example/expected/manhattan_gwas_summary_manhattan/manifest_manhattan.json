@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "manhattan",
@@ -63,7 +63,7 @@
     {
       "file": "figure_gwas_summary_manhattan.pdf",
       "bytes": 668738,
-      "sha256": "47e2b76c23ecc10bf8f1f8086f257ea94373c34514a54c6d9e5df1e64c079893"
+      "sha256": "42662ebbe6b1946cddfe20ac3ae4cf26bed209c5fe2959964ec204dae0fb123f"
     },
     {
       "file": "figure_gwas_summary_manhattan.png",
@@ -83,17 +83,17 @@
     {
       "file": "report.qmd",
       "bytes": 3721,
-      "sha256": "ded8293fd8dfd6c3c43ef9e1d5157c39111fc736e86c10e3239349c05eb72e8b"
+      "sha256": "fcedafa102a78cf85dc22dde345520ce4bbfa2d6fecf8e8ed7515dd6632e765b"
     },
     {
       "file": "report.html",
       "bytes": 1373727,
-      "sha256": "cb752ecd3dc0fa17f47bf2bc7d278265fe90f42a2128688ffcdeb8bdbd0eba15"
+      "sha256": "4c324221ec871b85c588335d983561ba3b5f6b9ef3525708f761fe127c07fef5"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1991,
-      "sha256": "ba5c23c4add60fdb1bc9304caadbfb66d14af0e8736d7c5a789d68309c04d5c7"
+      "sha256": "de6d536e6c8d38c16345cfdddb4cd179d8dd9d6d0cb3cc34952feb828f9df5e7"
     }
   ]
 }

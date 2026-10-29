@@ -28,7 +28,7 @@ The report records the selected recipe and does not claim a new statistical meth
 
 ## Methods
 
-The association between Gene A (a.u.) and Gene B (a.u.) was assessed with a Pearson correlation (n = 60). The method was chosen from the Shapiro-Wilk normality of each variable. The correlation was r = 0.71 (P = 2.1e-10), with a linear fit and 95% confidence band shown. Significance was set at P < 0.05. Analyses were performed in Python 3.10.12 with pingouin 0.6.1; the figure was produced with seaborn 0.13.2.
+The association between Gene A (a.u.) and Gene B (a.u.) was assessed with a Pearson correlation (n = 60). The method was chosen from the Shapiro-Wilk normality of each variable. The correlation was r = 0.71 (P = 2.1e-10), with a linear fit and 95% confidence band shown. Significance was set at P < 0.05. Analyses were performed in Python 3.10.12 with pingouin 0.6.1; the figure was produced with matplotlib 3.10.9.
 
 ## Plot configuration
 
@@ -40,7 +40,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 1.0.0 |
-| git_commit | 08e20b9ab068444757d8a4eefce4044219afc94d |
+| git_commit | 31d6bbe65e2043a4e8204e63902cf8f8a135acf6 |
 | git_dirty | False |
 | llm_provider | none |
 | llm_model | none |

@@ -15,9 +15,14 @@ plab <- function(p) if (is.na(p)) "P = NA" else if (p < 0.001) "P < 0.001" else 
 sig <- eff[which(eff$p < 0.05), , drop = FALSE]
 subtitle_txt <- if (nrow(sig) > 0) paste(sprintf("%s: %s", gsub(":", " × ", sig$effect), vapply(sig$p, plab, character(1))), collapse = "\n") else "No significant effects (P ≥ 0.05)"
 
+# Each point sits at its dodged cell centre plus a fixed golden-ratio offset
+# by its row in the cell, as in the figure.
+point_m <- nlevels(df[["treatment"]]); point_a <- 0.15 / (point_m + 2)
+point_k <- ave(seq_len(nrow(df)), paste(df[["genotype"]], df[["treatment"]], sep = "|"), FUN = seq_along)
+df$.point_x <- as.integer(df[["genotype"]]) - 0.4 + 0.8 * (as.integer(df[["treatment"]]) - 0.5) / point_m - point_a + 2 * point_a * ((point_k * 0.6180339887498949) %% 1)
 p <- ggplot(df, aes(x = .data[["genotype"]], y = .data[["response"]], fill = .data[["treatment"]])) +
   geom_boxplot(position = position_dodge(0.8), width = 0.7, outlier.shape = NA, alpha = 0.9) +
-  geom_point(position = position_jitterdodge(jitter.width = 0.15, dodge.width = 0.8), size = 1.3, alpha = 0.7, shape = 21, stroke = 0.3) +
+  geom_point(aes(x = .point_x), size = 1.3, alpha = 0.7, shape = 21, stroke = 0.3) +
   scale_fill_manual(values = c("#3B6DB3", "#C1432B", "#2E8B57")) +
   labs(x = "genotype", y = "Response (a.u.)", fill = "treatment", subtitle = subtitle_txt) +
   theme_classic(base_size = 13) +

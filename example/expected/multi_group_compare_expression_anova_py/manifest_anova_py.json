@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
+  "pubready_git_commit": "31d6bbe65e2043a4e8204e63902cf8f8a135acf6",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "multi_group_compare",
@@ -82,18 +82,18 @@
   "output_checksums": [
     {
       "file": "figure_expression_anova_py.pdf",
-      "bytes": 16706,
-      "sha256": "09c87055412ac92cb14ac25b547bc863204d3fa1e55868fcc25b4b7319b3e18c"
+      "bytes": 16460,
+      "sha256": "5e58546fc350dfffec28cc24838be29cd59690f8ca4939588454621fbd0daedb"
     },
     {
       "file": "figure_expression_anova_py.png",
-      "bytes": 102240,
-      "sha256": "51c92c5160b4caaf456ec6bcd25415af251a33be17256947fd965c105533fa45"
+      "bytes": 101682,
+      "sha256": "ef741f9e7f6a402740fa39896ce35376f82444ded17679c310eb5ddfc74bed37"
     },
     {
       "file": "figure_expression_anova_py.svg",
-      "bytes": 43461,
-      "sha256": "7835329f02710936e9333018daa3b534473117b3012df2a602fb146b3a5ce7bc"
+      "bytes": 41844,
+      "sha256": "5cd8e5e2ee1fdb6172eb3b0d58f011f8423d9857619020f522552a29bdf8a88d"
     },
     {
       "file": "packages_anova_py.txt",
@@ -108,22 +108,22 @@
     {
       "file": "qc_normality_anova_py.pdf",
       "bytes": 26691,
-      "sha256": "daf45a3f049e00d1b6d13712abadee74476f0779b7ffb945a63d9990edf38847"
+      "sha256": "cc42da5bab36d063da42f14abb1c1e74cd4d3ba62ec043d49c0e924360c7d22f"
     },
     {
       "file": "report.qmd",
       "bytes": 3681,
-      "sha256": "538f495c0da4673acc3fcd4cde2b26162baa71bfa560e4c7d6aec27cf4dfb3bf"
+      "sha256": "496ccf0daa42828ba39e1e8668d7691b19baa7638cf2afbf9ec84cb9235c65d8"
     },
     {
       "file": "report.html",
-      "bytes": 1330342,
-      "sha256": "98f51d2d9f5d39c8d8ccbeccaf91451a093076ec748bf63743d3c29eeb6d9eb4"
+      "bytes": 1329598,
+      "sha256": "ade17f801276829346804e83ed4e3f91ac1cf12bd9589afbc36171aafac4b622"
     },
     {
       "file": "report_provenance.json",
       "bytes": 2055,
-      "sha256": "357bdc4b6aded1d6c0e82e0a4742f3518e4b8f1855ee46fa3941b7c0a8e1d78a"
+      "sha256": "ce64340faed930d365d9dbc824f5941a3511783417ba67dcff0cbb9b4d2114ae"
     }
   ]
 }
