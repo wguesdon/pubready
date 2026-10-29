@@ -1,9 +1,10 @@
 """Recipe: compare proportions of a categorical outcome across groups. Mirrors
 the R recipe: a chi-squared test of independence, or Fisher's exact when any
 expected cell is below 5 (or forced); an odds ratio for a 2x2 table. Figure: a
-100% stacked bar of the outcome proportions within each group. (scipy's exact
-test is 2x2 only, so larger tables fall back to chi-squared.)"""
+100% stacked bar of the outcome proportions within each group. Fisher's test
+follows stats::fisher.test (pubready.fisher) on any table."""
 import functools
+import inspect
 import os
 
 import matplotlib.pyplot as plt
@@ -12,7 +13,9 @@ import numpy as np
 import pandas as pd
 from scipy import stats as ss
 
+from .. import fisher as fisher_module
 from ..bundle import slugify
+from ..fisher import fisher_2x2, fisher_rxc_p
 from ..theme import apply_pub_style, category_width, legend_width, palette, wrap_labels
 
 
@@ -70,14 +73,16 @@ def recipe_proportions(df, spec):
     is2x2 = tab.shape == (2, 2)
 
     orr, or_ci = np.nan, (np.nan, np.nan)
-    if use_fisher and is2x2:
-        orr, pval = ss.fisher_exact(tab.to_numpy())
+    if use_fisher:
+        # stats::fisher.test: the conditional MLE odds ratio and its exact CI for
+        # a 2 x 2 table, the network-algorithm P value for a larger table.
         stat, dof_out, test_label = np.nan, np.nan, "Fisher's exact test"
-        a, b, c2, d2 = tab.to_numpy().ravel()
-        if min(a, b, c2, d2) > 0:
-            se = np.sqrt(1 / a + 1 / b + 1 / c2 + 1 / d2)
-            or_ci = (float(np.exp(np.log(orr) - 1.96 * se)),
-                     float(np.exp(np.log(orr) + 1.96 * se)))
+        counts = tab.to_numpy().astype(int)
+        if is2x2:
+            ft = fisher_2x2(counts)
+            pval, orr, or_ci = ft["p_value"], ft["odds_ratio"], (ft["ci_low"], ft["ci_high"])
+        else:
+            pval = fisher_rxc_p(counts)
     else:
         pval, stat, dof_out, test_label = p_chi, chi2, dof, "Pearson's chi-squared test"
         if is2x2:
@@ -134,7 +139,7 @@ def recipe_proportions(df, spec):
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": d.reset_index(drop=True), "clean_steps": steps, "label": slugify(y),
         "width": w, "height": h,
-        "build_script": functools.partial(_script, spec, use_fisher and is2x2),
+        "build_script": functools.partial(_script, spec, use_fisher, is2x2),
     }
 
 
@@ -157,10 +162,15 @@ def _methods(test_label, n_grp, n_out, n, pval, orr, is2x2, stat, dof, groups, o
     )
 
 
-def _script(spec, fisher, in_name, fig_stub):
+def _script(spec, fisher, is2x2, in_name, fig_stub):
     x, y = spec["data"]["x"], spec["data"]["y"]
-    test_line = ('print(ss.fisher_exact(tab.to_numpy()))' if fisher
-                 else 'print(ss.chi2_contingency(tab.to_numpy(), correction=False))')
+    if fisher:
+        # The Fisher test of stats::fisher.test, carried whole into the script.
+        call = "fisher_2x2" if is2x2 else "fisher_rxc_p"
+        test_line = (inspect.getsource(fisher_module)
+                     + f"\nprint({call}(tab.to_numpy().astype(int)))")
+    else:
+        test_line = 'print(ss.chi2_contingency(tab.to_numpy(), correction=False))'
     return f'''#!/usr/bin/env python3
 # Standalone reproduction. Run inside the pinned pubready container.
 import matplotlib

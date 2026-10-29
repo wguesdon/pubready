@@ -14,6 +14,13 @@ tag move together.
 ## [Unreleased]
 
 ### Added
+- Six benchmark cases cover test paths that no case covered before: Fisher's
+  exact test of a 2 x 2 table (`mtcars_fisher`) and of a 3 x 2 table
+  (`infert_fisher`), Kendall's tau with ties (`swiss_kendall`), Welch's one-way
+  ANOVA (`chickwts_welch`), the paired Wilcoxon signed-rank test
+  (`sleep_wilcoxon`) and pooling on standard errors (`normand_meta`). The data
+  come from the datasets and metadat packages, and the exporter writes 42
+  datasets and 257 reference values.
 - `proportions` accepts `--levels "a,b,c"` to set the order of the groups, as
   `sankey` does for its states. The list must name every group of the data.
   Without it, the groups keep the order of their first appearance, which drew
@@ -77,6 +84,15 @@ tag move together.
   check the new `ph_global_p` reference of `lung_cox` and `veteran_cox`.
 
 ### Fixed
+- The Python `proportions` ran Fisher's exact test only on a 2 x 2 table and
+  fell back to the chi-square test for a larger table, where R runs Fisher's
+  test on any table. For a 2 x 2 table it reported the sample odds ratio with a
+  Wald CI, where R reports the conditional maximum likelihood estimate with its
+  exact CI. A new `pubready.fisher` module follows `stats::fisher.test`: it
+  carries a port of the `zeroin` root finder of R, so the estimate and the CI
+  match R, and it enumerates the tables of an r x c table. Above one million
+  tables it stops, and the "Engine limits" section of the adapters records the
+  gap.
 - `paired_compare` wrote "The test was chosen from the Shapiro-Wilk normality
   of the within-subject differences" also when `--test` set the test. The
   methods paragraph now says "The test was set by the user" for a set test. On

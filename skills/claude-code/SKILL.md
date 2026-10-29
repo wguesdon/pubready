@@ -163,7 +163,7 @@ Pick the engine per figure with `--engine`. Both write the same bundle and, wher
 a matching method exists, the same numbers. The two-group and paired recipes agree
 digit for digit on the t-test, the Mann-Whitney U test and the Wilcoxon signed-rank
 test, and the smoke test asserts it. The public benchmarks in `benchmarks/` hold
-every recipe in both engines to an independent reference value. Four gaps remain.
+every recipe in both engines to an independent reference value. Five gaps remain.
 The aligned rank transform for non-parametric factorial ANOVA is R only, so
 `--test art --engine python` errors and routes you to R.
 The Python `survival_km` table has no confidence interval for the median survival.
@@ -174,6 +174,9 @@ PERMANOVA is exact, and identical in both engines, when the design has 5000
 labelings or fewer. A larger design uses 999 seeded permutations, and the two
 engines draw different permutations, so the two P values differ by the Monte Carlo
 error.
+For a table larger than 2 x 2, the Python Fisher's exact test enumerates every
+table with the observed margins. Above one million tables it stops and routes you
+to `--test chisq` or to the R engine, which uses the network algorithm.
 
 ## Read more
 
