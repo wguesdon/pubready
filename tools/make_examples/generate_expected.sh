@@ -123,6 +123,15 @@ rm -rf "$OUT"
   --markers response_month,progression_month --xlab "Months on treatment" \
   --stamp swimmer --out "$OUT"
 
+# Distribution, composition and the factorial interaction geom
+./cli/figkit plot --recipe distribution --data example/distribution.csv \
+  --x condition --y cell_area_um2 --xlab "Cell area (um^2)" --stamp dist --out "$OUT"
+./cli/figkit plot --recipe composition --data example/composition.csv \
+  --id sample --x cell_type --y n_cells --group condition --stamp comp --out "$OUT"
+./cli/figkit plot --recipe factorial_anova --data example/twoway_response.csv \
+  --y response --x genotype --fill treatment --ylab "Response (a.u.)" --geom interaction \
+  --stamp interaction --out "$OUT"
+
 # Raincloud and bar geoms on the comparison recipes
 ./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
   --x group --y volume --ylab "Tumor volume (mm^3)" --geom raincloud --stamp raincloud --out "$OUT"
@@ -190,6 +199,13 @@ PY="--engine python"
   --id patient --time months --event ended --group arm \
   --markers response_month,progression_month --xlab "Months on treatment" \
   --stamp swimmer_py --out "$OUT"
+./cli/figkit plot $PY --recipe distribution --data example/distribution.csv \
+  --x condition --y cell_area_um2 --xlab "Cell area (um^2)" --stamp dist_py --out "$OUT"
+./cli/figkit plot $PY --recipe composition --data example/composition.csv \
+  --id sample --x cell_type --y n_cells --group condition --stamp comp_py --out "$OUT"
+./cli/figkit plot $PY --recipe factorial_anova --data example/twoway_response.csv \
+  --y response --x genotype --fill treatment --ylab "Response (a.u.)" --geom interaction \
+  --stamp interaction_py --out "$OUT"
 
 rm -rf "$FINAL"
 mv "$OUT" "$FINAL"
