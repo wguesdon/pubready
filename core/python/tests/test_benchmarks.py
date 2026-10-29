@@ -559,7 +559,8 @@ def test_mtcars_fisher_2x2_matches_fisher_test():
 
 def test_infert_fisher_3x2_matches_fisher_test():
     res = recipe_proportions(bench_data("infert"), bench_spec(
-        "proportions", x="spontaneous", y="status", test="fisher"))
+        "proportions", x="spontaneous", y="status", test="fisher", levels="0,1,2+"))
+    assert list(dict.fromkeys(res["stats"]["group"])) == ["0", "1", "2+"]
     expect_ref(res["test_meta"]["p_value"], "infert_fisher", "p_value")
 
 

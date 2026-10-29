@@ -527,7 +527,9 @@ test_that("mtcars: Fisher's exact test of a 2 x 2 table matches stats::fisher.te
 test_that("infert: Fisher's exact test of a 3 x 2 table matches stats::fisher.test", {
   bench_skip()
   res <- recipe_proportions(bench_data("infert"),
-                            bench_spec("proportions", x = "spontaneous", y = "status", test = "fisher"))
+                            bench_spec("proportions", x = "spontaneous", y = "status", test = "fisher",
+                                       levels = "0,1,2+"))
+  expect_equal(unique(as.character(res$stats$group)), c("0", "1", "2+"))
   expect_ref(res$test_meta$p_value, "infert_fisher", "p_value")
 })
 

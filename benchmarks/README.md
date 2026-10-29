@@ -81,7 +81,7 @@ podman run --rm --security-opt label=disable -v "$PWD":/work -w /work localhost/
 | `iris_feature_panel_anova` | `iris.csv` | `feature_panel --x Species --test anova` | `stats::oneway.test(var.equal = TRUE)` for each measurement, `stats::p.adjust(method = "BH")` |
 | `iris_embedding` | `iris.csv` | `embedding --x Petal.Length --y Petal.Width --group Species` | `cluster::silhouette` on the two petal measurements |
 | `mtcars_fisher` | `mtcars_fisher.csv` | `proportions --test fisher` | `stats::fisher.test`: P, the conditional MLE odds ratio and its exact 95% CI |
-| `infert_fisher` | `infert.csv` | `proportions --x spontaneous --y status --test fisher` | `stats::fisher.test` of a 3 x 2 table |
+| `infert_fisher` | `infert.csv` | `proportions --x spontaneous --y status --test fisher --levels "0,1,2+"` | `stats::fisher.test` of a 3 x 2 table |
 | `swiss_kendall` | `swiss.csv` | `correlation --x Education --y Fertility --test kendall` | `stats::cor.test(method = "kendall")` |
 | `chickwts_welch` | `chickwts.csv` | `multi_group_compare --test welch` | `stats::oneway.test(var.equal = FALSE)` |
 | `sleep_wilcoxon` | `sleep.csv` | `paired_compare --test wilcoxon` | `stats::wilcox.test(paired = TRUE)` |

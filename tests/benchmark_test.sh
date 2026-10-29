@@ -155,7 +155,7 @@ echo "--- Test paths that the first cases did not cover ---"
 bench mtcars_fisher "Fisher" --recipe proportions --data $D/mtcars_fisher.csv \
   --x transmission --y engine --test fisher
 bench infert_fisher "Fisher" --recipe proportions --data $D/infert.csv \
-  --x spontaneous --y status --test fisher
+  --x spontaneous --y status --test fisher --levels "0,1,2+"
 bench swiss_kendall "Kendall" --recipe correlation --data $D/swiss.csv \
   --x Education --y Fertility --test kendall
 bench chickwts_welch "Welch" --recipe multi_group_compare --data $D/chickwts.csv \
