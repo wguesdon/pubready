@@ -29,6 +29,8 @@ opts <- list(
   make_option("--ci_high",  type = "character", default = NULL),
   make_option("--measure",  type = "character", default = NULL),
   make_option("--markers",  type = "character", default = NULL),
+  make_option("--ref",      type = "character", default = NULL),
+  make_option("--cause",    type = "character", default = NULL),
   make_option("--test",     type = "character", default = "auto"),
   make_option("--paired",   action = "store_true", default = FALSE),
   make_option("--p_adjust", type = "character", default = "none"),

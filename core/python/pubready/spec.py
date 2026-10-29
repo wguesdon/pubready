@@ -69,6 +69,8 @@ def spec_from_args(a):
             "ci_low": getattr(a, "ci_low", None),
             "ci_high": getattr(a, "ci_high", None),
             "measure": getattr(a, "measure", None),
+            "ref": getattr(a, "ref", None),
+            "cause": getattr(a, "cause", None),
             "markers": ([s.strip() for s in a.markers.split(",")]
                         if getattr(a, "markers", None) else None),
         },
