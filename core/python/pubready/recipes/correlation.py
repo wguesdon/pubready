@@ -2,15 +2,43 @@
 picks Pearson or Spearman from the normality of each variable (unless forced),
 scatter with a linear fit and CI band, method, coefficient and P in a subtitle."""
 import functools
+import inspect
 
 import numpy as np
 import pandas as pd
 import pingouin as pg
-import seaborn as sns
+from scipy import stats
 
 from ..bundle import slugify
-from ..theme import apply_pub_style, new_fig, palette
+from ..theme import R_POINT_PT, apply_pub_style, new_fig, palette
 from ..util import cap_first, shapiro_normal
+
+
+def lm_band(x, y, n=80):
+    """The least-squares line and its 95% confidence band over the range of x.
+
+    The band is the t-based interval of the fitted mean, the band that
+    geom_smooth(method = "lm") draws in the R engine on 80 points. It has no
+    random part, so the figure is the same in every run.
+
+    Args:
+        x: The x values.
+        y: The y values.
+        n: The count of grid points.
+
+    Returns:
+        tuple: The grid, the fitted line, the lower bound and the upper bound.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    slope, intercept = np.polyfit(x, y, 1)
+    grid = np.linspace(x.min(), x.max(), n)
+    fit = intercept + slope * grid
+    dof = len(x) - 2
+    s = np.sqrt(np.sum((y - (intercept + slope * x)) ** 2) / dof)
+    se = s * np.sqrt(1 / len(x) + (grid - x.mean()) ** 2 / np.sum((x - x.mean()) ** 2))
+    t = stats.t.ppf(0.975, dof)
+    return grid, fit, fit - t * se, fit + t * se
 
 
 def cor_label(method_label, estimate_name, estimate, p):
@@ -88,9 +116,12 @@ def recipe_correlation(df, spec):
     pal = palette(1, ap.get("palette"))
     w, h = 4.6, 4.2
     fig, ax = new_fig(w, h)
-    sns.regplot(x=xv, y=yv, ax=ax, color=pal[0],
-                scatter_kws={"s": 24, "alpha": 0.8, "edgecolor": "none"},
-                line_kws={"color": "#333333", "linewidth": 1.4})
+    # The points, then the line and its analytic 95% band on top, as R draws
+    # geom_point(size = 2) and geom_smooth(method = "lm", fill = "grey75").
+    ax.scatter(xv, yv, s=(2 * R_POINT_PT) ** 2, color=pal[0], alpha=0.8, edgecolors="none")
+    grid, fit, lo, hi = lm_band(xv, yv)
+    ax.fill_between(grid, lo, hi, color="#BFBFBF", alpha=0.4, linewidth=0)
+    ax.plot(grid, fit, color="#333333", linewidth=1.4)
     # The method, the coefficient and the P value go in a subtitle, in the style
     # of the other recipes and in the same words as the R engine.
     ax.set_title(cor_label(r["label"], r["estimate_name"], estimate, pval),
@@ -146,7 +177,7 @@ def _methods(r, stats_df, spec):
         f" The correlation was {r['estimate_name']} = {est} (P = {pv}), with a linear fit and "
         "95% confidence band shown. Significance was set at P < 0.05."
         f" Analyses were performed in Python {platform.python_version()} with pingouin {v('pingouin')};"
-        f" the figure was produced with seaborn {v('seaborn')}."
+        f" the figure was produced with matplotlib {v('matplotlib')}."
     )
 
 
@@ -159,7 +190,11 @@ def _script(spec, r, color, in_name, fig_stub):
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import numpy as np, pandas as pd, seaborn as sns, pingouin as pg
+import numpy as np, pandas as pd, pingouin as pg
+from scipy import stats
+
+
+{inspect.getsource(lm_band)}
 
 raw = pd.read_csv("{in_name}")
 x = pd.to_numeric(raw["{x}"], errors="coerce")
@@ -170,9 +205,10 @@ res = pg.corr(x, y, method="{r['method']}"); print(res)
 sub = "{r['label']}, {r['estimate_name']} = %.2f, P = %.2g" % (res["r"].iloc[0], res["p_val"].iloc[0])
 
 fig, ax = plt.subplots(figsize=(4.6, 4.2))
-sns.regplot(x=x, y=y, ax=ax, color="{color}",
-            scatter_kws={{"s": 24, "alpha": 0.8, "edgecolor": "none"}},
-            line_kws={{"color": "#333333", "linewidth": 1.4}})
+ax.scatter(x, y, s={(2 * R_POINT_PT) ** 2:.2f}, color="{color}", alpha=0.8, edgecolors="none")
+grid, fit, lo, hi = lm_band(x, y)
+ax.fill_between(grid, lo, hi, color="#BFBFBF", alpha=0.4, linewidth=0)
+ax.plot(grid, fit, color="#333333", linewidth=1.4)
 ax.set_xlabel("{ap.get('x_label') or x}"); ax.set_ylabel("{ap.get('y_label') or y}")
 ax.set_title(sub, fontsize=10, color="#4d4d4d")
 for s in ("top", "right"): ax.spines[s].set_visible(False)

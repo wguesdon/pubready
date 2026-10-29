@@ -53,3 +53,37 @@ def test_the_correlation_subtitle_names_the_method_the_coefficient_and_p():
     a = SimpleNamespace(recipe="correlation", data="toy.csv", x="x", y="y", test="kendall")
     res = recipe_correlation(df, spec_from_args(a))
     assert res["fig"].axes[0].get_title().startswith("Kendall rank correlation, tau = ")
+
+
+def test_the_band_is_the_confidence_interval_of_the_fitted_mean():
+    """lm_band gives the 95% CI of the fitted mean, the band of geom_smooth(method = "lm")."""
+    import statsmodels.api as sm
+
+    from pubready.recipes.correlation import lm_band
+    rng = np.random.default_rng(4)
+    x = rng.normal(size=30)
+    y = 2 * x + rng.normal(size=30)
+    grid, fit, lo, hi = lm_band(x, y)
+    pred = (sm.OLS(y, sm.add_constant(x)).fit()
+            .get_prediction(sm.add_constant(grid)).summary_frame(alpha=0.05))
+    assert len(grid) == 80 and grid[0] == x.min() and grid[-1] == x.max()
+    assert fit == pytest.approx(pred["mean"].to_numpy(), rel=1e-10)
+    assert lo == pytest.approx(pred["mean_ci_lower"].to_numpy(), rel=1e-10)
+    assert hi == pytest.approx(pred["mean_ci_upper"].to_numpy(), rel=1e-10)
+
+
+def test_the_emitted_script_draws_the_same_band_and_runs(tmp_path):
+    import subprocess
+    import sys
+    x = np.linspace(0, 10, 20)
+    df = pd.DataFrame({"x": x, "y": 2 * x + np.sin(x)})
+    spec = spec_from_args(SimpleNamespace(recipe="correlation", data="toy.csv", x="x", y="y",
+                                          test="pearson"))
+    script = recipe_correlation(df, spec)["build_script"]("input.csv", "figure")
+    assert "def lm_band(" in script and "regplot" not in script
+    df.to_csv(tmp_path / "input.csv", index=False)
+    (tmp_path / "script.py").write_text(script)
+    run = subprocess.run([sys.executable, "script.py"], cwd=tmp_path, capture_output=True,
+                         text=True, check=False)
+    assert run.returncode == 0, run.stderr
+    assert (tmp_path / "figure.pdf").exists()

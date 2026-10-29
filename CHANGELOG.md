@@ -165,6 +165,10 @@ tag move together.
   its group or cell, the rule of the raincloud points. Both engines use the same
   offsets, so the two-group and multi-group points sit at the same places in R
   and Python. The emitted scripts use the same rule.
+- The Python `correlation` band came from the bootstrap of seaborn `regplot`,
+  so it moved on each run and differed from the R band. The Python engine now
+  draws the t-based 95% CI of the fitted mean on 80 points, the band of R
+  `geom_smooth(method = "lm")`, and the emitted script draws the same band.
 - The `heatmap` row order differed between the engines. ComplexHeatmap
   reordered each branch by the row means of the drawn values, which are
   rounding noise after a row z-score, and PyComplexHeatmap kept the scipy
