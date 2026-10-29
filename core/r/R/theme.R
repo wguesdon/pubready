@@ -1,6 +1,18 @@
 # The pubready house style. One clean publication theme for v1.
 
-pubready_palette <- c("#3B6DB3", "#C1432B", "#2E8B57", "#7A5195", "#E0A100", "#5A5A5A")
+# The first six colours are the house palette. The fourteen after them keep a
+# figure with up to twenty groups distinct; pub_palette() cycles past twenty.
+pubready_palette <- c("#3B6DB3", "#C1432B", "#2E8B57", "#7A5195", "#E0A100", "#5A5A5A",
+                      "#56B4E9", "#E78AC3", "#8C6D31", "#66C2A5", "#F28E2B", "#A6D854",
+                      "#1F3A5F", "#B07AA1", "#9C755F", "#BAB0AC", "#17BECF", "#FF9DA7",
+                      "#4E7A27", "#D4A6C8")
+
+# n colours from a custom palette or the house palette, cycled when n is larger
+# than the palette. Mirrors palette() of the Python engine.
+pub_palette <- function(n, custom = NULL) {
+  cols <- if (length(custom)) custom else pubready_palette
+  rep_len(cols, n)
+}
 
 theme_pubready <- function(base_size = 13) {
   ggplot2::theme_classic(base_size = base_size) +

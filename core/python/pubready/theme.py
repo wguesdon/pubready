@@ -3,7 +3,12 @@ import matplotlib
 matplotlib.use("Agg")  # headless container
 import matplotlib.pyplot as plt
 
-PALETTE = ["#3B6DB3", "#C1432B", "#2E8B57", "#7A5195", "#E0A100", "#5A5A5A"]
+# The first six colours are the house palette. The fourteen after them keep a
+# figure with up to twenty groups distinct; palette() cycles past twenty.
+PALETTE = ["#3B6DB3", "#C1432B", "#2E8B57", "#7A5195", "#E0A100", "#5A5A5A",
+           "#56B4E9", "#E78AC3", "#8C6D31", "#66C2A5", "#F28E2B", "#A6D854",
+           "#1F3A5F", "#B07AA1", "#9C755F", "#BAB0AC", "#17BECF", "#FF9DA7",
+           "#4E7A27", "#D4A6C8"]
 
 
 def palette(n, custom=None):
