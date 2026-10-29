@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "dose_response",
@@ -105,18 +105,18 @@
   "output_checksums": [
     {
       "file": "figure_viability_pct_drc_py.pdf",
-      "bytes": 22468,
-      "sha256": "58264307d967881cfb993738d7938d72f10275a85510cdaf2e9b1b570ae18e2e"
+      "bytes": 22933,
+      "sha256": "9a11d8f372d63ae34916560add445d703adc9fd58779ed3262450142b83e34c0"
     },
     {
       "file": "figure_viability_pct_drc_py.png",
-      "bytes": 167723,
-      "sha256": "41edf600199b6d14e8d9c39c10e9727b38155b81a63b694b4008ff2c16cf984f"
+      "bytes": 168481,
+      "sha256": "68fc404c70a0a9004860d0d21c11358fc246a3d36118ad53496aedd01b5ca212"
     },
     {
       "file": "figure_viability_pct_drc_py.svg",
-      "bytes": 61633,
-      "sha256": "e6a1ccb83a099e9800f7f9261055b8026209a56bc9f40f55ec3cee0579e180fb"
+      "bytes": 61990,
+      "sha256": "aa349018e4ed5cd0a0c522ac51870025a987d17bca68e41a555b6ea7f31ac423"
     },
     {
       "file": "packages_drc_py.txt",
@@ -125,18 +125,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4546,
-      "sha256": "3bd6c009d56ef576369ce511b7652af110980e5d3f749b375d8b7edeb8c35062"
+      "bytes": 4734,
+      "sha256": "27465d29d482fca0bd74f0e0d57bf488171723ce7aa54d4a02660bd3b7059120"
     },
     {
       "file": "report.html",
-      "bytes": 1418538,
-      "sha256": "0a8522c7bf40ed606399275d02af0c0028a16d28db3a867ad0413cdd66fe3256"
+      "bytes": 1419742,
+      "sha256": "53f6bb1525825c1091cb52d3e5559949054ccef16fdc405b3cb100a4d5352224"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2045,
-      "sha256": "b812d96e573c689af982600c434f8d8c12d17fa4992f895d832e43b6c2784b7d"
+      "bytes": 2067,
+      "sha256": "1b60ee80f4d5812a0cd170eb5545a81c27f69c17f81d93b81a8e7e811c04a7e2"
     }
   ]
 }

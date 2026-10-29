@@ -4,6 +4,7 @@
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd, seaborn as sns, pingouin as pg
 from scipy import stats as ss
 from statannotations.Annotator import Annotator
@@ -21,8 +22,7 @@ p = float(res.pvalue)
 
 fig, ax = plt.subplots(figsize=(3.8, 4.0))
 sns.boxplot(data=df, x="group", y="concentration", hue="group", order=order, hue_order=order, palette=['#3B6DB3', '#C1432B'], ax=ax, legend=False, width=0.6, fliersize=0)
-sns.stripplot(data=df, x="group", y="concentration", hue="group", order=order, hue_order=order, palette=['#3B6DB3', '#C1432B'],
-              ax=ax, legend=False, size=4, alpha=0.75, edgecolor="black", linewidth=0.3, jitter=0.12)
+sns.stripplot(data=df, x="group", y="concentration", hue="group", order=order, hue_order=order, palette=['#3B6DB3', '#C1432B'], ax=ax, legend=False, size=4, alpha=0.7, edgecolor="black", linewidth=0.3, jitter=0.12)
 annot = Annotator(ax, [(order[0], order[1])], data=df, x="group", y="concentration", order=order)
 annot.configure(line_width=1.0, fontsize=12)
 annot.set_custom_annotations(["***"])

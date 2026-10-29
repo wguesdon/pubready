@@ -2,6 +2,7 @@
 # Standalone reproduction. Run inside the pinned pubready container.
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd, seaborn as sns, pingouin as pg
 
 
@@ -21,9 +22,12 @@ ph = pg.pairwise_tukey(data=df, dv="expression", between="genotype"); pairs = [(
 sig = [(a, b, p) for a, b, p in pairs if p < 0.05]
 
 fig, ax = plt.subplots(figsize=(5.4, 4.2))
-sns.boxplot(data=df, x="genotype", y="expression", hue="genotype", order=order, hue_order=order, palette=['#3B6DB3', '#C1432B', '#2E8B57', '#7A5195'], ax=ax, legend=False, width=0.6, fliersize=0)
-sns.stripplot(data=df, x="genotype", y="expression", hue="genotype", order=order, hue_order=order, palette=['#3B6DB3', '#C1432B', '#2E8B57', '#7A5195'], ax=ax,
-              legend=False, size=3.5, alpha=0.7, edgecolor="black", linewidth=0.3, jitter=0.12)
+means = [df.loc[df["genotype"] == g, "expression"].mean() for g in order]
+sems = [df.loc[df["genotype"] == g, "expression"].sem() for g in order]
+ax.bar(range(len(order)), means, yerr=sems, width=0.6, color=['#3B6DB3', '#C1432B', '#2E8B57', '#7A5195'], edgecolor="black",
+       linewidth=0.5, alpha=0.9, capsize=4)
+ax.set_xticks(range(len(order))); ax.set_xticklabels(order)
+sns.stripplot(data=df, x="genotype", y="expression", hue="genotype", order=order, hue_order=order, palette=['#3B6DB3', '#C1432B', '#2E8B57', '#7A5195'], ax=ax, legend=False, size=4, alpha=0.7, edgecolor="black", linewidth=0.3, jitter=0.12)
 span = df["expression"].max() - df["expression"].min(); top = df["expression"].max()
 pos = {g: i for i, g in enumerate(order)}
 sig.sort(key=bracket_key)

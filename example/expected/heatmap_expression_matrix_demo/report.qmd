@@ -57,7 +57,7 @@ The report records the selected recipe and does not claim a new method.
 
 ## Methods
 
-A heatmap of 30 features across 20 samples was drawn with ComplexHeatmap. Values were z-scored across samples within each feature (row scaling). Rows and columns were hierarchically clustered. A per-feature Welch t-test (control vs treated), BH-adjusted was applied per feature; 20 feature(s) were significant (adjusted P < 0.05) and are marked with stars. Rendered in R 4.4.1 with ComplexHeatmap 2.22.0 and circlize 0.4.16.
+A heatmap of 30 features across 20 samples was drawn with ComplexHeatmap. Values were z-scored across samples within each feature (row scaling). Rows and columns were hierarchically clustered. Clustering used complete linkage on the Euclidean distance of the displayed values, and at each merge the branch with the higher mean of the unscaled values was drawn first. A per-feature Welch t-test (control vs treated), BH-adjusted was applied per feature; 20 feature(s) were significant (adjusted P < 0.05) and are marked with stars. Rendered in R 4.4.1 with ComplexHeatmap 2.22.0 and circlize 0.4.16.
 
 ## Plot configuration
 
@@ -69,7 +69,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 1.0.0 |
-| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_commit | 08e20b9ab068444757d8a4eefce4044219afc94d |
 | git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |
@@ -79,7 +79,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
 | input | {"file":"input_expression_matrix.csv","md5":"ca9f8a5e682388268ffb561ea779a536","sha256":"88a6c73257c7a2c3c3f481165584f21cb60cc907778508e023fb2762472198f4"} |
 | command | figkit plot --recipe heatmap |
-| analysis_options | {"engine":"r","recipe":"heatmap","data":{"file":"expression_matrix.csv","x":null,"y":null,"fill":null,"facet":null,"time":null,"event":null,"annotation":"example/expression_annotation.csv","id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":null,"cause":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| analysis_options | {"engine":"r","recipe":"heatmap","data":{"file":"expression_matrix.csv","x":null,"y":null,"fill":null,"facet":null,"time":null,"event":null,"annotation":"example/expression_annotation.csv","id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":null,"cause":null,"levels":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
 | random_seeds | not_applicable |
 | session_record | session_info.txt |
 | created_utc | 2026-07-18T00:00:00Z |

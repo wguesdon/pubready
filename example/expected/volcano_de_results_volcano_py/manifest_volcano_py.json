@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "volcano",
@@ -62,7 +62,7 @@
     {
       "file": "figure_de_results_volcano_py.pdf",
       "bytes": 30909,
-      "sha256": "296135787b4c837c320572759b4a8451aaa23878d4eec4cd0020471d2e6aea8b"
+      "sha256": "41e44d5ee75283bc79a42b456d2bbe591a14551ea4eceaba216fd01247caf4b3"
     },
     {
       "file": "figure_de_results_volcano_py.png",
@@ -72,7 +72,7 @@
     {
       "file": "figure_de_results_volcano_py.svg",
       "bytes": 237822,
-      "sha256": "25a1be1c1cce90ccde0e9cd957b6cf7cb403cee4065747f18f0f0fa56c1b212c"
+      "sha256": "e62e78c2d5fe97069aa346c544dbbe9f9591c4f545219e511bb8ddb57bf3cddb"
     },
     {
       "file": "packages_volcano_py.txt",
@@ -81,18 +81,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3714,
-      "sha256": "cd6730cfcfaa790a489441daa26569b47196aa41b430e387d43513bdecc0284c"
+      "bytes": 3730,
+      "sha256": "ce8ad08741412508b59455944138fdb3ee06e3cc8e8f66be4862f9be7bd158af"
     },
     {
       "file": "report.html",
-      "bytes": 1441794,
-      "sha256": "e0e9a5a1cc2614f9ae51c1f22f1146e3cdc1ee2a2056acc7800308d0d9707a57"
+      "bytes": 1441814,
+      "sha256": "a4105a157fbca6e328e756b5d20d5dc2dfd378090a6d95443b81e04cb25424a3"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1986,
-      "sha256": "bf811c837771e29d5e0c1d028299dac3ac430328d37223f1b87cff346b830887"
+      "bytes": 2008,
+      "sha256": "80c1bffd3a8e167d0a9398a9b72d32504d8bbaeacdf0534aa79ce5f085a15fba"
     }
   ]
 }

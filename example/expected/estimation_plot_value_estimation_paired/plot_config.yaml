@@ -19,6 +19,7 @@ data:
   measure: ~
   ref: pre
   cause: ~
+  levels: ~
   markers: ~
   covariates: ~
 test:

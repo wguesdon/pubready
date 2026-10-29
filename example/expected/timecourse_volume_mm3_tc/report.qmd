@@ -42,7 +42,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 1.0.0 |
-| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_commit | 08e20b9ab068444757d8a4eefce4044219afc94d |
 | git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |
@@ -52,7 +52,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
 | input | {"file":"input_volume_mm3.csv","md5":"b86e88025259e6532a144d1496106495","sha256":"dbf732b2b6cf9b41409b5419f1f5a21faabab658b627b18f9ac51654c2f09614"} |
 | command | figkit plot --recipe timecourse |
-| analysis_options | {"engine":"r","recipe":"timecourse","data":{"file":"tumor_growth.csv","x":"day","y":"volume_mm3","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":"mouse","group":"arm","label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":null,"cause":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":"Day","y_label":"Tumour volume (mm^3)","title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| analysis_options | {"engine":"r","recipe":"timecourse","data":{"file":"tumor_growth.csv","x":"day","y":"volume_mm3","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":"mouse","group":"arm","label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":null,"cause":null,"levels":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":"Day","y_label":"Tumour volume (mm^3)","title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
 | random_seeds | not_applicable |
 | session_record | session_info.txt |
 | created_utc | 2026-07-18T00:00:00Z |

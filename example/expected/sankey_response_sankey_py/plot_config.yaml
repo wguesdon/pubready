@@ -20,6 +20,11 @@ data:
   measure: null
   ref: null
   cause: null
+  levels:
+  - complete response
+  - partial response
+  - stable disease
+  - progressive disease
   markers: null
 test:
   method: auto

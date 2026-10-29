@@ -15,7 +15,7 @@ stat <- rstatix::add_xy_position(stat, x = "group")
 
 p <- ggplot(df, aes(x = .data[["group"]], y = .data[["concentration"]])) +
   geom_boxplot(aes(fill = .data[["group"]]), width = 0.6, outlier.shape = NA, alpha = 0.9) +
-  geom_jitter(aes(fill = .data[["group"]]), width = 0.12, size = 1.6, alpha = 0.75, shape = 21, stroke = 0.3) +
+  geom_jitter(aes(fill = .data[["group"]]), width = 0.12, size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3) +
   scale_fill_manual(values = c("#3B6DB3", "#C1432B")) +
   stat_pvalue_manual(stat, label = "p.signif", tip.length = 0.01, bracket.size = 0.4) +
   labs(x = "Group", y = "IL-6 (pg/mL)") +

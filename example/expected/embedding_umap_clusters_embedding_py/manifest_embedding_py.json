@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "embedding",
@@ -63,18 +63,18 @@
   "output_checksums": [
     {
       "file": "figure_umap_clusters_embedding_py.pdf",
-      "bytes": 65893,
-      "sha256": "4bf6e95766b17f16681a8ec872ffcac09069dddabe288e8084dad005bf83a935"
+      "bytes": 65924,
+      "sha256": "8f5a7bb544857f80203c608f3b0b2e4989007d1bbd1a0fb1d9302e5e680d076c"
     },
     {
       "file": "figure_umap_clusters_embedding_py.png",
-      "bytes": 463707,
-      "sha256": "d073c8757d215c712068fbab07a6fba9ac78d3957b9b0b4e8c3918a36c1b3c4a"
+      "bytes": 413667,
+      "sha256": "f07ee6106ef3cebe45b4af1f44600d903c4722d280cee8a1b371d71c0bac802f"
     },
     {
       "file": "figure_umap_clusters_embedding_py.svg",
-      "bytes": 474280,
-      "sha256": "4536878cd1afaa3a6ef606e0dd2d59e13174c1fccb9c183c085dcab7d35efc59"
+      "bytes": 474865,
+      "sha256": "319697c3f62ea823b9a889b4935dee162b774a94885822ac74ed15d18d7b6009"
     },
     {
       "file": "packages_embedding_py.txt",
@@ -83,18 +83,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3810,
-      "sha256": "5c4312676bb8eafa2f62b181fbe81e8d4ad22a4812559c3a3c7099ae1d70dcb5"
+      "bytes": 3826,
+      "sha256": "1990c49459e36b97bc2b26e6095c7e90e1ff77ca9bfd5ede9383e41903d06f14"
     },
     {
       "file": "report.html",
-      "bytes": 1812250,
-      "sha256": "d4877576b1ed606db45fbd34209ab698774cc77b43c12183f3899faf1442af0c"
+      "bytes": 1745550,
+      "sha256": "6a9db365bf66653782d00cb18c5c26fba1ea227770cd884ac2ae0243b2f71e44"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1994,
-      "sha256": "3864fb0cb0b2b02e7fd043b3e1b3374f32e94a15d0957d75fa9e5f6f50d8b841"
+      "bytes": 2016,
+      "sha256": "92056449d730e8fdfc43dc25a848e157adffcbb5a40f1710d327297cab82266b"
     }
   ]
 }

@@ -18,7 +18,7 @@ subtitle_txt <- paste0("One-way ANOVA, P = ", formatC(omni$p[1], format = "g", d
 
 p <- ggplot(df, aes(x = .data[["genotype"]], y = .data[["expression"]])) +
   geom_boxplot(aes(fill = .data[["genotype"]]), width = 0.6, outlier.shape = NA, alpha = 0.9) +
-  geom_jitter(aes(fill = .data[["genotype"]]), width = 0.12, size = 1.4, alpha = 0.7, shape = 21, stroke = 0.3) +
+  geom_jitter(aes(fill = .data[["genotype"]]), width = 0.12, size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3) +
   scale_fill_manual(values = c("#3B6DB3", "#C1432B", "#2E8B57", "#7A5195")) +
   labs(x = "Genotype", y = "Expression (a.u.)", subtitle = subtitle_txt) +
   theme_classic(base_size = 13) +

@@ -2384,7 +2384,7 @@ Important
 </section>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
-<p>The state response of 80 patients (patient) was followed across 3 visits of week (8, 16, 24). Visits are ordered numerically when every visit is a number, else alphabetically, and states numerically when every state is a number, else by their first appearance in the data. The diagram shows 108 transitions between consecutive visits; a patient missing at a visit takes no part in the transitions into or out of it, and the transitions table gives every count. The diagram is descriptive, and no test was applied because more than two visits. Drawn in R 4.4.1 with ggplot2 3.5.1.</p>
+<p>The state response of 80 patients (patient) was followed across 3 visits of week (8, 16, 24). Visits are ordered numerically when every visit is a number, else alphabetically, and states in the order set by the analyst (complete response, partial response, stable disease, progressive disease). The diagram shows 108 transitions between consecutive visits; a patient missing at a visit takes no part in the transitions into or out of it, and the transitions table gives every count. The diagram is descriptive, and no test was applied because more than two visits. Drawn in R 4.4.1 with ggplot2 3.5.1.</p>
 </section>
 <section id="plot-configuration" class="level2">
 <h2 class="anchored" data-anchor-id="plot-configuration">Plot configuration</h2>
@@ -2414,7 +2414,7 @@ Important
 </tr>
 <tr class="odd">
 <td>git_commit</td>
-<td>3e41d3f3097387495c1867696a416bb526e265dc</td>
+<td>08e20b9ab068444757d8a4eefce4044219afc94d</td>
 </tr>
 <tr class="even">
 <td>git_dirty</td>
@@ -2454,7 +2454,7 @@ Important
 </tr>
 <tr class="odd">
 <td>analysis_options</td>
-<td>{“engine”:“r”,“recipe”:“sankey”,“data”:{“file”:“sankey.csv”,“x”:“week”,“y”:“response”,“fill”:null,“facet”:null,“time”:null,“event”:null,“annotation”:null,“id”:“patient”,“group”:null,“label”:null,“positive”:null,“se”:null,“ci_low”:null,“ci_high”:null,“measure”:null,“ref”:null,“cause”:null,“markers”:null,“covariates”:null},“test”:{“method”:“auto”,“paired”:false,“p_adjust”:“none”},“appearance”:{“theme”:“pubready_house”,“palette”:null,“x_label”:“Week”,“y_label”:null,“title”:null,“y_limits”:[null,null],“show_points”:true,“geom”:“box”,“bracket”:{“show”:true,“label”:“p.signif”},“scale”:“row”,“cluster”:“both”,“fc_cutoff”:1,“p_cutoff”:0.05,“top_n”:15,“pd_threshold”:20,“pr_threshold”:-30}}</td>
+<td>{“engine”:“r”,“recipe”:“sankey”,“data”:{“file”:“sankey.csv”,“x”:“week”,“y”:“response”,“fill”:null,“facet”:null,“time”:null,“event”:null,“annotation”:null,“id”:“patient”,“group”:null,“label”:null,“positive”:null,“se”:null,“ci_low”:null,“ci_high”:null,“measure”:null,“ref”:null,“cause”:null,“levels”:[“complete response”,“partial response”,“stable disease”,“progressive disease”],“markers”:null,“covariates”:null},“test”:{“method”:“auto”,“paired”:false,“p_adjust”:“none”},“appearance”:{“theme”:“pubready_house”,“palette”:null,“x_label”:“Week”,“y_label”:null,“title”:null,“y_limits”:[null,null],“show_points”:true,“geom”:“box”,“bracket”:{“show”:true,“label”:“p.signif”},“scale”:“row”,“cluster”:“both”,“fc_cutoff”:1,“p_cutoff”:0.05,“top_n”:15,“pd_threshold”:20,“pr_threshold”:-30}}</td>
 </tr>
 <tr class="even">
 <td>random_seeds</td>

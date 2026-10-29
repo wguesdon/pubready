@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "cox_forest",
@@ -110,7 +110,7 @@
     {
       "file": "figure_hazard_ratios_cox_py.pdf",
       "bytes": 21470,
-      "sha256": "0181d32f67dae76211d242d6dfb0083e45b99bc7b1db3ed122882524b730c810"
+      "sha256": "4e88bc2187ecf3fd782ac727d09ad41ab4bae5b1345559dff29e3a56fdeb1b4e"
     },
     {
       "file": "figure_hazard_ratios_cox_py.png",
@@ -120,7 +120,7 @@
     {
       "file": "figure_hazard_ratios_cox_py.svg",
       "bytes": 48520,
-      "sha256": "f648c78769938338ebba7ef1de00ec02c9fadf3e2df3313c727984dabcffa2d2"
+      "sha256": "e791c3a54676307b1e3c92d1020f78fec106748b75a8e02ec704ea6714303b0b"
     },
     {
       "file": "packages_cox_py.txt",
@@ -129,18 +129,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3413,
-      "sha256": "3be835454b97a8f2ec69abbf9fe594743f5d8bc7abd41c1d2c23287a7bf8e773"
+      "bytes": 3429,
+      "sha256": "a7e065c8218358fb7f264a343d049269ab8c5c842671d0c7d655c598f32f5e72"
     },
     {
       "file": "report.html",
-      "bytes": 1400844,
-      "sha256": "d4d1f768d70d2f1e02aef1af90f55b91ce1e90c5ee705015c8e53c60cc55b139"
+      "bytes": 1400864,
+      "sha256": "4660559aa0982034af81ac0cee44ced4235f7140692a07f79102b0af98fab2ac"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2053,
-      "sha256": "7e0cde6306a6e6419783b7920ef8d1808cd895ba65fd1a8a7dbf48743e1934b0"
+      "bytes": 2075,
+      "sha256": "6093f5a08f31356975ecff2930c3ef82301d4506bfd0035b6c0dd6c3926d8715"
     }
   ]
 }

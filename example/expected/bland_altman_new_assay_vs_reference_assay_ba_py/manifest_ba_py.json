@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "bland_altman",
@@ -72,7 +72,7 @@
     {
       "file": "figure_new_assay_vs_reference_assay_ba_py.pdf",
       "bytes": 16775,
-      "sha256": "572e917392d1071bf879d9357f23a86fd88406de6b505692544cd5ea4cb79d3b"
+      "sha256": "be342c26c67d74571175b6f75292e946a23a79974eaccbe6d65192dc02c2b6fd"
     },
     {
       "file": "figure_new_assay_vs_reference_assay_ba_py.png",
@@ -82,7 +82,7 @@
     {
       "file": "figure_new_assay_vs_reference_assay_ba_py.svg",
       "bytes": 44537,
-      "sha256": "813cbedbfe8909c804875e765c798489ac7902aaa4931aa2183e6ea48a429fae"
+      "sha256": "003375f2a87e6d551acadf5dc295da8293baeee61e79396b1ff5f06b1baeb241"
     },
     {
       "file": "packages_ba_py.txt",
@@ -97,22 +97,22 @@
     {
       "file": "qc_normality_ba_py.pdf",
       "bytes": 26054,
-      "sha256": "afe46665e4d64a3c9880020edab0dd4e6a1be17c8a87e57fc88ee379a03e0c16"
+      "sha256": "637270d5564e2be341d4ab890316cd8d50de6efe719cbee0027c6789057dcdde"
     },
     {
       "file": "report.qmd",
-      "bytes": 3758,
-      "sha256": "ed2d12a948727f0dcc5711ab212421e988fa8c38bc994fb42893dc815c9603ed"
+      "bytes": 3774,
+      "sha256": "440a176c1deec50b1a7751ae8e5ba607967855fcc19fabad6d8237d0bf55a745"
     },
     {
       "file": "report.html",
-      "bytes": 1395799,
-      "sha256": "c2e764345dd0c2b41f99bc8bdd9ab2781981eff737314eb9158c13630a59f9a5"
+      "bytes": 1395819,
+      "sha256": "1ff056cfb60336a3cc3ce7b7b7c4e8113ccc6a778624b3af6f0fd313fd30ce50"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2023,
-      "sha256": "65bd8c31b2fc50afd72906292d1fb4de50b7d65406c232ca22b8039b61c92f2e"
+      "bytes": 2045,
+      "sha256": "534e48fc96d7d0f81c7790425c6d50a90f5903edd733af3521fe0f7dce10be6e"
     }
   ]
 }

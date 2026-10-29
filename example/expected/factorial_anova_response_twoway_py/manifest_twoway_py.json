@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "factorial_anova",
@@ -88,18 +88,18 @@
   "output_checksums": [
     {
       "file": "figure_response_twoway_py.pdf",
-      "bytes": 16744,
-      "sha256": "31f67170561cc6869edcc78624f34151e83180e80636e3a2d08f865ac6b6c1f4"
+      "bytes": 16741,
+      "sha256": "e412d89331a8142b71aaa8330a98d75e32d610addcc7ca9888faadc02d4d0c28"
     },
     {
       "file": "figure_response_twoway_py.png",
-      "bytes": 122906,
-      "sha256": "f99135426f794f52d2170faecdcefc1d866b718192f731118f0aeb2e0179bcac"
+      "bytes": 123220,
+      "sha256": "280d3595985a47b8c05a73273f5a53ec78a89932686129b899ff8552192ced81"
     },
     {
       "file": "figure_response_twoway_py.svg",
-      "bytes": 51433,
-      "sha256": "e2922aec57387d542b53456905d134ca374d188a01ba87f23abcf345db725f8e"
+      "bytes": 51430,
+      "sha256": "58bb9fae8c547f5c08eff149ed0a3b9b36af60564aba9f66268a3e7f76d3bb3a"
     },
     {
       "file": "packages_twoway_py.txt",
@@ -114,22 +114,22 @@
     {
       "file": "qc_normality_twoway_py.pdf",
       "bytes": 23419,
-      "sha256": "3039e55c6de57f998dc68cdc027cbb3567b6ae122d66eb6d75d4b665cff77e10"
+      "sha256": "a5aea1d964b4ce87e76b45c11a8077ce76e148ce9527cfe16ea12f52f46c82dc"
     },
     {
       "file": "report.qmd",
-      "bytes": 3360,
-      "sha256": "da7affb2e3c5f1eb238179ce03e86fe804edde70751ba9511b0a3a807b292b6c"
+      "bytes": 3376,
+      "sha256": "b850f0415d4032d24282ba2acfc9360c97fca35ba1669c7c415059d51f4116d5"
     },
     {
       "file": "report.html",
-      "bytes": 1357200,
-      "sha256": "45081e14c9b96586b1e9a7a2afbccf8f49ed07d799eaa5748562b26d012a030c"
+      "bytes": 1357640,
+      "sha256": "5e3430505d85d4971e549a1d42b1ff1f7f99357ed96adc3c2ab461aaa3c9feed"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2020,
-      "sha256": "eb33d1f69f8a23e29abc2399cfddb25280fecc759c67d7fb9bcecbfefeb017a1"
+      "bytes": 2042,
+      "sha256": "ba6776ca25be0a7206e796afe32bb7c30446f1f1934922928e3d208882b23574"
     }
   ]
 }

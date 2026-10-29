@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "enzyme_kinetics",
@@ -104,7 +104,7 @@
     {
       "file": "figure_rate_enzyme_py.pdf",
       "bytes": 20909,
-      "sha256": "7d1460161c7a8942a743ec27b78183e7af8b7b8c51ee9a044a888af99ed48135"
+      "sha256": "843059441d2dcaefa62206d65b82c126ad1b0c6650d04c4727be9f27a7d00747"
     },
     {
       "file": "figure_rate_enzyme_py.png",
@@ -114,7 +114,7 @@
     {
       "file": "figure_rate_enzyme_py.svg",
       "bytes": 58946,
-      "sha256": "0779b14437da15e1110da250846aa4219cd0a026461a84b17586c8853f8ff83e"
+      "sha256": "b3299bcdfe3fbaccfca5a3e49a65c6ca7f74665b190196267e156fb3a543966b"
     },
     {
       "file": "packages_enzyme_py.txt",
@@ -123,18 +123,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4368,
-      "sha256": "447fc0195d2c28bfb29b3e7168d7b14b664f1c25b7c91cb2a542574dc8a887a6"
+      "bytes": 4384,
+      "sha256": "ddc8b7ab0fbc0584ccbb7dbd47064e493ae6816ea4d28c4cc1c11bbc819f0a39"
     },
     {
       "file": "report.html",
-      "bytes": 1434098,
-      "sha256": "a667dd349c2eaa0a6e84575c10fe8ca532964084812ce2c91767545a2ffc7d29"
+      "bytes": 1434118,
+      "sha256": "9a16e2320d484a39c427f4f1af4d3d6385e99ae848846e7262387e69242b50b5"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2031,
-      "sha256": "01d9c9998d4e7813b2fd3bd4430863c12c10d11841256ab99008b8819fde2c7a"
+      "bytes": 2053,
+      "sha256": "e61242677ea2268d5e80447f6b841ce3fc2f632622658160e02956d5cb72c5eb"
     }
   ]
 }

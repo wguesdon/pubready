@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "heatmap",
@@ -26,7 +26,61 @@
     "n_features": 30,
     "n_samples": 20,
     "per_feature_test": "per-feature Welch t-test (control vs treated), BH-adjusted",
-    "n_significant": 20
+    "n_significant": 20,
+    "row_order": [
+      "gene_05",
+      "gene_02",
+      "gene_06",
+      "gene_10",
+      "gene_04",
+      "gene_09",
+      "gene_01",
+      "gene_07",
+      "gene_08",
+      "gene_29",
+      "gene_24",
+      "gene_27",
+      "gene_28",
+      "gene_30",
+      "gene_03",
+      "gene_23",
+      "gene_26",
+      "gene_22",
+      "gene_25",
+      "gene_21",
+      "gene_18",
+      "gene_15",
+      "gene_13",
+      "gene_16",
+      "gene_19",
+      "gene_12",
+      "gene_14",
+      "gene_20",
+      "gene_17",
+      "gene_11"
+    ],
+    "column_order": [
+      "trt_04",
+      "trt_03",
+      "trt_05",
+      "trt_07",
+      "trt_10",
+      "trt_08",
+      "trt_09",
+      "trt_01",
+      "trt_06",
+      "trt_02",
+      "ctrl_06",
+      "ctrl_02",
+      "ctrl_10",
+      "ctrl_04",
+      "ctrl_05",
+      "ctrl_09",
+      "ctrl_08",
+      "ctrl_07",
+      "ctrl_01",
+      "ctrl_03"
+    ]
   },
   "container": {
     "image": "localhost/pubready:1.0.0",
@@ -57,17 +111,17 @@
     {
       "file": "figure_expression_matrix_demo.pdf",
       "bytes": 18290,
-      "sha256": "11af4f92d88248fe58afde65e5a36a0f013f53cf5d6d03d390d07082ef79e5ac"
+      "sha256": "68049c2c88d811dc1585c751c7a92f1cbe648edf735ee4d5c049a5333a93818a"
     },
     {
       "file": "figure_expression_matrix_demo.png",
-      "bytes": 155104,
-      "sha256": "ce11f1a103dc56261203024503a649fb53d4a5bfd3584b6acf36e10fce62379f"
+      "bytes": 155170,
+      "sha256": "c961db66b3a5f0ca04be466b07c82ecf29da4c172754a68deef41aa283062b31"
     },
     {
       "file": "figure_expression_matrix_demo.svg",
-      "bytes": 283097,
-      "sha256": "5d6fa1d037c0753698d51076ccb9e59c9b4d31e14bd0c70861e5f56a9adde610"
+      "bytes": 283060,
+      "sha256": "86b90233d4fbbd11e7acac86d38ed2d42a3ea14cf62dcc00b28000800992507c"
     },
     {
       "file": "packages_demo.txt",
@@ -76,18 +130,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 5102,
-      "sha256": "e45316eeb2fe2d66dbb8b392940232d046af78e57c95c4847e88cf746af1685f"
+      "bytes": 5290,
+      "sha256": "b312e0d8852fb07b8c6ef93751972dfef04958aab44a406d111e58afc1b9b162"
     },
     {
       "file": "report.html",
-      "bytes": 1403470,
-      "sha256": "9b546dcbe0a3d2ca3bb9f62d6713d31e3fb4a8bc444f33c5e9e1a9c10b362b92"
+      "bytes": 1403750,
+      "sha256": "1be6adde685046a487ccbf2b782a404073c0ed881e649c405f1ef6b38d11a22d"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2004,
-      "sha256": "a03d1d217ad921e525aae4d3890cb011858e3c275d49ada00b88f83f11d83984"
+      "bytes": 2026,
+      "sha256": "11acb6f5a06a37aea66480d9e1ea52aa844729a9bbb10c78f3310d2326a0bd69"
     }
   ]
 }

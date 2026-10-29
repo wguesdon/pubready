@@ -67,7 +67,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 1.0.0 |
-| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_commit | 08e20b9ab068444757d8a4eefce4044219afc94d |
 | git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |
@@ -77,7 +77,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
 | input | {"file":"input_correlation_vars.csv","md5":"fda74fb3c6af78c47ab35a25d432893d","sha256":"d31b1677465e09b861a26736371b7359f231a56aff901d33242590e12f23d372"} |
 | command | figkit plot --recipe correlation_heatmap |
-| analysis_options | {"engine":"r","recipe":"correlation_heatmap","data":{"file":"correlation_vars.csv","x":null,"y":null,"fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":null,"cause":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| analysis_options | {"engine":"r","recipe":"correlation_heatmap","data":{"file":"correlation_vars.csv","x":null,"y":null,"fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":null,"cause":null,"levels":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
 | random_seeds | not_applicable |
 | session_record | session_info.txt |
 | created_utc | 2026-07-18T00:00:00Z |

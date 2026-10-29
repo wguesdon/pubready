@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "survival_km",
@@ -100,7 +100,7 @@
     {
       "file": "figure_arm_km_py.pdf",
       "bytes": 22331,
-      "sha256": "6c6af9059145a6cbfbfec4f5c36e761d0672aa5640e7be65713a17dcfddc385a"
+      "sha256": "49f76ddb4c0f8fc4a2e9b1392a7d08f3715516e5a7a1e8677fc5002dddb962e0"
     },
     {
       "file": "figure_arm_km_py.png",
@@ -110,7 +110,7 @@
     {
       "file": "figure_arm_km_py.svg",
       "bytes": 47092,
-      "sha256": "ecf70f420f59320afe7c73bcbe390c6e4675082f96f038c46190db6af57e6f85"
+      "sha256": "56f5b0c61d7a790d10f9268b02d39bcd5851680dd5d219e19e6b9588053bf95a"
     },
     {
       "file": "packages_km_py.txt",
@@ -119,18 +119,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 2911,
-      "sha256": "6f612466debf43b7488265d7cee1876325480ecce3e25a2bf79a87dc495215da"
+      "bytes": 2927,
+      "sha256": "927ede55bc7f354ae3169630b92ebafb14b76ef013e36368c3aa7ddb38ee4973"
     },
     {
       "file": "report.html",
-      "bytes": 1323911,
-      "sha256": "552b8c99f7711c04553e4a3e62f263062c463d47000e9251525b62c3a9122f82"
+      "bytes": 1323931,
+      "sha256": "61f4fa2f3f350e9e61ed2bf468a76c092e7f5988e2e2e23ebb77612d879d520e"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1984,
-      "sha256": "02378071da615117c579f51934fe34aba34bc5b33f0538f7ecb1aeeca7754df0"
+      "bytes": 2006,
+      "sha256": "6e63643d46cb92b9f0faa037a392f9349156cbc3ded7e58841f47bb854c88d66"
     }
   ]
 }

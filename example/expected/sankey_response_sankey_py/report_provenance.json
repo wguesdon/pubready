@@ -1,7 +1,7 @@
 {
   "repository": "pubready",
   "repository_version": "1.0.0",
-  "git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "git_dirty": false,
   "llm_provider": "none",
   "llm_model": "none",
@@ -38,6 +38,12 @@
       "measure": null,
       "ref": null,
       "cause": null,
+      "levels": [
+        "complete response",
+        "partial response",
+        "stable disease",
+        "progressive disease"
+      ],
       "markers": null
     },
     "test": {

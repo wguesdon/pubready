@@ -19,6 +19,7 @@ data:
   measure: ~
   ref: ~
   cause: ~
+  levels: ~
   markers: ~
   covariates:
   - arm

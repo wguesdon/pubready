@@ -7,7 +7,7 @@ environment it was made in:
 
 - Container image: `localhost/pubready:1.0.0`
 - Image id: `b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83`
-- pubready commit: `3e41d3f3097387495c1867696a416bb526e265dc`
+- pubready commit: `08e20b9ab068444757d8a4eefce4044219afc94d`
 
 ## 2. Run the standalone script
 

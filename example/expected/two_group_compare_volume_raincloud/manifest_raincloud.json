@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "two_group_compare",
@@ -71,7 +71,7 @@
     {
       "file": "figure_volume_raincloud.pdf",
       "bytes": 12119,
-      "sha256": "049cf71ade1d3e959dc8c8447e8b84111f4ffaaec753adf934db340e71bc5c8a"
+      "sha256": "12d6939fbbafac8d70a776d680d06e5259de1543d487e60b3f91fea1e56ad948"
     },
     {
       "file": "figure_volume_raincloud.png",
@@ -85,8 +85,8 @@
     },
     {
       "file": "packages_raincloud.txt",
-      "bytes": 3603,
-      "sha256": "10aa12b4011079aa6acd4f3d357d9e031ef14e45ddfe28259fe6c0c7d646703c"
+      "bytes": 3617,
+      "sha256": "be8850444d87336aa3780887d232feab08085c50b1cebfecca7ed8821681e1c7"
     },
     {
       "file": "qc_normality_raincloud.png",
@@ -96,22 +96,22 @@
     {
       "file": "qc_normality_raincloud.pdf",
       "bytes": 28025,
-      "sha256": "df47cbdd0fd5cdeb65ac4266445c5341a41194de4b2896f00fe4e5e456454dfc"
+      "sha256": "109bcb5600d38dd8760e55f173ad732c33d8087f2b944dcb2d691102a00e0398"
     },
     {
       "file": "report.qmd",
-      "bytes": 3102,
-      "sha256": "2953e48c6060efa24b53cf26dbfb3b8b54d0d9c4fbc6287fd750654e97a2f275"
+      "bytes": 3116,
+      "sha256": "2a9590d2cccf6010ec8b9f6056954f02fdeeaa935a6454c7bd258c66da3c6c97"
     },
     {
       "file": "report.html",
-      "bytes": 1263560,
-      "sha256": "d6edde8e1554cf7f264b3311b5f6ac1d4cf98adb6b8254df298dd279110129b0"
+      "bytes": 1263578,
+      "sha256": "8c0360579a9fac0926be2b55fb04338b04ef666a246f68c8d18ad0712d4d6721"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2007,
-      "sha256": "694ea49d4166c9a6f910084059eed805e9a14933550c9edd8b1958ec4f1a92fb"
+      "bytes": 2029,
+      "sha256": "2c21570a4acef6b6d40b0da649e2900e86af6a416fdfb28522293f1f04fc5740"
     }
   ]
 }

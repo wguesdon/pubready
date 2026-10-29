@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "factorial_anova",
@@ -89,7 +89,7 @@
     {
       "file": "figure_response_interaction_py.pdf",
       "bytes": 15402,
-      "sha256": "fa2a4836e0ff915611d9dee0b6517dc8079916a36d1249038d17d64777b857c8"
+      "sha256": "2774e25806ce0189cb6afc8ab83586d45201db8722ae3ed8da6ccaa83012187e"
     },
     {
       "file": "figure_response_interaction_py.png",
@@ -99,7 +99,7 @@
     {
       "file": "figure_response_interaction_py.svg",
       "bytes": 35397,
-      "sha256": "d4f112b484535698c795b7f747198269d8a24d9838d2233b511e719a8ed3b4aa"
+      "sha256": "d8ced35b8c2b4ca3a7cfaebb01e803a5c2ffc7defe1bb56ffcd2a9e6da159ac1"
     },
     {
       "file": "packages_interaction_py.txt",
@@ -114,22 +114,22 @@
     {
       "file": "qc_normality_interaction_py.pdf",
       "bytes": 23419,
-      "sha256": "818e356619c38917b2a16f4c5583ba36f76848dc6f1447c51b2a16f3321db03d"
+      "sha256": "69ddb96f1577c00b7d0d9cad996d6bb657c6c3c999d4bd85a5477741fc10b7a3"
     },
     {
       "file": "report.qmd",
-      "bytes": 3373,
-      "sha256": "188f9327fd15ccbf151af1dca8d34d522ce7e30c34cd83ec5c2b3bcb7f932143"
+      "bytes": 3389,
+      "sha256": "d83f381cd991ddd90c8e0b3bc62852b776d99d2ea23c9140a353c961280a7b60"
     },
     {
       "file": "report.html",
-      "bytes": 1349616,
-      "sha256": "74063560ccc801044985d374ce51d83f984f037ed8342e2bfcfcb9d90f4a3b06"
+      "bytes": 1349636,
+      "sha256": "009a68a0f638d75c7a407e5d63798e732f89973df7067452b2dc531a18c54e66"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2028,
-      "sha256": "4ea7e1a0db25b658aecf06ac42573cd14beb20c0dc2cf78d41394abf58e83a5f"
+      "bytes": 2050,
+      "sha256": "4a388ef419a43c7c3c0c628f756606a223f39dc57278678f711a21be92ac9346"
     }
   ]
 }

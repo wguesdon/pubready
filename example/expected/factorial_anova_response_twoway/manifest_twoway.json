@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "factorial_anova",
@@ -87,18 +87,18 @@
   "output_checksums": [
     {
       "file": "figure_response_twoway.pdf",
-      "bytes": 16705,
-      "sha256": "982ae0700b5c020d2050d3d310ee75916f2992851d8a4907fb13941d4f6acacf"
+      "bytes": 16724,
+      "sha256": "4f92db46f144bd403d5903d07c99174d4d231ea8ba3e93371ee3a75b45a43b6a"
     },
     {
       "file": "figure_response_twoway.png",
-      "bytes": 93886,
-      "sha256": "a6d268e1382b6100d8fd9ee8305a8b45d14b240ff4b9091f661f23da091e83cf"
+      "bytes": 93257,
+      "sha256": "8e95b40c9be8369fa18e167d30c7f52f661582e7506965eb40adb341ebabc49f"
     },
     {
       "file": "figure_response_twoway.svg",
       "bytes": 18718,
-      "sha256": "e44dc93c52f6feb5048edd0048685af4794a808690c84a9ae147a935e6073c98"
+      "sha256": "7745d9011e410e822ea59ed9dee1b62996b258b774b50e00aa5eba9795ffe90a"
     },
     {
       "file": "packages_twoway.txt",
@@ -113,22 +113,22 @@
     {
       "file": "qc_normality_twoway.pdf",
       "bytes": 20351,
-      "sha256": "1b81ed10aa83f21462da277c7c1063b456cbad0b945f9f7b49dd090d68e3204a"
+      "sha256": "b67e1aa247100558bae7b7cf699b6e57593b0b61fef5d3c96e375efe3282da94"
     },
     {
       "file": "report.qmd",
-      "bytes": 3128,
-      "sha256": "4fd2fbeaeb84589bffed03dacb8a6f2538dfe317e8df65ec8a2649400c3240b7"
+      "bytes": 3142,
+      "sha256": "78a6613ff8abd4ae6fa79e8d61c7c4317794acbb31ca8954fc91a863f5d336ba"
     },
     {
       "file": "report.html",
-      "bytes": 1318279,
-      "sha256": "5e1f270febb396a8c533c5bbaf05ea5ecc346921d5462cd701dcd2e10a10bcb6"
+      "bytes": 1317457,
+      "sha256": "cc1f4541bfa9c19536adfc803179555e301396638ea97250d94151ef27716420"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2010,
-      "sha256": "70b322bc9d806b09c7736cb3ce25d681a0246d681b609fcd69d9495ac6cd97dc"
+      "bytes": 2032,
+      "sha256": "679dabb2e9aa389aa40aea0c0586f756dfb48ba277caa366e7713b46b2d2a36d"
     }
   ]
 }

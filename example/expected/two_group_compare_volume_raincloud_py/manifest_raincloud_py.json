@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "two_group_compare",
@@ -76,7 +76,7 @@
     {
       "file": "figure_volume_raincloud_py.pdf",
       "bytes": 15802,
-      "sha256": "f973f3d3f713a15a9e7fc1985ee7f1175cd9e78823b8ba009e82787acf2f6829"
+      "sha256": "56bc4640d1e27316a75f494cfd7e8de8a59ae43d59f5e3dcd4a92f4581ffdcb1"
     },
     {
       "file": "figure_volume_raincloud_py.png",
@@ -86,12 +86,12 @@
     {
       "file": "figure_volume_raincloud_py.svg",
       "bytes": 37736,
-      "sha256": "d41a1816e59cc08dbb1ca01182c234a6a9d4645c30ee724bbcd3df4b6e781f1d"
+      "sha256": "25e7b4c706e81159e5ea5d3896a83447871198468a5c13d684ec9b0908435d11"
     },
     {
       "file": "packages_raincloud_py.txt",
-      "bytes": 1101,
-      "sha256": "35b666762652caab467de2c774af78dacfea508ef895b296d891ffba81cdc6eb"
+      "bytes": 1115,
+      "sha256": "6856c635bc899f210689384851309ac975270fefba8a4ed249cd535832d90d61"
     },
     {
       "file": "qc_normality_raincloud_py.png",
@@ -101,22 +101,22 @@
     {
       "file": "qc_normality_raincloud_py.pdf",
       "bytes": 25226,
-      "sha256": "9228dd220b969baf15f87f20f9b2632113cd8f964fb6463b364184b1088ef0a2"
+      "sha256": "9504dcdba4ce8f6a0b3235d19a8a5ff629717e31a496dee184a80d41d3022717"
     },
     {
       "file": "report.qmd",
-      "bytes": 3251,
-      "sha256": "7ceeb0f5fbe68a5054fb7d26df2eadd02aa7252e53f1e016ce9059e11b770c9f"
+      "bytes": 3267,
+      "sha256": "99f7eab6257444f49d768233615570eaa0cdab5184349d1f1a7139165d17051e"
     },
     {
       "file": "report.html",
-      "bytes": 1281850,
-      "sha256": "f0ebb40b75cb85b112fc0644ca73ba6ad1e8f4bd7bb50e0db1f23884af448334"
+      "bytes": 1281870,
+      "sha256": "b164e3f0cf1b80e09a4d501b4ca62c2364118864cb620a826fca384e1a37c36f"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2017,
-      "sha256": "18be7c8bfeeb18a7e076a0809c98574a253eadc9730f43bab7dc782bf3012e3f"
+      "bytes": 2039,
+      "sha256": "0e7bde56e5875d3eef93ee49bcd29bdd19126308a79c50245856cb46c97d8f83"
     }
   ]
 }

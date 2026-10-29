@@ -13,9 +13,12 @@ stat <- rstatix::t_test(df, volume ~ group, paired = FALSE, var.equal = TRUE)
 stat <- rstatix::add_significance(stat)
 stat <- rstatix::add_xy_position(stat, x = "group")
 
+rain_k <- ave(seq_len(nrow(df)), df[["group"]], FUN = seq_along)
+df$.rain_x <- as.integer(df[["group"]]) - 0.18 + 0.12 * ((rain_k * 0.6180339887498949) %% 1)
 p <- ggplot(df, aes(x = .data[["group"]], y = .data[["volume"]])) +
-  geom_boxplot(aes(fill = .data[["group"]]), width = 0.6, outlier.shape = NA, alpha = 0.9) +
-  geom_jitter(aes(fill = .data[["group"]]), width = 0.12, size = 1.6, alpha = 0.75, shape = 21, stroke = 0.3) +
+  ggdist::stat_halfeye(aes(fill = .data[["group"]]), adjust = 0.6, width = 0.6, .width = 0, justification = -0.2, point_colour = NA, alpha = 0.85) +
+  geom_boxplot(aes(fill = .data[["group"]]), width = 0.12, outlier.shape = NA, alpha = 0.9) +
+  geom_point(aes(x = .rain_x, fill = .data[["group"]]), size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3) +
   scale_fill_manual(values = c("#3B6DB3", "#C1432B")) +
   stat_pvalue_manual(stat, label = "p.signif", tip.length = 0.01, bracket.size = 0.4) +
   labs(x = "group", y = "Tumor volume (mm^3)") +

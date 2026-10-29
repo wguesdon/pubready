@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "factorial_anova",
@@ -121,18 +121,18 @@
   "output_checksums": [
     {
       "file": "figure_response_threeway_py.pdf",
-      "bytes": 18729,
-      "sha256": "b4b4e8795e00f06aeb4abd16f897aa2eedbe58afca61f8cf1630d5c189b06335"
+      "bytes": 18717,
+      "sha256": "0277559dc72827da8db16f9500a8804bd9e5a8aae8fb2754617c23deb969e4ca"
     },
     {
       "file": "figure_response_threeway_py.png",
-      "bytes": 134073,
-      "sha256": "a2eae310aa369bbff3ba07f990d24edfd143bfb8cfb42d50ae8ddf95070dcd32"
+      "bytes": 133535,
+      "sha256": "188f217f923a795196c22555ca09b1f0ee44fde2ea58440ea1707359f9d4ffa0"
     },
     {
       "file": "figure_response_threeway_py.svg",
-      "bytes": 60852,
-      "sha256": "0f0fcf1f2741f6618764aced7838f1c053a0baf2f5d837046bff20553319a2ec"
+      "bytes": 60855,
+      "sha256": "5cf1925ae05ce8783c17c2167754ee75045514a61ca47b6c38780410208e5fd2"
     },
     {
       "file": "packages_threeway_py.txt",
@@ -147,22 +147,22 @@
     {
       "file": "qc_normality_threeway_py.pdf",
       "bytes": 23716,
-      "sha256": "b35ef0abb9e40268f52521d1d4a2a7ef9f19b5fa8f08767a5acfd78f70fbff9b"
+      "sha256": "b828703958e52175702ddfc48968d7aa240ccb1247e050fd6e0a2d3a829a8b89"
     },
     {
       "file": "report.qmd",
-      "bytes": 4045,
-      "sha256": "0e8c61c7260475c077e16ae2a568bbf599ac8f029c112c54f39cd7a55918f1af"
+      "bytes": 4061,
+      "sha256": "24492ba1c70b6443999702c0487b1cfdd8dde8b5cd867ee6cda1db3ab82af22c"
     },
     {
       "file": "report.html",
-      "bytes": 1373082,
-      "sha256": "58d28d4394667ea5c0e58547f9abf8930155b0e4d727a22058b55038058696fb"
+      "bytes": 1372386,
+      "sha256": "a6def1f55994451ac63063763f3262cea4860ec3a4f5b2cb9a97e1e0310b8774"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2023,
-      "sha256": "e4354e40befd3465be3cdcf1f85d0d836bb5bf34b248975e01e4b2772f4279e2"
+      "bytes": 2045,
+      "sha256": "32fb5ae5271abd3514eba43e61362753733bc628e7688643a91c540ce69d711f"
     }
   ]
 }

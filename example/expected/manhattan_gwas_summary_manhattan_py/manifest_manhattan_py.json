@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "manhattan",
@@ -68,7 +68,7 @@
     {
       "file": "figure_gwas_summary_manhattan_py.pdf",
       "bytes": 310004,
-      "sha256": "a9142b23496c4b816c9e55a05c636cf94c748f3a82289ddf48ea70f6f7d74654"
+      "sha256": "45aa004e71acdb4f711a26b5d6b497fa6de53b2eac7e918784e6292a626bc537"
     },
     {
       "file": "figure_gwas_summary_manhattan_py.png",
@@ -78,7 +78,7 @@
     {
       "file": "figure_gwas_summary_manhattan_py.svg",
       "bytes": 3021781,
-      "sha256": "3b742cfc81c6e19bec80fee257c678d0033046a64da0280126c3f53624d8f6de"
+      "sha256": "a8cd32e6229062b1b97f49fd3406e31076c367658fbf4e2bf7fa5b7be5cb860b"
     },
     {
       "file": "packages_manhattan_py.txt",
@@ -87,18 +87,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3930,
-      "sha256": "de077d789d2104875f89cebb54ca28f8116779732e5c2dbc9cc60c29a1c7a128"
+      "bytes": 3946,
+      "sha256": "8bf683bac0f012412bdc55e296bb6c84e3c5df0560062c4419d00efb6e94c69f"
     },
     {
       "file": "report.html",
-      "bytes": 1585305,
-      "sha256": "909e601093b14a91d18e0d7ebdb5ffeb6a7ac1f939d145af0923dd613c73ef20"
+      "bytes": 1585325,
+      "sha256": "05cc00e5729fbfb04ab27e3bf676127fec928e6319400aa490958f889a6d1c96"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1979,
-      "sha256": "2676f52b7dd646e1f1f2677892c0ddcbd6d63aa1484465aab8f90fa5638c7866"
+      "bytes": 2001,
+      "sha256": "2ff2472d4e3fc98e85c47ef14bf8cc0ebd71819688facbff6c673ac84599cb3e"
     }
   ]
 }

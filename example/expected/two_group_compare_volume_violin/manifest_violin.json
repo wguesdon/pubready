@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "two_group_compare",
@@ -70,18 +70,18 @@
   "output_checksums": [
     {
       "file": "figure_volume_violin.pdf",
-      "bytes": 18023,
-      "sha256": "4431c7480dfc7ca50db26609ff07827fd4a7a5b281fcc06087b46e5a88e4b0ec"
+      "bytes": 18010,
+      "sha256": "0d443091a05da1cc996e0cb3d9fe177fcd36185ec8e72e5cde90493a375f9aee"
     },
     {
       "file": "figure_volume_violin.png",
-      "bytes": 86449,
-      "sha256": "1b06fa7280c3eabeea5e5f70be7eed41348c6b37d70b83116ec063319ed78d03"
+      "bytes": 85977,
+      "sha256": "54b3097add80af8ef6d472f0ff369935b3bb529601a39a08cb952ff20f3caef2"
     },
     {
       "file": "figure_volume_violin.svg",
-      "bytes": 35768,
-      "sha256": "3a990469ad30df10ac3a88ad49134f6c4eff47c9ddc7ae99615d7043d222f6f0"
+      "bytes": 35769,
+      "sha256": "0d61a4ad59971dc88503ab0d40d81faa08d57e29be8655aa9a4e4aba05df5e35"
     },
     {
       "file": "packages_violin.txt",
@@ -96,22 +96,22 @@
     {
       "file": "qc_normality_violin.pdf",
       "bytes": 28025,
-      "sha256": "b2ff63be00419a3ee640cb087f17953c767cb1ac101101d303c3837bb0b6f85b"
+      "sha256": "c7de5752e647aa25249119dc53be1da5bd5d8c94e0bc8db2d9120cc089e05108"
     },
     {
       "file": "report.qmd",
       "bytes": 2893,
-      "sha256": "f3eea49d41231e3d9cb6340f0d6b525c1891a0aa6c88003742d2a1c9ba098cb5"
+      "sha256": "c452ee8cde5b9d0b044c3e12ecf4022959ef32100e595329c3c55d71366c5e3d"
     },
     {
       "file": "report.html",
-      "bytes": 1308130,
-      "sha256": "335c1a466348faa0057013c1f40b453cd2405c4637932f3da46c8778e3a82458"
+      "bytes": 1307498,
+      "sha256": "27c778edfbd5e22bc8de0d78817b0287e579a4550adcfcd41b00428c76098df0"
     },
     {
       "file": "report_provenance.json",
       "bytes": 1666,
-      "sha256": "6da5d2d0cc38ac4f52023be38a12a961e33db72b7ac8c91212e6744c78a3493e"
+      "sha256": "a9fdf0937a593f23a2e882faa2e2ed80a7dfa659d1cd613e2365fe100d29748d"
     }
   ]
 }

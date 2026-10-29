@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "proportions",
@@ -64,7 +64,7 @@
     {
       "file": "figure_response_prop_py.pdf",
       "bytes": 13478,
-      "sha256": "953181e8ff9b48ee31f8de58346f94cc468e9d32303f15daace5670593e2a9ad"
+      "sha256": "ef9e2b366eff4675bdc89edc16399b8f1f7a740fac47cbadb6ffc464bb63dca4"
     },
     {
       "file": "figure_response_prop_py.png",
@@ -74,7 +74,7 @@
     {
       "file": "figure_response_prop_py.svg",
       "bytes": 29812,
-      "sha256": "6607388abeb74e3495b1ce986bf29bb8bcfa19027ee9efcbae194db5c6d12940"
+      "sha256": "e7fa696d8cd57a077c4322383cca878e3e70178e1387d4c5cf4d4c40763757cd"
     },
     {
       "file": "packages_prop_py.txt",
@@ -83,18 +83,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 2839,
-      "sha256": "2eab50a0e7d08e64c87d5846589f7765a8092e28c69a4049da113c6b448f50c8"
+      "bytes": 2855,
+      "sha256": "ed8c7eba489a8d5b67fc784606f48c3fe28fab0c8f4d9a7377c19371e6bc9654"
     },
     {
       "file": "report.html",
-      "bytes": 1319750,
-      "sha256": "ef0f89c948fb50a9ff071e345fcdf4d868550ecb1e2e5d2a98a192ad61d7ff78"
+      "bytes": 1319770,
+      "sha256": "3edc64426b2c2977ad9425ccbcb583abb21cf3e83434ed5da477b5779943d58b"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1987,
-      "sha256": "b1597fc725fd7511b4bcd7f66a0a305d2acce1d2807d9bc0c0e99e6b5be8f123"
+      "bytes": 2009,
+      "sha256": "0cb0148b472bf75291a4dd8d28e1a4df8819c50f22fb51553273c1f67b100fdf"
     }
   ]
 }

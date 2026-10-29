@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "calibration",
@@ -86,7 +86,7 @@
     {
       "file": "figure_event_1y_risk_clinical_risk_extended_cal.pdf",
       "bytes": 24333,
-      "sha256": "34dc68bc2a9c162b0b3cd6e89d6c77274fff921726c3eabd0b064604ba4c7222"
+      "sha256": "47a0b077ec5af5c0f0c057c50d7c023dfa550599e9cac9c416e142aa2fa34359"
     },
     {
       "file": "figure_event_1y_risk_clinical_risk_extended_cal.png",
@@ -105,18 +105,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4457,
-      "sha256": "b214c60276ac02d46a529fffa55fa98e319c33e2d7e41ef75b6f120f1e09462b"
+      "bytes": 4471,
+      "sha256": "12f4191b118de34fe9c34f824e7f61c51b73855024f4633178fe646a06979808"
     },
     {
       "file": "report.html",
-      "bytes": 1430697,
-      "sha256": "bfe4512f4443e7c57c8f603a229232381639f1d14d16d9654b2370bfe884f058"
+      "bytes": 1430715,
+      "sha256": "fc131849e2959440d8e52e5cad390be14637f9984c4f186ea49584612f793ec9"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2026,
-      "sha256": "b74dff371da1f04d71058eedddfbcf51ba6a688aa782e9a55dcafb24e84f3751"
+      "bytes": 2048,
+      "sha256": "7bca701a207518b1014f938f03a1790273d721f0d4152c9d3cc4ede885610239"
     }
   ]
 }

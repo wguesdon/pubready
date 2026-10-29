@@ -2,8 +2,10 @@
 # Python 3.10.12 | Ubuntu 22.04.5 LTS
 
 ## Used by this script
+numpy==1.26.4
 pandas==2.3.3
 seaborn==0.13.2
+scipy==1.15.3
 
 ## Full environment (every installed package)
 

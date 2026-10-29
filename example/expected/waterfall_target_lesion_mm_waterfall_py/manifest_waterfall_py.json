@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "waterfall",
@@ -72,7 +72,7 @@
     {
       "file": "figure_target_lesion_mm_waterfall_py.pdf",
       "bytes": 16420,
-      "sha256": "d6e17d114ae15a52deb47f09f5d292492b013fcaeb9cb12e4583b99fb95d98fb"
+      "sha256": "7c7cfee96b8eb35c6d70804a4535e76710f515b0335f0b804760db17d07864a9"
     },
     {
       "file": "figure_target_lesion_mm_waterfall_py.png",
@@ -82,7 +82,7 @@
     {
       "file": "figure_target_lesion_mm_waterfall_py.svg",
       "bytes": 48667,
-      "sha256": "91ad42fb662fefbaccb93f36854d081a8f5f407843bec3f39683299597470b49"
+      "sha256": "fd2186219d38fba6d29cfc3523c55939c15fa91d4ef01fe624c1498067b69c1e"
     },
     {
       "file": "packages_waterfall_py.txt",
@@ -91,18 +91,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4743,
-      "sha256": "a9450d15a69d03e1b681554b1d49f67fa3ed7c5142b3f03911cb566a98befde4"
+      "bytes": 4759,
+      "sha256": "d90db95eec725627833a45db096f05787339fe43b8f41fdf6e95925151b15997"
     },
     {
       "file": "report.html",
-      "bytes": 1327162,
-      "sha256": "9c5fd00a3b2e7bbef0083242c886c96fd5ea2fd5539d4ac07f2fbbe7b359cefd"
+      "bytes": 1327182,
+      "sha256": "0692ef0968a0594b96a61ba3b2e5ddcf4dc9028ae1f92014c482d1f1a43a61f2"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2006,
-      "sha256": "60c8b358452930012d215d192e397c61edef686c5b20eafa706abeebef8ce69f"
+      "bytes": 2028,
+      "sha256": "1fea353529b667a171934990c45cea5f45d9473f3479413ca38f2fe9a105fc4e"
     }
   ]
 }

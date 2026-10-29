@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "embedding",
@@ -59,7 +59,7 @@
     {
       "file": "figure_umap_clusters_embedding.pdf",
       "bytes": 92433,
-      "sha256": "9abf605e82a08b91dd39ddfb1987189306db70c8c5ed899fdd18e7636e945801"
+      "sha256": "85b6897cb5296deeb4f123dc50fcea2c46c2bf80c3b157afbcc9ebbeffc3b0cb"
     },
     {
       "file": "figure_umap_clusters_embedding.png",
@@ -78,18 +78,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3644,
-      "sha256": "8f93036e43f6845cbae3affc0b722024046e78a8dc43bf5ad903bffd978f40ba"
+      "bytes": 3658,
+      "sha256": "a153ee99c72ab8e7adde26f7532c6de1ef81b1d768694dcad22e3b7e6dce8029"
     },
     {
       "file": "report.html",
-      "bytes": 1417235,
-      "sha256": "88da25f03730b0777feaa923d476cfe3b99bf6974d5aa08f340a57b39735db7f"
+      "bytes": 1417253,
+      "sha256": "a3b2eb4ba08e4d3b6bfea01db5fc14759cdf224054e6b0297487c84312b2365f"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1984,
-      "sha256": "c7ab59786e02dedfdac79468d5c5c5e302a188e4c263ed03e4c24e0bf4185635"
+      "bytes": 2006,
+      "sha256": "f806b8eeafd6d95536cf2fbbd6d7492a80548365ac96ec5ff15beb6e20d5052d"
     }
   ]
 }

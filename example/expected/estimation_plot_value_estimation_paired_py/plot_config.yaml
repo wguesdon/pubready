@@ -20,6 +20,7 @@ data:
   measure: null
   ref: pre
   cause: null
+  levels: null
   markers: null
 test:
   method: auto

@@ -54,7 +54,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 1.0.0 |
-| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_commit | 08e20b9ab068444757d8a4eefce4044219afc94d |
 | git_dirty | False |
 | llm_provider | none |
 | llm_model | none |
@@ -64,7 +64,7 @@ The complete plot configuration is in `plot_config.yaml`.
 | container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
 | input | {"file": "input_de_results.csv", "md5": "cccbb84090f24cd1610407c75dcadee2", "sha256": "487ba326154d5adb67175907eefabc4055bc7a610511a1175ca4cf5ac70248ae"} |
 | command | figkit plot --recipe volcano |
-| analysis_options | {"engine": "python", "recipe": "volcano", "data": {"file": "de_results.csv", "x": null, "y": "padj", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": null, "group": null, "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "ref": null, "cause": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": null, "y_label": "-log10 adjusted p", "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
+| analysis_options | {"engine": "python", "recipe": "volcano", "data": {"file": "de_results.csv", "x": null, "y": "padj", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": null, "group": null, "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "ref": null, "cause": null, "levels": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": null, "y_label": "-log10 adjusted p", "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
 | random_seeds | not_applicable |
 | session_record | session_info.txt |
 | created_utc | 2026-07-18T00:00:00Z |

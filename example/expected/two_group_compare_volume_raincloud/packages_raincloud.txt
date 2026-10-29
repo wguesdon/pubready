@@ -6,6 +6,7 @@ ggplot2==3.5.1
 ggpubr==0.6.0
 rstatix==0.7.2
 readr==2.1.5
+ggdist==3.3.2
 
 ## Full environment (every installed package)
 

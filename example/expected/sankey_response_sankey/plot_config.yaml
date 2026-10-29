@@ -19,6 +19,11 @@ data:
   measure: ~
   ref: ~
   cause: ~
+  levels:
+  - complete response
+  - partial response
+  - stable disease
+  - progressive disease
   markers: ~
   covariates: ~
 test:

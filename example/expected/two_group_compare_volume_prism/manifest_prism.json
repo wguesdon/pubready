@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "pubready_git_commit": "08e20b9ab068444757d8a4eefce4044219afc94d",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "two_group_compare",
@@ -70,18 +70,18 @@
   "output_checksums": [
     {
       "file": "figure_volume_prism.pdf",
-      "bytes": 9140,
-      "sha256": "508e4dc53f52d1fc0d4509b39c93accf8f9e8568783af9b11ff58fe20b8ed2ab"
+      "bytes": 9138,
+      "sha256": "31abe9f1cf757388e5ea82bad809cd2470fa1cd8e9a34a564fd1f5a23ff17c1f"
     },
     {
       "file": "figure_volume_prism.png",
-      "bytes": 52083,
-      "sha256": "178c248400e7c835e3e15a4332efa7948fa28e7609e4f3a129bdd0025ce2224f"
+      "bytes": 52143,
+      "sha256": "985f22a1b16ff874f1016015b8add1efcc2d97c4dfb8be5ff481cb416e633fa2"
     },
     {
       "file": "figure_volume_prism.svg",
       "bytes": 8825,
-      "sha256": "2bc7822cf8e2e3283cfa625cd8469a8278fb05c149a12b48947a19822bc34439"
+      "sha256": "933f192973e6497e35529619ac65773f82a9bb5c9831aedeed523e445e5b75fa"
     },
     {
       "file": "packages_prism.txt",
@@ -96,22 +96,22 @@
     {
       "file": "qc_normality_prism.pdf",
       "bytes": 28025,
-      "sha256": "19ac381e200a77a8912fcbf0587768266121ce432d5af2d96f8b6d4ebae14748"
+      "sha256": "3746c0f5f9bd1beca7a1d008bcc97ff40cb8c9a5f37cdfa3b319ad14a2bbf093"
     },
     {
       "file": "report.qmd",
-      "bytes": 3086,
-      "sha256": "11ea5587516a039391e743b1faf61c1e67288c1b51de3eff222cf2c3b9c10ef1"
+      "bytes": 3100,
+      "sha256": "ec2e6b0cf4fd61ca072056d5796972d61b9bcca05838ecbc703824793b46a4d9"
     },
     {
       "file": "report.html",
-      "bytes": 1262560,
-      "sha256": "bbcb214f548dfef87c2b7cf11fb25478e79f09adf6a2ea08fb1067761d4491a0"
+      "bytes": 1262658,
+      "sha256": "0d68e347bf9c74bac21217c7181919662f1036aede14c92a54e8490953bc90c1"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1995,
-      "sha256": "678f7f6aa5e67a4c577344d8e16c2c3257aa167f5e7395b9099f68a884bde424"
+      "bytes": 2017,
+      "sha256": "1861d38ca2f82fa744a917db7e91439d34a54e54d6e12fb8f3f9ba72cc211ade"
     }
   ]
 }
