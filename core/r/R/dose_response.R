@@ -10,6 +10,11 @@
 #
 # Both engines compute the same starting values and minimise the same residual
 # sum of squares, so they converge to the same estimates.
+#
+# A curve whose fit fails, whose fitted span is below 10% of the response range,
+# whose EC50 lies outside the tested doses or whose CI is not finite is reported
+# as "not determined" (.drc_status_reason): EC50 NA, drawn as its mean +/- SEM
+# without a curve, and left out of the shared-midpoint F test.
 
 # Mean response at one dose. Module level so vapply can call it by name.
 .drc_mean_at <- function(u, lx, y) mean(y[lx == u])
@@ -67,24 +72,65 @@
     (1 + 10^((cf[["log_ec50"]] - lx) * cf[["hill"]]))
 }
 
-# Summarise one fitted curve as one row of the stats table.
-.drc_curve_row <- function(g, lx, y, fitres) {
+# The share of the response range below which a fitted curve counts as flat.
+.drc_min_span <- function() 0.10
+
+.drc_na_se <- function(e) c(bottom = NA_real_, top = NA_real_, log_ec50 = NA_real_, hill = NA_real_)
+
+# Why a curve is "not determined", or NA when its fit stands. The rule is the
+# same in both engines: the fit did not converge, the fitted span (top minus
+# bottom) is below 10% of the range of the mean responses of all curves, the
+# EC50 lies outside the tested doses, or the 95% CI of the EC50 is not finite.
+.drc_status_reason <- function(converged, bottom, top, log_ec50, lx, ci_low, ci_high,
+                               span_ref) {
+  if (!converged) return("the fit did not converge")
+  if (is.finite(span_ref) && span_ref > 0 && abs(top - bottom) < .drc_min_span() * span_ref) {
+    return("the response span is below 10% of the data range")
+  }
+  if (!is.finite(log_ec50) || log_ec50 < min(lx) || log_ec50 > max(lx)) {
+    return("the EC50 lies outside the tested doses")
+  }
+  if (!is.finite(ci_low) || !is.finite(ci_high) || ci_low <= 0) {
+    return("the 95% CI of the EC50 is not finite")
+  }
+  NA_character_
+}
+
+# Summarise one curve as one row of the stats table. A curve whose fit fails the
+# rule of .drc_status_reason keeps its sizes and direction but no fitted value.
+.drc_curve_row <- function(g, lx, y, fitres, span_ref) {
   fit <- fitres$fit
+  base <- data.frame(group = g, n = length(y), doses = length(unique(lx)),
+                     midpoint = if (fitres$start$hill < 0) "IC50" else "EC50",
+                     bottom = NA_real_, top = NA_real_, hill = NA_real_,
+                     log_ec50 = NA_real_, se_log_ec50 = NA_real_, ec50 = NA_real_,
+                     ec50_ci_low = NA_real_, ec50_ci_high = NA_real_,
+                     r_squared = NA_real_, rss = NA_real_, df_resid = NA_integer_,
+                     fit_status = "not determined",
+                     status_reason = "the fit did not converge", stringsAsFactors = FALSE)
+  if (is.null(fit)) return(base)
   cf <- .drc_canonical(stats::coef(fit))
-  se <- sqrt(diag(stats::vcov(fit)))
+  se <- tryCatch(suppressWarnings(sqrt(diag(stats::vcov(fit)))), error = .drc_na_se)
   dfr <- stats::df.residual(fit)
   rss <- sum(stats::residuals(fit)^2)
   tq <- stats::qt(0.975, dfr)
+  ci_low <- 10^(cf[["log_ec50"]] - tq * se[["log_ec50"]])
+  ci_high <- 10^(cf[["log_ec50"]] + tq * se[["log_ec50"]])
+  reason <- .drc_status_reason(TRUE, cf[["bottom"]], cf[["top"]], cf[["log_ec50"]], lx,
+                               ci_low, ci_high, span_ref)
+  if (!is.na(reason)) {
+    base$status_reason <- reason
+    return(base)
+  }
   data.frame(
     group = g, n = length(y), doses = length(unique(lx)),
     midpoint = if (cf[["hill"]] < 0) "IC50" else "EC50",
     bottom = cf[["bottom"]], top = cf[["top"]], hill = cf[["hill"]],
     log_ec50 = cf[["log_ec50"]], se_log_ec50 = unname(se[["log_ec50"]]),
-    ec50 = 10^cf[["log_ec50"]],
-    ec50_ci_low = 10^(cf[["log_ec50"]] - tq * se[["log_ec50"]]),
-    ec50_ci_high = 10^(cf[["log_ec50"]] + tq * se[["log_ec50"]]),
+    ec50 = 10^cf[["log_ec50"]], ec50_ci_low = ci_low, ec50_ci_high = ci_high,
     r_squared = 1 - rss / sum((y - mean(y))^2),
-    rss = rss, df_resid = dfr, stringsAsFactors = FALSE)
+    rss = rss, df_resid = as.integer(dfr), fit_status = "fitted",
+    status_reason = NA_character_, stringsAsFactors = FALSE)
 }
 
 # Residual sum of squares of one curve at a fixed log EC50 and Hill slope. With
@@ -182,6 +228,10 @@ recipe_dose_response <- function(df, spec) {
   d$lx <- log10(d$dose)
 
   g_lv <- unique(d$group)
+  # The span rule compares each fitted span with the range of the mean
+  # responses of all curves.
+  pts <- .drc_dose_summary(d)
+  span_ref <- diff(range(pts$mean))
   rows <- list(); starts <- list(); algos <- list()
   for (g in g_lv) {
     sel <- d$group == g
@@ -190,56 +240,54 @@ recipe_dose_response <- function(df, spec) {
                    g, length(unique(d$lx[sel])), sum(sel)))
     }
     fr <- .drc_fit_curve(d$lx[sel], d$y[sel])
-    if (is.null(fr$fit)) {
-      stop(sprintf("the four-parameter logistic did not converge for curve '%s'", g))
+    rows[[g]] <- .drc_curve_row(g, d$lx[sel], d$y[sel], fr, span_ref)
+    if (rows[[g]]$fit_status == "fitted") {
+      starts[[g]] <- fr$start
+      algos[[g]] <- fr$algorithm
     }
-    rows[[g]] <- .drc_curve_row(g, d$lx[sel], d$y[sel], fr)
-    starts[[g]] <- fr$start
-    algos[[g]] <- fr$algorithm
   }
   stats_df <- do.call(rbind, rows)
   rownames(stats_df) <- NULL
+  det <- stats_df$fit_status == "fitted"
+  det_lv <- stats_df$group[det]
+  nd_lv <- stats_df$group[!det]
 
-  shared <- if (length(g_lv) >= 2) .drc_shared_test(d, stats_df) else NULL
+  # A curve that is not determined stays out of the shared-midpoint test.
+  shared <- if (length(det_lv) >= 2) {
+    .drc_shared_test(d[d$group %in% det_lv, , drop = FALSE], stats_df[det, , drop = FALSE])
+  } else NULL
 
   pal <- spec$appearance$palette %||% pubready_palette
   pal <- rep(pal, length.out = length(g_lv))
-  mid_name <- if (all(stats_df$midpoint == "IC50")) "IC50" else "EC50"
-  leg <- sprintf("%s (%s = %s)", g_lv, stats_df$midpoint,
-                 sprintf("%.3g", stats_df$ec50))
+  mid_name <- .drc_mid_name(stats_df)
+  leg <- ifelse(det, sprintf("%s (%s = %s)", g_lv, stats_df$midpoint, sprintf("%.3g", stats_df$ec50)),
+                sprintf("%s (not determined)", g_lv))
   names(pal) <- g_lv; names(leg) <- g_lv
 
-  curves <- do.call(rbind, lapply(g_lv, .drc_curve_grid, rows = stats_df, d = d))
-  pts <- .drc_dose_summary(d)
+  curves <- do.call(rbind, lapply(det_lv, .drc_curve_grid, rows = stats_df, d = d))
   pts$dose <- 10^pts$lx
   replicated <- any(pts$n > 1)
-  curves$group <- factor(curves$group, levels = g_lv)
   pts$group <- factor(pts$group, levels = g_lv)
 
-  p <- ggplot2::ggplot() +
-    ggplot2::geom_line(data = curves, ggplot2::aes(x = dose, y = y, colour = group),
-                       linewidth = 0.8)
+  p <- ggplot2::ggplot()
+  if (!is.null(curves) && nrow(curves) > 0) {
+    curves$group <- factor(curves$group, levels = g_lv)
+    p <- p + ggplot2::geom_line(data = curves, ggplot2::aes(x = dose, y = y, colour = group),
+                                linewidth = 0.8)
+  }
   if (replicated) {
     p <- p +
       ggplot2::geom_errorbar(data = pts[pts$n > 1, , drop = FALSE],
                              ggplot2::aes(x = dose, ymin = mean - sem, ymax = mean + sem,
-                                          colour = group), width = 0.05, linewidth = 0.4) +
-      ggplot2::geom_point(data = pts, ggplot2::aes(x = dose, y = mean, colour = group), size = 2)
-  } else {
-    p <- p + ggplot2::geom_point(data = pts, ggplot2::aes(x = dose, y = mean, colour = group), size = 2)
+                                          colour = group), width = 0.05, linewidth = 0.4)
   }
-  subtitle <- if (!is.null(shared)) {
-    sprintf("Shared %s F test: F(%d, %d) = %.2f, P = %s", mid_name, shared$df1, shared$df2,
-            shared$statistic, sprintf("%.2g", shared$p_value))
-  } else {
-    sprintf("%s = %s (95%% CI %s to %s)", stats_df$midpoint[1],
-            sprintf("%.3g", stats_df$ec50[1]),
-            sprintf("%.3g", stats_df$ec50_ci_low[1]),
-            sprintf("%.3g", stats_df$ec50_ci_high[1]))
-  }
+  p <- p + ggplot2::geom_point(data = pts, ggplot2::aes(x = dose, y = mean, colour = group), size = 2)
+  subtitle <- .drc_subtitle(stats_df, shared, mid_name, has_group)
   p <- p +
     ggplot2::scale_x_log10(labels = scales::label_number(drop0trailing = TRUE)) +
-    ggplot2::scale_colour_manual(values = pal, labels = leg, breaks = g_lv) +
+    ggplot2::scale_colour_manual(values = pal, labels = leg, breaks = g_lv,
+                                 guide = ggplot2::guide_legend(
+                                   override.aes = list(linetype = ifelse(det, 1, 0)))) +
     ggplot2::labs(x = spec$appearance$x_label %||% x, y = spec$appearance$y_label %||% y,
                   colour = if (has_group) grp else NULL,
                   title = spec$appearance$title, subtitle = subtitle) +
@@ -250,6 +298,8 @@ recipe_dose_response <- function(df, spec) {
   test_meta <- list(
     name = "Four-parameter logistic fit",
     n_curves = length(g_lv),
+    n_determined = length(det_lv),
+    not_determined = as.list(nd_lv),
     curves = stats::setNames(lapply(seq_len(nrow(stats_df)), .drc_meta_row, rows = stats_df), g_lv),
     shared_ec50_test = shared)
   resolved <- list(family = "dose_response", label = test_meta$name)
@@ -265,9 +315,44 @@ recipe_dose_response <- function(df, spec) {
        width = if (has_group) 6.2 else 4.6, height = 4.2)
 }
 
+# IC50 when every determined curve falls, EC50 otherwise.
+.drc_mid_name <- function(rows) {
+  mids <- rows$midpoint[rows$fit_status == "fitted"]
+  if (length(mids) == 0) mids <- rows$midpoint
+  if (all(mids == "IC50")) "IC50" else "EC50"
+}
+
+# The subtitle: the shared-midpoint test, or the midpoint of the one determined
+# curve, and a second line that names the curves left out as not determined.
+.drc_subtitle <- function(rows, shared, mid_name, has_group) {
+  det <- rows$fit_status == "fitted"
+  first <- if (!is.null(shared)) {
+    sprintf("Shared %s F test: F(%d, %d) = %.2f, P = %s", mid_name, shared$df1, shared$df2,
+            shared$statistic, sprintf("%.2g", shared$p_value))
+  } else if (any(det)) {
+    r <- rows[which(det)[1], ]
+    sprintf("%s%s = %s (95%% CI %s to %s)", if (has_group) paste0(r$group, " ") else "",
+            r$midpoint, sprintf("%.3g", r$ec50), sprintf("%.3g", r$ec50_ci_low),
+            sprintf("%.3g", r$ec50_ci_high))
+  } else if (has_group) {
+    sprintf("%s not determined for any curve", mid_name)
+  } else {
+    sprintf("%s not determined: %s", mid_name, rows$status_reason[1])
+  }
+  nd <- rows$group[!det]
+  if (!has_group || length(nd) == 0 || !any(det)) return(first)
+  second <- if (length(nd) <= 2) {
+    sprintf("Not determined, left out of the test: %s", paste(nd, collapse = ", "))
+  } else {
+    sprintf("%d curves not determined, left out of the test", length(nd))
+  }
+  paste(first, second, sep = "\n")
+}
+
 .drc_meta_row <- function(i, rows) {
   r <- rows[i, ]
-  list(midpoint = r$midpoint, ec50 = r$ec50, ci_low = r$ec50_ci_low, ci_high = r$ec50_ci_high,
+  list(midpoint = r$midpoint, fit_status = r$fit_status, status_reason = r$status_reason,
+       ec50 = r$ec50, ci_low = r$ec50_ci_low, ci_high = r$ec50_ci_high,
        hill = r$hill, bottom = r$bottom, top = r$top, r_squared = r$r_squared)
 }
 
@@ -276,17 +361,32 @@ recipe_dose_response <- function(df, spec) {
   v <- pkg_versions("ggplot2")
   y_lab <- spec$appearance$y_label %||% y
   x_lab <- spec$appearance$x_label %||% x
-  fits <- paste(sprintf("%s %s = %s (95%% CI %s to %s, Hill slope %.2f, R2 = %.3f)",
-                        if (nrow(rows) > 1) paste0(rows$group, ":") else "",
-                        rows$midpoint,
-                        sprintf("%.3g", rows$ec50),
-                        sprintf("%.3g", rows$ec50_ci_low),
-                        sprintf("%.3g", rows$ec50_ci_high),
-                        rows$hill, rows$r_squared), collapse = "; ")
+  det <- rows$fit_status == "fitted"
+  fr <- rows[det, , drop = FALSE]
+  fits <- if (nrow(fr) > 0) {
+    paste0(paste(sprintf("%s%s = %s (95%% CI %s to %s, Hill slope %.2f, R2 = %.3f)",
+                         if (nrow(rows) > 1) paste0(fr$group, ": ") else "",
+                         fr$midpoint,
+                         sprintf("%.3g", fr$ec50),
+                         sprintf("%.3g", fr$ec50_ci_low),
+                         sprintf("%.3g", fr$ec50_ci_high),
+                         fr$hill, fr$r_squared), collapse = "; "), ".")
+  } else ""
+  nd <- rows[!det, , drop = FALSE]
+  nd_txt <- if (nrow(nd) > 0) {
+    paste0(" ", paste(sprintf("%s was not determined, because %s.",
+                              if (nrow(rows) > 1) paste0("The ", nd$midpoint, " of ", nd$group)
+                              else paste0("The ", nd$midpoint),
+                              nd$status_reason), collapse = " "),
+           " A curve that is not determined is drawn as its mean +/- SEM without a fit",
+           if (nrow(rows) > 1) " and is left out of the shared-midpoint F test." else ".")
+  } else ""
   shared_txt <- if (!is.null(shared)) {
-    sprintf(" An extra-sum-of-squares F test compared one shared %s with one %s per curve, with the shared fit profiled over the midpoint and each Hill slope held between 0.05 and 20 in magnitude: F(%d, %d) = %.2f, P = %s.",
-            rows$midpoint[1], rows$midpoint[1], shared$df1, shared$df2, shared$statistic,
-            sprintf("%.2g", shared$p_value))
+    sprintf(" An extra-sum-of-squares F test compared one shared %s with one %s per curve over the %d determined curves, with the shared fit profiled over the midpoint and each Hill slope held between 0.05 and 20 in magnitude: F(%d, %d) = %.2f, P = %s.",
+            .drc_mid_name(rows), .drc_mid_name(rows), sum(det), shared$df1, shared$df2,
+            shared$statistic, sprintf("%.2g", shared$p_value))
+  } else if (nrow(rows) > 1 && sum(det) < 2) {
+    " The shared-midpoint F test was not run, because fewer than two curves were determined."
   } else if (nrow(rows) > 1) {
     " The shared-midpoint F test could not be computed, because the shared fit did not converge."
   } else ""
@@ -294,7 +394,8 @@ recipe_dose_response <- function(df, spec) {
     sprintf("%s was modelled as a function of %s with a four-parameter logistic curve (variable Hill slope) fitted by nonlinear least squares on log10 dose (n = %d points, %d curve(s)). ",
             cap_first(y_lab), x_lab, nrow(d), nrow(rows)),
     "The 95% confidence interval of the midpoint was computed on the log10 scale from the standard error of the fit and back-transformed. ",
-    fits, ".", shared_txt,
+    "A midpoint was reported as not determined when the fit did not converge, when the fitted span (top minus bottom) was below 10% of the range of the mean responses, when the midpoint lay outside the tested doses, or when its 95% CI was not finite. ",
+    fits, nd_txt, shared_txt,
     sprintf(" Fitted in R %s with stats::nls and drawn with ggplot2 %s.", rver, v$ggplot2))
 }
 
@@ -312,8 +413,10 @@ recipe_dose_response <- function(df, spec) {
     sprintf('                group = %s)', if (has_group) sprintf('as.character(raw[["%s"]])', grp) else '"all"'),
     "d <- d[is.finite(d$dose) & is.finite(d$y) & d$dose > 0, ]",
     "d$lx <- log10(d$dose)",
+    "# Only the curves with a determined midpoint are refitted; the others are",
+    "# drawn as points, as in the figure.",
     "starts <- list(",
-    paste0("  ", start_lines, c(rep(",", length(start_lines) - 1), "")),
+    paste0("  ", start_lines, c(rep(",", max(length(start_lines) - 1, 0)), "")[seq_along(start_lines)]),
     ")",
     sprintf("algos <- c(%s)", paste(sprintf('"%s" = "%s"', names(algos), unlist(algos)), collapse = ", ")),
     "fml <- y ~ bottom + (top - bottom) / (1 + 10^((log_ec50 - lx) * hill))",
@@ -327,10 +430,10 @@ recipe_dose_response <- function(df, spec) {
     "  curves <- rbind(curves, data.frame(group = g, dose = 10^grid,",
     "                                     y = predict(fit, data.frame(lx = grid))))",
     "}",
-    "p <- ggplot() + geom_line(data = curves, aes(dose, y, colour = group)) +",
-    "  geom_point(data = d, aes(dose, y, colour = group), alpha = 0.6) +",
+    "p <- ggplot() + geom_point(data = d, aes(dose, y, colour = group), alpha = 0.6) +",
     sprintf('  scale_x_log10() + labs(x = "%s", y = "%s") + theme_classic()',
             spec$appearance$x_label %||% x, spec$appearance$y_label %||% y),
+    "if (!is.null(curves)) p <- p + geom_line(data = curves, aes(dose, y, colour = group))",
     sprintf('ggsave("%s.pdf", p, width = %s, height = 4.2)', fig_stub,
             if (has_group) "6.2" else "4.6"),
     'cat("Reproduced figure.\\n")'
