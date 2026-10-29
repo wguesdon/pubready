@@ -51,6 +51,9 @@ tag move together.
 - The `composition` facet strips now name the group column, for example "Cont:
   High". On the `housing` benchmark the strips read "High" and "Low", the same
   words as two levels of the stacked categories.
+- The `cox_forest` subtitle now warns when the proportional-hazards check fails,
+  for example "137 subjects, 128 events; PH assumption violated (P < 0.001)" on
+  the `veteran` benchmark. Before, only the methods paragraph said so.
 
 ### Fixed
 - `paired_compare` wrote "The test was chosen from the Shapiro-Wilk normality

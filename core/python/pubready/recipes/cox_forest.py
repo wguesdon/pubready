@@ -163,7 +163,27 @@ def row_texts(row, stats):
     return f"{r['HR']:.2f} ({r['ci_low']:.2f}–{r['ci_high']:.2f})", p_txt
 
 
-def forest_plot(rows, stats_df, spec, n, events):
+def cox_subtitle(n, events, ph_p):
+    """Write the subtitle: the counts and, when the PH check fails, a warning.
+
+    The warning keeps the figure from showing the hazard ratios of a model
+    that breaks the proportional-hazards assumption as valid.
+
+    Args:
+        n: The number of subjects.
+        events: The number of events.
+        ph_p: The P value of the proportional-hazards check, or NaN.
+
+    Returns:
+        str: The subtitle.
+    """
+    txt = f"{n} subjects, {events} events"
+    if ph_p is not None and np.isfinite(ph_p) and ph_p < 0.05:
+        txt += f"; PH assumption violated ({p_phrase(ph_p)})"
+    return txt
+
+
+def forest_plot(rows, stats_df, spec, n, events, ph_p=np.nan):
     """Draw the forest plot with the label column and the two text columns.
 
     Args:
@@ -172,6 +192,7 @@ def forest_plot(rows, stats_df, spec, n, events):
         spec: The figure specification.
         n: The number of subjects.
         events: The number of events.
+        ph_p: The P value of the proportional-hazards check, or NaN.
 
     Returns:
         dict: The figure, its ticks, the label width, the width and the height.
@@ -215,7 +236,7 @@ def forest_plot(rows, stats_df, spec, n, events):
     ax.set_ylim(*ylim)
     ax.set_yticks([])
     ax.set_xlabel(ap.get("x_label") or "Hazard ratio (95% CI, log scale)")
-    ax.set_title(f"{n} subjects, {events} events", fontsize=9.5, color="#4d4d4d", loc="left")
+    ax.set_title(cox_subtitle(n, events, ph_p), fontsize=9.5, color="#4d4d4d", loc="left")
     apply_pub_style(ax, ap.get("theme"))
     ax.spines["left"].set_visible(False)
     ax.tick_params(axis="x", labelsize=10.4)
@@ -287,7 +308,7 @@ def recipe_cox_forest(df, spec):
     stats_df = pd.DataFrame({"term": terms, "HR": hr, "ci_low": lo, "ci_high": hi,
                              "z": summ["z"].to_numpy(), "p_value": pv})
     n_subj, n_events = int(len(df)), int(df[e].sum())
-    fp = forest_plot(rows, stats_df, spec, n_subj, n_events)
+    fp = forest_plot(rows, stats_df, spec, n_subj, n_events, ph_p)
 
     test_meta = {
         "name": "Cox proportional-hazards model",

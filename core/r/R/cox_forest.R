@@ -62,7 +62,7 @@ recipe_cox_forest <- function(df, spec) {
   n_subj <- nrow(df)
   n_events <- sum(df[[event_col]])
   rows <- .cox_forest_rows(cox, stats_df, covs)
-  fp <- .cox_forest_plot(rows, spec, n_subj, n_events)
+  fp <- .cox_forest_plot(rows, spec, n_subj, n_events, ph_p)
 
   test_meta <- list(
     name = "Cox proportional-hazards model",
@@ -170,7 +170,7 @@ recipe_cox_forest <- function(df, spec) {
 # The width of the label column in inches, from the longest label.
 .cox_label_inches <- function(labels) 0.3 + 0.085 * max(nchar(labels), 4)
 
-.cox_forest_plot <- function(rows, spec, n, events) {
+.cox_forest_plot <- function(rows, spec, n, events, ph_p) {
   ap <- spec$appearance
   k <- nrow(rows)
   est <- rows[!rows$ref & is.finite(rows$HR), , drop = FALSE]
@@ -197,7 +197,7 @@ recipe_cox_forest <- function(df, spec) {
     ggplot2::scale_y_continuous(breaks = rows$y, labels = rows$label, limits = ylim,
                                 expand = ggplot2::expansion(0, 0)) +
     ggplot2::labs(x = ap$x_label %||% "Hazard ratio (95% CI, log scale)", y = NULL,
-                  title = ap$title, subtitle = sprintf("%d subjects, %d events", n, events)) +
+                  title = ap$title, subtitle = .cox_subtitle(n, events, ph_p)) +
     pub_theme(ap$theme) +
     ggplot2::theme(axis.line.y = ggplot2::element_blank(),
                    axis.ticks.y = ggplot2::element_blank(),
@@ -324,4 +324,12 @@ recipe_cox_forest <- function(df, spec) {
             fig_stub, width, height),
     'cat("Reproduced figure.\\n")'
   )
+}
+
+# The subtitle gives the counts and, when the proportional-hazards check fails,
+# a warning, so the figure does not show hazard ratios of a broken model as valid.
+.cox_subtitle <- function(n, events, ph_p) {
+  txt <- sprintf("%d subjects, %d events", n, events)
+  if (!is.na(ph_p) && ph_p < 0.05) txt <- sprintf("%s; PH assumption violated (%s)", txt, p_phrase(ph_p))
+  txt
 }

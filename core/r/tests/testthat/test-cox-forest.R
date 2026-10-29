@@ -33,3 +33,9 @@ test_that("recipe_cox_forest shows a reference row per factor", {
   expect_equal(rows$hr_txt[rows$ref], c("reference", "reference"))
   expect_equal(rows$HR[!rows$ref], res$stats$HR)
 })
+
+test_that("the Cox subtitle warns when the proportional-hazards check fails", {
+  expect_equal(.cox_subtitle(137, 128, 1e-5), "137 subjects, 128 events; PH assumption violated (P < 0.001)")
+  expect_equal(.cox_subtitle(227, 164, 0.22), "227 subjects, 164 events")
+  expect_equal(.cox_subtitle(227, 164, NA_real_), "227 subjects, 164 events")
+})

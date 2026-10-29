@@ -46,3 +46,10 @@ def test_cox_forest_shows_a_reference_row_per_factor():
     table = [t.get_text() for t in res["fig"].axes[1].texts]
     assert table.count("reference") == 2
     assert "HR (95% CI)" in table and "P" in table
+
+
+def test_the_cox_subtitle_warns_when_the_proportional_hazards_check_fails():
+    from pubready.recipes.cox_forest import cox_subtitle
+    assert cox_subtitle(137, 128, 1e-5) == "137 subjects, 128 events; PH assumption violated (P < 0.001)"
+    assert cox_subtitle(227, 164, 0.22) == "227 subjects, 164 events"
+    assert cox_subtitle(227, 164, float("nan")) == "227 subjects, 164 events"
