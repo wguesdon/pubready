@@ -93,7 +93,7 @@ test_that("lung (NCCTG): the log-rank test matches survival::survdiff", {
 
 test_that("lung: the Cox hazard ratios match survival::coxph", {
   bench_skip()
-  # survminer::ggforest measures text on the open device; the test mount is
+  # The forest plot layout can measure text on the open device; the test mount is
   # read-only, so a null device stands in for Rplots.pdf.
   grDevices::pdf(NULL)
   on.exit(grDevices::dev.off(), add = TRUE)

@@ -13,6 +13,18 @@ tag move together.
 
 ## [Unreleased]
 
+### Fixed
+- The R `cox_forest` drew its figure with `survminer::ggforest`. The text was
+  about 6 pt, grey bands crossed the rows, and a long level name ran into its
+  hazard ratio. Both engines now draw the same house-style forest plot. Each
+  model term has one row, and the first level of each factor has a "reference"
+  row. The "HR (95% CI)" and "P" columns are on the right, and the subtitle
+  gives the number of subjects and events. The numbers do not change. The
+  generated R script no longer loads survminer.
+- The hazard-ratio axis of `cox_forest` showed only 0.5 and 1 when a CI reached
+  1.94. The axis now has 1-2-5 ticks that cover the CIs on both sides of 1, in
+  both engines.
+
 ## [1.0.0] - 2026-10-07
 
 This is the first major release. The rename from pubplot to pubready changes
