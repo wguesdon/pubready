@@ -85,7 +85,9 @@ def recipe_swimmer(df, spec):
     steps = ([f"Dropped {int((~keep).sum())} row(s) with a missing patient, duration, status or "
               "arm."] if int((~keep).sum()) else []) + [f"Kept {len(d)} of {n0} patient(s)."]
 
-    g_lv = list(pd.unique(d["group"]))
+    # The arms are sorted, as the other recipes sort their groups; R sorts them
+    # in the same C-locale order.
+    g_lv = sorted(pd.unique(d["group"]))
     d = d.sort_values(["duration", "patient"], kind="mergesort").reset_index(drop=True)
     d["rank"] = np.arange(1, len(d) + 1)
     ap = spec["appearance"]
@@ -116,7 +118,7 @@ def recipe_swimmer(df, spec):
     ax.set_xlim(0, span * 1.08)
     if handles:
         ax.legend(handles=handles, title=grp if has_group else None, loc="center left",
-                  bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=9)
+                  bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=9, title_fontsize=10)
     ax.set_title(f"{len(d)} patients; {int(d['ongoing'].sum())} ongoing (arrow)",
                  fontsize=10, color="#4d4d4d")
     if ap.get("title"):

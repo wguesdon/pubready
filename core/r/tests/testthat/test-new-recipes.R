@@ -152,6 +152,14 @@ test_that("swimmer sorts the courses, counts the ongoing ones and the markers", 
   expect_equal(res$test_meta$markers$response, 2)
 })
 
+test_that("swimmer sorts the arms as the other recipes sort their groups", {
+  df <- data.frame(pt = c("a", "b", "c"), months = c(3, 10, 6), ended = c(1, 0, 1),
+                   arm = c("Arm C", "Arm B", "Arm A"))
+  res <- recipe_swimmer(df, new_spec("swimmer", id = "pt", time = "months", event = "ended",
+                                     group = "arm"))
+  expect_equal(names(res$test_meta$arms), c("Arm A", "Arm B", "Arm C"))
+})
+
 test_that("swimmer refuses a status that is not coded 1 or 0", {
   df <- data.frame(pt = c("a", "b"), months = c(3, 10), ended = c(1, 2))
   expect_error(recipe_swimmer(df, new_spec("swimmer", id = "pt", time = "months", event = "ended")),

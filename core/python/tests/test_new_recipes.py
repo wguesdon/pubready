@@ -206,6 +206,16 @@ def test_swimmer_sorts_the_courses_and_counts_ongoing_and_markers():
     assert res["test_meta"]["markers"]["response"] == 2
 
 
+def test_swimmer_sorts_the_arms_as_the_other_recipes_sort_their_groups():
+    df = pd.DataFrame({"pt": ["a", "b", "c"], "months": [3, 10, 6], "ended": [1, 0, 1],
+                       "arm": ["Arm C", "Arm B", "Arm A"]})
+    res = recipe_swimmer(df, new_spec("swimmer", id="pt", time="months", event="ended",
+                                      group="arm"))
+    assert list(res["test_meta"]["arms"]) == ["Arm A", "Arm B", "Arm C"]
+    legend = res["fig"].axes[0].get_legend()
+    assert [t.get_text() for t in legend.get_texts()] == ["Arm A", "Arm B", "Arm C"]
+
+
 def test_swimmer_refuses_a_status_not_coded_one_or_zero():
     df = pd.DataFrame({"pt": ["a", "b"], "months": [3, 10], "ended": [1, 2]})
     with pytest.raises(ValueError, match="1 = the course ended"):

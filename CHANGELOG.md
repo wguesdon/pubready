@@ -68,6 +68,10 @@ tag move together.
   tick label "1.0" ended at the right edge of the image. The legend keys now
   show the hollow Youden point on the line, as in R, and the figure keeps a
   margin right of the axis.
+- `swimmer` listed the arms in the order of the input rows, for example Arm C,
+  Arm B, Arm A. Both engines now sort the arms as the other recipes sort their
+  groups, so the colours and the legend follow that order. The R legend text
+  was 10.4 pt and the title 13 pt. They are now 9 pt and 10 pt, as in Python.
 
 ## [1.0.0] - 2026-10-07
 

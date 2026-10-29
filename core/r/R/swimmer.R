@@ -51,7 +51,9 @@ recipe_swimmer <- function(df, spec) {
 
   d <- d[order(d$duration, d$patient, method = "radix"), , drop = FALSE]
   d$rank <- seq_len(nrow(d))
-  g_lv <- if (has_group) unique(as.character(df[[grp]][keep])) else "all"
+  # The arms are sorted, as the other recipes sort their groups; "radix" gives
+  # the C-locale order that the Python engine uses.
+  g_lv <- if (has_group) sort(unique(as.character(df[[grp]][keep])), method = "radix") else "all"
   d$group <- factor(d$group, levels = g_lv)
   pal <- spec$appearance$palette %||% pubready_palette
   pal <- rep(pal, length.out = length(g_lv))
@@ -91,6 +93,8 @@ recipe_swimmer <- function(df, spec) {
     pub_theme(spec$appearance$theme) +
     ggplot2::theme(legend.position = "right",
                    axis.text.y = ggplot2::element_text(size = 7),
+                   legend.text = ggplot2::element_text(size = 9),
+                   legend.title = ggplot2::element_text(size = 10),
                    plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"))
   if (!has_group) p <- p + ggplot2::guides(colour = "none")
 
