@@ -8,6 +8,8 @@ d <- data.frame(dose = as.numeric(raw[["concentration_um"]]), y = as.numeric(raw
                 group = as.character(raw[["compound"]]))
 d <- d[is.finite(d$dose) & is.finite(d$y) & d$dose > 0, ]
 d$lx <- log10(d$dose)
+# Only the curves with a determined midpoint are refitted; the others are
+# drawn as points, as in the figure.
 starts <- list(
   "cmpd_A" = list(bottom = 2.966666667, top = 98.86666667, log_ec50 = -1.522878745, hill = -1),
   "cmpd_B" = list(bottom = 11.4, top = 98.9, log_ec50 = -0.5228787453, hill = -1),
@@ -25,8 +27,8 @@ for (g in names(starts)) {
   curves <- rbind(curves, data.frame(group = g, dose = 10^grid,
                                      y = predict(fit, data.frame(lx = grid))))
 }
-p <- ggplot() + geom_line(data = curves, aes(dose, y, colour = group)) +
-  geom_point(data = d, aes(dose, y, colour = group), alpha = 0.6) +
+p <- ggplot() + geom_point(data = d, aes(dose, y, colour = group), alpha = 0.6) +
   scale_x_log10() + labs(x = "Concentration (uM)", y = "Viability (%)") + theme_classic()
+if (!is.null(curves)) p <- p + geom_line(data = curves, aes(dose, y, colour = group))
 ggsave("figure_viability_pct_drc.pdf", p, width = 6.2, height = 4.2)
 cat("Reproduced figure.\n")

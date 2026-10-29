@@ -1,0 +1,134 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "factorial_anova",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "genotype",
+    "y": "response",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_response.csv",
+    "original_name": "twoway_response.csv",
+    "md5": "dba50f83c02a1cd007bc013dd062a9b0",
+    "sha256": "e7d2443929aced46222aa951eb52064fade5b9ab5ceed25f6ebf447676bc8ff4",
+    "n_rows": 48
+  },
+  "statistical_test": {
+    "name": "2-way ANOVA",
+    "factors": [
+      "genotype",
+      "treatment"
+    ],
+    "type": "type_II_anova",
+    "residual_normality": {
+      "test": "shapiro-wilk",
+      "p": 0.340046
+    },
+    "effects": [
+      {
+        "effect": "genotype",
+        "df1": 1,
+        "df2": 42,
+        "statistic": 67.341035,
+        "p_value": 2.88941e-10,
+        "effect_size": 0.615881
+      },
+      {
+        "effect": "treatment",
+        "df1": 2,
+        "df2": 42,
+        "statistic": 22.612777,
+        "p_value": 2.161308e-07,
+        "effect_size": 0.51849
+      },
+      {
+        "effect": "genotype:treatment",
+        "df1": 2,
+        "df2": 42,
+        "statistic": 39.400995,
+        "p_value": 2.315684e-10,
+        "effect_size": 0.652324
+      }
+    ]
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_response_interaction.pdf",
+    "figure_response_interaction.png",
+    "figure_response_interaction.svg",
+    "packages_interaction.txt",
+    "qc_normality_interaction.png",
+    "qc_normality_interaction.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_response_interaction.pdf",
+      "bytes": 14790,
+      "sha256": "024657c8ffdb8bfe454dda0691c2ddb3dfcf63ea877fced875d5f4034d427913"
+    },
+    {
+      "file": "figure_response_interaction.png",
+      "bytes": 96061,
+      "sha256": "69c063d0bc5883c1dfc39649acf2726894f5138699972c71e822522f75ed5580"
+    },
+    {
+      "file": "figure_response_interaction.svg",
+      "bytes": 10214,
+      "sha256": "f4a6f70e1eccf7cb9880bc829b4d4114091b1e647a9f41fb619680f4076416ba"
+    },
+    {
+      "file": "packages_interaction.txt",
+      "bytes": 3600,
+      "sha256": "a0aeb281c6c4bbe11bea00809b8cd5b5ae7c76114c20f2aa25cf1affac7d2e05"
+    },
+    {
+      "file": "qc_normality_interaction.png",
+      "bytes": 60649,
+      "sha256": "5f81fd651d9086a7b1065d477e3d2f09b777fa0911796bc4f30265691e41c573"
+    },
+    {
+      "file": "qc_normality_interaction.pdf",
+      "bytes": 20351,
+      "sha256": "586921df255306d56aeb21649fee4611da5ac95129106ec9c613162fd54191ab"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3141,
+      "sha256": "ab2f0557487dd5d3e1cc1f57a4e7e5006b0ce63b9ff94d41886f6edebd450a35"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1321187,
+      "sha256": "84b0f88c3bdeff806a3ed6f237c3504bb9af2a4821024b9f15f453a8521ccec3"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2018,
+      "sha256": "945185b0f99510cd4647fb6c3dca5247e075c8b94c358f48a5d30a4bdfd8a4f7"
+    }
+  ]
+}

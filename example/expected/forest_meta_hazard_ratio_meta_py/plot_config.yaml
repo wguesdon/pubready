@@ -18,6 +18,8 @@ data:
   ci_low: ci_low
   ci_high: ci_high
   measure: null
+  ref: null
+  cause: null
   markers: null
 test:
   method: auto

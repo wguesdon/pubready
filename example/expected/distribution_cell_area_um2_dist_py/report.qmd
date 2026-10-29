@@ -1,0 +1,63 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new statistical method.
+:::
+
+## Figure
+
+![Publication figure](figure_cell_area_um2_dist_py.png)
+
+## Statistical results
+
+| group | n | mean | sd | median | q1 | q3 | min | max | skewness | excess_kurtosis | shapiro_w | shapiro_p | bin_width | bandwidth |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| control | 90 | 260.02666666666664 | 38.56166169667729 | 260.5 | 241.95000000000002 | 282.8 | 142.0 | 358.7 | -0.28325183637482265 | 0.5573031446471854 | 0.9823865997431795 | 0.2634556600909799 | 28.48998259073779 | 11.155300405236776 |
+| mixed culture | 70 | 280.0642857142857 | 83.74703461886526 | 243.6 | 213.12500000000003 | 366.225 | 160.1 | 430.8 | 0.33213900893291254 | -1.490520604357116 | 0.8831681781164912 | 8.924471542622699e-06 | 28.48998259073779 | 32.224956484982194 |
+| serum-starved | 80 | 225.72375000000002 | 76.34260426698727 | 209.39999999999998 | 172.00000000000003 | 268.625 | 105.9 | 475.6 | 0.8627507744560722 | 0.5296390113236837 | 0.9434277863517986 | 0.0014768257875404022 | 28.48998259073779 | 27.015264290554242 |
+
+## Methods
+
+The distribution of cell_area_um2 was described in each of 3 groups of condition (n = 90, 70, 80). The histogram uses a bin width of 28.49 from the Freedman-Diaconis rule (2 x IQR x n^(-1/3)) on the pooled values, with bins anchored at a multiple of the width. The solid curve is a Gaussian kernel density with the bandwidth of Silverman's rule of thumb (stats::bw.nrd0), and the dashed curve is a normal distribution with the sample mean and SD; both are scaled to counts. Normality was assessed with the Shapiro-Wilk test (control: W = 0.982, P = 0.26; mixed culture: W = 0.883, P < 0.001; serum-starved: W = 0.943, P = 0.0015). Skewness and excess kurtosis are the moment estimates on standardised values (sum(z^3) / n and sum(z^4) / n - 3, with z scaled by the SD). No test compared the groups; use two_group_compare or multi_group_compare to test a difference in location. Computed in Python 3.10.12 with scipy 1.15.3 and drawn with matplotlib 3.10.9.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 1.0.0 |
+| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_dirty | False |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:1.0.0 |
+| container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
+| input | {"file": "input_cell_area_um2.csv", "md5": "9a6485554175f36ec3bd2b8365cc3665", "sha256": "5465c7bdc86c61c1bbdaa5bf4d211be7062d1eadd2b12df0a28b2cecba8052bb"} |
+| command | figkit plot --recipe distribution |
+| analysis_options | {"engine": "python", "recipe": "distribution", "data": {"file": "distribution.csv", "x": "condition", "y": "cell_area_um2", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": null, "group": null, "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "ref": null, "cause": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": "Cell area (um^2)", "y_label": null, "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

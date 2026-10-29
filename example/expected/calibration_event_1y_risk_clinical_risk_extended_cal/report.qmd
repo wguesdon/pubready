@@ -1,0 +1,62 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_event_1y_risk_clinical_risk_extended_cal.png)
+
+## Statistical results
+
+| model | case_level | n | n_events | brier | intercept | intercept_ci_low | intercept_ci_high | slope | slope_ci_low | slope_ci_high | hl_statistic | hl_df | hl_p | hl_groups | oe_ratio |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| risk_clinical | yes | 500 | 130 | 0.17178516214 | -0.143969399796984 | -0.362451522928129 | 0.074512723334161 | 0.821408830166909 | 0.592493504776604 | 1.05032415555721 | 9.02135569634209 | 8 | 0.340497619229566 | 10 | 0.916280830206819 |
+| risk_extended | yes | 500 | 130 | 0.16879814044 | -0.0124451030580843 | -0.25171434979707 | 0.226824143680901 | 0.6216320036108 | 0.467007352719193 | 0.776256654502408 | 26.9555120651225 | 8 | 0.00071960033699251 | 10 | 0.993605764747785 |
+
+## Methods
+
+The calibration of the predicted probabilities was assessed against the observed outcome event_1y = yes (events, n = 130) versus no (non-events, n = 370). For each model, the Brier score is the mean squared difference between the prediction and the outcome. The calibration intercept (calibration-in-the-large) is the intercept of a logistic regression of the outcome with logit(p) as an offset, and the calibration slope is the coefficient of logit(p) in a logistic regression, each with a 95% Wald CI; ideal values are 0 and 1. The Hosmer-Lemeshow test grouped the subjects at the deciles of the prediction (g = 10; tied deciles merge, df = groups - 2). The figure shows the observed proportion against the mean prediction in each group with a 95% Wilson CI, a lowess smooth of the outcome on the prediction (f = 2/3, without robustness iterations, which would treat the events of a binary outcome as outliers), and the spike histogram of the predictions. risk_clinical: Brier score 0.172, calibration intercept -0.14 (95% CI -0.36 to 0.07), slope 0.82 (95% CI 0.59 to 1.05), Hosmer-Lemeshow chi-square(8) = 9.02, P = 0.34, observed/expected 0.92; risk_extended: Brier score 0.169, calibration intercept -0.01 (95% CI -0.25 to 0.23), slope 0.62 (95% CI 0.47 to 0.78), Hosmer-Lemeshow chi-square(8) = 26.96, P < 0.001, observed/expected 0.99. Computed in R 4.4.1 with stats::glm and stats::lowess and drawn with ggplot2 3.5.1.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 1.0.0 |
+| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:1.0.0 |
+| container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
+| input | {"file":"input_event_1y_risk_clinical_risk_extended.csv","md5":"4d7ddf64a4e0eb79c7d2003021d46c53","sha256":"c6d02e1cfda0e27a2779f352e23b00abe6c739ee1b810ad3e9113fdcdc55e34b"} |
+| command | figkit plot --recipe calibration |
+| analysis_options | {"engine":"r","recipe":"calibration","data":{"file":"calibration.csv","x":"risk_clinical,risk_extended","y":"event_1y","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":null,"positive":"yes","se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":null,"cause":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

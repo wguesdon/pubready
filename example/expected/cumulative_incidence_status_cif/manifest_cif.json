@@ -1,0 +1,113 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "cumulative_incidence",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "arm",
+    "y": {},
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_status.csv",
+    "original_name": "cumulative_incidence.csv",
+    "md5": "f51b7f002d22481f599b4424a27f3bdc",
+    "sha256": "d51f82fe2977bbed1ce2d5a6dac5172c07d0735d16d33c39715d0b67ab610486",
+    "n_rows": 200
+  },
+  "statistical_test": {
+    "name": "Cumulative incidence (Aalen-Johansen) with Gray's test",
+    "cause_of_interest": "1",
+    "causes": [
+      "1",
+      "2"
+    ],
+    "groups": [
+      "intensified",
+      "standard"
+    ],
+    "time_points": [
+      20,
+      30,
+      50
+    ],
+    "gray": {
+      "1": {
+        "statistic": 5.1519,
+        "df": 1,
+        "p_value": 0.023221
+      },
+      "2": {
+        "statistic": 10.980745,
+        "df": 1,
+        "p_value": 0.000921
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_status_cif.pdf",
+    "figure_status_cif.png",
+    "figure_status_cif.svg",
+    "packages_cif.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_status_cif.pdf",
+      "bytes": 21135,
+      "sha256": "876a3784c1ad1b26a453a5328e0f7b6108516b18df2be5dd45653c63ac876ee7"
+    },
+    {
+      "file": "figure_status_cif.png",
+      "bytes": 109258,
+      "sha256": "16f3c14f07a7d4d38610426d84257986ea8054d91959bfe71253fc37a8c888df"
+    },
+    {
+      "file": "figure_status_cif.svg",
+      "bytes": 20955,
+      "sha256": "be716e3638f166285e6b3e8ccb3615431698a0d24f25cd89ac566a1b7a2e3861"
+    },
+    {
+      "file": "packages_cif.txt",
+      "bytes": 3576,
+      "sha256": "9f848e752cff1130197d314cd959d45046015b8c5d8f30f0a5b27179c733066c"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3651,
+      "sha256": "160210952689c7f5600a4d3f222f138419b6b1336357eff382b38ec92651b50b"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1339482,
+      "sha256": "7c4df71d2b78cb507fcc52fbda97b37348256403d1b0f10fe4049f11a3f15708"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2021,
+      "sha256": "39ad326ef80347fdd2025190f4536a46ced3894d9462460021690314ae5ace0f"
+    }
+  ]
+}

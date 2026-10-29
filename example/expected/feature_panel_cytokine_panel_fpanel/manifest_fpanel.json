@@ -1,0 +1,115 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "feature_panel",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "group",
+    "y": "concentration_pg_ml",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_cytokine_panel.csv",
+    "original_name": "cytokine_panel.csv",
+    "md5": "f77a1f672f5ed66b30e6a03fd7e90698",
+    "sha256": "4ccf271257662e1dee4339f1d69d6d74ce5bd3f47078a5fde1a0aed9bdca004d",
+    "n_rows": 432
+  },
+  "statistical_test": {
+    "name": "Kruskal-Wallis test",
+    "test": "kruskal",
+    "p_adjust": "BH",
+    "n_features": 9,
+    "n_groups": 3,
+    "groups": ["Healthy control", "Mild disease", "Severe disease"],
+    "n_significant": 6,
+    "n_untested": 0,
+    "forced": false,
+    "assumptions": {
+      "normality": {
+        "test": "shapiro-wilk",
+        "all_normal": false,
+        "n_checked": 27,
+        "n_non_normal": 15
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_cytokine_panel_fpanel.pdf",
+    "figure_cytokine_panel_fpanel.png",
+    "figure_cytokine_panel_fpanel.svg",
+    "packages_fpanel.txt",
+    "qc_normality_fpanel.png",
+    "qc_normality_fpanel.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_cytokine_panel_fpanel.pdf",
+      "bytes": 34295,
+      "sha256": "f890c4e083dfd2331b8ca385b5bccf44e631804ee26f005105da79a1d818b13d"
+    },
+    {
+      "file": "figure_cytokine_panel_fpanel.png",
+      "bytes": 357343,
+      "sha256": "d9f969825f1e7cadf32a79fc2bf74f8cd33e8502d15ea911f97f98146577c0bb"
+    },
+    {
+      "file": "figure_cytokine_panel_fpanel.svg",
+      "bytes": 108898,
+      "sha256": "236138e110c74e0461f9e2c0cb1e705a004f0184b0792c851b01ec841b091277"
+    },
+    {
+      "file": "packages_fpanel.txt",
+      "bytes": 3561,
+      "sha256": "b944d632caadaf33ecff4ac0b7c5d88ca5926b82d431f97a9290caf16f7dcd43"
+    },
+    {
+      "file": "qc_normality_fpanel.png",
+      "bytes": 571826,
+      "sha256": "1ee00adbf0380eb0e1fd0d83d30035edc580ec8ba86382ce248819908a0a5c3c"
+    },
+    {
+      "file": "qc_normality_fpanel.pdf",
+      "bytes": 49622,
+      "sha256": "62322cdd0f5b882701dd80046201e14fb14843c903955eaf640c0ae688fdda3a"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 4662,
+      "sha256": "af1d97824f02432916240d3e6bebed894a6a61c9f07407e65c5aba3263acbf7d"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1671975,
+      "sha256": "ea00e6fd9ab8013f2784bfe8a08458ba79d8522458d9209ded5d8d4d9a897a00"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2027,
+      "sha256": "757eb395b3e1eba4acd26e93d8e08c17a027ead629dbbe047b467eaf8010c7a3"
+    }
+  ]
+}

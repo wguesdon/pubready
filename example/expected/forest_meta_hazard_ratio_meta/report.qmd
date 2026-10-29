@@ -38,7 +38,7 @@ The report records the selected recipe and does not claim a new method.
 
 ## Methods
 
-9 studies were pooled by inverse-variance weighting on the log scale and back-transformed, with the standard error of each study derived from its 95% confidence interval or given directly. The fixed-effect estimate of hazard_ratio was 0.763 (95% CI 0.703 to 0.827, P = 7.1e-11), and the DerSimonian-Laird random-effects estimate was 0.766 (95% CI 0.699 to 0.839, P = 1.1e-08). Heterogeneity was assessed with Cochran's Q (Q = 9.64, df = 8, P = 0.29), I2 = 17.0% and tau2 = 0.0033. Squares are sized by the random-effects weight and the diamonds show the pooled estimates. Computed in R 4.4.1 with metafor 4.6.0 and drawn with ggplot2 3.5.1.
+9 studies were pooled by inverse-variance weighting on the log scale and back-transformed, with the standard error of each study derived from its 95% confidence interval or given directly. The fixed-effect estimate of hazard_ratio was 0.763 (95% CI 0.703 to 0.827, P = 7.1e-11), and the DerSimonian-Laird random-effects estimate was 0.766 (95% CI 0.699 to 0.839, P = 1.1e-08). Heterogeneity was assessed with Cochran's Q (Q = 9.64, df = 8, P = 0.29), I2 = 17.0% and tau2 = 0.0033; the DerSimonian-Laird tau2 was truncated at zero, so I2 is 0% when Q is below its degrees of freedom. Squares are sized by the random-effects weight and the diamonds show the pooled estimates. Computed in R 4.4.1 with metafor 4.6.0 and drawn with ggplot2 3.5.1.
 
 ## Plot configuration
 
@@ -50,17 +50,17 @@ The complete plot configuration is in `plot_config.yaml`.
 | --- | --- |
 | repository | pubready |
 | repository_version | 1.0.0 |
-| git_commit | f66e11ade8775d5c33ce81c38926927708b194cb |
-| git_dirty | TRUE |
+| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |
 | agent_harness | manual |
 | agent_harness_version | not_recorded |
 | container_image | localhost/pubready:1.0.0 |
-| container_digest | sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e |
+| container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
 | input | {"file":"input_hazard_ratio.csv","md5":"24320e4211da4db9bf76c9a1fedeb1e9","sha256":"01b10b5db2fbcdca95bb708eb109ab543a00c92557e91fbc44d75ad98d46acc6"} |
 | command | figkit plot --recipe forest_meta |
-| analysis_options | {"engine":"r","recipe":"forest_meta","data":{"file":"meta_trials.csv","x":"Hazard ratio (95% CI, log scale)","y":"hazard_ratio","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":"trial","positive":null,"se":null,"ci_low":"ci_low","ci_high":"ci_high","measure":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":"Hazard ratio (95% CI, log scale)","y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| analysis_options | {"engine":"r","recipe":"forest_meta","data":{"file":"meta_trials.csv","x":"Hazard ratio (95% CI, log scale)","y":"hazard_ratio","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":"trial","positive":null,"se":null,"ci_low":"ci_low","ci_high":"ci_high","measure":null,"ref":null,"cause":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":"Hazard ratio (95% CI, log scale)","y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
 | random_seeds | not_applicable |
 | session_record | session_info.txt |
 | created_utc | 2026-07-18T00:00:00Z |

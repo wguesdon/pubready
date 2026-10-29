@@ -4,11 +4,22 @@
 suppressPackageStartupMessages(library(ComplexHeatmap))
 
 raw <- read.csv("input_set_membership.csv", check.names = FALSE, row.names = 1)
-bin <- as.data.frame(lapply(raw, function(v) as.numeric(v) == 1))
-bin <- bin[rowSums(as.matrix(bin)) > 0, , drop = FALSE]
+bin <- as.data.frame(lapply(raw, as.numeric)) == 1
+bin <- as.data.frame(bin[rowSums(bin) > 0, , drop = FALSE])
 m <- make_comb_mat(bin)
+cs <- comb_size(m); cd <- comb_degree(m); cn <- comb_name(m)
+# The largest intersections: size, then degree, then the set names.
+nm <- character(length(cn))
+for (i in seq_along(cn)) nm[i] <- paste(set_name(m)[strsplit(cn[i], "")[[1]] == "1"], collapse = " & ")
+ord <- order(-cs, cd, nm, method = "radix")
+shown <- ord[seq_len(min(length(ord), 15))]
+m2 <- m[shown]
+up <- UpSet(m2, comb_order = match(cn[shown], comb_name(m2)),
+            set_order = match(set_name(m)[order(-set_size(m), seq_along(set_size(m)), method = "radix")], set_name(m2)),
+            top_annotation = upset_top_annotation(m2, add_numbers = TRUE, numbers_rot = 0),
+            right_annotation = upset_right_annotation(m2, add_numbers = TRUE,
+                                                      axis_param = list(labels_rot = 0)))
 
-cairo_pdf("figure_set_membership_upset.pdf", width = 7, height = 4.5)
-draw(UpSet(m, comb_order = order(comb_size(m), decreasing = TRUE),
-           top_annotation = upset_top_annotation(m, add_numbers = TRUE))); dev.off()
+cairo_pdf("figure_set_membership_upset.pdf", width = 7.96, height = 4.10)
+draw(up); invisible(dev.off())
 cat("Reproduced figure.\n")

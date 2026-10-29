@@ -1,0 +1,168 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "standard_curve",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "conc_ng_ml",
+    "y": "absorbance",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_absorbance.csv",
+    "original_name": "standard_curve.csv",
+    "md5": "ae4cacec29ae88addba4e46fa7189b77",
+    "sha256": "7de467ae8ae5d96b391e262ea55a9c73945b22fb558fcd2dbfe0ed711f16a2f8",
+    "n_rows": 36
+  },
+  "statistical_test": {
+    "name": "Standard curve interpolation",
+    "model": "four-parameter logistic",
+    "model_choice": "auto",
+    "parameters": {
+      "bottom": 0.048092093726828475,
+      "top": 3.187024613284124,
+      "ec50": 2.4182472040562164,
+      "log_ec50": 0.3835006943204333,
+      "hill": 1.2184062590495357
+    },
+    "r_squared": 0.9985605701863204,
+    "n_standards": 16,
+    "n_fitted": 14,
+    "n_levels": 8,
+    "concentration_range": [
+      0.15625,
+      10.0
+    ],
+    "signal_range": [
+      0.1557655566994752,
+      2.7141713014290656
+    ],
+    "n_unknowns": 20,
+    "n_in_range": 17,
+    "n_below": 2,
+    "n_above": 1,
+    "recovery": {
+      "levels": [
+        {
+          "concentration": 0.15625,
+          "mean_signal": 0.1565,
+          "back_calculated": 0.15715545595637306,
+          "recovery_pct": 100.57949181207877
+        },
+        {
+          "concentration": 0.3125,
+          "mean_signal": 0.292,
+          "back_calculated": 0.31744709596397913,
+          "recovery_pct": 101.58307070847333
+        },
+        {
+          "concentration": 0.625,
+          "mean_signal": 0.54,
+          "back_calculated": 0.6076309336584458,
+          "recovery_pct": 97.22094938535132
+        },
+        {
+          "concentration": 1.25,
+          "mean_signal": 1.036,
+          "back_calculated": 1.2768722783887667,
+          "recovery_pct": 102.14978227110133
+        },
+        {
+          "concentration": 2.5,
+          "mean_signal": 1.637,
+          "back_calculated": 2.4679253047506258,
+          "recovery_pct": 98.71701219002503
+        },
+        {
+          "concentration": 5.0,
+          "mean_signal": 2.2755,
+          "back_calculated": 5.034718821029731,
+          "recovery_pct": 100.69437642059462
+        },
+        {
+          "concentration": 10.0,
+          "mean_signal": 2.713,
+          "back_calculated": 9.976116501319364,
+          "recovery_pct": 99.76116501319363
+        }
+      ],
+      "n_levels": 7,
+      "n_read_back": 7,
+      "min_pct": 97.22094938535132,
+      "max_pct": 102.14978227110133,
+      "n_within_80_120": 7
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_absorbance_stdcurve_py.pdf",
+    "figure_absorbance_stdcurve_py.png",
+    "figure_absorbance_stdcurve_py.svg",
+    "packages_stdcurve_py.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_absorbance_stdcurve_py.pdf",
+      "bytes": 19785,
+      "sha256": "3cce8d697c076defc894daedac3d6b094af49f33c148118a7218529214cdf524"
+    },
+    {
+      "file": "figure_absorbance_stdcurve_py.png",
+      "bytes": 138988,
+      "sha256": "dc20fb50c2efb50fb7b956e6f177e964f5e4ede48a539743a99c0732ac7a4c13"
+    },
+    {
+      "file": "figure_absorbance_stdcurve_py.svg",
+      "bytes": 51040,
+      "sha256": "3822a6fb41e5fdc762f0e4c918029fe95feb000cb2ca407565d482ccad2ecb1d"
+    },
+    {
+      "file": "packages_stdcurve_py.txt",
+      "bytes": 1060,
+      "sha256": "29424fa280ab6c1ad4b2e1d7141058ff9f9bf47fb219d0e6b7231001f3b50e77"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 4642,
+      "sha256": "5a32c50c4fc528e39b28221fd896349c1f3b0ee29f63ffcac09a8ba3bd3398a5"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1380445,
+      "sha256": "689b2e97407a4c4cb74c4b83bae012225169c1246e69657e4683e48607748184"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2035,
+      "sha256": "33c83b381da1c3a495e556fd4578c40563ce840a3ffe5c0d787883eb98d2c678"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "repository": "pubready",
+  "repository_version": "1.0.0",
+  "git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "git_dirty": false,
+  "llm_provider": "none",
+  "llm_model": "none",
+  "agent_harness": "manual",
+  "agent_harness_version": "not_recorded",
+  "container_image": "localhost/pubready:1.0.0",
+  "container_digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+  "input": {
+    "file": "input_absorbance.csv",
+    "md5": "ae4cacec29ae88addba4e46fa7189b77",
+    "sha256": "7de467ae8ae5d96b391e262ea55a9c73945b22fb558fcd2dbfe0ed711f16a2f8"
+  },
+  "command": "figkit plot --recipe standard_curve",
+  "analysis_options": {
+    "engine": "python",
+    "recipe": "standard_curve",
+    "data": {
+      "file": "standard_curve.csv",
+      "x": "conc_ng_ml",
+      "y": "absorbance",
+      "fill": null,
+      "facet": null,
+      "time": null,
+      "event": null,
+      "annotation": null,
+      "covariates": null,
+      "id": "sample",
+      "group": null,
+      "label": null,
+      "positive": null,
+      "se": null,
+      "ci_low": null,
+      "ci_high": null,
+      "measure": null,
+      "ref": null,
+      "cause": null,
+      "markers": null
+    },
+    "test": {
+      "method": "auto",
+      "paired": false,
+      "p_adjust": "none"
+    },
+    "appearance": {
+      "theme": "pubready_house",
+      "palette": null,
+      "x_label": "IL-6 (ng/mL)",
+      "y_label": "Absorbance at 450 nm",
+      "title": null,
+      "y_limits": [
+        null,
+        null
+      ],
+      "show_points": true,
+      "geom": "box",
+      "bracket": {
+        "show": true,
+        "label": "p.signif"
+      },
+      "scale": "row",
+      "cluster": "both",
+      "fc_cutoff": 1.0,
+      "p_cutoff": 0.05,
+      "top_n": 15,
+      "pd_threshold": 20.0,
+      "pr_threshold": -30.0
+    }
+  },
+  "random_seeds": "not_applicable",
+  "session_record": "session_info.txt",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "review_state": "not_applicable",
+  "reviewer": "none",
+  "quarto_version": "1.11.4"
+}

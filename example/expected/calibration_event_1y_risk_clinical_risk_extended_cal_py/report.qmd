@@ -1,0 +1,62 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new statistical method.
+:::
+
+## Figure
+
+![Publication figure](figure_event_1y_risk_clinical_risk_extended_cal_py.png)
+
+## Statistical results
+
+| model | case_level | n | n_events | brier | intercept | intercept_ci_low | intercept_ci_high | slope | slope_ci_low | slope_ci_high | hl_statistic | hl_df | hl_p | hl_groups | oe_ratio |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| risk_clinical | yes | 500 | 130 | 0.17178516214 | -0.14396939979698375 | -0.3624515229281368 | 0.0745127233341693 | 0.8214088301669082 | 0.5924935047766039 | 1.0503241555572125 | 9.021355696342091 | 8 | 0.3404976192295656 | 10 | 0.9162808302068186 |
+| risk_extended | yes | 500 | 130 | 0.16879814044 | -0.012445103058084404 | -0.25171434979707 | 0.2268241436809012 | 0.6216320036108007 | 0.4670073527191929 | 0.7762566545024085 | 26.95551206512255 | 8 | 0.0007196003369925088 | 10 | 0.9936057647477846 |
+
+## Methods
+
+The calibration of the predicted probabilities was assessed against the observed outcome event_1y = yes (events, n = 130) versus no (non-events, n = 370). For each model, the Brier score is the mean squared difference between the prediction and the outcome. The calibration intercept (calibration-in-the-large) is the intercept of a logistic regression of the outcome with logit(p) as an offset, and the calibration slope is the coefficient of logit(p) in a logistic regression, each with a 95% Wald CI; ideal values are 0 and 1. The Hosmer-Lemeshow test grouped the subjects at the deciles of the prediction (g = 10; tied deciles merge, df = groups - 2). The figure shows the observed proportion against the mean prediction in each group with a 95% Wilson CI, a lowess smooth of the outcome on the prediction (f = 2/3, without robustness iterations, which would treat the events of a binary outcome as outliers), and the spike histogram of the predictions. risk_clinical: Brier score 0.172, calibration intercept -0.14 (95% CI -0.36 to 0.07), slope 0.82 (95% CI 0.59 to 1.05), Hosmer-Lemeshow chi-square(8) = 9.02, P = 0.34, observed/expected 0.92; risk_extended: Brier score 0.169, calibration intercept -0.01 (95% CI -0.25 to 0.23), slope 0.62 (95% CI 0.47 to 0.78), Hosmer-Lemeshow chi-square(8) = 26.96, P < 0.001, observed/expected 0.99. Computed in Python 3.10.12 with statsmodels 0.15.0, grouping as ResourceSelection::hoslem.test does, and drawn with matplotlib 3.10.9.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 1.0.0 |
+| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_dirty | False |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:1.0.0 |
+| container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
+| input | {"file": "input_event_1y_risk_clinical_risk_extended.csv", "md5": "4d7ddf64a4e0eb79c7d2003021d46c53", "sha256": "c6d02e1cfda0e27a2779f352e23b00abe6c739ee1b810ad3e9113fdcdc55e34b"} |
+| command | figkit plot --recipe calibration |
+| analysis_options | {"engine": "python", "recipe": "calibration", "data": {"file": "calibration.csv", "x": "risk_clinical,risk_extended", "y": "event_1y", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": null, "group": null, "label": null, "positive": "yes", "se": null, "ci_low": null, "ci_high": null, "measure": null, "ref": null, "cause": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": null, "y_label": null, "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

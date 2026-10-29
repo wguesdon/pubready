@@ -3,17 +3,20 @@
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import textwrap
 import numpy as np, pandas as pd
 
 raw = pd.read_csv("input_enrichment_results.csv")
 term = raw["Description"].astype(str).to_numpy()
 padj = pd.to_numeric(raw["p.adjust"], errors="coerce").to_numpy()
 ct = pd.to_numeric(raw["Count"], errors="coerce").to_numpy()
-x = raw["GeneRatio"].astype(str).map(lambda s: float(s.split("/")[0])/float(s.split("/")[1]) if "/" in s else float(s)).to_numpy(); xlab = "gene ratio"
+x = np.array([float(s.split("/")[0]) / float(s.split("/")[1]) if "/" in s else float(s) for s in raw["GeneRatio"].astype(str)]); xlab = "gene ratio"
 idx = np.argsort(padj, kind="stable")[:15]
 t, x, pj, ct = term[idx], x[idx], padj[idx], ct[idx]
 yo = np.argsort(x, kind="stable"); t, x, pj, ct = t[yo], x[yo], pj[yo], ct[yo]
-fig, ax = plt.subplots(figsize=(7.2, max(4.0, 0.34*len(t)+1.6)))
+# Wrap each term at about 45 characters, as the figure does.
+t = [textwrap.fill(s, 45, break_long_words=False, break_on_hyphens=False) for s in t]
+fig, ax = plt.subplots(figsize=(7.72, 7.00))
 sc = ax.scatter(x, np.arange(len(t)), c=-np.log10(pj), s=70, cmap="coolwarm", edgecolors="none")
 ax.set_yticks(np.arange(len(t))); ax.set_yticklabels(t)
 ax.set_xlabel(xlab)

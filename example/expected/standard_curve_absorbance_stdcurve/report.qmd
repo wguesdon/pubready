@@ -1,0 +1,80 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_absorbance_stdcurve.png)
+
+## Statistical results
+
+| id | signal | concentration | flag |
+| --- | --- | --- | --- |
+| Serum_01 | 0.079 |  | below range |
+| Serum_02 | 0.11 |  | below range |
+| Serum_03 | 2.168 | 4.41170013714142 | in range |
+| Serum_04 | 0.899 | 1.07380862300951 | in range |
+| Serum_05 | 1.794 | 2.91061637094285 | in range |
+| Serum_06 | 1.399 | 1.92121921929629 | in range |
+| Serum_07 | 0.248 | 0.266308938578526 | in range |
+| Serum_08 | 1.094 | 1.36844113207744 | in range |
+| Serum_09 | 1.201 | 1.54756567779003 | in range |
+| Serum_10 | 1.957 | 3.46862320361029 | in range |
+| Serum_11 | 2.153 | 4.33377426958346 | in range |
+| Serum_12 | 1.054 | 1.30490488082819 | in range |
+| Serum_13 | 1.571 | 2.30327906617459 | in range |
+| Serum_14 | 2.177 | 4.45941769084436 | in range |
+| Serum_15 | 0.494 | 0.5527176979638 | in range |
+| Serum_16 | 2.12 | 4.16903872796036 | in range |
+| Serum_17 | 0.274 | 0.29657584277136 | in range |
+| Serum_18 | 0.287 | 0.311654488270381 | in range |
+| Serum_19 | 2.21 | 4.64089146297389 | in range |
+| Serum_20 | 2.924 |  | above range |
+
+## Methods
+
+Concentrations (IL-6 (ng/mL)) were interpolated from the signal (Absorbance at 450 nm) on a standard curve of 16 standards at 8 concentrations. The model was chosen automatically: the four-parameter logistic when the standards have at least five distinct positive concentrations and the fit converges, and a straight line otherwise. The four-parameter logistic, signal = bottom + (top - bottom) / (1 + 10^((log10 EC50 - log10 concentration) x Hill slope)), was fitted by nonlinear least squares on log10 concentration to 14 standards: bottom = 0.0481, top = 3.19, EC50 = 2.42, Hill slope = 1.218, R2 = 0.9986. Each unknown was interpolated by inverting the fitted curve. An unknown whose signal lies outside the signal range of the curve between the lowest and the highest standard (0.156 to 2.71) was flagged below range or above range and given no concentration, so no value was extrapolated. Of 20 unknowns, 17 were in range, 2 below range and 1 above range. Read back through the curve, the standard levels had a recovery of 97.2% to 102.1% of the nominal concentration, and 7 of 7 levels fell within 80% to 120%. Fitted in R 4.4.1 with stats::nls and drawn with ggplot2 3.5.1.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 1.0.0 |
+| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:1.0.0 |
+| container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
+| input | {"file":"input_absorbance.csv","md5":"ae4cacec29ae88addba4e46fa7189b77","sha256":"7de467ae8ae5d96b391e262ea55a9c73945b22fb558fcd2dbfe0ed711f16a2f8"} |
+| command | figkit plot --recipe standard_curve |
+| analysis_options | {"engine":"r","recipe":"standard_curve","data":{"file":"standard_curve.csv","x":"conc_ng_ml","y":"absorbance","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":"sample","group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":null,"cause":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":"IL-6 (ng/mL)","y_label":"Absorbance at 450 nm","title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

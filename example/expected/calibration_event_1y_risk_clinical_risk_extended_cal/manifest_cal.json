@@ -1,0 +1,122 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "calibration",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "risk_clinical,risk_extended",
+    "y": "event_1y",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_event_1y_risk_clinical_risk_extended.csv",
+    "original_name": "calibration.csv",
+    "md5": "4d7ddf64a4e0eb79c7d2003021d46c53",
+    "sha256": "c6d02e1cfda0e27a2779f352e23b00abe6c739ee1b810ad3e9113fdcdc55e34b",
+    "n_rows": 500
+  },
+  "statistical_test": {
+    "name": "Calibration (Hosmer-Lemeshow test, calibration intercept and slope)",
+    "case_level": "yes",
+    "control_level": "no",
+    "n": 500,
+    "n_events": 130,
+    "groups_requested": 10,
+    "models": {
+      "risk_clinical": {
+        "n": 500,
+        "n_events": 130,
+        "brier": 0.171785,
+        "intercept": -0.143969,
+        "slope": 0.821409,
+        "hosmer_lemeshow": {
+          "statistic": 9.021356,
+          "df": 8,
+          "p_value": 0.340498,
+          "groups": 10
+        },
+        "oe_ratio": 0.916281
+      },
+      "risk_extended": {
+        "n": 500,
+        "n_events": 130,
+        "brier": 0.168798,
+        "intercept": -0.012445,
+        "slope": 0.621632,
+        "hosmer_lemeshow": {
+          "statistic": 26.955512,
+          "df": 8,
+          "p_value": 0.00072,
+          "groups": 10
+        },
+        "oe_ratio": 0.993606
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_event_1y_risk_clinical_risk_extended_cal.pdf",
+    "figure_event_1y_risk_clinical_risk_extended_cal.png",
+    "figure_event_1y_risk_clinical_risk_extended_cal.svg",
+    "packages_cal.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_event_1y_risk_clinical_risk_extended_cal.pdf",
+      "bytes": 24333,
+      "sha256": "34dc68bc2a9c162b0b3cd6e89d6c77274fff921726c3eabd0b064604ba4c7222"
+    },
+    {
+      "file": "figure_event_1y_risk_clinical_risk_extended_cal.png",
+      "bytes": 177061,
+      "sha256": "3b2f77b2d3d12e0011d29673a9a51412aa4d0bce0df4acea13080416c456ca94"
+    },
+    {
+      "file": "figure_event_1y_risk_clinical_risk_extended_cal.svg",
+      "bytes": 64279,
+      "sha256": "f4542c3bc2dabd4309898474c395343076b1a4f18ed1008f9dbba8175c32c2d9"
+    },
+    {
+      "file": "packages_cal.txt",
+      "bytes": 3586,
+      "sha256": "f6f5f6da092b57e195d61379ae18b349d7fb6b5ab5b554b70120239d1ee45463"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 4457,
+      "sha256": "b214c60276ac02d46a529fffa55fa98e319c33e2d7e41ef75b6f120f1e09462b"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1430697,
+      "sha256": "bfe4512f4443e7c57c8f603a229232381639f1d14d16d9654b2370bfe884f058"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2026,
+      "sha256": "b74dff371da1f04d71058eedddfbcf51ba6a688aa782e9a55dcafb24e84f3751"
+    }
+  ]
+}

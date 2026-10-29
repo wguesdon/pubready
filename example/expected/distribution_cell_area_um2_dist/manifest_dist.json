@@ -1,0 +1,158 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "distribution",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "condition",
+    "y": "cell_area_um2",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_cell_area_um2.csv",
+    "original_name": "distribution.csv",
+    "md5": "9a6485554175f36ec3bd2b8365cc3665",
+    "sha256": "5465c7bdc86c61c1bbdaa5bf4d211be7062d1eadd2b12df0a28b2cecba8052bb",
+    "n_rows": 240
+  },
+  "statistical_test": {
+    "name": "Shapiro-Wilk normality test per group (descriptive, no comparison)",
+    "n": 240,
+    "n_groups": 3,
+    "bins": {
+      "rule": "Freedman-Diaconis",
+      "capped_at_200": false,
+      "width": 28.489983,
+      "start": 85.469948,
+      "n_bins": 14
+    },
+    "groups": {
+      "control": {
+        "n": 90,
+        "mean": 260.026667,
+        "sd": 38.561662,
+        "median": 260.5,
+        "q1": 241.95,
+        "q3": 282.8,
+        "min": 142,
+        "max": 358.7,
+        "skewness": -0.283252,
+        "excess_kurtosis": 0.557303,
+        "shapiro_w": 0.982387,
+        "shapiro_p": 0.263456,
+        "bin_width": 28.489983,
+        "bandwidth": 11.1553
+      },
+      "mixed culture": {
+        "n": 70,
+        "mean": 280.064286,
+        "sd": 83.747035,
+        "median": 243.6,
+        "q1": 213.125,
+        "q3": 366.225,
+        "min": 160.1,
+        "max": 430.8,
+        "skewness": 0.332139,
+        "excess_kurtosis": -1.490521,
+        "shapiro_w": 0.883168,
+        "shapiro_p": 8.924472e-06,
+        "bin_width": 28.489983,
+        "bandwidth": 32.224956
+      },
+      "serum-starved": {
+        "n": 80,
+        "mean": 225.72375,
+        "sd": 76.342604,
+        "median": 209.4,
+        "q1": 172,
+        "q3": 268.625,
+        "min": 105.9,
+        "max": 475.6,
+        "skewness": 0.862751,
+        "excess_kurtosis": 0.529639,
+        "shapiro_w": 0.943428,
+        "shapiro_p": 0.001477,
+        "bin_width": 28.489983,
+        "bandwidth": 27.015264
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_cell_area_um2_dist.pdf",
+    "figure_cell_area_um2_dist.png",
+    "figure_cell_area_um2_dist.svg",
+    "packages_dist.txt",
+    "qc_normality_dist.png",
+    "qc_normality_dist.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_cell_area_um2_dist.pdf",
+      "bytes": 37869,
+      "sha256": "26904c18e0eda697ca0b6057130f214549205f45a3771e6f6d4569239a0e4804"
+    },
+    {
+      "file": "figure_cell_area_um2_dist.png",
+      "bytes": 194803,
+      "sha256": "884a0cb698a60485ec7b18ebceb7c731b7ad6206ff8c402ca09291c2ee5621ab"
+    },
+    {
+      "file": "figure_cell_area_um2_dist.svg",
+      "bytes": 97849,
+      "sha256": "7ec6514b83038dedfcc8f85fb5ed4e0a896913a31ebd3306ee28665dfa631358"
+    },
+    {
+      "file": "packages_dist.txt",
+      "bytes": 3561,
+      "sha256": "b944d632caadaf33ecff4ac0b7c5d88ca5926b82d431f97a9290caf16f7dcd43"
+    },
+    {
+      "file": "qc_normality_dist.png",
+      "bytes": 127314,
+      "sha256": "4b33127de9041fd2496f6f10a4487ff4a6264fdece36271235179f1104fcb87a"
+    },
+    {
+      "file": "qc_normality_dist.pdf",
+      "bytes": 36885,
+      "sha256": "4b52c2812675ab6056ecd9d850670428db5d7b65efe82252dd422ee15930ef33"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 4024,
+      "sha256": "69228527ae706114f5042c114cd541b665dc5257519a6c0e85f58c4728b15a6f"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1454031,
+      "sha256": "fc035a3138d0c6a32cd5505d7a7e4e03cb7dfa37b9ceb5f257b84027ef469032"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2006,
+      "sha256": "67e96e191fa9c536ab5f2d04915c78db4757267bb69edbd5e2243731c494a282"
+    }
+  ]
+}

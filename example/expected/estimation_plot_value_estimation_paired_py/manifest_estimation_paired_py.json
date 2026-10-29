@@ -1,0 +1,124 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "estimation_plot",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "condition",
+    "y": "value",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_value.csv",
+    "original_name": "paired_response.csv",
+    "md5": "e995b32f1de8c3186d6e6c6f0d010a9f",
+    "sha256": "8bfc166ad40f6287fcf50fe3c144a4ccce89d4a501007e5e47dd183fc2df2b0f",
+    "n_rows": 44
+  },
+  "statistical_test": {
+    "name": "paired mean difference with a BCa bootstrap CI",
+    "reference": "pre",
+    "paired": true,
+    "bootstrap": {
+      "resamples": 5000,
+      "generator": "Park-Miller minimal standard (48271, 2^31 - 1)",
+      "seed": 20261029,
+      "interval": "bias-corrected and accelerated (BCa), 95%"
+    },
+    "test": "paired t-test",
+    "comparisons": {
+      "post": {
+        "mean_diff": -11.190909090909116,
+        "ci_low": -13.296530286543808,
+        "ci_high": -9.019615701191787,
+        "hedges_g": -0.668974631120332,
+        "statistic": -9.972925411867607,
+        "df": 21.0,
+        "p_value": 2.0315796603119834e-09
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_value_estimation_paired_py.pdf",
+    "figure_value_estimation_paired_py.png",
+    "figure_value_estimation_paired_py.svg",
+    "packages_estimation_paired_py.txt",
+    "qc_normality_estimation_paired_py.png",
+    "qc_normality_estimation_paired_py.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_value_estimation_paired_py.pdf",
+      "bytes": 18470,
+      "sha256": "fc3739e3fd3ddf7fb762e39465125bca0c99104a367bc4e4739fb555ab8243fd"
+    },
+    {
+      "file": "figure_value_estimation_paired_py.png",
+      "bytes": 197300,
+      "sha256": "de6c2f2870b9c3d4c07417ab08ea1663e8cde25afc46c9622d09d2adc0bf7953"
+    },
+    {
+      "file": "figure_value_estimation_paired_py.svg",
+      "bytes": 53685,
+      "sha256": "e830b2497a1943c6a7fb9cba221bd8b6095b3106333b32dfc862414fd74fcead"
+    },
+    {
+      "file": "packages_estimation_paired_py.txt",
+      "bytes": 1060,
+      "sha256": "29424fa280ab6c1ad4b2e1d7141058ff9f9bf47fb219d0e6b7231001f3b50e77"
+    },
+    {
+      "file": "qc_normality_estimation_paired_py.png",
+      "bytes": 65567,
+      "sha256": "d8310d55896c81a41b078ccef019eedab97cca2b6beec67355053f4023b12f21"
+    },
+    {
+      "file": "qc_normality_estimation_paired_py.pdf",
+      "bytes": 24326,
+      "sha256": "72bd95e62bc02dd3683e4f3daf31c114a2566a5f76a038ed95cb9aefaed2c5b3"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3887,
+      "sha256": "331cfcfc0eb92f8e2b0e950bc97a1691f8c0caf7670f63ac38e183f3f3a7adf9"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1456938,
+      "sha256": "c1c54b588ac2842bf17dd16362f62689c6640398f3437f640b4b4095b7ba8b6e"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2011,
+      "sha256": "0c71c618a0605f018fe09729cc716e5b3fe93c5ab904825da045c796b8c23fbc"
+    }
+  ]
+}

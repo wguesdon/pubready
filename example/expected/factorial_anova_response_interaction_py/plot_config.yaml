@@ -1,0 +1,48 @@
+engine: python
+recipe: factorial_anova
+data:
+  file: input_response.csv
+  x: genotype
+  y: response
+  fill: treatment
+  facet: null
+  time: null
+  event: null
+  annotation: null
+  covariates: null
+  id: null
+  group: null
+  label: null
+  positive: null
+  se: null
+  ci_low: null
+  ci_high: null
+  measure: null
+  ref: null
+  cause: null
+  markers: null
+test:
+  method: auto
+  paired: false
+  p_adjust: none
+appearance:
+  theme: pubready_house
+  palette: null
+  x_label: null
+  y_label: Response (a.u.)
+  title: null
+  y_limits:
+  - null
+  - null
+  show_points: true
+  geom: interaction
+  bracket:
+    show: true
+    label: p.signif
+  scale: row
+  cluster: both
+  fc_cutoff: 1.0
+  p_cutoff: 0.05
+  top_n: 15
+  pd_threshold: 20.0
+  pr_threshold: -30.0

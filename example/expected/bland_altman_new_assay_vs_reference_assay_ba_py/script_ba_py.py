@@ -15,7 +15,7 @@ bias, s = diff.mean(), diff.std(ddof=1)
 loa = bias + np.array([-1, 1]) * stats.norm.ppf(0.975) * s
 print(f"bias {bias:.4f}, SD {s:.4f}, limits {loa[0]:.4f} to {loa[1]:.4f}")
 print(stats.linregress(mean, diff))
-fig, ax = plt.subplots(figsize=(5.4, 4.4))
+fig, ax = plt.subplots(figsize=(6.4, 4.4))
 ax.scatter(mean, diff)
 ax.axhline(bias, color="k"); [ax.axhline(v, color="k", ls="--") for v in loa]
 ax.set_xlabel("Mean of new_assay and reference_assay"); ax.set_ylabel("Difference (new_assay - reference_assay)")

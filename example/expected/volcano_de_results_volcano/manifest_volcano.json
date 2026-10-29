@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "volcano",
@@ -30,8 +30,8 @@
   },
   "container": {
     "image": "localhost/pubready:1.0.0",
-    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
-    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -56,38 +56,38 @@
   "output_checksums": [
     {
       "file": "figure_de_results_volcano.pdf",
-      "bytes": 47044,
-      "sha256": "2345d64d5b017aca111262d4f7f5d254935739757639ff1d9c66c76e3c39ada5"
+      "bytes": 47019,
+      "sha256": "c842ceebb0acdd01f89ffe2ddf4888054eea53cdaf8bc22b0d244d8672abba5c"
     },
     {
       "file": "figure_de_results_volcano.png",
-      "bytes": 203156,
-      "sha256": "ffec9772a12e3d36ba9518679a4cc53ab04cb77b9d3887ab2fe3daf33d37435c"
+      "bytes": 202949,
+      "sha256": "a425ff332b44232eb242262111c65a67b2d5d21c3700b66a53f4a8eebe303442"
     },
     {
       "file": "figure_de_results_volcano.svg",
-      "bytes": 185502,
-      "sha256": "d230b4f30f9455820f7076fa2587447952bae4b2ec10d43e09d0bead27fb34b5"
+      "bytes": 185334,
+      "sha256": "6f42105449926e47e88e7d92dd9b18a31b8ac12f01734909453d677ad91a6cde"
     },
     {
       "file": "packages_volcano.txt",
-      "bytes": 3506,
-      "sha256": "2ee56fee77c638de8d0327787e51b634e0e2e1c828b4609459aed05e27fff47f"
+      "bytes": 3576,
+      "sha256": "c74de62be1ab6d511cbea80a871a6c3b5c6cb5b4724c0647cf0ce5c329aedb03"
     },
     {
       "file": "report.qmd",
-      "bytes": 3606,
-      "sha256": "e283d1d89fa324e839a7fd41666c57204c7212fbcd9d69c38fa9900901835816"
+      "bytes": 3631,
+      "sha256": "9fa2537a41b4317bc2a8ef96dd66a3b0cc9973bd1324e29b90991f763102de2e"
     },
     {
       "file": "report.html",
-      "bytes": 1464813,
-      "sha256": "106479ed3c50112aacf4e0241768aa4ad942c3c399f6bbc2cede83f4f925859a"
+      "bytes": 1464570,
+      "sha256": "e8bc69799d3cff4cb14ebe8fc5a1473c764b5b46e52203d225b365e04fcb85e5"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1935,
-      "sha256": "f51227e06026945cdaacc03e8289353529fb03be25c23f269274c2801035c119"
+      "bytes": 1976,
+      "sha256": "5d6d83a02fe3132f820d22010ea99fc73610b56f870e3f1a97817115a33cfe41"
     }
   ]
 }

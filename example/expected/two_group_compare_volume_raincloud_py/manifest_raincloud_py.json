@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "two_group_compare",
@@ -44,8 +44,8 @@
   },
   "container": {
     "image": "localhost/pubready:1.0.0",
-    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
-    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -75,23 +75,23 @@
   "output_checksums": [
     {
       "file": "figure_volume_raincloud_py.pdf",
-      "bytes": 15952,
-      "sha256": "27b9125d0438902c784aefb3a383f2a5f41edb7d9385748523801195d740de3e"
+      "bytes": 15802,
+      "sha256": "f973f3d3f713a15a9e7fc1985ee7f1175cd9e78823b8ba009e82787acf2f6829"
     },
     {
       "file": "figure_volume_raincloud_py.png",
-      "bytes": 66418,
-      "sha256": "29834ef41bb4b014de9f72e06fcc2b17dbbc62da2482adc42ddeb6405f03e059"
+      "bytes": 66434,
+      "sha256": "48eeeabb0d244f5f7a5d595dca79a465b91d1246789b1cb5b68f11217c70dc68"
     },
     {
       "file": "figure_volume_raincloud_py.svg",
-      "bytes": 37735,
-      "sha256": "30ac9abc833d5d033adae72bc6300acf10b81a372e7e99189b8dce6b56653c77"
+      "bytes": 37736,
+      "sha256": "d41a1816e59cc08dbb1ca01182c234a6a9d4645c30ee724bbcd3df4b6e781f1d"
     },
     {
       "file": "packages_raincloud_py.txt",
-      "bytes": 1107,
-      "sha256": "54e1fda9cac8169cd7ef8fd058101f2e348fc02f4455c64ca907fe7872dd7d64"
+      "bytes": 1101,
+      "sha256": "35b666762652caab467de2c774af78dacfea508ef895b296d891ffba81cdc6eb"
     },
     {
       "file": "qc_normality_raincloud_py.png",
@@ -101,22 +101,22 @@
     {
       "file": "qc_normality_raincloud_py.pdf",
       "bytes": 25226,
-      "sha256": "13d44662feed05330456a5d407159da1dd60eb5f98947d5a3ed74adb9371a224"
+      "sha256": "9228dd220b969baf15f87f20f9b2632113cd8f964fb6463b364184b1088ef0a2"
     },
     {
       "file": "report.qmd",
-      "bytes": 3222,
-      "sha256": "48f638be01fca929719ac117220b393923fe46503ff6792cd7843285be55a487"
+      "bytes": 3251,
+      "sha256": "7ceeb0f5fbe68a5054fb7d26df2eadd02aa7252e53f1e016ce9059e11b770c9f"
     },
     {
       "file": "report.html",
-      "bytes": 1281793,
-      "sha256": "d7825fe6b746087cca8e9c7ff467046069165ed7de052ab6b5cadfc80efd2828"
+      "bytes": 1281850,
+      "sha256": "f0ebb40b75cb85b112fc0644ca73ba6ad1e8f4bd7bb50e0db1f23884af448334"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1976,
-      "sha256": "fd4e254629a8b1477e059efaa84fa90c0ec90fa536d827fa8304b747a99fb4dc"
+      "bytes": 2017,
+      "sha256": "18be7c8bfeeb18a7e076a0809c98574a253eadc9730f43bab7dc782bf3012e3f"
     }
   ]
 }

@@ -1,0 +1,142 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "estimation_plot",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "treatment",
+    "y": "speed_um_h",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_speed_um_h.csv",
+    "original_name": "estimation_plot.csv",
+    "md5": "5339e052f2d5f5e0a25c5088c57c88b0",
+    "sha256": "e811a230beb670c6360616da156ecfeaa53ff2e5895bd99d59958015656bdecc",
+    "n_rows": 48
+  },
+  "statistical_test": {
+    "name": "mean difference with a BCa bootstrap CI",
+    "reference": "vehicle",
+    "paired": false,
+    "bootstrap": {
+      "resamples": 5000,
+      "generator": "Park-Miller minimal standard (48271, 2^31 - 1)",
+      "seed": 20261029,
+      "interval": "bias-corrected and accelerated (BCa), 95%"
+    },
+    "test": "Welch two-sample t-test",
+    "comparisons": {
+      "compound_A": {
+        "mean_diff": -2.696428571428573,
+        "ci_low": -5.1392857142857125,
+        "ci_high": 0.01350156651134313,
+        "hedges_g": -0.7333908974537607,
+        "statistic": -1.937390702071394,
+        "df": 23.842029616838975,
+        "p_value": 0.06463183184408533
+      },
+      "compound_B": {
+        "mean_diff": -7.221428571428573,
+        "ci_low": -9.761612234322834,
+        "ci_high": -4.515173322916885,
+        "hedges_g": -1.9814052998767422,
+        "statistic": -5.243056987250348,
+        "df": 23.913387458531183,
+        "p_value": 2.2730934736168304e-05
+      },
+      "compound_C": {
+        "mean_diff": 1.1985714285714266,
+        "ci_low": -3.649933600558813,
+        "ci_high": 4.022126258908432,
+        "hedges_g": 0.26427268514816044,
+        "statistic": 0.6235786539821652,
+        "df": 15.219640306164493,
+        "p_value": 0.5421378032741621
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_speed_um_h_estimation_py.pdf",
+    "figure_speed_um_h_estimation_py.png",
+    "figure_speed_um_h_estimation_py.svg",
+    "packages_estimation_py.txt",
+    "qc_normality_estimation_py.png",
+    "qc_normality_estimation_py.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_speed_um_h_estimation_py.pdf",
+      "bytes": 23338,
+      "sha256": "ab878e672cf8e11bdb3ed0c05887d5fefb95dafbbd938e3b834d8485683ae9f8"
+    },
+    {
+      "file": "figure_speed_um_h_estimation_py.png",
+      "bytes": 161939,
+      "sha256": "9e84ab8646e736ef2a83eb35d79d59f1df86096bbbac63da6294ba9b00e5f7c9"
+    },
+    {
+      "file": "figure_speed_um_h_estimation_py.svg",
+      "bytes": 65021,
+      "sha256": "75e85fe24777a16ad57056b38523eccc3d95c4af9a3882ff7cde680365167947"
+    },
+    {
+      "file": "packages_estimation_py.txt",
+      "bytes": 1060,
+      "sha256": "29424fa280ab6c1ad4b2e1d7141058ff9f9bf47fb219d0e6b7231001f3b50e77"
+    },
+    {
+      "file": "qc_normality_estimation_py.png",
+      "bytes": 155845,
+      "sha256": "91d1704d064aa05d009db318c0e1637b4026f9be1f6f15e0ce7a5a7c85720e6e"
+    },
+    {
+      "file": "qc_normality_estimation_py.pdf",
+      "bytes": 27815,
+      "sha256": "2b843acbaffd83b5e72976a42c3e157da24d7637a235909907419eed25e6d3ca"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 4676,
+      "sha256": "086ef089c2cf8396c81a7456b966afc97d2081136b7ed28f81c29772f934610b"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1410820,
+      "sha256": "353ed81ca0b96916bb9f677dbb340efd01249097cc9198e2341b06ab4fefb4d6"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2030,
+      "sha256": "4a5e5fb5b6628ac2dc82cbb4f3fae4bd1f1fd39b35be2ee8d6c645d8ec6a5138"
+    }
+  ]
+}

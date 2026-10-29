@@ -1,0 +1,98 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "ma_plot",
+  "recipe_version": "1",
+  "arguments": {
+    "x": {},
+    "y": {},
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_de_basemean.csv",
+    "original_name": "de_basemean.csv",
+    "md5": "ceecab1a28ae49f1e26d782b0b37af8a",
+    "sha256": "7a8554f9eb4e6e1dc0b66c93eb93022238d9fb7b936c1ca92b10688d6cac0e07",
+    "n_rows": 6000
+  },
+  "statistical_test": {
+    "name": "MA plot",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "p_column": "padj",
+    "mean_column": "baseMean",
+    "mean_log10": true,
+    "n_total": 6000,
+    "n_up": 176,
+    "n_down": 171,
+    "n_not_significant": 5653,
+    "n_missing_p": 76,
+    "n_grey_drawn": 5653
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_de_basemean_ma.pdf",
+    "figure_de_basemean_ma.png",
+    "figure_de_basemean_ma.svg",
+    "packages_ma.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_de_basemean_ma.pdf",
+      "bytes": 183144,
+      "sha256": "ada41dacdad4bcf475acf569431daf91b67b47de1db069c0061cba750678af47"
+    },
+    {
+      "file": "figure_de_basemean_ma.png",
+      "bytes": 145392,
+      "sha256": "d4fd8a33e34d2c724f04f403828acaeeed5c52e5ef407a8017f00851763c2fc3"
+    },
+    {
+      "file": "figure_de_basemean_ma.svg",
+      "bytes": 624127,
+      "sha256": "d524fb714aff4454d029113b0b6bf9121b87f2eebd23b1e8cf1a0e284305f3fa"
+    },
+    {
+      "file": "packages_ma.txt",
+      "bytes": 3576,
+      "sha256": "c74de62be1ab6d511cbea80a871a6c3b5c6cb5b4724c0647cf0ce5c329aedb03"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 8731,
+      "sha256": "ad6fdf09d273bd32948072e5b20418d7010b1db23c84e51fb53574fd74b63f0d"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1397725,
+      "sha256": "f509e256fc3cd2253d538e76ab3249864b66e24970c792c3f3feffcc4ddd0ed8"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1961,
+      "sha256": "668fdc80070f3440484a2a37b7f498299b54bd9b8c1bef9e097d3ca4805296f4"
+    }
+  ]
+}

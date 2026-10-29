@@ -1,0 +1,107 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "sankey",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "week",
+    "y": "response",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_response.csv",
+    "original_name": "sankey.csv",
+    "md5": "c904039b35f8f4e54992ca687d27384a",
+    "sha256": "d6b6ba5c1c315133158bff3441fd72223f9c75710a9724354efae2d2be283e5d",
+    "n_rows": 188
+  },
+  "statistical_test": {
+    "name": "Sankey diagram (descriptive)",
+    "n_patients": 80,
+    "n_visits": 3,
+    "visits": [
+      "8",
+      "16",
+      "24"
+    ],
+    "states": [
+      "complete response",
+      "partial response",
+      "stable disease",
+      "progressive disease"
+    ],
+    "n_transitions": 108,
+    "no_test_reason": "more than two visits"
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_response_sankey_py.pdf",
+    "figure_response_sankey_py.png",
+    "figure_response_sankey_py.svg",
+    "packages_sankey_py.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_response_sankey_py.pdf",
+      "bytes": 25427,
+      "sha256": "7a0c66b9e898016e2e9d3abcdefb0dfa3640743c3192b8fbb068a9f99e17257b"
+    },
+    {
+      "file": "figure_response_sankey_py.png",
+      "bytes": 308492,
+      "sha256": "0ceb0be230138c49db4da06cd88fc22699207d28cc6328f16ec965d6e5086a86"
+    },
+    {
+      "file": "figure_response_sankey_py.svg",
+      "bytes": 87012,
+      "sha256": "12a6216eca13d216d84dbf208d061cbac79c4b667a156dc78ffd39be89a85500"
+    },
+    {
+      "file": "packages_sankey_py.txt",
+      "bytes": 1052,
+      "sha256": "432347aad472e9d5d7fd0c2f738d053af55c310bff5685346132688253e5bf46"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3978,
+      "sha256": "9754be80fc63a620d0e4d893a80e357df26dbbfe3d8abc924b386bea52cbd7f1"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1605813,
+      "sha256": "bec075985b8ca558282a4208d810a80a102a9695571978aa16083b500403559a"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1976,
+      "sha256": "8f53e73a732361e413b412c6c21aedda95582fabdd7dcf433d787f5dc7c505a5"
+    }
+  ]
+}

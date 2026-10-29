@@ -1,0 +1,76 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_cell_type_comp.png)
+
+## Statistical results
+
+| category | group | n_samples | mean_proportion | sd_proportion | median_proportion | test | statistic | p_value | p_adj | significant |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| CD4 T | control | 6 | 0.332208168870303 | 0.0687940101359802 | 0.341089013545484 | Mann-Whitney U test | 24 | 0.393939393939394 | 0.63030303030303 | FALSE |
+| CD4 T | treated | 6 | 0.300447548432715 | 0.0556748816296733 | 0.313276380663764 | Mann-Whitney U test | 24 | 0.393939393939394 | 0.63030303030303 | FALSE |
+| CD8 T | control | 6 | 0.139127983068533 | 0.0455585988427352 | 0.147153051311903 | Mann-Whitney U test | 2 | 0.00865800865800866 | 0.0230880230880231 | TRUE |
+| CD8 T | treated | 6 | 0.243526011844113 | 0.0636964042404072 | 0.227077856797111 | Mann-Whitney U test | 2 | 0.00865800865800866 | 0.0230880230880231 | TRUE |
+| B | control | 6 | 0.1398820880054 | 0.0369963978193718 | 0.127395717579274 | Mann-Whitney U test | 36 | 0.00216450216450216 | 0.0173160173160173 | TRUE |
+| B | treated | 6 | 0.0592479409606045 | 0.0266483008769235 | 0.0704854324526231 | Mann-Whitney U test | 36 | 0.00216450216450216 | 0.0173160173160173 | TRUE |
+| NK | control | 6 | 0.0821522581508937 | 0.0259976143106316 | 0.0782394990992455 | Mann-Whitney U test | 9 | 0.17965367965368 | 0.359307359307359 | FALSE |
+| NK | treated | 6 | 0.111022856460154 | 0.0387729376159205 | 0.115128199620159 | Mann-Whitney U test | 9 | 0.17965367965368 | 0.359307359307359 | FALSE |
+| classical monocyte | control | 6 | 0.171142527003473 | 0.0389682974426325 | 0.170985869528363 | Mann-Whitney U test | 17 | 0.937229437229437 | 0.937229437229437 | FALSE |
+| classical monocyte | treated | 6 | 0.173468487560949 | 0.0356617092340613 | 0.182228913519639 | Mann-Whitney U test | 17 | 0.937229437229437 | 0.937229437229437 | FALSE |
+| non-classical monocyte | control | 6 | 0.0571348072611744 | 0.0309430603650714 | 0.0592254049812366 | Mann-Whitney U test | 16 | 0.818181818181818 | 0.935064935064935 | FALSE |
+| non-classical monocyte | treated | 6 | 0.0611512769956904 | 0.0251660398553922 | 0.0586789329901709 | Mann-Whitney U test | 16 | 0.818181818181818 | 0.935064935064935 | FALSE |
+| cDC | control | 6 | 0.0618814987699672 | 0.0222403686311554 | 0.0605146414446405 | Mann-Whitney U test | 35 | 0.00432900432900433 | 0.0173160173160173 | TRUE |
+| cDC | treated | 6 | 0.0247473285192062 | 0.012781803900643 | 0.0271711104815902 | Mann-Whitney U test | 35 | 0.00432900432900433 | 0.0173160173160173 | TRUE |
+| pDC | control | 6 | 0.0164706688702549 | 0.0180612269185234 | 0.0116676379176379 | Mann-Whitney U test | 15 | 0.699134199134199 | 0.932178932178932 | FALSE |
+| pDC | treated | 6 | 0.026388549226568 | 0.0348192937780322 | 0.0142929668373788 | Mann-Whitney U test | 15 | 0.699134199134199 | 0.932178932178932 | FALSE |
+
+## Methods
+
+The counts of 8 categories of cell_type were summed within each of 12 samples (sample) and converted to proportions of the sample total. The samples fall into 2 groups (control: n = 6, treated: n = 6). For each category, the per-sample proportions were compared between the groups with the Mann-Whitney U test (two-sided, with the exact null distribution when there are fewer than 50 samples per group and no ties), and the P values were adjusted across the 8 categories with the Benjamini-Hochberg method; 3 categories had an adjusted P below 0.05. Proportions are compositional: they sum to one within each sample, so a rise in one category forces the others down and the per-category tests are not independent. The tests are therefore exploratory; a compositional method, for example a log-ratio transform, is needed for a confirmatory claim. Computed in R 4.4.1 and drawn with ggplot2 3.5.1.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 1.0.0 |
+| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:1.0.0 |
+| container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
+| input | {"file":"input_cell_type.csv","md5":"4a74ef936bfc21d4bf2ccebb6e699014","sha256":"329d74c430d92f2d03a0ec9b91979eaa4ead49770e328224a89d2665269c7910"} |
+| command | figkit plot --recipe composition |
+| analysis_options | {"engine":"r","recipe":"composition","data":{"file":"composition.csv","x":"cell_type","y":"n_cells","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":"sample","group":"condition","label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":null,"cause":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

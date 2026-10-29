@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "survival_km",
@@ -41,12 +41,37 @@
         "events": 30,
         "median_survival": 11.4
       }
-    ]
+    ],
+    "at_risk": {
+      "times": [
+        0.0,
+        5.0,
+        10.0,
+        15.0,
+        20.0
+      ],
+      "counts": {
+        "control": [
+          60,
+          29,
+          16,
+          6,
+          1
+        ],
+        "treated": [
+          60,
+          39,
+          21,
+          5,
+          0
+        ]
+      }
+    }
   },
   "container": {
     "image": "localhost/pubready:1.0.0",
-    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
-    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -74,38 +99,38 @@
   "output_checksums": [
     {
       "file": "figure_arm_km_py.pdf",
-      "bytes": 17320,
-      "sha256": "5fbc3789d90e71f26fd28b43a3bca74c8c04a4cff025e901eecfedf621bf3019"
+      "bytes": 22331,
+      "sha256": "6c6af9059145a6cbfbfec4f5c36e761d0672aa5640e7be65713a17dcfddc385a"
     },
     {
       "file": "figure_arm_km_py.png",
-      "bytes": 105167,
-      "sha256": "93361c79631ee03e072c03f082d9bb074f4e0e6889340baa16908e4ba2665128"
+      "bytes": 98537,
+      "sha256": "72f040c6e0ae6a25974e974f27f19dd19e2fe24a33872848c4cc2f0c38bfac2d"
     },
     {
       "file": "figure_arm_km_py.svg",
-      "bytes": 44079,
-      "sha256": "9b30988c4e2cfefad75890a339a502fab4cfba578da15b7e73a388869e5eb8db"
+      "bytes": 47092,
+      "sha256": "ecf70f420f59320afe7c73bcbe390c6e4675082f96f038c46190db6af57e6f85"
     },
     {
       "file": "packages_km_py.txt",
-      "bytes": 1056,
-      "sha256": "3eb81a96e1ceb7ae620511a1793be106f5ed4e0e9e015dde3e4608c8fefe4849"
+      "bytes": 1064,
+      "sha256": "fbc5d28d4e905577ab988e6fab1b6921ae236a72e3a7d759bb638e16757b73b0"
     },
     {
       "file": "report.qmd",
-      "bytes": 2816,
-      "sha256": "316cec3a84ef76f8a9fa3bdd0d2de4e02028f07f30af8c90758585ea56965c85"
+      "bytes": 2911,
+      "sha256": "6f612466debf43b7488265d7cee1876325480ecce3e25a2bf79a87dc495215da"
     },
     {
       "file": "report.html",
-      "bytes": 1332648,
-      "sha256": "1807192f9aa03567b164d030faf4c123de01028dce32b2464828cd1df9f3143b"
+      "bytes": 1323911,
+      "sha256": "552b8c99f7711c04553e4a3e62f263062c463d47000e9251525b62c3a9122f82"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1943,
-      "sha256": "f6a70b6170d2fca6015312e1e9b0007d6a9cc4def68844e47cb9f230d6aa6c26"
+      "bytes": 1984,
+      "sha256": "02378071da615117c579f51934fe34aba34bc5b33f0538f7ecb1aeeca7754df0"
     }
   ]
 }

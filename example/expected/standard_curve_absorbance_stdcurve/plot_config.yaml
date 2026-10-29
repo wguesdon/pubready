@@ -1,0 +1,48 @@
+engine: r
+recipe: standard_curve
+data:
+  file: input_absorbance.csv
+  x: conc_ng_ml
+  'y': absorbance
+  fill: ~
+  facet: ~
+  time: ~
+  event: ~
+  annotation: ~
+  id: sample
+  group: ~
+  label: ~
+  positive: ~
+  se: ~
+  ci_low: ~
+  ci_high: ~
+  measure: ~
+  ref: ~
+  cause: ~
+  markers: ~
+  covariates: ~
+test:
+  method: auto
+  paired: no
+  p_adjust: none
+appearance:
+  theme: pubready_house
+  palette: ~
+  x_label: IL-6 (ng/mL)
+  y_label: Absorbance at 450 nm
+  title: ~
+  y_limits:
+  - ~
+  - ~
+  show_points: yes
+  geom: box
+  bracket:
+    show: yes
+    label: p.signif
+  scale: row
+  cluster: both
+  fc_cutoff: 1.0
+  p_cutoff: 0.05
+  top_n: 15.0
+  pd_threshold: 20.0
+  pr_threshold: -30.0

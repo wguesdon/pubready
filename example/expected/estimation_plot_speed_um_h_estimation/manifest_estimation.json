@@ -1,0 +1,137 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "estimation_plot",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "treatment",
+    "y": "speed_um_h",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_speed_um_h.csv",
+    "original_name": "estimation_plot.csv",
+    "md5": "5339e052f2d5f5e0a25c5088c57c88b0",
+    "sha256": "e811a230beb670c6360616da156ecfeaa53ff2e5895bd99d59958015656bdecc",
+    "n_rows": 48
+  },
+  "statistical_test": {
+    "name": "mean difference with a BCa bootstrap CI",
+    "reference": "vehicle",
+    "paired": false,
+    "bootstrap": {
+      "resamples": 5000,
+      "generator": "Park-Miller minimal standard (48271, 2^31 - 1)",
+      "seed": 20261029,
+      "interval": "bias-corrected and accelerated (BCa), 95%"
+    },
+    "test": "Welch two-sample t-test",
+    "comparisons": {
+      "compound_A": {
+        "mean_diff": -2.696429,
+        "ci_low": -5.139286,
+        "ci_high": 0.013502,
+        "hedges_g": -0.733391,
+        "statistic": -1.937391,
+        "df": 23.84203,
+        "p_value": 0.064632
+      },
+      "compound_B": {
+        "mean_diff": -7.221429,
+        "ci_low": -9.761612,
+        "ci_high": -4.515173,
+        "hedges_g": -1.981405,
+        "statistic": -5.243057,
+        "df": 23.913387,
+        "p_value": 0.000023
+      },
+      "compound_C": {
+        "mean_diff": 1.198571,
+        "ci_low": -3.649934,
+        "ci_high": 4.022126,
+        "hedges_g": 0.264273,
+        "statistic": 0.623579,
+        "df": 15.21964,
+        "p_value": 0.542138
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_speed_um_h_estimation.pdf",
+    "figure_speed_um_h_estimation.png",
+    "figure_speed_um_h_estimation.svg",
+    "packages_estimation.txt",
+    "qc_normality_estimation.png",
+    "qc_normality_estimation.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_speed_um_h_estimation.pdf",
+      "bytes": 22033,
+      "sha256": "c502ba810a72f4d63a323752b66be7ba64e5da99db4b2e2a57f785960d555265"
+    },
+    {
+      "file": "figure_speed_um_h_estimation.png",
+      "bytes": 133671,
+      "sha256": "1cb46e3db3c9375f3f5df20af0d7adbd7a4a9086de2fe325f0c0c6578868969f"
+    },
+    {
+      "file": "figure_speed_um_h_estimation.svg",
+      "bytes": 23266,
+      "sha256": "e8bd24da7775b3c37e19d8035c0366391e9cdeb07f7879cd8aa52704ab47a150"
+    },
+    {
+      "file": "packages_estimation.txt",
+      "bytes": 3575,
+      "sha256": "a5f7c323e7a3484dca21b8ee38538d329099db9ede5d14c2f80a64444f38a583"
+    },
+    {
+      "file": "qc_normality_estimation.png",
+      "bytes": 123070,
+      "sha256": "ca3ca97113f61ed843712941dc3206689fcbecdeb6fa4fac6824cfe0a6c74444"
+    },
+    {
+      "file": "qc_normality_estimation.pdf",
+      "bytes": 29635,
+      "sha256": "865c034fc9da6cfaba2cb8475f49e27453b91176387f03cd6e1c2e6383bfae6f"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 4461,
+      "sha256": "69aaef58c749d9b49ff6b558a223a9ee84b53b8121616589f78ddc72fbc90432"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1372916,
+      "sha256": "1e438bf1756e4fd25be3c6b22ba687d14b5ddd4fdc7596d28f61cbfdbf9858ea"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2020,
+      "sha256": "29a26eb37e83ebf75cd1bd15e898b6b9d732b56472fea12f6ad7a4538ff7c085"
+    }
+  ]
+}

@@ -32,6 +32,11 @@ for g, p0 in starts.items():
     grid = np.linspace(s["lx"].min(), s["lx"].max(), 200)
     ax.plot(10 ** grid, fpl(grid, *popt), label=g)
     ax.scatter(s["dose"], s["y"], s=14, alpha=0.6)
+# A curve whose midpoint is not determined is drawn as points only, as in the figure.
+for g in d["group"].unique():
+    if g not in starts:
+        s = d[d["group"] == g]
+        ax.scatter(s["dose"], s["y"], s=14, alpha=0.6, label=f"{g} (not determined)")
 ax.set_xscale("log")
 ax.set_xlabel("Concentration (uM)"); ax.set_ylabel("Viability (%)")
 for side in ("top", "right"): ax.spines[side].set_visible(False)

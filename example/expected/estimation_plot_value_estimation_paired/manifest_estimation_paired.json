@@ -1,0 +1,119 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "estimation_plot",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "condition",
+    "y": "value",
+    "test": "auto",
+    "paired": true,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_value.csv",
+    "original_name": "paired_response.csv",
+    "md5": "e995b32f1de8c3186d6e6c6f0d010a9f",
+    "sha256": "8bfc166ad40f6287fcf50fe3c144a4ccce89d4a501007e5e47dd183fc2df2b0f",
+    "n_rows": 44
+  },
+  "statistical_test": {
+    "name": "paired mean difference with a BCa bootstrap CI",
+    "reference": "pre",
+    "paired": true,
+    "bootstrap": {
+      "resamples": 5000,
+      "generator": "Park-Miller minimal standard (48271, 2^31 - 1)",
+      "seed": 20261029,
+      "interval": "bias-corrected and accelerated (BCa), 95%"
+    },
+    "test": "paired t-test",
+    "comparisons": {
+      "post": {
+        "mean_diff": -11.190909,
+        "ci_low": -13.29653,
+        "ci_high": -9.019616,
+        "hedges_g": -0.668975,
+        "statistic": -9.972925,
+        "df": 21,
+        "p_value": 2.03158e-09
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_value_estimation_paired.pdf",
+    "figure_value_estimation_paired.png",
+    "figure_value_estimation_paired.svg",
+    "packages_estimation_paired.txt",
+    "qc_normality_estimation_paired.png",
+    "qc_normality_estimation_paired.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_value_estimation_paired.pdf",
+      "bytes": 12483,
+      "sha256": "86c2fa79db739c9cfd3990148bd8e8b6e5d00dc3f7f0bbb4d5c01f5c6c5be837"
+    },
+    {
+      "file": "figure_value_estimation_paired.png",
+      "bytes": 161237,
+      "sha256": "f546d5fff9363b428c84cec6a82a44902ee7297ed8e9c548efb298cdca7e1d9f"
+    },
+    {
+      "file": "figure_value_estimation_paired.svg",
+      "bytes": 19210,
+      "sha256": "a66f1838a40be62016a202c8bd0ed2c1d24baaf36b854775bf43a1f45bf4c778"
+    },
+    {
+      "file": "packages_estimation_paired.txt",
+      "bytes": 3575,
+      "sha256": "a5f7c323e7a3484dca21b8ee38538d329099db9ede5d14c2f80a64444f38a583"
+    },
+    {
+      "file": "qc_normality_estimation_paired.png",
+      "bytes": 56254,
+      "sha256": "b97d040be32155c780eae8f9645150f0fc399d65944a63d7d0b1abb72248d93c"
+    },
+    {
+      "file": "qc_normality_estimation_paired.pdf",
+      "bytes": 21943,
+      "sha256": "d4253d27c322dbb800c8dfec025f742a569a7ab81653eec5b81b0bedc1c24191"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3709,
+      "sha256": "954702df31d91835e439bbc17141bd2489d784e28e4383a6f582e01ec786d4f8"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1408679,
+      "sha256": "e2973c903880342ea9c6f2eff5c2751b66d7e1971c9bee9ca192300e13ceef09"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2001,
+      "sha256": "c3724e23f32ffb52b8cb1daf57193b0a5bee3668b79bb3c4e07feac287d99937"
+    }
+  ]
+}

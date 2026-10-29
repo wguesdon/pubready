@@ -1,0 +1,69 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new statistical method.
+:::
+
+## Figure
+
+![Publication figure](figure_cytokine_panel_fpanel_py.png)
+
+## Statistical results
+
+| feature | test | statistic | df1 | df2 | p_value | p_adj | p_adj_signif | effect_size | effect_size_name | n_Healthy control | n_Mild disease | n_Severe disease |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| IL-6 | Kruskal-Wallis test | 33.894059056614005 | 2.0 | nan | 4.365144162414893e-08 | 3.9286297461734035e-07 | **** | 0.721150192693915 | epsilon squared | 16 | 16 | 16 |
+| TNF-alpha | Kruskal-Wallis test | 21.728379607012954 | 2.0 | nan | 1.9131204673267176e-05 | 4.304521051485115e-05 | **** | 0.462305949085382 | epsilon squared | 16 | 16 | 16 |
+| IL-1beta | Kruskal-Wallis test | 20.98660714285714 | 2.0 | nan | 2.7721463993230167e-05 | 4.98986351878143e-05 | **** | 0.4465235562310029 | epsilon squared | 16 | 16 | 16 |
+| IL-10 | Kruskal-Wallis test | 11.611440183466307 | 2.0 | nan | 0.0030102862901635777 | 0.004515429435245366 | ** | 0.24705191879715546 | epsilon squared | 16 | 16 | 16 |
+| IFN-gamma | Kruskal-Wallis test | 0.6778110242631284 | 2.0 | nan | 0.7125497732177106 | 0.8016184948699244 | ns | 0.014421511154534649 | epsilon squared | 16 | 16 | 16 |
+| IL-8 | Kruskal-Wallis test | 25.64221938775509 | 2.0 | nan | 2.7031043291432772e-06 | 8.109312987429832e-06 | **** | 0.5455791359096828 | epsilon squared | 16 | 16 | 16 |
+| IL-17A | Kruskal-Wallis test | 0.04018075232045274 | 2.0 | nan | 0.9801100907173403 | 0.9801100907173405 | ns | 0.0008549096238394201 | epsilon squared | 16 | 16 | 16 |
+| CXCL10 | Kruskal-Wallis test | 30.690688775510182 | 2.0 | nan | 2.1657165208285589e-07 | 9.745724343728515e-07 | **** | 0.6529933782023443 | epsilon squared | 16 | 16 | 16 |
+| MCP-1 | Kruskal-Wallis test | 4.303571428571416 | 2.0 | nan | 0.11627633595931813 | 0.14949814623340904 | ns | 0.0915653495440727 | epsilon squared | 16 | 16 | 16 |
+
+## Methods
+
+Concentration (pg/mL) was compared between the levels of group (Healthy control, Mild disease, Severe disease) separately for each of 9 features. One test family was chosen for the whole panel: the Shapiro-Wilk test was run on each of the 27 feature-by-group samples, and because 15 of them departed from normality (P <= 0.05, or fewer than 3 values) the rank-based Kruskal-Wallis test was used for every feature. P values were adjusted across the 9 features with the Benjamini-Hochberg method; 6 features had an adjusted P (q) below 0.05. The effect size is epsilon squared. Group sizes per feature: Healthy control (n = 16), Mild disease (n = 16), Severe disease (n = 16). Drawn in Python 3.10.12 with matplotlib 3.10.9 and scipy 1.15.3.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 1.0.0 |
+| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_dirty | False |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:1.0.0 |
+| container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
+| input | {"file": "input_cytokine_panel.csv", "md5": "f77a1f672f5ed66b30e6a03fd7e90698", "sha256": "4ccf271257662e1dee4339f1d69d6d74ce5bd3f47078a5fde1a0aed9bdca004d"} |
+| command | figkit plot --recipe feature_panel |
+| analysis_options | {"engine": "python", "recipe": "feature_panel", "data": {"file": "cytokine_panel.csv", "x": "group", "y": "concentration_pg_ml", "fill": null, "facet": "cytokine", "time": null, "event": null, "annotation": null, "covariates": null, "id": null, "group": null, "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "ref": null, "cause": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": "Group", "y_label": "Concentration (pg/mL)", "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

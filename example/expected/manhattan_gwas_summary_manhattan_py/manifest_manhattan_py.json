@@ -1,0 +1,104 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "manhattan",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "pos",
+    "y": "p",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_gwas_summary.csv",
+    "original_name": "gwas_summary.csv",
+    "md5": "cbcaf85e088a7d1bb7bb44fd15648588",
+    "sha256": "40a04af482fa40bdc75f42613110744366fc3a2eb9cb5e029968fe29869c58a4",
+    "n_rows": 20000
+  },
+  "statistical_test": {
+    "name": "Manhattan and QQ plot",
+    "n_snps": 20000,
+    "n_chromosomes": 23,
+    "lambda_gc": 1.081650316664911,
+    "n_genome_wide": 45,
+    "n_suggestive": 75,
+    "min_p": 9.606999999999999e-22,
+    "genome_wide_threshold": 5e-08,
+    "suggestive_threshold": 1e-05,
+    "n_zero_p": 0,
+    "n_leads": 4,
+    "thinning_step": 1,
+    "n_drawn": 20000
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_gwas_summary_manhattan_py.pdf",
+    "figure_gwas_summary_manhattan_py.png",
+    "figure_gwas_summary_manhattan_py.svg",
+    "packages_manhattan_py.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_gwas_summary_manhattan_py.pdf",
+      "bytes": 310004,
+      "sha256": "a9142b23496c4b816c9e55a05c636cf94c748f3a82289ddf48ea70f6f7d74654"
+    },
+    {
+      "file": "figure_gwas_summary_manhattan_py.png",
+      "bytes": 293405,
+      "sha256": "16329bdc5a99ae6d73443657296d182ce0b0a2fcb19c1a2ca2bcb85ee92c0949"
+    },
+    {
+      "file": "figure_gwas_summary_manhattan_py.svg",
+      "bytes": 3021781,
+      "sha256": "3b742cfc81c6e19bec80fee257c678d0033046a64da0280126c3f53624d8f6de"
+    },
+    {
+      "file": "packages_manhattan_py.txt",
+      "bytes": 1060,
+      "sha256": "29424fa280ab6c1ad4b2e1d7141058ff9f9bf47fb219d0e6b7231001f3b50e77"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3930,
+      "sha256": "de077d789d2104875f89cebb54ca28f8116779732e5c2dbc9cc60c29a1c7a128"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1585305,
+      "sha256": "909e601093b14a91d18e0d7ebdb5ffeb6a7ac1f939d145af0923dd613c73ef20"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1979,
+      "sha256": "2676f52b7dd646e1f1f2677892c0ddcbd6d63aa1484465aab8f90fa5638c7866"
+    }
+  ]
+}

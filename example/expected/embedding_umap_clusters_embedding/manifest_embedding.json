@@ -1,0 +1,95 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "embedding",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "UMAP_1",
+    "y": "UMAP_2",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_umap_clusters.csv",
+    "original_name": "umap_clusters.csv",
+    "md5": "76d61b415aeb6c7f7cd1b8d152260faf",
+    "sha256": "93e1dfb9a3457374ec2a570e17defd873f383468d2dd3ff0a70fb8f58f51b68f",
+    "n_rows": 2590
+  },
+  "statistical_test": {
+    "name": "Embedding scatter",
+    "n_cells": 2590,
+    "n_clusters": 8,
+    "continuous": false,
+    "mean_silhouette": 0.396769,
+    "silhouette_n": 2590,
+    "silhouette_step": 1,
+    "n_drawn": 2590,
+    "drawing_step": 1
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_umap_clusters_embedding.pdf",
+    "figure_umap_clusters_embedding.png",
+    "figure_umap_clusters_embedding.svg",
+    "packages_embedding.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_umap_clusters_embedding.pdf",
+      "bytes": 92433,
+      "sha256": "9abf605e82a08b91dd39ddfb1987189306db70c8c5ed899fdd18e7636e945801"
+    },
+    {
+      "file": "figure_umap_clusters_embedding.png",
+      "bytes": 167568,
+      "sha256": "cbd5b1d538ca7a144bfddcf2396ee5879ee9c21eef221a49733f527d39f1c231"
+    },
+    {
+      "file": "figure_umap_clusters_embedding.svg",
+      "bytes": 326792,
+      "sha256": "bdadcaa4dcc108b8b422259e071f35e1044dd98a51f304b450e3e3b62339f128"
+    },
+    {
+      "file": "packages_embedding.txt",
+      "bytes": 3576,
+      "sha256": "c12e3841267aadf3a7a63d16eddea8e89ca42906e959e91e56c49ca6d150b9cf"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3644,
+      "sha256": "8f93036e43f6845cbae3affc0b722024046e78a8dc43bf5ad903bffd978f40ba"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1417235,
+      "sha256": "88da25f03730b0777feaa923d476cfe3b99bf6974d5aa08f340a57b39735db7f"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1984,
+      "sha256": "c7ab59786e02dedfdac79468d5c5c5e302a188e4c263ed03e4c24e0bf4185635"
+    }
+  ]
+}

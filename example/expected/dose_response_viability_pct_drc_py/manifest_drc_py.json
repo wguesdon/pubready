@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "dose_response",
@@ -24,9 +24,13 @@
   "statistical_test": {
     "name": "Four-parameter logistic fit",
     "n_curves": 3,
+    "n_determined": 3,
+    "not_determined": [],
     "curves": {
       "cmpd_A": {
         "midpoint": "IC50",
+        "fit_status": "fitted",
+        "status_reason": null,
         "ec50": 0.044961802553668995,
         "ci_low": 0.034800349893635465,
         "ci_high": 0.058090326535620095,
@@ -37,6 +41,8 @@
       },
       "cmpd_B": {
         "midpoint": "IC50",
+        "fit_status": "fitted",
+        "status_reason": null,
         "ec50": 0.299519955253651,
         "ci_low": 0.2349631958046305,
         "ci_high": 0.3818138550930498,
@@ -47,6 +53,8 @@
       },
       "cmpd_C": {
         "midpoint": "IC50",
+        "fit_status": "fitted",
+        "status_reason": null,
         "ec50": 1.6309248460144736,
         "ci_low": 0.8795222862922365,
         "ci_high": 3.0242733979608696,
@@ -68,8 +76,8 @@
   },
   "container": {
     "image": "localhost/pubready:1.0.0",
-    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
-    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -97,38 +105,38 @@
   "output_checksums": [
     {
       "file": "figure_viability_pct_drc_py.pdf",
-      "bytes": 22476,
-      "sha256": "7227e586290f69e320f6c79dee1c1b067b54e6cae6a15e09c619bf33d8a868ce"
+      "bytes": 22468,
+      "sha256": "58264307d967881cfb993738d7938d72f10275a85510cdaf2e9b1b570ae18e2e"
     },
     {
       "file": "figure_viability_pct_drc_py.png",
       "bytes": 167723,
-      "sha256": "6a3154148b24d7206251ac382c7656c229e2a844cd150f15b637b1e05d37111c"
+      "sha256": "41edf600199b6d14e8d9c39c10e9727b38155b81a63b694b4008ff2c16cf984f"
     },
     {
       "file": "figure_viability_pct_drc_py.svg",
       "bytes": 61633,
-      "sha256": "5dc4b1276a9bc21c91353912cad3a9373cc662b7cb8ac22938095249a02b4b9d"
+      "sha256": "e6a1ccb83a099e9800f7f9261055b8026209a56bc9f40f55ec3cee0579e180fb"
     },
     {
       "file": "packages_drc_py.txt",
-      "bytes": 1066,
-      "sha256": "f60fb410706a5dbcb4d969bd0501b701822d882014cdae0bc6af0f571db9d745"
+      "bytes": 1060,
+      "sha256": "29424fa280ab6c1ad4b2e1d7141058ff9f9bf47fb219d0e6b7231001f3b50e77"
     },
     {
       "file": "report.qmd",
-      "bytes": 4165,
-      "sha256": "8d8c221fa52fe4cbc920efe35362d0ad8474869ca430a2fbda3bb70ba8dc4caa"
+      "bytes": 4546,
+      "sha256": "3bd6c009d56ef576369ce511b7652af110980e5d3f749b375d8b7edeb8c35062"
     },
     {
       "file": "report.html",
-      "bytes": 1418057,
-      "sha256": "4fdd8e1bd2a503778e20d61e9298ef2b1f2f76d5931f91cc76baf316e6294695"
+      "bytes": 1418538,
+      "sha256": "0a8522c7bf40ed606399275d02af0c0028a16d28db3a867ad0413cdd66fe3256"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2004,
-      "sha256": "59f52be57823bd33286953ae28d0eea3ba02cceee536c31e2e0049103e8a9818"
+      "bytes": 2045,
+      "sha256": "b812d96e573c689af982600c434f8d8c12d17fa4992f895d832e43b6c2784b7d"
     }
   ]
 }

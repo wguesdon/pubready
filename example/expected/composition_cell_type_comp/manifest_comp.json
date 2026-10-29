@@ -1,0 +1,137 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "composition",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "cell_type",
+    "y": "n_cells",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_cell_type.csv",
+    "original_name": "composition.csv",
+    "md5": "4a74ef936bfc21d4bf2ccebb6e699014",
+    "sha256": "329d74c430d92f2d03a0ec9b91979eaa4ead49770e328224a89d2665269c7910",
+    "n_rows": 96
+  },
+  "statistical_test": {
+    "name": "Mann-Whitney U test per category with Benjamini-Hochberg adjustment",
+    "n_samples": 12,
+    "n_categories": 8,
+    "groups": {
+      "control": 6,
+      "treated": 6
+    },
+    "p_adjust": "BH",
+    "n_significant": 3,
+    "categories": {
+      "CD4 T": {
+        "statistic": 24,
+        "p_value": 0.393939,
+        "p_adj": 0.630303
+      },
+      "CD8 T": {
+        "statistic": 2,
+        "p_value": 0.008658,
+        "p_adj": 0.023088
+      },
+      "B": {
+        "statistic": 36,
+        "p_value": 0.002165,
+        "p_adj": 0.017316
+      },
+      "NK": {
+        "statistic": 9,
+        "p_value": 0.179654,
+        "p_adj": 0.359307
+      },
+      "classical monocyte": {
+        "statistic": 17,
+        "p_value": 0.937229,
+        "p_adj": 0.937229
+      },
+      "non-classical monocyte": {
+        "statistic": 16,
+        "p_value": 0.818182,
+        "p_adj": 0.935065
+      },
+      "cDC": {
+        "statistic": 35,
+        "p_value": 0.004329,
+        "p_adj": 0.017316
+      },
+      "pDC": {
+        "statistic": 15,
+        "p_value": 0.699134,
+        "p_adj": 0.932179
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_cell_type_comp.pdf",
+    "figure_cell_type_comp.png",
+    "figure_cell_type_comp.svg",
+    "packages_comp.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_cell_type_comp.pdf",
+      "bytes": 16359,
+      "sha256": "8294f6318612fc091219b980653dd9fec67eb44eb46b01599d9371beadae5db6"
+    },
+    {
+      "file": "figure_cell_type_comp.png",
+      "bytes": 108446,
+      "sha256": "2329343e958411d63c467dafe41a8112ff6219955ab2054d0ed9e6118daa22cc"
+    },
+    {
+      "file": "figure_cell_type_comp.svg",
+      "bytes": 29278,
+      "sha256": "c87e9cf23126b494a626c4ba649a85d9aa8d9e01bfd26f369904993e36859aed"
+    },
+    {
+      "file": "packages_comp.txt",
+      "bytes": 3588,
+      "sha256": "9417a0b894c5488d4069e5e8713cdcf1b9b74942e041f897224e9c04d88d8ebb"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 5913,
+      "sha256": "2501e2c63d154d424b7f9bf18f7f417c2a6d7572954a8c434c73a04bdb51c647"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1341876,
+      "sha256": "ccdfa48921cfa47614b96d68b33c43a1c3c68897e957cce2480d5f9a9912fff8"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1990,
+      "sha256": "f1395ff1c2a592622ba47fda4f2db819858bb54946780cac2983b3ff1490f5ad"
+    }
+  ]
+}

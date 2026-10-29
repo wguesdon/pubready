@@ -14,5 +14,5 @@ print(summary(lm(diff ~ mean, data = d)))
 p <- ggplot(d, aes(mean, diff)) + geom_point() +
   geom_hline(yintercept = bias) + geom_hline(yintercept = loa, linetype = "dashed") +
   labs(x = "Mean of new_assay and reference_assay", y = "Difference (new_assay - reference_assay)") + theme_classic()
-ggsave("figure_new_assay_vs_reference_assay_ba.pdf", p, width = 5.4, height = 4.4)
+ggsave("figure_new_assay_vs_reference_assay_ba.pdf", p, width = 6.4, height = 4.4)
 cat("Reproduced figure.\n")

@@ -1,0 +1,99 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "manhattan",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "pos",
+    "y": "p",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_gwas_summary.csv",
+    "original_name": "gwas_summary.csv",
+    "md5": "cbcaf85e088a7d1bb7bb44fd15648588",
+    "sha256": "40a04af482fa40bdc75f42613110744366fc3a2eb9cb5e029968fe29869c58a4",
+    "n_rows": 20000
+  },
+  "statistical_test": {
+    "name": "Manhattan and QQ plot",
+    "n_snps": 20000,
+    "n_chromosomes": 23,
+    "lambda_gc": 1.08165,
+    "n_genome_wide": 45,
+    "n_suggestive": 75,
+    "min_p": 9.607e-22,
+    "genome_wide_threshold": 5e-08,
+    "suggestive_threshold": 1e-05,
+    "n_zero_p": 0,
+    "n_leads": 4,
+    "thinning_step": 1,
+    "n_drawn": 20000
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_gwas_summary_manhattan.pdf",
+    "figure_gwas_summary_manhattan.png",
+    "figure_gwas_summary_manhattan.svg",
+    "packages_manhattan.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_gwas_summary_manhattan.pdf",
+      "bytes": 668738,
+      "sha256": "891b264ef6209d4b55258f602fe13a29676adc0d0251cce7fb5c99da8c546ff1"
+    },
+    {
+      "file": "figure_gwas_summary_manhattan.png",
+      "bytes": 134873,
+      "sha256": "278685e206d5c11d8b4ae470a4caede8c779d3cf4e031003ff35df559dfd4220"
+    },
+    {
+      "file": "figure_gwas_summary_manhattan.svg",
+      "bytes": 2212625,
+      "sha256": "4c8474cd0bd4a13cd797dd9da6635c4f7740baee93967c85138ca47879a3e723"
+    },
+    {
+      "file": "packages_manhattan.txt",
+      "bytes": 3575,
+      "sha256": "a5f7c323e7a3484dca21b8ee38538d329099db9ede5d14c2f80a64444f38a583"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3707,
+      "sha256": "7702facbec4615c16eb6695e79156b8610aeb8ba50797a6fd26b0becedf451db"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1373709,
+      "sha256": "e79080b03c6aa690ab74654ebe5836349a5005f4749a43b002269b370df78c58"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1969,
+      "sha256": "a23d723a7e00775a63ebbb239666fd9e303fbae2b642ef433559b31d028b0492"
+    }
+  ]
+}

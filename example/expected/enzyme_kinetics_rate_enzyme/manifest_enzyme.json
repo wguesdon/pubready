@@ -1,0 +1,135 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "enzyme_kinetics",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "substrate_um",
+    "y": "rate",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_rate.csv",
+    "original_name": "enzyme_kinetics.csv",
+    "md5": "6a7e13da412e358ca8b433bb29431af9",
+    "sha256": "2749d9ead24bd1313af8ecc106ec1fafebf1748a7b69b0d41210f5a35e5a4db8",
+    "n_rows": 72
+  },
+  "statistical_test": {
+    "name": "Michaelis-Menten fit",
+    "n_curves": 3,
+    "curves": {
+      "0 uM": {
+        "vmax": 119.420722,
+        "vmax_ci_low": 115.963147,
+        "vmax_ci_high": 122.878296,
+        "km": 18.454309,
+        "km_ci_low": 16.456241,
+        "km_ci_high": 20.452377,
+        "r_squared": 0.991352
+      },
+      "2 uM": {
+        "vmax": 121.184557,
+        "vmax_ci_low": 118.159657,
+        "vmax_ci_high": 124.209458,
+        "km": 27.694701,
+        "km_ci_low": 25.334198,
+        "km_ci_high": 30.055203,
+        "r_squared": 0.995526
+      },
+      "10 uM": {
+        "vmax": 120.985688,
+        "vmax_ci_low": 116.417237,
+        "vmax_ci_high": 125.554139,
+        "km": 65.139068,
+        "km_ci_low": 58.406953,
+        "km_ci_high": 71.871183,
+        "r_squared": 0.995461
+      }
+    },
+    "shared_km_test": {
+      "statistic": 151.842716,
+      "df1": 2,
+      "df2": 66,
+      "p_value": 2.025269e-25,
+      "shared_value": 28.21103,
+      "rss_shared": 2964.385189,
+      "rss_separate": 529.232166
+    },
+    "shared_vmax_test": {
+      "statistic": 0.389914,
+      "df1": 2,
+      "df2": 66,
+      "p_value": 0.678664,
+      "shared_value": 120.290631,
+      "rss_shared": 535.485351,
+      "rss_separate": 529.232166
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_rate_enzyme.pdf",
+    "figure_rate_enzyme.png",
+    "figure_rate_enzyme.svg",
+    "packages_enzyme.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_rate_enzyme.pdf",
+      "bytes": 15627,
+      "sha256": "30026c524def4a8c4cf91fbe96feec3b31982e62844098cfd9ca0f33f85343d6"
+    },
+    {
+      "file": "figure_rate_enzyme.png",
+      "bytes": 164803,
+      "sha256": "41f7392441b8ed6ab0fb8598b33c7cff4e815f7f547df69ddc070feee07c67a8"
+    },
+    {
+      "file": "figure_rate_enzyme.svg",
+      "bytes": 37646,
+      "sha256": "f51173ad8e97fa189126ae8c1ce3a737ee8cc30da320a204f26128df7297ab0e"
+    },
+    {
+      "file": "packages_enzyme.txt",
+      "bytes": 3561,
+      "sha256": "b944d632caadaf33ecff4ac0b7c5d88ca5926b82d431f97a9290caf16f7dcd43"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 4160,
+      "sha256": "2cdbae6858993c5f669df68cb67cb0c9b3b45af87c432f0613a972bb6a4a902f"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1414177,
+      "sha256": "83bc54c61e4203971e2e2a96cce529f386f1d986cb8845c8ccb530a6e2277526"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2021,
+      "sha256": "154b3653820d0899262f50f6d4b58899460c2d4672376764f8950614d8e6e3f3"
+    }
+  ]
+}

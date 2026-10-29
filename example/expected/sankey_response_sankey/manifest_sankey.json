@@ -1,0 +1,102 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "sankey",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "week",
+    "y": "response",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_response.csv",
+    "original_name": "sankey.csv",
+    "md5": "c904039b35f8f4e54992ca687d27384a",
+    "sha256": "d6b6ba5c1c315133158bff3441fd72223f9c75710a9724354efae2d2be283e5d",
+    "n_rows": 188
+  },
+  "statistical_test": {
+    "name": "Sankey diagram (descriptive)",
+    "n_patients": 80,
+    "n_visits": 3,
+    "visits": [
+      "8",
+      "16",
+      "24"
+    ],
+    "states": [
+      "complete response",
+      "partial response",
+      "stable disease",
+      "progressive disease"
+    ],
+    "n_transitions": 108,
+    "no_test_reason": "more than two visits"
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_response_sankey.pdf",
+    "figure_response_sankey.png",
+    "figure_response_sankey.svg",
+    "packages_sankey.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_response_sankey.pdf",
+      "bytes": 18579,
+      "sha256": "4385b1b7908c4e2d1a3ecc0dabfe6f58323a3bf0a8c23e2333e2feef16729680"
+    },
+    {
+      "file": "figure_response_sankey.png",
+      "bytes": 144930,
+      "sha256": "cf916f329cf4b91625ecfe716a77d354485c3db7cdae61b377d105ae3495bfab"
+    },
+    {
+      "file": "figure_response_sankey.svg",
+      "bytes": 39583,
+      "sha256": "6b3b765dbf47eb1a3d509b9024c83ea8343f30cd0e0e1bf6887e613d3e9fc5eb"
+    },
+    {
+      "file": "packages_sankey.txt",
+      "bytes": 3561,
+      "sha256": "b944d632caadaf33ecff4ac0b7c5d88ca5926b82d431f97a9290caf16f7dcd43"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3814,
+      "sha256": "5e1c641ee1c862c2f8b3ee0f4626d4fc5761bc64412e0aae05e6e49e55d106aa"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1387568,
+      "sha256": "26aba39b0eb1c43321fd141d86431eb4bfcc7c1c7bd0f7b515ab5c310e213000"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 1966,
+      "sha256": "0064dd43117c82c4bf1de901802431cdc8e2ab53acabcbbf34499d08c91e61c4"
+    }
+  ]
+}

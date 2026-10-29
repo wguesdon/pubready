@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "survival_km",
@@ -39,12 +39,19 @@
         "events": 30,
         "median_survival": 11.4
       }
-    ]
+    ],
+    "at_risk": {
+      "times": [0, 5, 10, 15, 20],
+      "counts": {
+        "control": [60, 29, 16, 6, 1],
+        "treated": [60, 39, 21, 5, 0]
+      }
+    }
   },
   "container": {
     "image": "localhost/pubready:1.0.0",
-    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
-    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -69,38 +76,38 @@
   "output_checksums": [
     {
       "file": "figure_arm_km.pdf",
-      "bytes": 18779,
-      "sha256": "a209e58a1ffda9ae58511bc6c1f2c2d925415c9baada10bcfddc65fc0caa59dc"
+      "bytes": 18691,
+      "sha256": "5d3fe2e24f12ec10e37b8a1c5b45e88155d5422e92aee92ff7f7d2f835c7eb65"
     },
     {
       "file": "figure_arm_km.png",
-      "bytes": 90912,
-      "sha256": "15fb50e47659797c0a0ff4af972232846848ac8dde0706cfb31875bb61a4374e"
+      "bytes": 82308,
+      "sha256": "eaa28192517c6e72484f5df30c213787c3e5c1ff05dedebf36dc9f17918d0683"
     },
     {
       "file": "figure_arm_km.svg",
-      "bytes": 21148,
-      "sha256": "6127927a36530fcdcb950d04453de9eb569639e8c42788e5cde3587d532d1271"
+      "bytes": 20087,
+      "sha256": "d84ae6031ace6adf4721fac4fff1a7c9474a050a258d5e62dc1153d62f583fb8"
     },
     {
       "file": "packages_km.txt",
-      "bytes": 3536,
-      "sha256": "8855d18816ea2db6e3ac7d32d64a11eb9ec62906a2d033459aebde07054240dd"
+      "bytes": 3606,
+      "sha256": "dc83f3c407e521f94b568f13766e1c608bb6a054f81bf1aa70baf1a027c9dabf"
     },
     {
       "file": "report.qmd",
-      "bytes": 2768,
-      "sha256": "78c741028b46fc3cedbcd8cd56a931a632f4bed785a6317d54ca715f907f398c"
+      "bytes": 2859,
+      "sha256": "f47a6848b2cdf1a2840c68ed1fa8b796e08692fd5d09588dd4a2eb58e82dc447"
     },
     {
       "file": "report.html",
-      "bytes": 1313624,
-      "sha256": "c67bf081631216d2e68c723ec0b88e727abf04c33f741b346d8bf65894c7d256"
+      "bytes": 1302251,
+      "sha256": "eaa40d5625ab92bad55f3aed47035e2b8ac8abf478317a1a4c4746dfd4ff3844"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1933,
-      "sha256": "3d586c9969913924c44ad18275de52a4c5252cefbd3300498cfcc4417a34cf79"
+      "bytes": 1974,
+      "sha256": "4165b2bb3f781df84010b76273208998f5f06829fcc8a5236030f445a9c1d97d"
     }
   ]
 }

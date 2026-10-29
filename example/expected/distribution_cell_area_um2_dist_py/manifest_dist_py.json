@@ -1,0 +1,163 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "distribution",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "condition",
+    "y": "cell_area_um2",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_cell_area_um2.csv",
+    "original_name": "distribution.csv",
+    "md5": "9a6485554175f36ec3bd2b8365cc3665",
+    "sha256": "5465c7bdc86c61c1bbdaa5bf4d211be7062d1eadd2b12df0a28b2cecba8052bb",
+    "n_rows": 240
+  },
+  "statistical_test": {
+    "name": "Shapiro-Wilk normality test per group (descriptive, no comparison)",
+    "n": 240,
+    "n_groups": 3,
+    "bins": {
+      "rule": "Freedman-Diaconis",
+      "capped_at_200": false,
+      "width": 28.48998259073779,
+      "start": 85.46994777221337,
+      "n_bins": 14
+    },
+    "groups": {
+      "control": {
+        "n": 90,
+        "mean": 260.02666666666664,
+        "sd": 38.56166169667729,
+        "median": 260.5,
+        "q1": 241.95000000000002,
+        "q3": 282.8,
+        "min": 142.0,
+        "max": 358.7,
+        "skewness": -0.28325183637482265,
+        "excess_kurtosis": 0.5573031446471854,
+        "shapiro_w": 0.9823865997431795,
+        "shapiro_p": 0.2634556600909799,
+        "bin_width": 28.48998259073779,
+        "bandwidth": 11.155300405236776
+      },
+      "mixed culture": {
+        "n": 70,
+        "mean": 280.0642857142857,
+        "sd": 83.74703461886526,
+        "median": 243.6,
+        "q1": 213.12500000000003,
+        "q3": 366.225,
+        "min": 160.1,
+        "max": 430.8,
+        "skewness": 0.33213900893291254,
+        "excess_kurtosis": -1.490520604357116,
+        "shapiro_w": 0.8831681781164912,
+        "shapiro_p": 8.924471542622699e-06,
+        "bin_width": 28.48998259073779,
+        "bandwidth": 32.224956484982194
+      },
+      "serum-starved": {
+        "n": 80,
+        "mean": 225.72375000000002,
+        "sd": 76.34260426698727,
+        "median": 209.39999999999998,
+        "q1": 172.00000000000003,
+        "q3": 268.625,
+        "min": 105.9,
+        "max": 475.6,
+        "skewness": 0.8627507744560722,
+        "excess_kurtosis": 0.5296390113236837,
+        "shapiro_w": 0.9434277863517986,
+        "shapiro_p": 0.0014768257875404022,
+        "bin_width": 28.48998259073779,
+        "bandwidth": 27.015264290554242
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_cell_area_um2_dist_py.pdf",
+    "figure_cell_area_um2_dist_py.png",
+    "figure_cell_area_um2_dist_py.svg",
+    "packages_dist_py.txt",
+    "qc_normality_dist_py.png",
+    "qc_normality_dist_py.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_cell_area_um2_dist_py.pdf",
+      "bytes": 26398,
+      "sha256": "9eaa51d42032477f3076e649ed1c74a880438580375996072070c156c46d2ffb"
+    },
+    {
+      "file": "figure_cell_area_um2_dist_py.png",
+      "bytes": 224104,
+      "sha256": "945452d4de70b2920f25e00299ccbaa59c26ab39aa79537c6a510f5142b74ad1"
+    },
+    {
+      "file": "figure_cell_area_um2_dist_py.svg",
+      "bytes": 112851,
+      "sha256": "08958718b3af754c139b0c88c82d247bf228306a8f27dc730bc72c2608e94d8c"
+    },
+    {
+      "file": "packages_dist_py.txt",
+      "bytes": 1060,
+      "sha256": "29424fa280ab6c1ad4b2e1d7141058ff9f9bf47fb219d0e6b7231001f3b50e77"
+    },
+    {
+      "file": "qc_normality_dist_py.png",
+      "bytes": 156253,
+      "sha256": "c8c339e7be6a463fb9f58b95643be797f8fd77210c1dc53c1f54d76b6081e028"
+    },
+    {
+      "file": "qc_normality_dist_py.pdf",
+      "bytes": 32102,
+      "sha256": "13da3228c841672fbc1f2f45ea0825c7f3130607d701a77b77ace1f0c50584e5"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 4264,
+      "sha256": "ec678c8a7628d18b004206fb7a33c16918ef4b56730775c9f374769865d50372"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1493336,
+      "sha256": "7878bb3ae2b9cb4eb9a6d280c17060d299bcefb810f26bfeec87eb483a0b9c96"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2016,
+      "sha256": "cd724ee7581f27f5ccece8319aae21bcabfc33f39e8eb1e986bab511b6d39d7d"
+    }
+  ]
+}

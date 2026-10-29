@@ -1,0 +1,61 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_value_estimation_paired.png)
+
+## Statistical results
+
+| reference | group | n_ref | n_group | mean_ref | mean_group | mean_diff | ci_low | ci_high | hedges_g | test | statistic | df | p_value |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| pre | post | 22 | 22 | 98.4681818181818 | 87.2772727272727 | -11.1909090909091 | -13.2965302865438 | -9.01961570119179 | -0.66897463112033 | paired t-test | -9.97292541186761 | 21 | 2.03157966031198e-09 |
+
+## Methods
+
+Marker (a.u.) was analysed with estimation statistics, with pre as the reference group (n = 22). For each group the paired mean difference against pre (group minus reference) is reported with a 95% bias-corrected and accelerated (BCa) bootstrap confidence interval from 5000 resamples. The resamples were drawn with the Park-Miller minimal standard generator (multiplier 48271, modulus 2^31 - 1, seed 20261029, restarted for each comparison), each resample drawing the subject indices of the pairs as floor(u n). The bias correction is the normal quantile of the proportion of bootstrap differences strictly below the estimate, the acceleration comes from the jackknife of the mean difference over every pair, and the interval ends are type-7 quantiles. Hedges' g is Cohen's d over the average standard deviation of the two conditions with the exact small-sample correction. A paired t-test gives each P value. post: mean difference -11.2 (95% CI -13.3 to -9.02), Hedges' g = -0.67, t(21) = -9.97, P = 2e-09. Computed in R 4.4.1 and drawn with ggplot2 3.5.1.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 1.0.0 |
+| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:1.0.0 |
+| container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
+| input | {"file":"input_value.csv","md5":"e995b32f1de8c3186d6e6c6f0d010a9f","sha256":"8bfc166ad40f6287fcf50fe3c144a4ccce89d4a501007e5e47dd183fc2df2b0f"} |
+| command | figkit plot --recipe estimation_plot |
+| analysis_options | {"engine":"r","recipe":"estimation_plot","data":{"file":"paired_response.csv","x":"condition","y":"value","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":"subject","group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":"pre","cause":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":true,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":"Marker (a.u.)","title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

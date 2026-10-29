@@ -1,0 +1,80 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new statistical method.
+:::
+
+## Figure
+
+![Publication figure](figure_absorbance_stdcurve_py.png)
+
+## Statistical results
+
+| id | signal | concentration | flag |
+| --- | --- | --- | --- |
+| Serum_01 | 0.079 | nan | below range |
+| Serum_02 | 0.11 | nan | below range |
+| Serum_03 | 2.168 | 4.411700130204095 | in range |
+| Serum_04 | 0.899 | 1.0738086236914093 | in range |
+| Serum_05 | 1.794 | 2.9106163663461087 | in range |
+| Serum_06 | 1.399 | 1.9212192176757652 | in range |
+| Serum_07 | 0.248 | 0.2663089387106087 | in range |
+| Serum_08 | 1.094 | 1.368441132085654 | in range |
+| Serum_09 | 1.201 | 1.5475656773046254 | in range |
+| Serum_10 | 1.957 | 3.468623197722942 | in range |
+| Serum_11 | 2.153 | 4.3337742626692455 | in range |
+| Serum_12 | 1.054 | 1.304904880998702 | in range |
+| Serum_13 | 1.571 | 2.3032790633518037 | in range |
+| Serum_14 | 2.177 | 4.45941768389905 | in range |
+| Serum_15 | 0.494 | 0.5527176989848148 | in range |
+| Serum_16 | 2.12 | 4.1690387211352355 | in range |
+| Serum_17 | 0.274 | 0.2965758430693014 | in range |
+| Serum_18 | 0.287 | 0.3116544886423706 | in range |
+| Serum_19 | 2.21 | 4.640891456042025 | in range |
+| Serum_20 | 2.924 | nan | above range |
+
+## Methods
+
+Concentrations (IL-6 (ng/mL)) were interpolated from the signal (Absorbance at 450 nm) on a standard curve of 16 standards at 8 concentrations. The model was chosen automatically: the four-parameter logistic when the standards have at least five distinct positive concentrations and the fit converges, and a straight line otherwise. The four-parameter logistic, signal = bottom + (top - bottom) / (1 + 10^((log10 EC50 - log10 concentration) x Hill slope)), was fitted by nonlinear least squares on log10 concentration to 14 standards: bottom = 0.0481, top = 3.19, EC50 = 2.42, Hill slope = 1.218, R2 = 0.9986. Each unknown was interpolated by inverting the fitted curve. An unknown whose signal lies outside the signal range of the curve between the lowest and the highest standard (0.156 to 2.71) was flagged below range or above range and given no concentration, so no value was extrapolated. Of 20 unknowns, 17 were in range, 2 below range and 1 above range. Read back through the curve, the standard levels had a recovery of 97.2% to 102.1% of the nominal concentration, and 7 of 7 levels fell within 80% to 120%. Fitted in Python 3.10.12 with scipy 1.15.3 (curve_fit) and drawn with matplotlib 3.10.9.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 1.0.0 |
+| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_dirty | False |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:1.0.0 |
+| container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
+| input | {"file": "input_absorbance.csv", "md5": "ae4cacec29ae88addba4e46fa7189b77", "sha256": "7de467ae8ae5d96b391e262ea55a9c73945b22fb558fcd2dbfe0ed711f16a2f8"} |
+| command | figkit plot --recipe standard_curve |
+| analysis_options | {"engine": "python", "recipe": "standard_curve", "data": {"file": "standard_curve.csv", "x": "conc_ng_ml", "y": "absorbance", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": "sample", "group": null, "label": null, "positive": null, "se": null, "ci_low": null, "ci_high": null, "measure": null, "ref": null, "cause": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": "IL-6 (ng/mL)", "y_label": "Absorbance at 450 nm", "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

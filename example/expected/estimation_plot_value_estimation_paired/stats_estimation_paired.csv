@@ -1,0 +1,2 @@
+reference,group,n_ref,n_group,mean_ref,mean_group,mean_diff,ci_low,ci_high,hedges_g,test,statistic,df,p_value
+pre,post,22,22,98.46818181818182,87.27727272727273,-11.190909090909116,-13.296530286543806,-9.019615701191785,-0.6689746311203302,paired t-test,-9.972925411867607,21,2.031579660311983e-9

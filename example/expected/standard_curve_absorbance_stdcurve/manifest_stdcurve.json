@@ -1,0 +1,157 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "r",
+  "recipe": "standard_curve",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "conc_ng_ml",
+    "y": "absorbance",
+    "test": "auto",
+    "paired": false,
+    "p_adjust": "none"
+  },
+  "input": {
+    "file": "input_absorbance.csv",
+    "original_name": "standard_curve.csv",
+    "md5": "ae4cacec29ae88addba4e46fa7189b77",
+    "sha256": "7de467ae8ae5d96b391e262ea55a9c73945b22fb558fcd2dbfe0ed711f16a2f8",
+    "n_rows": 36
+  },
+  "statistical_test": {
+    "name": "Standard curve interpolation",
+    "model": "four-parameter logistic",
+    "model_choice": "auto",
+    "parameters": {
+      "bottom": 0.048092,
+      "top": 3.187025,
+      "ec50": 2.418247,
+      "log_ec50": 0.383501,
+      "hill": 1.218406
+    },
+    "r_squared": 0.998561,
+    "n_standards": 16,
+    "n_fitted": 14,
+    "n_levels": 8,
+    "concentration_range": [0.15625, 10],
+    "signal_range": [0.155766, 2.714171],
+    "n_unknowns": 20,
+    "n_in_range": 17,
+    "n_below": 2,
+    "n_above": 1,
+    "recovery": {
+      "levels": [
+        {
+          "concentration": 0.15625,
+          "mean_signal": 0.1565,
+          "back_calculated": 0.157155,
+          "recovery_pct": 100.579492
+        },
+        {
+          "concentration": 0.3125,
+          "mean_signal": 0.292,
+          "back_calculated": 0.317447,
+          "recovery_pct": 101.583071
+        },
+        {
+          "concentration": 0.625,
+          "mean_signal": 0.54,
+          "back_calculated": 0.607631,
+          "recovery_pct": 97.220949
+        },
+        {
+          "concentration": 1.25,
+          "mean_signal": 1.036,
+          "back_calculated": 1.276872,
+          "recovery_pct": 102.149782
+        },
+        {
+          "concentration": 2.5,
+          "mean_signal": 1.637,
+          "back_calculated": 2.467925,
+          "recovery_pct": 98.717012
+        },
+        {
+          "concentration": 5,
+          "mean_signal": 2.2755,
+          "back_calculated": 5.034719,
+          "recovery_pct": 100.694377
+        },
+        {
+          "concentration": 10,
+          "mean_signal": 2.713,
+          "back_calculated": 9.976116,
+          "recovery_pct": 99.761165
+        }
+      ],
+      "n_levels": 7,
+      "n_read_back": 7,
+      "min_pct": 97.220949,
+      "max_pct": 102.149782,
+      "n_within_80_120": 7
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "R",
+    "language_version": "4.4.1",
+    "packages": {
+      "ggplot2": "3.5.1",
+      "ggpubr": "0.6.0",
+      "rstatix": "0.7.2",
+      "ggprism": "1.0.5"
+    }
+  },
+  "outputs": [
+    "figure_absorbance_stdcurve.pdf",
+    "figure_absorbance_stdcurve.png",
+    "figure_absorbance_stdcurve.svg",
+    "packages_stdcurve.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_absorbance_stdcurve.pdf",
+      "bytes": 20414,
+      "sha256": "e0392fa8f6b79304a98f1ecb3ffca509a6c512bab048fe08a3bef1d85ace0530"
+    },
+    {
+      "file": "figure_absorbance_stdcurve.png",
+      "bytes": 120944,
+      "sha256": "dbfb59ff62de43fc522d1386ae975091b03bd40014cdfd7d4924a9cd88bcf36a"
+    },
+    {
+      "file": "figure_absorbance_stdcurve.svg",
+      "bytes": 19885,
+      "sha256": "32d8d0213147291f25e848551bb3933c100ce3f89a24771401f96500643d260e"
+    },
+    {
+      "file": "packages_stdcurve.txt",
+      "bytes": 3561,
+      "sha256": "b944d632caadaf33ecff4ac0b7c5d88ca5926b82d431f97a9290caf16f7dcd43"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 4463,
+      "sha256": "c1c3097269573a70809d10a24b0b6c0f62bfd63e59947b8757505a34226e219c"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1356209,
+      "sha256": "c832a0a5938af32fb3e4c918ad158da68f96865fb47655e9a1ebb433fdbf7218"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2025,
+      "sha256": "d481b22c8d6406db8bdeca09cb252fbed885b4cec5bcca732fccd52874e9523f"
+    }
+  ]
+}

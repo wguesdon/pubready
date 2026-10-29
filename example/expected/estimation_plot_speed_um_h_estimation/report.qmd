@@ -1,0 +1,63 @@
+---
+title: "Publication figure report"
+author:
+  - name: "none"
+    affiliations:
+      - name: "manual"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+::: {.callout-important}
+A manual command generated this report without an LLM model.
+No separate human scientific review is part of this fixed recipe.
+The report records the selected recipe and does not claim a new method.
+:::
+
+## Figure
+
+![Publication figure](figure_speed_um_h_estimation.png)
+
+## Statistical results
+
+| reference | group | n_ref | n_group | mean_ref | mean_group | mean_diff | ci_low | ci_high | hedges_g | test | statistic | df | p_value |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| vehicle | compound_A | 14 | 12 | 19.4214285714286 | 16.725 | -2.69642857142857 | -5.13928571428571 | 0.0135015665113431 | -0.733390897453763 | Welch two-sample t-test | -1.93739070207139 | 23.842029616839 | 0.0646318318440856 |
+| vehicle | compound_B | 14 | 12 | 19.4214285714286 | 12.2 | -7.22142857142857 | -9.76161223432283 | -4.51517332291688 | -1.98140529987675 | Welch two-sample t-test | -5.24305698725035 | 23.9133874585312 | 2.27309347361684e-05 |
+| vehicle | compound_C | 14 | 10 | 19.4214285714286 | 20.62 | 1.19857142857143 | -3.64993360055881 | 4.02212625890843 | 0.264272685148162 | Welch two-sample t-test | 0.623578653982167 | 15.2196403061645 | 0.542137803274161 |
+
+## Methods
+
+Migration speed (um/h) was analysed with estimation statistics, with vehicle as the reference group (n = 14). For each group the mean difference against vehicle (group minus reference) is reported with a 95% bias-corrected and accelerated (BCa) bootstrap confidence interval from 5000 resamples. The resamples were drawn with the Park-Miller minimal standard generator (multiplier 48271, modulus 2^31 - 1, seed 20261029, restarted for each comparison), each resample drawing the reference indices first and then the group indices, as floor(u n). The bias correction is the normal quantile of the proportion of bootstrap differences strictly below the estimate, the acceleration comes from the jackknife of the mean difference over every observation of both groups, and the interval ends are type-7 quantiles. Hedges' g is Cohen's d over the pooled standard deviation with the exact small-sample correction. A Welch two-sample t-test gives each P value. compound_A: mean difference -2.7 (95% CI -5.14 to 0.0135), Hedges' g = -0.73, t(23.8) = -1.94, P = 0.065; compound_B: mean difference -7.22 (95% CI -9.76 to -4.52), Hedges' g = -1.98, t(23.9) = -5.24, P = 2.3e-05; compound_C: mean difference 1.2 (95% CI -3.65 to 4.02), Hedges' g = 0.26, t(15.2) = 0.62, P = 0.54. Computed in R 4.4.1 and drawn with ggplot2 3.5.1.
+
+## Plot configuration
+
+The complete plot configuration is in `plot_config.yaml`.
+
+## Provenance
+
+| field | value |
+| --- | --- |
+| repository | pubready |
+| repository_version | 1.0.0 |
+| git_commit | 3e41d3f3097387495c1867696a416bb526e265dc |
+| git_dirty | FALSE |
+| llm_provider | none |
+| llm_model | none |
+| agent_harness | manual |
+| agent_harness_version | not_recorded |
+| container_image | localhost/pubready:1.0.0 |
+| container_digest | sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410 |
+| input | {"file":"input_speed_um_h.csv","md5":"5339e052f2d5f5e0a25c5088c57c88b0","sha256":"e811a230beb670c6360616da156ecfeaa53ff2e5895bd99d59958015656bdecc"} |
+| command | figkit plot --recipe estimation_plot |
+| analysis_options | {"engine":"r","recipe":"estimation_plot","data":{"file":"estimation_plot.csv","x":"treatment","y":"speed_um_h","fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":"vehicle","cause":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":"Migration speed (um/h)","title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| random_seeds | not_applicable |
+| session_record | session_info.txt |
+| created_utc | 2026-07-18T00:00:00Z |
+| review_state | not_applicable |
+| reviewer | none |
+| quarto_version | 1.11.4 |
+
+The report source reads only files in this bundle.

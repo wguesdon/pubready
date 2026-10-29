@@ -17,6 +17,8 @@ data:
   ci_low: ~
   ci_high: ~
   measure: ~
+  ref: ~
+  cause: ~
   markers: ~
   covariates: ~
 test:

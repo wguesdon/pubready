@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "roc_curve",
@@ -50,8 +50,8 @@
   },
   "container": {
     "image": "localhost/pubready:1.0.0",
-    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
-    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -77,7 +77,7 @@
     {
       "file": "figure_status_marker_a_marker_b_roc.pdf",
       "bytes": 17341,
-      "sha256": "f0fd5a5f4afa358d8da12aac5df1fe84e6d85531d5f0fff3dcbba4c606e69112"
+      "sha256": "19eaa3463b179bd6ba413a28689f3307416d443b548fa5446c5912446ab2f817"
     },
     {
       "file": "figure_status_marker_a_marker_b_roc.png",
@@ -91,23 +91,23 @@
     },
     {
       "file": "packages_roc.txt",
-      "bytes": 3504,
-      "sha256": "936ab8a747ecb8b4b49db46063ffa707b7f00d3b7d60d718dbcb089abbe7af26"
+      "bytes": 3574,
+      "sha256": "3822eb2d5fc631196f0f8445e4a2778375c42cae9fd354ce564bf3e981332db8"
     },
     {
       "file": "report.qmd",
-      "bytes": 3549,
-      "sha256": "36706d7df5577da5a5acffea285864bf3d2ecbeddaa6619c1ebf2df05ff06de9"
+      "bytes": 3574,
+      "sha256": "7eca01fc3612b0f7b2e9d102f3cad8b2402136055b1af25170c8ad50a0c791c5"
     },
     {
       "file": "report.html",
-      "bytes": 1316330,
-      "sha256": "5a71414988177d76c6028fbd2271c9108820fae48f6e63b9fabde7eb8ec0bd4e"
+      "bytes": 1316363,
+      "sha256": "699ffb01dd301bc92a3a1aaec6eef75ed29cdf130eaa179b4b420736fa6c1314"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1963,
-      "sha256": "b21c1814912bb113c24d444f59d86c99026bdea1075e9086de66dee9091ecb88"
+      "bytes": 2004,
+      "sha256": "b09a9b075ffe95e13244695cd4ca57919ac48afbe23099878eb15627f3f41221"
     }
   ]
 }

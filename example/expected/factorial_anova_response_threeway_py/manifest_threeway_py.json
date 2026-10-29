@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "factorial_anova",
@@ -90,8 +90,8 @@
   },
   "container": {
     "image": "localhost/pubready:1.0.0",
-    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
-    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -121,23 +121,23 @@
   "output_checksums": [
     {
       "file": "figure_response_threeway_py.pdf",
-      "bytes": 18721,
-      "sha256": "4696ca05b8aeb97c5e571da45e4aaba9d8f45d015c031da5b2896998bf895e25"
+      "bytes": 18729,
+      "sha256": "b4b4e8795e00f06aeb4abd16f897aa2eedbe58afca61f8cf1630d5c189b06335"
     },
     {
       "file": "figure_response_threeway_py.png",
-      "bytes": 133978,
-      "sha256": "02251e99d9df1fdd96584f03c2e94f003baada87a866814f6c8c23fff6543393"
+      "bytes": 134073,
+      "sha256": "a2eae310aa369bbff3ba07f990d24edfd143bfb8cfb42d50ae8ddf95070dcd32"
     },
     {
       "file": "figure_response_threeway_py.svg",
-      "bytes": 60851,
-      "sha256": "8be07b81edfa7d51155a121c2b5a93a65b34f0b39324dd56f18dc1841d01be2e"
+      "bytes": 60852,
+      "sha256": "0f0fcf1f2741f6618764aced7838f1c053a0baf2f5d837046bff20553319a2ec"
     },
     {
       "file": "packages_threeway_py.txt",
-      "bytes": 1074,
-      "sha256": "f41169b11e6d074b9fd8bc5864125ec1b47a33dd0c145b0a4aa4439517e08608"
+      "bytes": 1068,
+      "sha256": "3b2b785f2e94468faaed126731a4155d9335f38b3ec96dab8f9aaf0b6b288fb1"
     },
     {
       "file": "qc_normality_threeway_py.png",
@@ -147,22 +147,22 @@
     {
       "file": "qc_normality_threeway_py.pdf",
       "bytes": 23716,
-      "sha256": "08f5399f576910f2c8fe73b254fc236c3e45cb704e71d7bcbf49a54039354a1d"
+      "sha256": "b35ef0abb9e40268f52521d1d4a2a7ef9f19b5fa8f08767a5acfd78f70fbff9b"
     },
     {
       "file": "report.qmd",
-      "bytes": 4016,
-      "sha256": "9fc3bb5e85b97f07d6054237989bdbdd99fe1078907c247c914c2b85e2589b66"
+      "bytes": 4045,
+      "sha256": "0e8c61c7260475c077e16ae2a568bbf599ac8f029c112c54f39cd7a55918f1af"
     },
     {
       "file": "report.html",
-      "bytes": 1372921,
-      "sha256": "eb7ea3de14ea3f8bbb78ebc728d42faec561906876a9fb66c6aa1d4a6e211f2f"
+      "bytes": 1373082,
+      "sha256": "58d28d4394667ea5c0e58547f9abf8930155b0e4d727a22058b55038058696fb"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1982,
-      "sha256": "9d20210133985354db612cfcf31b96455a59142c043231d0ee45d64deceb5abd"
+      "bytes": 2023,
+      "sha256": "e4354e40befd3465be3cdcf1f85d0d836bb5bf34b248975e01e4b2772f4279e2"
     }
   ]
 }

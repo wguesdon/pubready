@@ -1,0 +1,135 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "factorial_anova",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "genotype",
+    "y": "response",
+    "fill": "treatment",
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_response.csv",
+    "original_name": "twoway_response.csv",
+    "md5": "dba50f83c02a1cd007bc013dd062a9b0",
+    "sha256": "e7d2443929aced46222aa951eb52064fade5b9ab5ceed25f6ebf447676bc8ff4",
+    "n_rows": 48
+  },
+  "statistical_test": {
+    "name": "2-way ANOVA",
+    "type": "type_II_anova",
+    "factors": [
+      "genotype",
+      "treatment"
+    ],
+    "effects": [
+      {
+        "effect": "genotype",
+        "df1": 1,
+        "df2": 42,
+        "statistic": 67.34103515749051,
+        "p_value": 2.889410307080023e-10,
+        "effect_size": 0.6158807172485166
+      },
+      {
+        "effect": "treatment",
+        "df1": 2,
+        "df2": 42,
+        "statistic": 22.612776985725574,
+        "p_value": 2.1613078714188581e-07,
+        "effect_size": 0.51848973050092
+      },
+      {
+        "effect": "genotype:treatment",
+        "df1": 2,
+        "df2": 42,
+        "statistic": 39.4009950995388,
+        "p_value": 2.315683617100895e-10,
+        "effect_size": 0.6523236088181542
+      }
+    ]
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_response_interaction_py.pdf",
+    "figure_response_interaction_py.png",
+    "figure_response_interaction_py.svg",
+    "packages_interaction_py.txt",
+    "qc_normality_interaction_py.png",
+    "qc_normality_interaction_py.pdf",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_response_interaction_py.pdf",
+      "bytes": 15402,
+      "sha256": "fa2a4836e0ff915611d9dee0b6517dc8079916a36d1249038d17d64777b857c8"
+    },
+    {
+      "file": "figure_response_interaction_py.png",
+      "bytes": 117212,
+      "sha256": "b54ca6c2c0f148814715dfd6f6f4fc6abeae0d721a8ff4d5460595a1e88737d7"
+    },
+    {
+      "file": "figure_response_interaction_py.svg",
+      "bytes": 35397,
+      "sha256": "d4f112b484535698c795b7f747198269d8a24d9838d2233b511e719a8ed3b4aa"
+    },
+    {
+      "file": "packages_interaction_py.txt",
+      "bytes": 1068,
+      "sha256": "3b2b785f2e94468faaed126731a4155d9335f38b3ec96dab8f9aaf0b6b288fb1"
+    },
+    {
+      "file": "qc_normality_interaction_py.png",
+      "bytes": 66209,
+      "sha256": "986d06bd3aa8e7fb1a40ba5286efa50213c6292287fdbf1ab265b54508987787"
+    },
+    {
+      "file": "qc_normality_interaction_py.pdf",
+      "bytes": 23419,
+      "sha256": "818e356619c38917b2a16f4c5583ba36f76848dc6f1447c51b2a16f3321db03d"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 3373,
+      "sha256": "188f9327fd15ccbf151af1dca8d34d522ce7e30c34cd83ec5c2b3bcb7f932143"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1349616,
+      "sha256": "74063560ccc801044985d374ce51d83f984f037ed8342e2bfcfcb9d90f4a3b06"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2028,
+      "sha256": "4ea7e1a0db25b658aecf06ac42573cd14beb20c0dc2cf78d41394abf58e83a5f"
+    }
+  ]
+}

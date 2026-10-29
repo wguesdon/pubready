@@ -1,0 +1,127 @@
+{
+  "pubready_version": "1.0.0",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
+  "created_utc": "2026-07-18T00:00:00Z",
+  "engine": "python",
+  "recipe": "calibration",
+  "recipe_version": "1",
+  "arguments": {
+    "x": "risk_clinical,risk_extended",
+    "y": "event_1y",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null
+  },
+  "input": {
+    "file": "input_event_1y_risk_clinical_risk_extended.csv",
+    "original_name": "calibration.csv",
+    "md5": "4d7ddf64a4e0eb79c7d2003021d46c53",
+    "sha256": "c6d02e1cfda0e27a2779f352e23b00abe6c739ee1b810ad3e9113fdcdc55e34b",
+    "n_rows": 500
+  },
+  "statistical_test": {
+    "name": "Calibration (Hosmer-Lemeshow test, calibration intercept and slope)",
+    "case_level": "yes",
+    "control_level": "no",
+    "n": 500,
+    "n_events": 130,
+    "groups_requested": 10,
+    "models": {
+      "risk_clinical": {
+        "n": 500,
+        "n_events": 130,
+        "brier": 0.17178516214,
+        "intercept": -0.14396939979698375,
+        "slope": 0.8214088301669082,
+        "hosmer_lemeshow": {
+          "statistic": 9.021355696342091,
+          "df": 8,
+          "p_value": 0.3404976192295656,
+          "groups": 10
+        },
+        "oe_ratio": 0.9162808302068186
+      },
+      "risk_extended": {
+        "n": 500,
+        "n_events": 130,
+        "brier": 0.16879814044,
+        "intercept": -0.012445103058084404,
+        "slope": 0.6216320036108007,
+        "hosmer_lemeshow": {
+          "statistic": 26.95551206512255,
+          "df": 8,
+          "p_value": 0.0007196003369925088,
+          "groups": 10
+        },
+        "oe_ratio": 0.9936057647477846
+      }
+    }
+  },
+  "container": {
+    "image": "localhost/pubready:1.0.0",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
+    "podman_version": "5.7.0"
+  },
+  "environment": {
+    "language": "Python",
+    "language_version": "3.10.12",
+    "packages": {
+      "pandas": "2.3.3",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "matplotlib": "3.10.9",
+      "seaborn": "0.13.2",
+      "pingouin": "0.6.1",
+      "statannotations": "0.7.2"
+    }
+  },
+  "outputs": [
+    "figure_event_1y_risk_clinical_risk_extended_cal_py.pdf",
+    "figure_event_1y_risk_clinical_risk_extended_cal_py.png",
+    "figure_event_1y_risk_clinical_risk_extended_cal_py.svg",
+    "packages_cal_py.txt",
+    "report.qmd",
+    "report.html",
+    "report_provenance.json"
+  ],
+  "output_checksums": [
+    {
+      "file": "figure_event_1y_risk_clinical_risk_extended_cal_py.pdf",
+      "bytes": 21780,
+      "sha256": "d30032c022ab6d5dbea26bee3bbab2f19761fae2007918e14a807db1c0690517"
+    },
+    {
+      "file": "figure_event_1y_risk_clinical_risk_extended_cal_py.png",
+      "bytes": 213122,
+      "sha256": "6ee3b727c7694438978c74a9eb109b90b02ce909c7119bfb4110240ee116af41"
+    },
+    {
+      "file": "figure_event_1y_risk_clinical_risk_extended_cal_py.svg",
+      "bytes": 99589,
+      "sha256": "19b62d5d1afa547f1ca2732f0e028082d3d7aadeb299f41c9efbcb6aa7434590"
+    },
+    {
+      "file": "packages_cal_py.txt",
+      "bytes": 1080,
+      "sha256": "7884a67b0bad853006a2bc57098fc2634d4d9c0b0c4924fa32f07502852e2fb3"
+    },
+    {
+      "file": "report.qmd",
+      "bytes": 4650,
+      "sha256": "85968018b19740f593ee60985abf54ef2f069cdb08fe3665ad9967d0fc00cd73"
+    },
+    {
+      "file": "report.html",
+      "bytes": 1478967,
+      "sha256": "0d83268bbf35161d49d71811b176f803eab22086e487ee7ec0afa6c912d91b22"
+    },
+    {
+      "file": "report_provenance.json",
+      "bytes": 2036,
+      "sha256": "df2f3041e7a4fb65de620b99df1c7057953a0b1adc4a908a79ece9b63e92c21e"
+    }
+  ]
+}

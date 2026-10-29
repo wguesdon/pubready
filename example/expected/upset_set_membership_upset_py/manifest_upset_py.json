@@ -1,6 +1,6 @@
 {
   "pubready_version": "1.0.0",
-  "pubready_git_commit": "f66e11ade8775d5c33ce81c38926927708b194cb",
+  "pubready_git_commit": "3e41d3f3097387495c1867696a416bb526e265dc",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "upset",
@@ -22,16 +22,17 @@
     "n_rows": 72
   },
   "statistical_test": {
-    "name": "UpSet plot (upsetplot)",
+    "name": "UpSet plot (matplotlib, ComplexHeatmap layout)",
     "n_sets": 4,
     "n_elements": 72,
     "n_intersections": 15,
+    "n_intersections_shown": 15,
     "largest_intersection": 10
   },
   "container": {
     "image": "localhost/pubready:1.0.0",
-    "image_id": "adb9d0cb25c7c7836a02626b9e9da08d7912abc1ea7a07b3cc0689ac498bfa1a",
-    "digest": "sha256:4aad0f46de6f65d943f66f6dd38001a64036986b3ec44c955a52a594a496fb6e",
+    "image_id": "b3c6d3cc597f0d6a85f7685cd0840776ca2773f64c4acdb958cae700bc785f83",
+    "digest": "sha256:21946b0ae6b172f82e028cd57ac788e4b5b7161123799eebaf0ccc68dc590410",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -59,38 +60,38 @@
   "output_checksums": [
     {
       "file": "figure_set_membership_upset_py.pdf",
-      "bytes": 19421,
-      "sha256": "a51ba6c791e4dd7e507b8260b50f5add8565da9e555619c2c9216a1c2faa8d9f"
+      "bytes": 21607,
+      "sha256": "a7eba3b042075fe1b288abf1b1fcf0b924384d56deb7ed917d4df255069c4eb6"
     },
     {
       "file": "figure_set_membership_upset_py.png",
-      "bytes": 108929,
-      "sha256": "67105820c6a914d093eb999edf58d5e61f3915c882e082460a9d5ee5c111e018"
+      "bytes": 77579,
+      "sha256": "54bde18330883565d3d39e9e1da8cba329ef1f137d3f923729435906b1ade821"
     },
     {
       "file": "figure_set_membership_upset_py.svg",
-      "bytes": 44251,
-      "sha256": "afff6c93393131ad070fa77813532c9ba8d6d58fc65d477c765a4209a750145d"
+      "bytes": 39933,
+      "sha256": "e19001cb0482031a0ce36c55e0077d86fdc3c1b168255f64fef31bb8c68513bf"
     },
     {
       "file": "packages_upset_py.txt",
-      "bytes": 1055,
-      "sha256": "6ac5396b9fa62549f97bb134548eb94fb51fb367d3d8255ecff70acc80065bb0"
+      "bytes": 1046,
+      "sha256": "2135a9a6235d0ba0a7f4b8f0f0056cbf854871c8d98f0ab9d668d6620fbc0e45"
     },
     {
       "file": "report.qmd",
-      "bytes": 3615,
-      "sha256": "486d60d60b3dce28c959966cc59c2866683a81673cf49b40a845cf41929bbf1b"
+      "bytes": 3651,
+      "sha256": "30198bfd088c3d6960b9182abbf78581ab29e75ad7799ec3bffcced318cd31ff"
     },
     {
       "file": "report.html",
-      "bytes": 1339452,
-      "sha256": "793c750f5e1606b8fbe399d2d72497dc1e8ef1b608ca90459e31ad3dcce4448e"
+      "bytes": 1297696,
+      "sha256": "b09c1a60865b2d98fbb4b3b57448b66b6a64967d6d006d5c34c9913d44da4d56"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1932,
-      "sha256": "521217b7b08baeb85c5c61a06284262f0e5b47a2764f6b87a6b8dd5224b49ee3"
+      "bytes": 1973,
+      "sha256": "c98938fef7ef484908e09072926d1fbbbcfc896031e8f0f6035c8490bc144647"
     }
   ]
 }
