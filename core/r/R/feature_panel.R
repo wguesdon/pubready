@@ -16,7 +16,7 @@
 .fp_labels <- c(welch_t = "Welch t-test", wilcoxon = "Mann-Whitney U test",
                 anova = "one-way ANOVA", kruskal = "Kruskal-Wallis test")
 .fp_effects <- c(welch_t = "Cohen's d", wilcoxon = "rank-biserial r",
-                 anova = "eta squared", kruskal = "epsilon squared")
+                 anova = "eta squared", kruskal = "eta-squared (H)")
 
 # Significance stars with the cutpoints of rstatix::add_significance.
 .fp_signif <- function(p) {
@@ -121,7 +121,9 @@
   }
   kt <- stats::kruskal.test(v, g)
   h <- unname(kt$statistic)
-  c(h, unname(kt$parameter), NA_real_, kt$p.value, h / (length(v) - 1))
+  # eta-squared (H) of rstatix::kruskal_effsize, as multi_group_compare reports.
+  k1 <- unname(kt$parameter)
+  c(h, k1, NA_real_, kt$p.value, (h - k1) / (length(v) - k1 - 1))
 }
 
 .fp_test_feature <- function(f, d, glv, test) {

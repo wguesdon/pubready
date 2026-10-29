@@ -23,6 +23,11 @@ tag move together.
   `multi_group_compare` is group 2 minus group 1. On the same `sleep` data,
   Cohen's d is -0.83 and Cohen's dz is +1.28, and before this change no text
   said why the signs differ.
+- `feature_panel` reports eta-squared (H), (H - k + 1) / (n - k), for the
+  Kruskal-Wallis test in both engines, where it reported epsilon squared,
+  H / (n - 1). `multi_group_compare` already reports eta-squared (H), so the two
+  recipes now give one value for the same test. The values change, for example
+  from 0.651 to 0.646 for the sepal length of `iris`.
 
 ### Fixed
 - `paired_compare` wrote "The test was chosen from the Shapiro-Wilk normality
@@ -78,6 +83,8 @@ tag move together.
   Fisher z CI at full precision, where it wrote the 2-digit CI of pingouin. For
   Spearman and Kendall it writes no CI, as R does. On the `airquality` and
   `mtcars` benchmarks, the two tables now agree to 1e-15.
+- The Python `multi_group_compare` gave no effect size for the Kruskal-Wallis
+  test, where R gives eta-squared (H). It now gives the same value.
 
 ## [2.0.0] - 2026-10-29
 

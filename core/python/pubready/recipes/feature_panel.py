@@ -29,7 +29,7 @@ MIN_N = 2
 LABELS = {"welch_t": "Welch t-test", "wilcoxon": "Mann-Whitney U test",
           "anova": "one-way ANOVA", "kruskal": "Kruskal-Wallis test"}
 EFFECTS = {"welch_t": "Cohen's d", "wilcoxon": "rank-biserial r",
-           "anova": "eta squared", "kruskal": "epsilon squared"}
+           "anova": "eta squared", "kruskal": "eta-squared (H)"}
 ALIASES = {"mann_whitney": "wilcoxon", "mwu": "wilcoxon", "wilcox": "wilcoxon",
            "kw": "kruskal", "kruskal_wallis": "kruskal"}
 
@@ -233,7 +233,9 @@ def run_test(groups, test):
                 float(res.pvalue), float(ssb / np.sum((v - np.mean(v)) ** 2))]
     res = stats.kruskal(*groups)
     h = float(res.statistic)
-    return [h, float(len(groups) - 1), np.nan, float(res.pvalue), h / (len(v) - 1)]
+    # eta-squared (H) of rstatix::kruskal_effsize, as multi_group_compare reports.
+    k = len(groups)
+    return [h, float(k - 1), np.nan, float(res.pvalue), (h - k + 1) / (len(v) - k)]
 
 
 def test_feature(d, feature, glv, test):

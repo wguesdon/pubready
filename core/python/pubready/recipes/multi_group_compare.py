@@ -70,8 +70,10 @@ def recipe_multi_group_compare(df, spec):
         pairs = [(str(r.A), str(r.B), float(r.pval)) for r in ph.itertuples()]
     else:
         row = pg.kruskal(data=df, dv=y, between=x).iloc[0]
+        # eta-squared (H) of rstatix::kruskal_effsize, as the R engine reports.
         omni = dict(stat=float(row.H), df1=row.ddof1, df2=np.nan, p=float(row.p_unc),
-                    eff_name=None, eff=np.nan)
+                    eff_name="eta-squared (H)",
+                    eff=(float(row.H) - len(lv) + 1) / (len(df) - len(lv)))
         m = sp.posthoc_dunn(df, val_col=y, group_col=x, p_adjust="fdr_bh")
         pairs = [(str(i), str(j), float(m.loc[i, j])) for i, j in itertools.combinations(list(m.index), 2)]
 

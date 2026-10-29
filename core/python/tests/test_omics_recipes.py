@@ -202,3 +202,19 @@ def test_embedding_subsamples_the_silhouette_above_5000_cells():
     assert res["test_meta"]["silhouette_step"] == 3
     assert res["test_meta"]["silhouette_n"] == len(range(0, n, 3))
     assert "one in every 3 cells" in res["methods"]
+
+
+def test_kruskal_effect_size_is_eta_squared_h_in_both_recipes():
+    from pubready.recipes.multi_group_compare import recipe_multi_group_compare
+    df = pd.DataFrame({"group": ["a"] * 8 + ["b"] * 8 + ["c"] * 8,
+                       "f1": list(range(1, 9)) + [v + 3 for v in range(1, 9)]
+                       + [v + 6 for v in range(1, 9)]})
+    h = stats.kruskal(*[df.loc[df["group"] == g, "f1"] for g in "abc"]).statistic
+    want = (h - 3 + 1) / (24 - 3)
+    fp = recipe_feature_panel(df, omics_spec("feature_panel", x="group", test="kruskal"))
+    assert fp["stats"]["effect_size"].iloc[0] == pytest.approx(want, rel=1e-12)
+    assert fp["stats"]["effect_size_name"].iloc[0] == "eta-squared (H)"
+    mg = recipe_multi_group_compare(df.rename(columns={"f1": "value"}), spec_from_args(
+        SimpleNamespace(recipe="multi_group_compare", data="d.csv", x="group", y="value",
+                        test="kruskal")))
+    assert mg["test_meta"]["omnibus"]["effect_size"]["value"] == pytest.approx(want, rel=1e-12)
