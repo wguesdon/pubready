@@ -213,3 +213,15 @@ def test_estimation_plot_says_that_its_p_values_carry_no_adjustment():
     assert ("no adjustment for the 5 comparisons against casein"
             in _p_text("Welch two-sample t-test", 5, "casein"))
     assert _p_text("paired t-test", 1, "pre") == "A paired t-test gives the P value. "
+
+
+def test_standard_curve_recovery_counts_only_the_levels_read_back():
+    from pubready.recipes.standard_curve import _recovery_text
+    rec = {"n_levels": 8, "n_read_back": 6, "min_pct": 94.9, "max_pct": 111.9,
+           "n_within_80_120": 6}
+    txt = _recovery_text(rec)
+    assert "6 of the 8 standard levels" in txt
+    assert "6 of these 6 levels fell within 80% to 120%" in txt
+    assert "The other 2 levels could not be read back" in txt
+    rec.update(n_read_back=8, n_within_80_120=8)
+    assert "could not be read back" not in _recovery_text(rec)

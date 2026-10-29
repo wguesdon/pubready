@@ -371,6 +371,35 @@ def _fmt(v):
     return f"{v:.3g}"
 
 
+def _recovery_text(rec):
+    """Write the recovery sentence of the methods paragraph.
+
+    The sentence counts only the levels that could be read back, and it names
+    the levels whose mean signal lies outside the signal range of the curve, so
+    a level that was not read back does not read as a failed standard.
+
+    Args:
+        rec: The recovery record of the test metadata.
+
+    Returns:
+        str: The sentence or sentences, with a trailing space.
+    """
+    if rec["n_read_back"] == 0:
+        return "No standard level could be read back through the curve. "
+    txt = (f"Read back through the curve, {rec['n_read_back']} of the {rec['n_levels']} standard "
+           f"levels had a recovery of {rec['min_pct']:.1f}% to {rec['max_pct']:.1f}% of the "
+           f"nominal concentration, and {rec['n_within_80_120']} of these {rec['n_read_back']} "
+           "levels fell within 80% to 120%. ")
+    n_out = rec["n_levels"] - rec["n_read_back"]
+    if n_out == 1:
+        txt += ("The other level could not be read back, because its mean signal lies outside "
+                "the signal range of the curve. ")
+    elif n_out > 1:
+        txt += (f"The other {n_out} levels could not be read back, because their mean signals "
+                "lie outside the signal range of the curve. ")
+    return txt
+
+
 def _methods(model, meta, method, spec, x, y):
     """Write the methods paragraph, with the same sentences as the R engine.
 
@@ -407,13 +436,8 @@ def _methods(model, meta, method, spec, x, y):
         fit_txt = ("A straight line, signal = intercept + slope x concentration, was fitted by least "
                    f"squares to {model['n_fit']} standards: intercept = {_fmt(p['intercept'])}, "
                    f"slope = {_fmt(p['slope'])}, R2 = {model['r_squared']:.4f}. ")
-    if rec["n_read_back"] > 0:
-        rec_txt = (f"Read back through the curve, the standard levels had a recovery of "
-                   f"{rec['min_pct']:.1f}% to {rec['max_pct']:.1f}% of the nominal concentration, and "
-                   f"{rec['n_within_80_120']} of {rec['n_levels']} levels fell within 80% to 120%. ")
-    else:
-        rec_txt = "No standard level could be read back through the curve. "
-    lib = f"scipy {v('scipy')} (curve_fit)" if model["type"] == "4pl" else f"numpy {v('numpy')}"
+    rec_txt = _recovery_text(rec)
+    lib =f"scipy {v('scipy')} (curve_fit)" if model["type"] == "4pl" else f"numpy {v('numpy')}"
     return (
         f"Concentrations ({x_lab}) were interpolated from the signal ({y_lab}) on a standard curve of "
         f"{meta['n_standards']} standards at {meta['n_levels']} concentrations. {choice}{fit_txt}"

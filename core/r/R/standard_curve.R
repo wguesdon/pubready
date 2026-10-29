@@ -287,10 +287,7 @@ recipe_standard_curve <- function(df, spec) {
     sprintf("A straight line, signal = intercept + slope x concentration, was fitted by least squares to %d standards: intercept = %s, slope = %s, R2 = %.4f. ",
             model$n_fit, .stc_fmt(p$intercept), .stc_fmt(p$slope), model$r_squared)
   }
-  rec_txt <- if (rec$n_read_back > 0) {
-    sprintf("Read back through the curve, the standard levels had a recovery of %.1f%% to %.1f%% of the nominal concentration, and %d of %d levels fell within 80%% to 120%%. ",
-            rec$min_pct, rec$max_pct, rec$n_within_80_120, rec$n_levels)
-  } else "No standard level could be read back through the curve. "
+  rec_txt <- .stc_recovery_text(rec)
   paste0(
     sprintf("Concentrations (%s) were interpolated from the signal (%s) on a standard curve of %d standards at %d concentrations. ",
             x_lab, y_lab, meta$n_standards, meta$n_levels),
@@ -348,4 +345,21 @@ recipe_standard_curve <- function(df, spec) {
     sprintf('ggsave("%s.pdf", p, width = 5.2, height = 4.8)', fig_stub),
     'cat("Reproduced figure.\\n")'
   )
+}
+
+# The recovery sentence counts only the levels that could be read back, and it
+# names the levels whose mean signal lies outside the signal range of the curve,
+# so a level that was not read back does not read as a failed standard.
+.stc_recovery_text <- function(rec) {
+  if (rec$n_read_back == 0) return("No standard level could be read back through the curve. ")
+  txt <- sprintf("Read back through the curve, %d of the %d standard levels had a recovery of %.1f%% to %.1f%% of the nominal concentration, and %d of these %d levels fell within 80%% to 120%%. ",
+                 rec$n_read_back, rec$n_levels, rec$min_pct, rec$max_pct,
+                 rec$n_within_80_120, rec$n_read_back)
+  n_out <- rec$n_levels - rec$n_read_back
+  if (n_out == 1) {
+    txt <- paste0(txt, "The other level could not be read back, because its mean signal lies outside the signal range of the curve. ")
+  } else if (n_out > 1) {
+    txt <- paste0(txt, sprintf("The other %d levels could not be read back, because their mean signals lie outside the signal range of the curve. ", n_out))
+  }
+  txt
 }

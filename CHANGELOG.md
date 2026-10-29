@@ -54,6 +54,10 @@ tag move together.
   association between Wt and mpg" with a capital in mid-sentence,
   `correlation_heatmap` wrote "pearson" in lower case, and `enrichment_dot` wrote
   "a over-representation".
+- The `standard_curve` methods paragraph wrote "6 of 8 levels fell within 80% to
+  120%" when 2 levels were not read back at all, because their mean signals lie
+  outside the signal range of the curve. The text read as two failed standards.
+  It now counts only the levels that were read back and names the others.
 
 ## [2.0.0] - 2026-10-29
 

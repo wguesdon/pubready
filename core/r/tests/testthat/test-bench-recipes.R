@@ -151,3 +151,13 @@ test_that("estimation_plot says that its P values carry no adjustment", {
                "no adjustment for the 5 comparisons against casein", fixed = TRUE)
   expect_equal(.est_p_text("paired t-test", 1, "pre"), "A paired t-test gives the P value. ")
 })
+
+test_that("the standard curve recovery counts only the levels read back", {
+  rec <- list(n_levels = 8, n_read_back = 6, min_pct = 94.9, max_pct = 111.9, n_within_80_120 = 6)
+  txt <- .stc_recovery_text(rec)
+  expect_match(txt, "6 of the 8 standard levels", fixed = TRUE)
+  expect_match(txt, "6 of these 6 levels fell within 80% to 120%", fixed = TRUE)
+  expect_match(txt, "The other 2 levels could not be read back", fixed = TRUE)
+  rec$n_read_back <- 8; rec$n_within_80_120 <- 8
+  expect_false(grepl("could not be read back", .stc_recovery_text(rec)))
+})
