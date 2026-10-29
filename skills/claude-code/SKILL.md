@@ -84,6 +84,9 @@ If a command reports the image is missing, run `figkit build` first.
 | `swimmer` | one row per patient: duration[, status, arm, event times] | `--id --time [--event --group --markers "a,b"]` | descriptive bar per patient, arrows for ongoing courses (no test) |
 | `distribution` | one numeric variable[, group] | `--y [--x]` | descriptive histogram, kernel density and normal fit per group, Shapiro-Wilk (no comparison) |
 | `composition` | sample, category[, count, condition] | `--id --x [--y --group]` | 100% stacked bar per sample, per-category Mann-Whitney or Kruskal-Wallis, BH-adjusted (exploratory) |
+| `estimation_plot` | group, value[, subject] | `--x --y [--ref --paired --id]` | mean difference against the reference with a 95% BCa bootstrap CI, Welch or paired t-test; Gardner-Altman or Cumming plot |
+| `enzyme_kinetics` | substrate, rate[, condition] | `--x --y [--group]` | Michaelis-Menten fit, Vmax and Km with 95% CIs, F tests of one shared Km and one shared Vmax |
+| `standard_curve` | concentration (empty for an unknown), signal[, sample] | `--x --y [--id --test auto\|linear\|4pl]` | 4PL or linear standard curve, unknowns read off the curve, no extrapolation, recovery of the standards |
 
 Common options: `--engine r|python` (default r), `--geom box|violin|bar|raincloud|interaction` (interaction: `factorial_anova` only),
 `--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
@@ -99,6 +102,13 @@ For `roc_curve`, confirm the case level with the scientist: by default it is the
 second level in sorted order, so a `healthy`/`disease` outcome needs
 `--positive disease`. For `forest_meta`, pass `--measure ratio` for an odds, risk
 or hazard ratio when the CIs are not given on the ratio scale.
+
+For `estimation_plot`, confirm the control group with the scientist and name
+it with `--ref LEVEL`. By default the control is the first level in sorted order.
+The figure shows the effect size and its bootstrap CI, and the stats table gives
+the t-test. For `standard_curve`, leave the concentration empty on each unknown
+row. The recipe does not extrapolate. It flags each unknown outside the range of
+the standards and gives it no concentration.
 
 ## Choosing the test
 

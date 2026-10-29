@@ -333,6 +333,54 @@ else
   echo "FAIL: expected the interaction plot and term"; fail=1
 fi
 
+echo "[29] estimation plot, Cumming layout (expect Welch t-tests and BCa bootstrap CIs)"
+./cli/figkit plot --recipe estimation_plot --data example/estimation_plot.csv \
+  --x treatment --y speed_um_h --ref vehicle --out "$OUT/estimation"
+check_bundle "$OUT/estimation" "estimation_plot"
+if compgen -G "$OUT/estimation/*/stats_*.csv" > /dev/null && \
+   grep -q "Welch two-sample t-test" "$OUT"/estimation/*/stats_*.csv && \
+   grep -q "ci_low" "$OUT"/estimation/*/stats_*.csv && \
+   grep -q "Park-Miller" "$OUT"/estimation/*/methods_*.md; then
+  echo "PASS: mean differences against vehicle with BCa CIs"
+else
+  echo "FAIL: expected the Welch t-tests and the BCa CIs"; fail=1
+fi
+
+echo "[30] estimation plot, Gardner-Altman paired layout (expect a paired t-test)"
+./cli/figkit plot --recipe estimation_plot --data example/paired_response.csv \
+  --x condition --y value --id subject --paired --ref pre --out "$OUT/estimation_paired"
+check_bundle "$OUT/estimation_paired" "estimation_plot paired"
+if compgen -G "$OUT/estimation_paired/*/stats_*.csv" > /dev/null && \
+   grep -q "paired t-test" "$OUT"/estimation_paired/*/stats_*.csv; then
+  echo "PASS: paired mean difference with a BCa CI"
+else
+  echo "FAIL: expected the paired t-test"; fail=1
+fi
+
+echo "[31] enzyme kinetics (expect Michaelis-Menten fits and the shared Km and Vmax tests)"
+./cli/figkit plot --recipe enzyme_kinetics --data example/enzyme_kinetics.csv \
+  --x substrate_um --y rate --group inhibitor --out "$OUT/enzyme"
+check_bundle "$OUT/enzyme" "enzyme_kinetics"
+if compgen -G "$OUT/enzyme/*/methods_*.md" > /dev/null && \
+   grep -q "Michaelis-Menten" "$OUT"/enzyme/*/methods_*.md && \
+   grep -q "shared Km F" "$OUT"/enzyme/*/methods_*.md && grep -q "km_ci_low" "$OUT"/enzyme/*/stats_*.csv; then
+  echo "PASS: Michaelis-Menten fits with the shared-parameter F tests"
+else
+  echo "FAIL: expected the Michaelis-Menten fits and the F tests"; fail=1
+fi
+
+echo "[32] standard curve (expect a 4PL and the out-of-range unknowns flagged)"
+./cli/figkit plot --recipe standard_curve --data example/standard_curve.csv \
+  --x conc_ng_ml --y absorbance --id sample --out "$OUT/stdcurve"
+check_bundle "$OUT/stdcurve" "standard_curve"
+if compgen -G "$OUT/stdcurve/*/stats_*.csv" > /dev/null && \
+   grep -q "four-parameter logistic" "$OUT"/stdcurve/*/methods_*.md && \
+   grep -q "below range" "$OUT"/stdcurve/*/stats_*.csv && grep -q "above range" "$OUT"/stdcurve/*/stats_*.csv; then
+  echo "PASS: unknowns interpolated on a 4PL, out-of-range unknowns flagged"
+else
+  echo "FAIL: expected the 4PL and the range flags"; fail=1
+fi
+
 echo "--- Python engine (all recipes) ---"
 pyc() {  # $1 = short label; rest = plot args
   local label="$1"; shift
@@ -373,6 +421,10 @@ pyc swimmer --recipe swimmer             --data example/swimmer_patients.csv --i
 pyc dist    --recipe distribution        --data example/distribution.csv     --x condition --y cell_area_um2
 pyc comp    --recipe composition         --data example/composition.csv      --id sample --x cell_type --y n_cells --group condition
 pyc faint   --recipe factorial_anova     --data example/twoway_response.csv  --y response --x genotype --fill treatment --geom interaction
+pyc estimation --recipe estimation_plot  --data example/estimation_plot.csv  --x treatment --y speed_um_h --ref vehicle
+pyc est_paired --recipe estimation_plot  --data example/paired_response.csv  --x condition --y value --id subject --paired --ref pre
+pyc enzyme  --recipe enzyme_kinetics     --data example/enzyme_kinetics.csv  --x substrate_um --y rate --group inhibitor
+pyc stdcurve --recipe standard_curve     --data example/standard_curve.csv   --x conc_ng_ml --y absorbance --id sample
 
 # Engine parity on the non-parametric paths. Both engines must report the same
 # p-value and the same effect size to six significant digits.
@@ -407,6 +459,28 @@ parity_case signed_rank --recipe paired_compare --data example/paired_response.c
   --x condition --y value --id subject --test wilcoxon
 parity_case composition --recipe composition --data example/composition.csv \
   --id sample --x cell_type --y n_cells --group condition
+
+# The estimation plot bootstrap draws the same Park-Miller resamples in both
+# engines, so the BCa interval must agree, not only the t-test.
+echo "[parity] R against Python on the bootstrap CI of estimation_plot"
+./cli/figkit plot --recipe estimation_plot --data example/estimation_plot.csv \
+  --x treatment --y speed_um_h --ref vehicle --out "$OUT/par_est_r" > /dev/null 2>&1
+./cli/figkit plot --engine python --recipe estimation_plot --data example/estimation_plot.csv \
+  --x treatment --y speed_um_h --ref vehicle --out "$OUT/par_est_py" > /dev/null 2>&1
+est_rf="$(find "$OUT/par_est_r" -name 'stats_*.csv' | head -1)"
+est_pf="$(find "$OUT/par_est_py" -name 'stats_*.csv' | head -1)"
+if [ -z "$est_rf" ] || [ -z "$est_pf" ]; then
+  echo "FAIL: parity estimation_plot wrote no stats table"; fail=1
+else
+  est_ok=1
+  for col in mean_diff ci_low ci_high hedges_g p_value; do
+    if [ "$(col_value "$est_rf" "$col")" != "$(col_value "$est_pf" "$col")" ]; then
+      echo "  MISMATCH: $col is $(col_value "$est_rf" "$col") in R and $(col_value "$est_pf" "$col") in Python"
+      est_ok=0; fail=1
+    fi
+  done
+  [ "$est_ok" -eq 1 ] && echo "PASS: parity estimation_plot bootstrap CI"
+fi
 
 echo
 if [ "$fail" -eq 0 ]; then

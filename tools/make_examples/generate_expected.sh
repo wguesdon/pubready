@@ -131,6 +131,20 @@ rm -rf "$OUT"
 ./cli/figkit plot --recipe factorial_anova --data example/twoway_response.csv \
   --y response --x genotype --fill treatment --ylab "Response (a.u.)" --geom interaction \
   --stamp interaction --out "$OUT"
+# Bench assay recipes: estimation plot (Cumming and paired Gardner-Altman),
+# Michaelis-Menten kinetics and standard curve interpolation
+./cli/figkit plot --recipe estimation_plot --data example/estimation_plot.csv \
+  --x treatment --y speed_um_h --ref vehicle --ylab "Migration speed (um/h)" \
+  --stamp estimation --out "$OUT"
+./cli/figkit plot --recipe estimation_plot --data example/paired_response.csv \
+  --x condition --y value --id subject --paired --ref pre --ylab "Marker (a.u.)" \
+  --stamp estimation_paired --out "$OUT"
+./cli/figkit plot --recipe enzyme_kinetics --data example/enzyme_kinetics.csv \
+  --x substrate_um --y rate --group inhibitor \
+  --xlab "Substrate (uM)" --ylab "Rate (nmol/min/mg)" --stamp enzyme --out "$OUT"
+./cli/figkit plot --recipe standard_curve --data example/standard_curve.csv \
+  --x conc_ng_ml --y absorbance --id sample \
+  --xlab "IL-6 (ng/mL)" --ylab "Absorbance at 450 nm" --stamp stdcurve --out "$OUT"
 
 # Raincloud and bar geoms on the comparison recipes
 ./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
@@ -206,6 +220,18 @@ PY="--engine python"
 ./cli/figkit plot $PY --recipe factorial_anova --data example/twoway_response.csv \
   --y response --x genotype --fill treatment --ylab "Response (a.u.)" --geom interaction \
   --stamp interaction_py --out "$OUT"
+./cli/figkit plot $PY --recipe estimation_plot --data example/estimation_plot.csv \
+  --x treatment --y speed_um_h --ref vehicle --ylab "Migration speed (um/h)" \
+  --stamp estimation_py --out "$OUT"
+./cli/figkit plot $PY --recipe estimation_plot --data example/paired_response.csv \
+  --x condition --y value --id subject --paired --ref pre --ylab "Marker (a.u.)" \
+  --stamp estimation_paired_py --out "$OUT"
+./cli/figkit plot $PY --recipe enzyme_kinetics --data example/enzyme_kinetics.csv \
+  --x substrate_um --y rate --group inhibitor \
+  --xlab "Substrate (uM)" --ylab "Rate (nmol/min/mg)" --stamp enzyme_py --out "$OUT"
+./cli/figkit plot $PY --recipe standard_curve --data example/standard_curve.csv \
+  --x conc_ng_ml --y absorbance --id sample \
+  --xlab "IL-6 (ng/mL)" --ylab "Absorbance at 450 nm" --stamp stdcurve_py --out "$OUT"
 
 rm -rf "$FINAL"
 mv "$OUT" "$FINAL"

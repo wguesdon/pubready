@@ -97,6 +97,8 @@ Common options:
 | `--markers "a,b"` | the columns of event times that `swimmer` draws on each bar |
 | `--xlab`, `--ylab`, `--title`, `--palette` | labels and colors |
 | `--out DIR` | output root (default `pubready_output`) |
+| `--ref LEVEL` | the reference group of `estimation_plot` (default: the first level in sorted order) |
+| `--test auto\|linear\|4pl` | the curve of `standard_curve`: auto fits a 4PL when the standards have 5 or more positive concentrations and the fit converges, and a line in all other conditions |
 
 ## The recipes
 
@@ -129,6 +131,9 @@ engines. Pick the engine per figure with `--engine`.
 | `timecourse` | `subject, time, value[, group]` | mixed ANOVA (group between, time within) or repeated-measures ANOVA; Greenhouse-Geisser when Mauchly's test rejects sphericity | mean +/- SEM per group over time, one thin line per subject |
 | `distribution` | `value[, group]` | descriptive: moments, quantiles and the Shapiro-Wilk test of each group, no comparison | histogram with Freedman-Diaconis bins, kernel density and normal fit, one panel per group |
 | `composition` | `sample, category[, count, condition]` | Mann-Whitney U or Kruskal-Wallis test of each category on the per-sample proportions, BH-adjusted | one 100% stacked bar per sample, one strip per condition |
+| `estimation_plot` | `group, value[, subject]` | mean difference against the reference with a 95% BCa bootstrap CI from 5000 Park-Miller resamples, the same in both engines; Welch or paired t-test, Hedges' g | Gardner-Altman plot for two groups, Cumming plot for three or more; a slopegraph with `--paired` |
+| `enzyme_kinetics` | `substrate, rate[, condition]` | Michaelis-Menten fit for each curve, Vmax and Km with 95% CIs; extra-sum-of-squares F tests of one shared Km and one shared Vmax | mean +/- SEM at each concentration, the fitted curves on linear axes from 0, Vmax and Km in the legend |
+| `standard_curve` | `concentration, signal[, sample]`, an empty concentration for an unknown | 4PL or linear fit to the standards; each unknown read off the inverse curve, with no extrapolation; recovery of each standard level | standards as mean +/- SD, the curve, the unknowns as open diamonds on the curve with drop lines |
 
 ### Test selection
 
@@ -155,6 +160,37 @@ Shapiro-Wilk p, skewness, and kurtosis, and prints the recommended test. The QQ 
 is the tiebreaker a p-value cannot be alone: Shapiro-Wilk is underpowered at small n
 and over-rejects at large n, so read the plot and tolerate mild deviation. Every
 `figkit plot` bundle carries the same panel as `qc_normality_*`.
+
+### The bench assay recipes
+
+`estimation_plot` gives each group against the reference as a mean difference
+with a 95% bias-corrected and accelerated (BCa) bootstrap interval. The two
+engines draw the same 5000 resamples, because neither engine uses its own random
+number generator. Both engines run the Park-Miller minimal standard generator
+with the multiplier 48271, the modulus 2^31 - 1 and the seed 20261029. This
+calculation is exact in double precision, so the two intervals agree to the last
+digits.
+
+Each comparison starts again from the seed. A resample draws the reference
+indices first and then the group indices, as floor(u n). A paired design draws
+whole pairs. The bias correction is the normal quantile of the proportion of
+bootstrap differences strictly below the estimate. The acceleration comes from
+the jackknife of the mean difference, and the interval ends are type-7
+quantiles.
+
+`enzyme_kinetics` fits v = Vmax S / (Km + S) to each curve. Each 95% CI is the
+estimate plus or minus t(0.975, n - 2) times the asymptotic standard error, as
+GraphPad Prism reports it. With two or more curves, two extra-sum-of-squares F
+tests compare one shared Km and one shared Vmax with the separate fits.
+
+`standard_curve` reads each unknown off the inverse of the fitted curve. It fits
+the four-parameter logistic of `dose_response` when the standards have 5 or more
+positive concentrations and the fit converges. In all other conditions it fits a
+straight line. The signal range is the range of the curve between the lowest and
+the highest standard. An unknown outside it gets the flag `below range` or
+`above range` and no concentration, so the recipe never extrapolates. The
+recovery of each standard level, read back through the curve, is the QC of the
+fit.
 
 ### Examples
 
@@ -237,6 +273,14 @@ figkit plot --recipe composition --data counts.csv --id sample --x cell_type --y
 # the interaction plot of a two-way ANOVA
 figkit plot --recipe factorial_anova --data data.csv --y response --x genotype --fill treatment \
   --geom interaction
+# estimation plot: each treatment against the vehicle, with a bootstrap CI
+figkit plot --recipe estimation_plot --data migration.csv --x treatment --y speed_um_h --ref vehicle
+
+# Michaelis-Menten kinetics, one curve for each inhibitor concentration
+figkit plot --recipe enzyme_kinetics --data kinetics.csv --x substrate_um --y rate --group inhibitor
+
+# ELISA standard curve, the unknowns read off the curve
+figkit plot --recipe standard_curve --data plate.csv --x conc_ng_ml --y absorbance --id sample
 ```
 
 ### The distribution recipe
@@ -344,6 +388,9 @@ the same numbers. The manifest records which engine drew the figure.
 | mixed ANOVA | split-plot sums of squares, the GG epsilon and Mauchly's test of car | the same formulas with numpy |
 | histogram and density | Freedman-Diaconis bins, `stats::bw.nrd0`, a direct Gaussian kernel sum | the same bins, bandwidth and kernel sum with numpy |
 | composition tests | `stats::wilcox.test`, `stats::kruskal.test`, `stats::p.adjust` | the `wilcox.test` p-value rule restated, `scipy.stats.kruskal`, the BH rule restated |
+| estimation bootstrap | the Park-Miller generator and the BCa interval, written out | the same generator and formulas with numpy, so the resamples are identical |
+| Michaelis-Menten | `stats::nls` | `scipy.optimize.curve_fit` |
+| standard curve | the 4PL of `dose_response`, or `stats::lm` | the 4PL of `dose_response`, or least squares with numpy |
 
 Where Python has no faithful equivalent, pubready routes you to R rather than
 running something different. The one current case is the aligned rank transform

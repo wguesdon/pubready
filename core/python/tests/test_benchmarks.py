@@ -18,6 +18,8 @@ from pubready.recipes.cox_forest import recipe_cox_forest
 from pubready.recipes.distribution import recipe_distribution
 from pubready.recipes.dose_response import recipe_dose_response
 from pubready.recipes.enrichment_dot import recipe_enrichment_dot
+from pubready.recipes.enzyme_kinetics import recipe_enzyme_kinetics
+from pubready.recipes.estimation_plot import recipe_estimation_plot
 from pubready.recipes.factorial_anova import recipe_factorial_anova
 from pubready.recipes.forest_meta import recipe_forest_meta
 from pubready.recipes.heatmap import recipe_heatmap
@@ -26,6 +28,7 @@ from pubready.recipes.paired_compare import recipe_paired_compare
 from pubready.recipes.pca import recipe_pca
 from pubready.recipes.proportions import recipe_proportions
 from pubready.recipes.roc_curve import recipe_roc_curve
+from pubready.recipes.standard_curve import recipe_standard_curve
 from pubready.recipes.survival_km import recipe_survival_km
 from pubready.recipes.swimmer import recipe_swimmer
 from pubready.recipes.timecourse import recipe_timecourse
@@ -394,3 +397,46 @@ def test_housing_composition_mann_whitney_and_bh():
         expect_ref(st.loc[s, "statistic"], "housing_composition", f"W_{s}")
         expect_ref(st.loc[s, "p_value"], "housing_composition", f"p_{s}")
         expect_ref(st.loc[s, "p_adj"], "housing_composition", f"p_adj_{s}")
+
+
+def test_chickwts_estimation_against_casein():
+    res = recipe_estimation_plot(bench_data("chickwts"), bench_spec(
+        "estimation_plot", x="feed", y="weight", ref="casein"))
+    st = res["stats"].set_index("group")
+    assert list(st.index) == ["horsebean", "linseed", "meatmeal", "soybean", "sunflower"]
+    for fd, r in st.iterrows():
+        expect_ref(r["mean_diff"], "chickwts_estimation", f"mean_diff_{fd}")
+        expect_ref(r["statistic"], "chickwts_estimation", f"statistic_{fd}")
+        expect_ref(r["p_value"], "chickwts_estimation", f"p_{fd}")
+        assert r["ci_low"] < r["mean_diff"] < r["ci_high"]
+
+
+def test_puromycin_michaelis_menten_and_shared_k():
+    res = recipe_enzyme_kinetics(bench_data("puromycin"), bench_spec(
+        "enzyme_kinetics", x="conc", y="rate", group="state"))
+    st = res["stats"].set_index("group")
+    for s in ("treated", "untreated"):
+        expect_ref(st.loc[s, "vmax"], "puromycin_kinetics", f"vmax_{s}")
+        expect_ref(st.loc[s, "vmax_se"], "puromycin_kinetics", f"vmax_se_{s}")
+        expect_ref(st.loc[s, "km"], "puromycin_kinetics", f"km_{s}")
+        expect_ref(st.loc[s, "km_se"], "puromycin_kinetics", f"km_se_{s}")
+    meta = res["test_meta"]
+    expect_ref(meta["shared_km_test"]["statistic"], "puromycin_kinetics", "shared_km_F")
+    expect_ref(meta["shared_km_test"]["p_value"], "puromycin_kinetics", "shared_km_p")
+    expect_ref(meta["shared_vmax_test"]["statistic"], "puromycin_kinetics", "shared_vmax_F")
+    expect_ref(meta["shared_vmax_test"]["p_value"], "puromycin_kinetics", "shared_vmax_p")
+
+
+def test_dnase_standard_curve_inverts_ssfpl():
+    res = recipe_standard_curve(bench_data("dnase_standard_curve"), bench_spec(
+        "standard_curve", x="conc", y="density", id="sample"))
+    assert res["test_meta"]["model"] == "four-parameter logistic"
+    for q in ("n_in_range", "n_below", "n_above"):
+        expect_ref(res["test_meta"][q], "dnase_standard_curve", q)
+    refs = pd.read_csv(os.path.join(BENCH, "reference_values.csv"))
+    conc_q = refs.loc[(refs["case"] == "dnase_standard_curve")
+                      & refs["quantity"].str.startswith("conc_"), "quantity"]
+    assert len(conc_q) == 3
+    st = res["stats"].set_index("id")
+    for q in conc_q:
+        expect_ref(st.loc[q[len("conc_"):], "concentration"], "dnase_standard_curve", q)

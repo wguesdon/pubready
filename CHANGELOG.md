@@ -33,6 +33,23 @@ tag move together.
 - Three public benchmark cases: `faithful_distribution`,
   `tooth_growth_distribution` and `housing_composition`.
 
+- Three bench assay recipes, in both engines:
+  - `estimation_plot` shows the mean difference of each group against a
+    reference with a 95% BCa bootstrap CI. Two groups give the Gardner-Altman
+    layout, and three or more give the Cumming layout. The two engines draw the
+    same resamples from the Park-Miller generator, so the intervals agree. The
+    `--ref` option names the reference. `--paired --id` resamples pairs and
+    draws a slopegraph.
+  - `enzyme_kinetics` fits the Michaelis-Menten equation to each curve and
+    reports Vmax and Km with 95% CIs. With two or more curves, extra-sum-of-squares
+    F tests compare one shared Km and one shared Vmax with the separate fits.
+  - `standard_curve` fits a 4PL or a straight line to the standards and reads
+    each unknown off the curve. An unknown outside the range of the standards
+    gets a flag and no concentration. The recovery of each standard level is
+    the QC of the fit.
+- Three public benchmark cases for these recipes: `chickwts_estimation`,
+  `puromycin_kinetics` and `dnase_standard_curve`.
+
 ### Changed
 - `factorial_anova` wraps an `--x` level longer than 12 characters, and the
   figure width grows with the number of `--x` levels multiplied by the number of

@@ -69,11 +69,14 @@ podman run --rm -v "$PWD":/work -w /work localhost/pubready:<version> \
 | `faithful_distribution` | `faithful.csv` | `distribution --y eruptions` | `stats::shapiro.test`, `mean`, `stats::sd`, `stats::bw.nrd0`, `stats::IQR` |
 | `tooth_growth_distribution` | `tooth_growth.csv` | `distribution --x supp --y len` | `stats::shapiro.test`, `mean`, `stats::sd`, `stats::bw.nrd0` for each supplement |
 | `housing_composition` | `housing.csv` | `composition --id sample --x Sat --y Freq --group Cont` | `stats::wilcox.test` for each satisfaction level, `stats::p.adjust(method = "BH")` |
+| `chickwts_estimation` | `chickwts.csv` | `estimation_plot --ref casein` | the mean difference, `stats::t.test(var.equal = FALSE)` for each feed |
+| `puromycin_kinetics` | `puromycin.csv` | `enzyme_kinetics --group state` | `stats::nls` for each state, `stats::anova` of the shared-K and the shared-Vm model |
+| `dnase_standard_curve` | `dnase_standard_curve.csv` | `standard_curve --id sample` | the inverse of the `stats::nls` fit with `SSfpl` to the run 1 standards |
 
 ## Tolerances
 
-Most reference values carry a relative tolerance of 1e-6. Two cases are wider,
-and the reason follows:
+Most reference values carry a relative tolerance of 1e-6. The cases below are
+wider, and the reason follows:
 
 - **The 4PL parameters of `dnase_4pl` and `dnase_shared`.** Two optimisers stop
   at their own convergence criteria on a flat optimum. The fitted parameters
@@ -81,6 +84,9 @@ and the reason follows:
   residual sum of squares stays at 1e-6.
 - **The published PEFR values.** The paper rounds the bias to -2.1 and the SD to
   38.8, so these two checks carry the tolerance of the rounding.
+- **The interpolated concentrations of `dnase_standard_curve`.** Each value is
+  read off a 4PL fit, so it carries the 1e-4 of the `dnase_4pl` parameters. The
+  counts of the unknowns in range, below range and above range stay at 1e-6.
 
 ## Data preparation
 
@@ -138,6 +144,15 @@ below make a dataset readable by a recipe. Each change is in
   the file holds 24 samples. The categories are the `Sat` levels, the counts are
   `Freq`, and the group is `Cont`. The reference proportions are `Freq` divided
   by the sample total.
+- **`chickwts.csv`.** The file keeps the `feed` and `weight` columns. Casein sorts
+  first, but the command names it with `--ref casein`, so the case also tests
+  the option.
+- **`puromycin.csv`.** The file keeps `conc`, `rate` and `state`. The reference
+  fits use a convergence tolerance of 1e-8, so each reference value is the
+  optimum and not a point near it.
+- **`dnase_standard_curve.csv`.** Run 1 of `DNase` gives the 16 standards. The
+  16 densities of run 2, with an empty concentration, are the unknowns. The
+  `sample` column names each row.
 
 ## Sources
 
@@ -169,3 +184,6 @@ license of that package applies to the data.
 | `state_x77.csv` | datasets | U.S. Department of Commerce, Bureau of the Census (1977) Statistical Abstract of the United States. |
 | `faithful.csv` | datasets | Azzalini, A. and Bowman, A. W. (1990) A look at some data on the Old Faithful geyser. Applied Statistics 39, 357-365. |
 | `housing.csv` | MASS | Madsen, M. (1976) Statistical analysis of multiple contingency tables. Two examples. Scandinavian Journal of Statistics 3, 97-106. |
+| `chickwts.csv` | datasets | Anonymous (1948) Biometrika 35, 214. McNeil, D. R. (1977) Interactive Data Analysis. Wiley. |
+| `puromycin.csv` | datasets | Treloar, M. A. (1974) Effects of Puromycin on Galactosyltransferase in Golgi Membranes. M.Sc. Thesis, University of Toronto. Bates, D. M. and Watts, D. G. (1988) Nonlinear Regression Analysis and Its Applications. Wiley. |
+| `dnase_standard_curve.csv` | datasets | Davidian, M. and Giltinan, D. M. (1995) Nonlinear Models for Repeated Measurement Data. Chapman and Hall, section 5.2.4. |

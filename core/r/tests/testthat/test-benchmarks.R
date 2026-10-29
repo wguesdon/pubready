@@ -361,3 +361,51 @@ test_that("housing (Madsen 1976): the per-category Mann-Whitney tests match wilc
     expect_ref(r$p_adj, "housing_composition", paste0("p_adj_", s))
   }
 })
+
+test_that("chickwts: each feed against casein matches the mean difference and stats::t.test", {
+  bench_skip()
+  res <- recipe_estimation_plot(bench_data("chickwts"),
+                                bench_spec("estimation_plot", x = "feed", y = "weight", ref = "casein"))
+  expect_equal(res$stats$group, c("horsebean", "linseed", "meatmeal", "soybean", "sunflower"))
+  for (fd in res$stats$group) {
+    r <- res$stats[res$stats$group == fd, ]
+    expect_ref(r$mean_diff, "chickwts_estimation", paste0("mean_diff_", fd))
+    expect_ref(r$statistic, "chickwts_estimation", paste0("statistic_", fd))
+    expect_ref(r$p_value, "chickwts_estimation", paste0("p_", fd))
+    expect_lt(r$ci_low, r$mean_diff)
+    expect_gt(r$ci_high, r$mean_diff)
+  }
+})
+
+test_that("Puromycin: the Michaelis-Menten fits and the shared-K test match stats::nls and anova", {
+  bench_skip()
+  res <- recipe_enzyme_kinetics(bench_data("puromycin"),
+                                bench_spec("enzyme_kinetics", x = "conc", y = "rate", group = "state"))
+  for (st in c("treated", "untreated")) {
+    r <- res$stats[res$stats$group == st, ]
+    expect_ref(r$vmax, "puromycin_kinetics", paste0("vmax_", st))
+    expect_ref(r$vmax_se, "puromycin_kinetics", paste0("vmax_se_", st))
+    expect_ref(r$km, "puromycin_kinetics", paste0("km_", st))
+    expect_ref(r$km_se, "puromycin_kinetics", paste0("km_se_", st))
+  }
+  expect_ref(res$test_meta$shared_km_test$statistic, "puromycin_kinetics", "shared_km_F")
+  expect_ref(res$test_meta$shared_km_test$p_value, "puromycin_kinetics", "shared_km_p")
+  expect_ref(res$test_meta$shared_vmax_test$statistic, "puromycin_kinetics", "shared_vmax_F")
+  expect_ref(res$test_meta$shared_vmax_test$p_value, "puromycin_kinetics", "shared_vmax_p")
+})
+
+test_that("DNase: run 2 read off the run 1 standard curve matches the inverse of SSfpl", {
+  bench_skip()
+  res <- recipe_standard_curve(bench_data("dnase_standard_curve"),
+                               bench_spec("standard_curve", x = "conc", y = "density", id = "sample"))
+  expect_equal(res$test_meta$model, "four-parameter logistic")
+  for (q in c("n_in_range", "n_below", "n_above")) {
+    expect_ref(res$test_meta[[q]], "dnase_standard_curve", q)
+  }
+  refs <- bench_refs()
+  conc_q <- refs$quantity[refs$case == "dnase_standard_curve" & grepl("^conc_", refs$quantity)]
+  expect_length(conc_q, 3)
+  for (q in conc_q) {
+    expect_ref(res$stats$concentration[res$stats$id == sub("^conc_", "", q)], "dnase_standard_curve", q)
+  }
+})
