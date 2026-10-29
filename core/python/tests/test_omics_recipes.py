@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 from scipy import stats
 
-from pubready.recipes.embedding import recipe_embedding, silhouette_widths
+from pubready.recipes.embedding import point_size, recipe_embedding, silhouette_widths
 from pubready.recipes.feature_panel import bh_adjust, recipe_feature_panel
 from pubready.recipes.ma_plot import recipe_ma_plot
 from pubready.recipes.manhattan import DOUBLE_XMIN, chr_sort_key, recipe_manhattan, thin_mask
@@ -161,6 +161,19 @@ def test_silhouette_widths_follow_the_rules_of_cluster_silhouette():
     assert s[0] == pytest.approx((b0 - a0) / b0)
     assert s[2] == 0.0 and s[3] == 0.0
     assert silhouette_widths(xy, np.zeros(4, dtype=int), 1) is None
+
+
+def test_embedding_point_size_matches_r():
+    """Check that a point has the diameter of the ggplot2 point of the R engine.
+
+    R draws shape 16 as a circle of radius 0.375 times size * 72.27 / 25.4 points.
+    """
+    rng = np.random.default_rng(7)
+    d = pd.DataFrame({"x": rng.normal(size=200), "y": rng.normal(size=200),
+                      "k": np.repeat(["a", "b"], 100)})
+    res = recipe_embedding(d, omics_spec("embedding", x="x", y="y", group="k"))
+    diameter = 0.75 * 72.27 / 25.4 * point_size(200)
+    assert res["fig"].axes[0].collections[0].get_sizes()[0] == pytest.approx(diameter ** 2)
 
 
 def test_embedding_ids_and_scores():

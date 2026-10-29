@@ -12,6 +12,12 @@ PALETTE = ["#3B6DB3", "#C1432B", "#2E8B57", "#7A5195", "#E0A100", "#5A5A5A",
            "#4E7A27", "#D4A6C8"]
 
 
+# The diameter in points of a filled ggplot2 point (shape 16, stroke 0) of size
+# 1. ggplot2 sets the symbol size to size * .pt points (.pt = 72.27 / 25.4), and
+# R draws shape 16 as a circle whose radius is 0.375 of the symbol size.
+R_POINT_PT = 0.75 * 72.27 / 25.4
+
+
 def palette(n, custom=None):
     cols = custom if custom else PALETTE
     return [cols[i % len(cols)] for i in range(n)]

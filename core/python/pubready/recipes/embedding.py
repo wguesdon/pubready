@@ -19,7 +19,7 @@ from matplotlib.lines import Line2D
 from matplotlib.ticker import MaxNLocator
 
 from ..bundle import slugify
-from ..theme import apply_pub_style, new_fig, palette
+from ..theme import R_POINT_PT, apply_pub_style, new_fig, palette
 
 MAX_LEGEND = 12
 MAX_INT_IDS = 50
@@ -251,7 +251,7 @@ def recipe_embedding(df, spec):
     step_draw = int(np.ceil(n / MAX_POINTS)) if n > MAX_POINTS else 1
     draw = np.arange(0, n, step_draw)
     size, alpha = point_size(len(draw)), point_alpha(len(draw))
-    s_pt = (size * 2.7) ** 2
+    s_pt = (size * R_POINT_PT) ** 2  # scatter takes the marker area in points^2
     ap = spec["appearance"]
     x_lab, y_lab = ap.get("x_label") or xc, ap.get("y_label") or yc
 
@@ -312,8 +312,10 @@ def recipe_embedding(df, spec):
             except Exception:
                 pass
         if legend:
-            handles = [Line2D([0], [0], marker="o", ls="", markersize=7, markeredgewidth=0,
-                              markerfacecolor=pal[c], label=lv[c]) for c in range(len(lv))]
+            # The R legend overrides the key size to 3.
+            handles = [Line2D([0], [0], marker="o", ls="", markersize=3 * R_POINT_PT,
+                              markeredgewidth=0, markerfacecolor=pal[c], label=lv[c])
+                       for c in range(len(lv))]
             ax.legend(handles=handles, title=gc, loc="center left", bbox_to_anchor=(1.02, 0.5),
                       frameon=False, fontsize=10, title_fontsize=11, handletextpad=0.3,
                       alignment="left")
@@ -410,7 +412,7 @@ import pandas as pd
 
 raw = pd.read_csv("{in_name}").dropna(subset=["{xc}", "{yc}", "{gc}"])
 fig, ax = plt.subplots(figsize=(6.6, 5.2))
-ax.scatter(raw["{xc}"], raw["{yc}"], s=4, linewidths=0, {colour})
+ax.scatter(raw["{xc}"], raw["{yc}"], s={(0.6 * R_POINT_PT) ** 2:.2f}, linewidths=0, {colour})
 if not {continuous}:
     for name, sub in raw.groupby(raw["{gc}"].astype(str)):
         ax.text(sub["{xc}"].median(), sub["{yc}"].median(), name, ha="center",

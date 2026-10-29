@@ -148,6 +148,11 @@ tag move together.
   Podman that does not answer now points to `figkit doctor`. Only a missing image
   gives the hint `figkit build`. `figkit version` prints "podman: not found" in
   place of an empty version.
+- The Python `embedding` points were 27% wider than the R points, because the
+  size conversion used 2.7 points for each R size unit. R draws a filled point
+  of size 1 with a diameter of 0.75 x 72.27 / 25.4 = 2.13 points, and the
+  Python engine now uses the same diameter. The legend keys and the emitted
+  script use it too.
 - `figkit inspect` and the other data commands stopped with "unbound variable"
   under the bash 3.2 of macOS when they had no arguments. `cli/figkit` now runs
   on bash 3.2.
