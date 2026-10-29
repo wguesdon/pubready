@@ -139,7 +139,8 @@ one code for each event type. Name the cause of interest with `--cause`. For
 `calibration`, give the predicted probabilities between 0 and 1, and confirm the
 event level as for `roc_curve`. For `sankey`, give one row for each patient and
 visit. Numeric states sort as numbers, and text states keep the order of their
-first appearance in the data.
+first appearance in the data. To set a clinical order, pass every state with
+`--levels`, for example `--levels "CR,PR,SD,PD"`.
 
 ## Choosing the test
 

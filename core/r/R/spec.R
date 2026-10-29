@@ -50,6 +50,9 @@ spec_from_opt <- function(opt) {
                   ci_low = opt$ci_low, ci_high = opt$ci_high,
                   measure = opt$measure,
                   ref = opt$ref, cause = opt$cause,
+                  levels = if (!is.null(opt$levels)) {
+                    trimws(strsplit(opt$levels, ",")[[1]])
+                  } else NULL,
                   markers = if (!is.null(opt$markers)) {
                     trimws(strsplit(opt$markers, ",")[[1]])
                   } else NULL,

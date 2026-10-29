@@ -21,8 +21,13 @@ tag move together.
   the exact code. `figkit where` prints the folder that holds the adapters,
   `reference/` and `docs/` of the install. `tests/install_test.sh` installs HEAD
   with uv and checks a figure from the installed command.
-- `figkit doctor` checks the host setup: the platform, bash, `podman` on the
-  PATH, the macOS Podman machine, the Podman service, rootless mode, the
+- `sankey --levels "a,b,c"` sets the state order, for example a clinical order
+  of the response categories, in both engines. The list must name every state
+  of the data, else the recipe stops and names the missing states. A listed
+  state that no row holds is left out. `plot_config.yaml` keeps the list, so
+  `figkit render` draws the same order, and the methods paragraph states it.
+- `figkit doctor` checks the host setup. It checks the platform, bash, `podman`
+  on the PATH, the macOS Podman machine, the Podman service, rootless mode, the
   subordinate UID ranges on Linux, the mounted folders, the image and a test
   container with the mounts of `figkit plot`. Each failed check prints its fix.
   The command never installs anything and never runs `sudo`, and it exits 1 when

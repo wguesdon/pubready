@@ -2,8 +2,9 @@
 
 Mirrors the R recipe. Input is one row per patient visit: --id, --x (the visit)
 and --y (the state). Visits are sorted numerically when every visit is a number,
-else in code-point order; states numerically when every state is a number, else
-by first appearance in the data. A patient missing at a visit takes no part in
+else in code-point order; states in the order of --levels when it is given, else
+numerically when every state is a number, else by first appearance in the data.
+A patient missing at a visit takes no part in
 the transitions into or out of that visit.
 
 The layout (stacked nodes with small gaps, cubic ribbons coloured by the state
@@ -77,16 +78,29 @@ def visit_order(v):
     return sorted(u)
 
 
-def state_order(s):
-    """State order: numeric when every value is a number, else first appearance.
+def state_order(s, levels=None):
+    """State order: the order of --levels when it is given, else numeric when every
+    value is a number, else first appearance, as .sk_state_order() in R.
 
     Args:
         s: The state labels, in row order.
+        levels: The states in the order that --levels gives, or None. A listed
+            state that no row holds is left out.
 
     Returns:
         list: The states in order.
+
+    Raises:
+        ValueError: If a state of the data is missing from levels.
     """
     u = list(pd.unique(s))
+    if levels:
+        levels = list(dict.fromkeys(str(v).strip() for v in levels))
+        miss = [v for v in u if v not in levels]
+        if miss:
+            raise ValueError("--levels does not list the state(s) "
+                             + ", ".join(f"'{v}'" for v in miss) + " of the data")
+        return [v for v in levels if v in u]
     num = pd.to_numeric(pd.Series(u), errors="coerce")
     if num.notna().all():
         return [u[i] for i in np.lexsort((np.array(u, dtype=object).astype(str), num.to_numpy()))]
@@ -400,7 +414,8 @@ def recipe_sankey(df, spec):
     visits = visit_order(d["visit"])
     if len(visits) < 2:
         raise ValueError("sankey needs at least 2 visits")
-    states = state_order(d["state"])
+    levels = dat.get("levels") or []
+    states = state_order(d["state"], levels)
     trans = transitions(d, visits, states)
     test = run_test(d, visits, states)
     n_pat = int(d["id"].nunique())
@@ -438,7 +453,8 @@ def recipe_sankey(df, spec):
         test_meta["no_test_reason"] = test["reason"]
     return {
         "fig": fig, "stats": trans, "test_meta": test_meta,
-        "methods": _methods(test, trans, visits, n_pat, idc, x, y),
+        "methods": _methods(test, trans, visits, n_pat, idc, x, y,
+                            states if levels else None),
         "df_used": d, "clean_steps": steps, "label": slugify(y),
         "width": dims["width"], "height": dims["height"],
         "build_script": functools.partial(_script, spec, visits, dims),
@@ -503,7 +519,7 @@ def draw_figure(trans, nodes, hmax, visits, states, pal, dims, ap, x, y, ncol_le
     return fig
 
 
-def _methods(test, trans, visits, n_pat, idc, x, y):
+def _methods(test, trans, visits, n_pat, idc, x, y, set_states=None):
     """Write the methods paragraph.
 
     Args:
@@ -514,16 +530,20 @@ def _methods(test, trans, visits, n_pat, idc, x, y):
         idc: The patient column.
         x: The visit column.
         y: The state column.
+        set_states: The states in the order that --levels set, or None.
 
     Returns:
         str: The paragraph.
     """
     from importlib.metadata import version as v
     import platform
+    state_txt = (f"states in the order set by the analyst ({', '.join(set_states)}). "
+                 if set_states else
+                 "states numerically when every state is a number, else by their first "
+                 "appearance in the data. ")
     txt = (f"The state {y} of {n_pat} patients ({idc}) was followed across {len(visits)} visits "
            f"of {x} ({', '.join(visits)}). Visits are ordered numerically when every visit is a "
-           "number, else alphabetically, and states numerically when every state is a number, "
-           "else by their first appearance in the data. The diagram shows "
+           f"number, else alphabetically, and {state_txt}The diagram shows "
            f"{int(trans['n'].sum())} transitions between consecutive visits; a patient missing at "
            "a visit takes no part in the transitions into or out of it, and the transitions table "
            "gives every count. ")

@@ -113,6 +113,7 @@ Common options:
 | `--ref LEVEL` | the reference group of `estimation_plot` (default: the first level in sorted order) |
 | `--test auto\|linear\|4pl` | the curve of `standard_curve`: auto fits a 4PL when the standards have 5 or more positive concentrations and the fit converges, and a line in all other conditions |
 | `--cause CODE` | the event code of the cause of interest of `cumulative_incidence` (default 1) |
+| `--levels "a,b,c"` | the state order of `sankey`; the list must name every state of the data |
 | `--fc_cutoff`, `--p_cutoff`, `--top_n` | the fold-change cutoff, the p cutoff and the count of labels of `volcano` and `ma_plot` (default 1, 0.05 and 15); `--top_n` also sets the most lead SNPs that `manhattan` labels |
 | `--facet COL` (`feature_panel`) | the feature column of long data; without it, every numeric column other than `--x` is a feature |
 
@@ -298,8 +299,11 @@ transition between two consecutive visits.
 
 - Visits sort as numbers when every visit is a number. Other visits sort in
   code-point order.
-- States sort as numbers when every state is a number. Other states keep the
-  order of their first appearance in the data, so sort the rows to set the order.
+- `--levels "a,b,c"` sets the state order. The list must name every state of
+  the data, else the recipe stops and names the missing states. A listed state
+  that no row holds is left out of the diagram.
+- Without `--levels`, states sort as numbers when every state is a number.
+  Other states keep the order of their first appearance in the data.
 - A patient who is missing at a visit takes no part in the transitions into or
   out of that visit.
 - With exactly two visits that carry the same set of states, Bowker's test of

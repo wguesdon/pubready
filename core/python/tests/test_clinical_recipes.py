@@ -172,3 +172,30 @@ def test_sankey_needs_one_row_per_patient_and_visit():
     d = pd.DataFrame({"id": [1, 1, 2], "visit": [1, 1, 2], "state": ["a", "b", "a"]})
     with pytest.raises(ValueError, match="one row per patient and visit"):
         recipe_sankey(d, clin_spec("sankey", id="id", x="visit", y="state"))
+
+
+def sk_visits():
+    """Four patients over three visits, the data of the R suite.
+
+    Returns:
+        pandas.DataFrame: The data.
+    """
+    return pd.DataFrame({"pid": [1, 1, 1, 2, 2, 3, 3, 3, 4, 4],
+                         "visit": [8, 16, 24, 8, 24, 8, 16, 24, 8, 16],
+                         "state": ["SD", "PR", "PR", "SD", "PD", "PR", "PR", "CR", "SD", "SD"]})
+
+
+def test_sankey_levels_set_the_state_order_and_leave_out_an_unused_state():
+    """--levels orders the states, as in the R engine."""
+    res = recipe_sankey(sk_visits(), clin_spec("sankey", id="pid", x="visit", y="state",
+                                               levels="CR, PR,SD,PD,NE"))
+    assert res["test_meta"]["states"] == ["CR", "PR", "SD", "PD"]
+    assert "states in the order set by the analyst (CR, PR, SD, PD)" in res["methods"]
+
+
+def test_sankey_levels_stop_when_a_state_of_the_data_is_not_listed():
+    """A state that --levels leaves out is an error with the R message."""
+    with pytest.raises(ValueError) as err:
+        recipe_sankey(sk_visits(), clin_spec("sankey", id="pid", x="visit", y="state",
+                                             levels="CR,PR,SD"))
+    assert str(err.value) == "--levels does not list the state(s) 'PD' of the data"

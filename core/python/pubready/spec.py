@@ -71,6 +71,8 @@ def spec_from_args(a):
             "measure": getattr(a, "measure", None),
             "ref": getattr(a, "ref", None),
             "cause": getattr(a, "cause", None),
+            "levels": ([s.strip() for s in a.levels.split(",")]
+                       if getattr(a, "levels", None) else None),
             "markers": ([s.strip() for s in a.markers.split(",")]
                         if getattr(a, "markers", None) else None),
         },

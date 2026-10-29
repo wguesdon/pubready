@@ -2,8 +2,9 @@
 # for example the response category at each assessment.
 # Input is one row per patient visit: the patient (--id), the visit (--x) and the
 # state (--y). Visits are sorted numerically when every visit is a number, else
-# in code-point order. States are sorted numerically when every state is a
-# number, else they keep the order of their first appearance in the data. A
+# in code-point order. States follow --levels when it is given, else they are
+# sorted numerically when every state is a number, else they keep the order of
+# their first appearance in the data. A
 # patient who is missing at a visit takes no part in the transitions into or out
 # of that visit, so the node of that visit holds only the patients present.
 #
@@ -36,9 +37,20 @@
   if (all(!is.na(num))) u[order(num, u, method = "radix")] else sort(u, method = "radix")
 }
 
-# State order: numeric when every value is a number, else first appearance.
-.sk_state_order <- function(s) {
+# State order: the order of --levels when it is given, else numeric when every
+# value is a number, else first appearance. A state of the data that --levels
+# does not list stops the run; a listed state that no row holds is left out.
+.sk_state_order <- function(s, levels = NULL) {
   u <- unique(s)
+  if (length(levels) > 0) {
+    levels <- unique(trimws(as.character(levels)))
+    miss <- setdiff(u, levels)
+    if (length(miss) > 0) {
+      stop(sprintf("--levels does not list the state(s) %s of the data",
+                   paste(sprintf("'%s'", miss), collapse = ", ")))
+    }
+    return(levels[levels %in% u])
+  }
   num <- suppressWarnings(as.numeric(u))
   if (all(!is.na(num))) u[order(num, u, method = "radix")] else u
 }
@@ -221,7 +233,8 @@ recipe_sankey <- function(df, spec) {
   }
   visits <- .sk_visit_order(d$visit)
   if (length(visits) < 2) stop("sankey needs at least 2 visits")
-  states <- .sk_state_order(d$state)
+  levels <- unlist(spec$data$levels)
+  states <- .sk_state_order(d$state, levels)
   trans <- do.call(rbind, lapply(seq_len(length(visits) - 1), .sk_pair, d = d,
                                  visits = visits, states = states))
   if (is.null(trans)) {
@@ -310,7 +323,8 @@ recipe_sankey <- function(df, spec) {
   }
   resolved <- list(family = "sankey", label = test_meta$name)
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
-       methods = .sk_methods(test, trans, visits, states, n_pat, idc, x, y),
+       methods = .sk_methods(test, trans, visits, states, n_pat, idc, x, y,
+                             levels_given = length(levels) > 0),
        build_script = list(fn = .sk_emit_script, args = list(spec = spec, visits = visits,
                                                              states = states, dims = dims)),
        label = slugify(y), df_used = d, clean_steps = clean_steps,
@@ -321,13 +335,19 @@ recipe_sankey <- function(df, spec) {
   stats::setNames(as.list(as.integer(tab[i, ])), states)
 }
 
-.sk_methods <- function(test, trans, visits, states, n_pat, idc, x, y) {
+.sk_methods <- function(test, trans, visits, states, n_pat, idc, x, y, levels_given = FALSE) {
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   v <- pkg_versions("ggplot2")
+  state_txt <- if (levels_given) {
+    sprintf("states in the order set by the analyst (%s). ", paste(states, collapse = ", "))
+  } else {
+    "states numerically when every state is a number, else by their first appearance in the data. "
+  }
   txt <- paste0(
     sprintf("The state %s of %d patients (%s) was followed across %d visits of %s (%s). ",
             y, n_pat, idc, length(visits), x, paste(visits, collapse = ", ")),
-    "Visits are ordered numerically when every visit is a number, else alphabetically, and states numerically when every state is a number, else by their first appearance in the data. ",
+    "Visits are ordered numerically when every visit is a number, else alphabetically, and ",
+    state_txt,
     sprintf("The diagram shows %d transitions between consecutive visits; a patient missing at a visit takes no part in the transitions into or out of it, and the transitions table gives every count. ",
             sum(trans$n)))
   if (!is.null(test$statistic)) {

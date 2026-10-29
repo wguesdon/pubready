@@ -137,6 +137,25 @@ test_that("sankey uses McNemar's test for two states and matches stats::mcnemar.
   expect_equal(res$test_meta$p_value, mt$p.value, tolerance = 1e-12)
 })
 
+sk_visits <- function() {
+  data.frame(pid = c(1, 1, 1, 2, 2, 3, 3, 3, 4, 4),
+             visit = c(8, 16, 24, 8, 24, 8, 16, 24, 8, 16),
+             state = c("SD", "PR", "PR", "SD", "PD", "PR", "PR", "CR", "SD", "SD"))
+}
+
+test_that("sankey --levels sets the state order and leaves out an unused state", {
+  res <- recipe_sankey(sk_visits(), clin_spec("sankey", id = "pid", x = "visit", y = "state",
+                                              levels = "CR, PR,SD,PD,NE"))
+  expect_equal(unlist(res$test_meta$states), c("CR", "PR", "SD", "PD"))
+  expect_match(res$methods, "states in the order set by the analyst (CR, PR, SD, PD)", fixed = TRUE)
+})
+
+test_that("sankey --levels stops when a state of the data is not listed", {
+  expect_error(recipe_sankey(sk_visits(), clin_spec("sankey", id = "pid", x = "visit",
+                                                    y = "state", levels = "CR,PR,SD")),
+               "--levels does not list the state(s) 'PD' of the data", fixed = TRUE)
+})
+
 test_that("sankey needs one row per patient and visit", {
   d <- data.frame(id = c(1, 1, 2), visit = c(1, 1, 2), state = c("a", "b", "a"))
   expect_error(recipe_sankey(d, clin_spec("sankey", id = "id", x = "visit", y = "state")),

@@ -29,6 +29,13 @@ check_bundle() {  # $1 = output root, $2 = label
   [ "$missing" -eq 0 ] && echo "PASS: $2 wrote a complete bundle -> $d"
 }
 
+# The string items of one array in a manifest, one per line. The array starts on
+# the line of its key and ends at the first "]".
+json_array() {  # $1 = file, $2 = key
+  awk -v key="\"$2\":" 'index($0, key) { on = 1 } on { print } on && /\]/ { exit }' "$1" |
+    grep -o '"[^"]*"' | grep -v "^\"$2\"\$"
+}
+
 echo "[1] parametric path (expect t-test)"
 ./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
   --x group --y volume --ylab "Tumor volume (mm^3)" --out "$OUT/t_test"
@@ -413,6 +420,15 @@ if compgen -G "$OUT/sankey/*/stats_*.csv" > /dev/null && grep -q "from_state" "$
 else
   echo "FAIL: expected the Sankey transitions table"; fail=1
 fi
+./cli/figkit plot --recipe sankey --data example/sankey.csv --id patient --x week --y response \
+  --levels "progressive disease,stable disease,partial response,complete response" \
+  --out "$OUT/sankey_levels" > /dev/null 2>&1
+sk_m="$(find "$OUT/sankey_levels" -name 'manifest_*.json' | head -1)"
+if [ -n "$sk_m" ] && [ "$(json_array "$sk_m" states | head -1)" = '"progressive disease"' ]; then
+  echo "PASS: Sankey --levels sets the state order"
+else
+  echo "FAIL: expected --levels to put progressive disease first"; fail=1
+fi
 
 echo "[39] MA plot of a DESeq2 table (expect baseMean on the log10 scale)"
 ./cli/figkit plot --recipe ma_plot --data example/de_basemean.csv --out "$OUT/ma_plot"
@@ -564,13 +580,6 @@ else
   done
   [ "$est_ok" -eq 1 ] && echo "PASS: parity estimation_plot bootstrap CI"
 fi
-
-# The string items of one array in a manifest, one per line. The array starts on
-# the line of its key and ends at the first "]".
-json_array() {  # $1 = file, $2 = key
-  awk -v key="\"$2\":" 'index($0, key) { on = 1 } on { print } on && /\]/ { exit }' "$1" |
-    grep -o '"[^"]*"' | grep -v "^\"$2\"\$"
-}
 
 # Both engines build the same tree and order each branch by the mean of the
 # unscaled values, so the rows and the columns of the heatmap come in one order.
