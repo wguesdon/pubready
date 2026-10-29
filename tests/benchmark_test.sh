@@ -117,6 +117,14 @@ bench veteran_cox "Cox" --recipe cox_forest --data $D/veteran.csv \
   --time time --event status --covariates "trt,celltype,karno,age"
 bench state_correlation_heatmap "" --recipe correlation_heatmap --data $D/state_x77.csv
 
+echo "--- Clinical recipes on public datasets ---"
+bench mgus2_cif "Gray" --recipe cumulative_incidence --data $D/mgus2.csv \
+  --time etime --event event --x sex --xlab "Months"
+bench pima_calibration "Hosmer-Lemeshow" --recipe calibration --data $D/pima_te.csv \
+  --y type --x predicted --positive Yes
+bench pbcseq_sankey "Bowker" --recipe sankey --data $D/pbcseq_edema.csv \
+  --id id --x year --y edema
+
 echo
 if [ "$ran" -eq 0 ]; then
   echo "NO BENCHMARK MATCHED '$FILTER'"; exit 1

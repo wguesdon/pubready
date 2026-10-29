@@ -46,6 +46,7 @@ def cif_tiny():
 
 
 def test_cumulative_incidence_matches_cmprsk_on_tied_times():
+    """Gray's test and the CIF match cmprsk on tied times with three groups."""
     res = recipe_cumulative_incidence(cif_tiny(), clin_spec(
         "cumulative_incidence", time="time", event="status", x="group"))
     st = res["stats"]
@@ -63,6 +64,7 @@ def test_cumulative_incidence_matches_cmprsk_on_tied_times():
 
 
 def test_cumulative_incidence_puts_the_named_cause_first():
+    """The cause that --cause names comes first, and an unknown code fails."""
     res = recipe_cumulative_incidence(cif_tiny(), clin_spec(
         "cumulative_incidence", time="time", event="status", x="group", cause="2"))
     assert res["stats"]["cause"].iloc[0] == "2"
@@ -73,6 +75,7 @@ def test_cumulative_incidence_puts_the_named_cause_first():
 
 
 def test_cumulative_incidence_of_one_cause_is_one_minus_kaplan_meier():
+    """With one cause and one group, the CIF equals 1 - Kaplan-Meier."""
     t = np.array([1, 2, 2, 3, 5, 6, 7, 9], dtype=float)
     e = np.array([1, 0, 1, 1, 0, 1, 0, 1])
     xs, fs = cif_curve(t, e, e)
@@ -85,6 +88,7 @@ def test_cumulative_incidence_of_one_cause_is_one_minus_kaplan_meier():
 
 
 def test_quantile7_follows_r_type_7():
+    """The type-7 quantiles follow the arithmetic of R."""
     x = np.arange(1, 11, dtype=float)
     probs = np.arange(11) * 0.1
     assert quantile7(x, probs) == pytest.approx(1 + 0.9 * np.arange(11), rel=1e-12)
@@ -92,6 +96,7 @@ def test_quantile7_follows_r_type_7():
 
 
 def test_calibration_groups_tied_predictions_as_hoslem_test():
+    """Tied deciles merge, and an empty group is left out, as in the R engine."""
     p = np.repeat([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], [3, 4, 3, 4, 3, 4, 2, 3, 4])
     y = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1]
     res = recipe_calibration(pd.DataFrame({"y": y, "p": p}), clin_spec("calibration", y="y", x="p"))
@@ -106,6 +111,7 @@ def test_calibration_groups_tied_predictions_as_hoslem_test():
 
 
 def test_calibration_recovers_the_ideal_slope_for_true_risks():
+    """True risks give a slope near 1 and an intercept near 0."""
     rng = np.random.default_rng(7)
     p = 1 / (1 + np.exp(-rng.normal(-0.5, 1.2, 4000)))
     y = rng.binomial(1, p)
@@ -117,12 +123,14 @@ def test_calibration_recovers_the_ideal_slope_for_true_risks():
 
 
 def test_calibration_rejects_values_outside_the_unit_interval():
+    """A prediction outside [0, 1] is an error."""
     d = pd.DataFrame({"y": [0, 1, 0, 1], "p": [0.2, 1.3, 0.1, 0.8]})
     with pytest.raises(ValueError, match=r"outside \[0, 1\]"):
         recipe_calibration(d, clin_spec("calibration", y="y", x="p"))
 
 
 def test_sankey_counts_the_transitions_of_patients_present_at_both_visits():
+    """Only patients present at both visits make a transition."""
     d = pd.DataFrame({"pid": [1, 1, 1, 2, 2, 3, 3, 3, 4, 4],
                       "visit": [8, 16, 24, 8, 24, 8, 16, 24, 8, 16],
                       "state": ["SD", "PR", "PR", "SD", "PD", "PR", "PR", "CR", "SD", "SD"]})
@@ -135,6 +143,7 @@ def test_sankey_counts_the_transitions_of_patients_present_at_both_visits():
 
 
 def test_sankey_runs_bowker_and_drops_the_empty_pairs():
+    """Bowker's test leaves out a pair of cells that holds no patient."""
     frm = ["a"] * 10 + ["b"] * 8 + ["c"] * 6
     to = ["a"] * 5 + ["b"] * 4 + ["c"] + ["b"] * 6 + ["a"] * 2 + ["c"] * 6
     d = pd.DataFrame({"id": list(range(24)) * 2, "visit": ["pre"] * 24 + ["post"] * 24,
@@ -149,6 +158,7 @@ def test_sankey_runs_bowker_and_drops_the_empty_pairs():
 
 
 def test_sankey_uses_mcnemar_for_two_states():
+    """Two states give McNemar's test without continuity correction."""
     frm = ["no"] * 12 + ["yes"] * 8
     to = ["no"] * 7 + ["yes"] * 5 + ["no"] * 2 + ["yes"] * 6
     d = pd.DataFrame({"id": list(range(20)) * 2, "visit": [0] * 20 + [1] * 20, "state": frm + to})
@@ -158,6 +168,7 @@ def test_sankey_uses_mcnemar_for_two_states():
 
 
 def test_sankey_needs_one_row_per_patient_and_visit():
+    """Two rows for one patient at one visit are an error."""
     d = pd.DataFrame({"id": [1, 1, 2], "visit": [1, 1, 2], "state": ["a", "b", "a"]})
     with pytest.raises(ValueError, match="one row per patient and visit"):
         recipe_sankey(d, clin_spec("sankey", id="id", x="visit", y="state"))

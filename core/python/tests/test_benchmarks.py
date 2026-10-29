@@ -373,6 +373,7 @@ def test_state_x77_correlation_matrix_keeps_spaced_names():
 
 
 def test_mgus2_gray_test_and_cumulative_incidence():
+    """mgus2: Gray's test and the CIF at 120 and 240 months match cmprsk."""
     res = recipe_cumulative_incidence(bench_data("mgus2"), bench_spec(
         "cumulative_incidence", time="etime", event="event", x="sex"))
     st, cv = res["stats"], res["curves"]
@@ -388,6 +389,7 @@ def test_mgus2_gray_test_and_cumulative_incidence():
 
 
 def test_pima_calibration_statistics():
+    """Pima.te: the calibration statistics match hoslem.test and glm."""
     res = recipe_calibration(bench_data("pima_te"), bench_spec(
         "calibration", y="type", x="predicted", positive="Yes"))
     row = res["stats"].iloc[0]
@@ -396,6 +398,7 @@ def test_pima_calibration_statistics():
 
 
 def test_pbcseq_bowker_test_of_edema():
+    """pbcseq: Bowker's test of edema matches stats::mcnemar.test."""
     res = recipe_sankey(bench_data("pbcseq_edema"), bench_spec(
         "sankey", id="id", x="year", y="edema"))
     meta, st = res["test_meta"], res["stats"]
