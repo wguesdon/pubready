@@ -459,6 +459,55 @@ add_ref("state_correlation_heatmap", "padj_murder_life_exp",
 add_ref("state_correlation_heatmap", "r_illiteracy_frost", stats::cor(st_num$Illiteracy, st_num$Frost),
         "stats::cor()")
 
+# 22. faithful: the eruption durations of the Old Faithful geyser, Azzalini and
+# Bowman (1990). The durations are bimodal, so the normality test rejects.
+fa_df <- write_data(datasets::faithful, "faithful")
+er <- fa_df$eruptions
+er_sw <- stats::shapiro.test(er)
+add_ref("faithful_distribution", "shapiro_w", er_sw$statistic, "stats::shapiro.test()")
+add_ref("faithful_distribution", "shapiro_p", er_sw$p.value, "stats::shapiro.test()")
+add_ref("faithful_distribution", "mean", mean(er), "base::mean()")
+add_ref("faithful_distribution", "sd", stats::sd(er), "stats::sd()")
+add_ref("faithful_distribution", "bandwidth", stats::bw.nrd0(er), "stats::bw.nrd0()")
+add_ref("faithful_distribution", "bin_width", 2 * stats::IQR(er) * length(er)^(-1 / 3),
+        "2 * stats::IQR() * n^(-1/3)")
+
+# 23. ToothGrowth (case 4): the tooth length within each supplement type.
+for (s in c("OJ", "VC")) {
+  tg_v <- tg$len[tg$supp == s]
+  tg_sw <- stats::shapiro.test(tg_v)
+  add_ref("tooth_growth_distribution", paste0("shapiro_w_", s), tg_sw$statistic, "stats::shapiro.test()")
+  add_ref("tooth_growth_distribution", paste0("shapiro_p_", s), tg_sw$p.value, "stats::shapiro.test()")
+  add_ref("tooth_growth_distribution", paste0("mean_", s), mean(tg_v), "base::mean()")
+  add_ref("tooth_growth_distribution", paste0("sd_", s), stats::sd(tg_v), "stats::sd()")
+  add_ref("tooth_growth_distribution", paste0("bandwidth_", s), stats::bw.nrd0(tg_v), "stats::bw.nrd0()")
+}
+
+# 24. housing: satisfaction with housing in Copenhagen, Madsen (1976), in MASS.
+# A sample is one combination of influence, housing type and contact; the
+# categories are the satisfaction levels and the group is the contact level.
+hs <- MASS::housing
+hs_df <- write_data(data.frame(sample = paste(hs$Infl, hs$Type, hs$Cont, sep = "_"),
+                               Infl = as.character(hs$Infl), Type = as.character(hs$Type),
+                               Cont = as.character(hs$Cont), Sat = as.character(hs$Sat),
+                               Freq = hs$Freq, stringsAsFactors = FALSE), "housing")
+hs_tot <- tapply(hs_df$Freq, hs_df$sample, sum)
+hs_df$prop <- hs_df$Freq / as.numeric(hs_tot[hs_df$sample])
+hs_p <- NULL
+for (s in c("Low", "Medium", "High")) {
+  hs_s <- hs_df[hs_df$Sat == s, ]
+  hs_wt <- suppressWarnings(stats::wilcox.test(hs_s$prop[hs_s$Cont == "High"],
+                                               hs_s$prop[hs_s$Cont == "Low"]))
+  add_ref("housing_composition", paste0("W_", s), hs_wt$statistic, "stats::wilcox.test()")
+  add_ref("housing_composition", paste0("p_", s), hs_wt$p.value, "stats::wilcox.test()")
+  hs_p <- c(hs_p, hs_wt$p.value)
+}
+hs_adj <- stats::p.adjust(hs_p, method = "BH")
+for (k in seq_along(hs_adj)) {
+  add_ref("housing_composition", paste0("p_adj_", c("Low", "Medium", "High")[k]), hs_adj[k],
+          "stats::p.adjust(method = \"BH\")")
+}
+
 ref_df <- do.call(rbind, refs)
 utils::write.csv(ref_df, file.path("benchmarks", "reference_values.csv"), row.names = FALSE)
 cat(sprintf("Wrote %d datasets and %d reference values.\n",

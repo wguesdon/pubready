@@ -117,6 +117,14 @@ bench veteran_cox "Cox" --recipe cox_forest --data $D/veteran.csv \
   --time time --event status --covariates "trt,celltype,karno,age"
 bench state_correlation_heatmap "" --recipe correlation_heatmap --data $D/state_x77.csv
 
+echo "--- Distribution and composition ---"
+bench faithful_distribution "Freedman-Diaconis" --recipe distribution --data $D/faithful.csv \
+  --y eruptions
+bench tooth_growth_distribution "Shapiro-Wilk" --recipe distribution --data $D/tooth_growth.csv \
+  --x supp --y len
+bench housing_composition "Mann-Whitney" --recipe composition --data $D/housing.csv \
+  --id sample --x Sat --y Freq --group Cont
+
 echo
 if [ "$ran" -eq 0 ]; then
   echo "NO BENCHMARK MATCHED '$FILTER'"; exit 1
