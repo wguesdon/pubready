@@ -49,3 +49,14 @@ test_that("multi_group_compare writes the omnibus test on each row", {
   expect_equal(unique(res$stats$omnibus_p), res$test_meta$omnibus$p_value)
   expect_equal(unique(res$stats$omnibus_df2), 15)
 })
+
+test_that("proportions draws the groups in the order of --levels", {
+  df <- data.frame(arm = rep(c("b", "c", "a"), each = 10),
+                   response = rep(c("no", "yes"), 15), stringsAsFactors = FALSE)
+  base <- list(recipe = "proportions", data = "p.csv", x = "arm", y = "response", test = "chisq")
+  res <- recipe_proportions(df, spec_from_opt(c(base, levels = "a,b,c")))
+  expect_equal(unique(as.character(res$stats$group)), c("a", "b", "c"))
+  expect_equal(unique(as.character(recipe_proportions(df, spec_from_opt(base))$stats$group)),
+               c("b", "c", "a"))
+  expect_error(recipe_proportions(df, spec_from_opt(c(base, levels = "a,b"))), "'c'")
+})

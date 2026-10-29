@@ -59,3 +59,16 @@ def test_multi_group_compare_writes_the_omnibus_test_on_each_row():
         recipe="multi_group_compare", data="d.csv", x="group", y="value", test="anova")))
     assert list(res["stats"]["omnibus_p"].unique()) == [res["test_meta"]["omnibus"]["p_value"]]
     assert res["stats"]["omnibus_df2"].unique()[0] == 15
+
+
+def test_proportions_draws_the_groups_in_the_order_of_levels():
+    import pytest
+    df = pd.DataFrame({"arm": ["b"] * 10 + ["c"] * 10 + ["a"] * 10,
+                       "response": ["no", "yes"] * 15})
+    base = dict(recipe="proportions", data="p.csv", x="arm", y="response", test="chisq")
+    res = recipe_proportions(df, spec_from_args(SimpleNamespace(**base, levels="a,b,c")))
+    assert list(dict.fromkeys(res["stats"]["group"])) == ["a", "b", "c"]
+    plain = recipe_proportions(df, spec_from_args(SimpleNamespace(**base, levels=None)))
+    assert list(dict.fromkeys(plain["stats"]["group"])) == ["b", "c", "a"]
+    with pytest.raises(ValueError, match="'c'"):
+        recipe_proportions(df, spec_from_args(SimpleNamespace(**base, levels="a,b")))

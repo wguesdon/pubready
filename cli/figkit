@@ -43,8 +43,9 @@ Common plot options:
   --ref LEVEL                              reference (control) group (estimation_plot)
   --cause CODE                             event code of the cause of interest
                                            (cumulative_incidence, default 1)
-  --levels "a,b,c"                         state order (sankey); every state of
-                                           the data must be listed
+  --levels "a,b,c"                         state order (sankey) or group order
+                                           (proportions); every value of the
+                                           data must be listed
   --covariates "a,b,c"                     Cox model covariates
   --annotation FILE                        heatmap column annotation CSV
   --id COL                                 subject or sample column (paired_compare,

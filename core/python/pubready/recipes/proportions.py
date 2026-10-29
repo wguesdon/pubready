@@ -16,6 +16,31 @@ from ..bundle import slugify
 from ..theme import apply_pub_style, category_width, legend_width, palette, wrap_labels
 
 
+def group_order(g, levels=None):
+    """Group order: the order of --levels when it is given, else first appearance.
+
+    Args:
+        g: The group values as text.
+        levels: The groups in the order that --levels gives, or None. A listed
+            group that no row holds is left out.
+
+    Returns:
+        list: The groups in drawing order.
+
+    Raises:
+        ValueError: If a group of the data is missing from levels.
+    """
+    u = list(pd.unique(g))
+    if not levels:
+        return u
+    levels = list(dict.fromkeys(str(v).strip() for v in levels))
+    miss = [v for v in u if v not in levels]
+    if miss:
+        raise ValueError("--levels does not list the group(s) "
+                         + ", ".join(f"'{v}'" for v in miss) + " of the data")
+    return [v for v in levels if v in u]
+
+
 def recipe_proportions(df, spec):
     x, y = spec["data"]["x"], spec["data"]["y"]
     if not x or not y:
@@ -28,7 +53,7 @@ def recipe_proportions(df, spec):
     n0 = len(d)
     d = d.dropna()
     d[x] = d[x].astype(str); d[y] = d[y].astype(str)
-    groups = list(pd.unique(d[x]))
+    groups = group_order(d[x], spec["data"].get("levels"))
     outcomes = list(pd.unique(d[y]))
     steps = ([f"Dropped {n0 - len(d)} row(s) with a missing group or outcome ({n0} -> {len(d)})."]
              if len(d) < n0 else ["No cleaning applied; input used as-is."])

@@ -12,7 +12,7 @@ recipe_proportions <- function(df, spec) {
   df <- df[, c(x, y)]
   n0 <- nrow(df)
   df <- df[stats::complete.cases(df), , drop = FALSE]
-  df[[x]] <- factor(df[[x]], levels = unique(as.character(df[[x]])))
+  df[[x]] <- factor(df[[x]], levels = .prop_group_order(df[[x]], unlist(spec$data$levels)))
   df[[y]] <- factor(df[[y]], levels = unique(as.character(df[[y]])))
   clean_steps <- if (nrow(df) < n0) {
     sprintf("Dropped %d row(s) with a missing group or outcome (%d -> %d).", n0 - nrow(df), n0, nrow(df))
@@ -127,4 +127,19 @@ recipe_proportions <- function(df, spec) {
     sprintf('ggsave("%s.pdf", p, width = 4.2, height = 4.2)', fig_stub),
     'cat("Reproduced figure.\\n")'
   )
+}
+
+# Group order: the order of --levels when it is given, else first appearance in
+# the data. A group of the data that --levels does not list stops the run; a
+# listed group that no row holds is left out.
+.prop_group_order <- function(g, levels = NULL) {
+  u <- unique(as.character(g))
+  if (length(levels) == 0) return(u)
+  levels <- unique(trimws(as.character(levels)))
+  miss <- setdiff(u, levels)
+  if (length(miss) > 0) {
+    stop(sprintf("--levels does not list the group(s) %s of the data",
+                 paste(sprintf("'%s'", miss), collapse = ", ")))
+  }
+  levels[levels %in% u]
 }

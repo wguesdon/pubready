@@ -13,6 +13,12 @@ tag move together.
 
 ## [Unreleased]
 
+### Added
+- `proportions` accepts `--levels "a,b,c"` to set the order of the groups, as
+  `sankey` does for its states. The list must name every group of the data.
+  Without it, the groups keep the order of their first appearance, which drew
+  the `titanic` classes as 3rd, 1st, 2nd, Crew.
+
 ### Changed
 - The stats tables of `two_group_compare`, `paired_compare` and
   `multi_group_compare` have a new `contrast` column, for example "1 - 2", and

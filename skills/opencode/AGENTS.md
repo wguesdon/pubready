@@ -70,7 +70,7 @@ needs administrator rights.
 | `volcano` | DE table (log2FC + p) | `--data [--x --y --label]` | EnhancedVolcano-style scatter, top hits labeled |
 | `enrichment_dot` | GSEA / ORA result table | `--data [--label]` | dot plot, size = count, color = -log10 adjusted p |
 | `paired_compare` | condition, value, id | `--x --y --id` | paired t-test or Wilcoxon, connecting lines |
-| `proportions` | two categoricals | `--x --y` | chi-square / Fisher, 100% stacked bar |
+| `proportions` | two categoricals | `--x --y [--levels]` | chi-square / Fisher, 100% stacked bar |
 | `pca` | samples × features + group | `--data --group` | PC1/PC2 scatter, 95% ellipses, PERMANOVA |
 | `spider_response` | patient, time, value | `--x --y --id [--group]` | descriptive change from baseline, RECIST lines (no test) |
 | `waterfall` | patient, time, value (or one best change per patient) | `--y --id [--x --group]` | descriptive best change from baseline, sorted bars, RECIST lines (no test) |
@@ -124,6 +124,9 @@ event level as for `roc_curve`. For `sankey`, give one row for each patient and
 visit. Numeric states sort as numbers, and text states keep the order of their
 first appearance in the data. To set a clinical order, pass every state with
 `--levels`, for example `--levels "CR,PR,SD,PD"`.
+The `proportions` groups also keep the order of their first appearance in the
+data. To set another order, pass every group with `--levels`, for example
+`--levels "1st,2nd,3rd,Crew"`.
 
 ## Choosing the test
 
