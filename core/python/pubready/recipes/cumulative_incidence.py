@@ -728,7 +728,7 @@ def _script(spec, has_group, tps, dims, in_name, fig_stub):
     grp_line = (f'raw["{gcol}"].astype(str).str.strip()' if has_group
                 else '"all"')
     return f'''#!/usr/bin/env python3
-# Standalone reproduction. Run inside the pinned pubready container. The two
+# Standalone reproduction. Run inside the pinned pubready container. The
 # functions below restate the cinc and crstm routines of the R package cmprsk.
 import matplotlib
 matplotlib.use("Agg")
