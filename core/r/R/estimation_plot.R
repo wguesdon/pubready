@@ -277,7 +277,7 @@
   out
 }
 
-.est_fmt_p <- function(p) if (p < 0.001) "P < 0.001" else sprintf("P = %.2g", p)
+.est_fmt_p <- function(p) if (p < 0.001) "P < 0.001" else paste("P =", sig_text(p, 2))
 
 recipe_estimation_plot <- function(df, spec) {
   x <- spec$data$x; y <- spec$data$y
@@ -447,8 +447,8 @@ recipe_estimation_plot <- function(df, spec) {
     ggplot2::scale_y_continuous(sec.axis = ggplot2::sec_axis(~ . - m_ref, name = "Mean difference")) +
     ggplot2::labs(x = ap$x_label, y = y_lab, title = ap$title,
                   subtitle = sprintf("Mean difference %s (95%% CI %s to %s)\n%s, %s",
-                                     sprintf("%.3g", rows$mean_diff[1]), sprintf("%.3g", rows$ci_low[1]),
-                                     sprintf("%.3g", rows$ci_high[1]), rows$test[1],
+                                     sig_text(rows$mean_diff[1]), sig_text(rows$ci_low[1]),
+                                     sig_text(rows$ci_high[1]), rows$test[1],
                                      .est_fmt_p(rows$p_value[1]))) +
     pub_theme(ap$theme) +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"),
@@ -527,9 +527,9 @@ recipe_estimation_plot <- function(df, spec) {
   v <- pkg_versions("ggplot2")
   y_lab <- spec$appearance$y_label %||% y
   each <- paste(sprintf("%s: mean difference %s (95%% CI %s to %s), Hedges' g = %.2f, t(%s) = %.2f, P = %s",
-                        rows$group, sprintf("%.3g", rows$mean_diff), sprintf("%.3g", rows$ci_low),
-                        sprintf("%.3g", rows$ci_high), rows$hedges_g, sprintf("%.3g", rows$df),
-                        rows$statistic, sprintf("%.2g", rows$p_value)), collapse = "; ")
+                        rows$group, sig_text(rows$mean_diff), sig_text(rows$ci_low),
+                        sig_text(rows$ci_high), rows$hedges_g, sprintf("%.3g", rows$df),
+                        rows$statistic, sig_text(rows$p_value, 2)), collapse = "; ")
   paste0(
     sprintf("%s was analysed with estimation statistics, with %s as the reference group (n = %d). ",
             cap_first(y_lab), ref, rows$n_ref[1]),

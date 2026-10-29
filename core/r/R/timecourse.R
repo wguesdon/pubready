@@ -13,7 +13,7 @@
 # The ANOVA needs every subject at every time, so a subject with a missing visit
 # is dropped and the drop is recorded.
 
-.tc_p_label <- function(p) if (p < 0.001) "P < 0.001" else sprintf("P = %.2g", p)
+.tc_p_label <- function(p) if (p < 0.001) "P < 0.001" else paste("P =", sig_text(p, 2))
 
 .tc_group_cells <- function(gl, Y, g) colMeans(Y[g == gl, , drop = FALSE])
 
@@ -236,7 +236,7 @@ recipe_timecourse <- function(df, spec) {
   drop_txt <- if (n_drop > 0) sprintf(" %d subject(s) without a value at every time point were excluded.", n_drop) else ""
   corr_txt <- if (method == "auto") {
     sprintf(" Sphericity was assessed with Mauchly's test (W = %.3f, P = %s); %s",
-            res$mauchly$W, sprintf("%.2g", res$mauchly$p_value),
+            res$mauchly$W, sig_text(res$mauchly$p_value, 2),
             if (use_gg) sprintf("because it was rejected, the within-subject effects carry the Greenhouse-Geisser correction (epsilon = %.3f).", res$eps)
             else "it was not rejected, so no correction was applied.")
   } else if (use_gg) {

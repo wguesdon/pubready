@@ -244,3 +244,22 @@ def p_phrase(p, digits=2):
     """
     text = format_p(p, digits)
     return f"P {text}" if text.startswith("<") else f"P = {text}"
+
+
+def sig_text(x, digits=3):
+    """Write a number with a fixed count of significant digits.
+
+    Unlike "%.3g" it keeps the trailing zeros (3.70, not 3.7), and it drops the
+    trailing point that "%#g" leaves on a whole number, as the R engine does.
+
+    Args:
+        x: The number.
+        digits: The count of significant digits.
+
+    Returns:
+        str: The text, or "NA" for a missing value.
+    """
+    if x is None or (isinstance(x, float) and np.isnan(x)):
+        return "NA"
+    text = f"{float(x):#.{digits}g}"
+    return text[:-1] if text.endswith(".") else text

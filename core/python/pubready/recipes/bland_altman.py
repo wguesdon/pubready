@@ -16,7 +16,7 @@ from scipy import stats
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
-from ..util import shapiro_normal
+from ..util import shapiro_normal, sig_text
 
 
 def agreement_stats(a, b):
@@ -88,9 +88,9 @@ def recipe_bland_altman(df, spec):
                    (s["bias_ci_low"], s["bias_ci_high"]),
                    (s["loa_high_ci_low"], s["loa_high_ci_high"])):
         ax.axhspan(lo, hi, color="0.8", alpha=0.5, lw=0)
-    for val, ls, lab in ((s["loa_low"], "--", f"-1.96 SD: {s['loa_low']:.3g}"),
-                         (s["bias"], "-", f"Bias: {s['bias']:.3g}"),
-                         (s["loa_high"], "--", f"+1.96 SD: {s['loa_high']:.3g}")):
+    for val, ls, lab in ((s["loa_low"], "--", f"-1.96 SD: {sig_text(s['loa_low'])}"),
+                         (s["bias"], "-", f"Bias: {sig_text(s['bias'])}"),
+                         (s["loa_high"], "--", f"+1.96 SD: {sig_text(s['loa_high'])}")):
         ax.axhline(val, ls=ls, color="0.15", lw=1.0)
         # The label sits in the right margin, next to its line, so that it never
         # covers a point; tight_layout leaves room for it, as R does.
@@ -99,7 +99,7 @@ def recipe_bland_altman(df, spec):
                     color="0.15", annotation_clip=False)
     ax.scatter(mean, diff, s=26, color=pal[0], alpha=0.85, zorder=3)
     ax.set_title(f"n = {s['n']}; proportional bias slope {s['prop_bias_slope']:.3f}, "
-                 f"P = {s['prop_bias_p']:.2g}", fontsize=10, color="#4d4d4d")
+                 f"P = {sig_text(s['prop_bias_p'], 2)}", fontsize=10, color="#4d4d4d")
     if ap.get("title"):
         fig.suptitle(ap["title"], fontweight="bold")
     ax.set_xlabel(ap.get("x_label") or f"Mean of {x} and {y}")
@@ -134,16 +134,16 @@ def _methods(s, x, y):
     import platform
     return (
         f"Agreement between {x} and {y} was assessed by the method of Bland and Altman "
-        f"(n = {s['n']} pairs). The mean difference ({x} - {y}) was {s['bias']:.3g} "
-        f"(95% CI {s['bias_ci_low']:.3g} to {s['bias_ci_high']:.3g}) with a standard deviation "
-        f"of {s['sd_diff']:.3g}. The 95% limits of agreement were {s['loa_low']:.3g} (95% CI "
-        f"{s['loa_low_ci_low']:.3g} to {s['loa_low_ci_high']:.3g}) and {s['loa_high']:.3g} "
-        f"(95% CI {s['loa_high_ci_low']:.3g} to {s['loa_high_ci_high']:.3g}), computed as the "
+        f"(n = {s['n']} pairs). The mean difference ({x} - {y}) was {sig_text(s['bias'])} "
+        f"(95% CI {sig_text(s['bias_ci_low'])} to {sig_text(s['bias_ci_high'])}) with a standard deviation "
+        f"of {sig_text(s['sd_diff'])}. The 95% limits of agreement were {sig_text(s['loa_low'])} (95% CI "
+        f"{sig_text(s['loa_low_ci_low'])} to {sig_text(s['loa_low_ci_high'])}) and {sig_text(s['loa_high'])} "
+        f"(95% CI {sig_text(s['loa_high_ci_low'])} to {sig_text(s['loa_high_ci_high'])}), computed as the "
         "mean difference plus or minus 1.96 standard deviations, with confidence intervals from "
         "the standard error of Bland and Altman (1999). A linear regression of the difference on "
-        f"the mean gave a slope of {s['prop_bias_slope']:.3f} (P = {s['prop_bias_p']:.2g}) as a "
+        f"the mean gave a slope of {s['prop_bias_slope']:.3f} (P = {sig_text(s['prop_bias_p'], 2)}) as a "
         "test of proportional bias. The normality of the differences, which the limits assume, "
-        f"was checked with the Shapiro-Wilk test (P = {s['shapiro_p_diff']:.2g}). Computed in "
+        f"was checked with the Shapiro-Wilk test (P = {sig_text(s['shapiro_p_diff'], 2)}). Computed in "
         f"Python {platform.python_version()} with scipy {v('scipy')} and drawn with matplotlib "
         f"{v('matplotlib')}."
     )

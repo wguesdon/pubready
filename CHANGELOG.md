@@ -45,6 +45,11 @@ tag move together.
 - The R `survival_km` methods paragraph padded each median with spaces, for
   example "adeno (median   51)". The padding is removed, so the text matches the
   Python engine.
+- `dose_response`, `enzyme_kinetics`, `bland_altman`, `timecourse` and
+  `estimation_plot` dropped trailing zeros in their labels and methods text, for
+  example "EC50 = 3.7 (95% CI 3 to 4.58)" and "P = 0.01". A new `sig_text()`
+  helper in each engine keeps a fixed count of significant digits, so the text
+  now reads "EC50 = 3.70 (95% CI 3.00 to 4.58)" and "P = 0.010".
 
 ## [2.0.0] - 2026-10-29
 

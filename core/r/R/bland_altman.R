@@ -60,8 +60,8 @@ recipe_bland_altman <- function(df, spec) {
     ymax = c(s$loa_low_ci_high, s$bias_ci_high, s$loa_high_ci_high))
   lines <- data.frame(y = c(s$loa_low, s$bias, s$loa_high),
                       lty = c("dashed", "solid", "dashed"),
-                      lab = c(sprintf("-1.96 SD: %.3g", s$loa_low), sprintf("Bias: %.3g", s$bias),
-                              sprintf("+1.96 SD: %.3g", s$loa_high)))
+                      lab = c(paste("-1.96 SD:", sig_text(s$loa_low)), paste("Bias:", sig_text(s$bias)),
+                              paste("+1.96 SD:", sig_text(s$loa_high))))
 
   p <- ggplot2::ggplot(pd, ggplot2::aes(x = mean, y = diff)) +
     ggplot2::annotate("rect", xmin = -Inf, xmax = Inf, ymin = bands$ymin, ymax = bands$ymax,
@@ -78,7 +78,7 @@ recipe_bland_altman <- function(df, spec) {
                   y = spec$appearance$y_label %||% sprintf("Difference (%s - %s)", x, y),
                   title = spec$appearance$title,
                   subtitle = sprintf("n = %d; proportional bias slope %.3f, P = %s",
-                                     s$n, s$prop_bias_slope, sprintf("%.2g", s$prop_bias_p))) +
+                                     s$n, s$prop_bias_slope, sig_text(s$prop_bias_p, 2))) +
     pub_theme(spec$appearance$theme) +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"),
                    plot.margin = ggplot2::margin(10, 12 + 5.2 * max(nchar(lines$lab)), 10, 10))
@@ -102,15 +102,16 @@ recipe_bland_altman <- function(df, spec) {
   v <- pkg_versions("ggplot2")
   paste0(
     sprintf("Agreement between %s and %s was assessed by the method of Bland and Altman (n = %d pairs). ", x, y, s$n),
-    sprintf("The mean difference (%s - %s) was %.3g (95%% CI %.3g to %.3g) with a standard deviation of %.3g. ",
-            x, y, s$bias, s$bias_ci_low, s$bias_ci_high, s$sd_diff),
-    sprintf("The 95%% limits of agreement were %.3g (95%% CI %.3g to %.3g) and %.3g (95%% CI %.3g to %.3g), ",
-            s$loa_low, s$loa_low_ci_low, s$loa_low_ci_high, s$loa_high, s$loa_high_ci_low, s$loa_high_ci_high),
+    sprintf("The mean difference (%s - %s) was %s (95%% CI %s to %s) with a standard deviation of %s. ",
+            x, y, sig_text(s$bias), sig_text(s$bias_ci_low), sig_text(s$bias_ci_high), sig_text(s$sd_diff)),
+    sprintf("The 95%% limits of agreement were %s (95%% CI %s to %s) and %s (95%% CI %s to %s), ",
+            sig_text(s$loa_low), sig_text(s$loa_low_ci_low), sig_text(s$loa_low_ci_high),
+            sig_text(s$loa_high), sig_text(s$loa_high_ci_low), sig_text(s$loa_high_ci_high)),
     "computed as the mean difference plus or minus 1.96 standard deviations, with confidence intervals from the standard error of Bland and Altman (1999). ",
     sprintf("A linear regression of the difference on the mean gave a slope of %.3f (P = %s) as a test of proportional bias. ",
-            s$prop_bias_slope, sprintf("%.2g", s$prop_bias_p)),
+            s$prop_bias_slope, sig_text(s$prop_bias_p, 2)),
     sprintf("The normality of the differences, which the limits assume, was checked with the Shapiro-Wilk test (P = %s). ",
-            sprintf("%.2g", s$shapiro_p_diff)),
+            sig_text(s$shapiro_p_diff, 2)),
     sprintf("Computed in R %s and drawn with ggplot2 %s.", rver, v$ggplot2))
 }
 

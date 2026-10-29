@@ -35,7 +35,7 @@ from scipy import special, stats
 from ..bundle import slugify
 from ..clean import clean_xy
 from ..theme import apply_pub_style, palette
-from ..util import cap_first
+from ..util import cap_first, sig_text
 
 SEED = 20261029
 MODULUS = 2147483647
@@ -385,7 +385,7 @@ def fmt_p(p):
     Returns:
         str: The label.
     """
-    return "P < 0.001" if p < 0.001 else f"P = {p:.2g}"
+    return "P < 0.001" if p < 0.001 else f"P = {sig_text(p, 2)}"
 
 
 def id_text(s):
@@ -670,8 +670,8 @@ def _gardner_altman(d, lv, boots, rows, pal, paired, ap, y_lab):
     ax.set_ylabel(y_lab)
     if ap.get("x_label"):
         ax.set_xlabel(ap["x_label"])
-    ax.set_title(f"Mean difference {r['mean_diff']:.3g} (95% CI {r['ci_low']:.3g} to "
-                 f"{r['ci_high']:.3g})\n{r['test']}, {fmt_p(r['p_value'])}",
+    ax.set_title(f"Mean difference {sig_text(r['mean_diff'])} (95% CI {sig_text(r['ci_low'])} to "
+                 f"{sig_text(r['ci_high'])})\n{r['test']}, {fmt_p(r['p_value'])}",
                  fontsize=10, color="#4d4d4d")
     if ap.get("title"):
         fig.suptitle(ap["title"], fontweight="bold")
@@ -787,9 +787,9 @@ def _methods(rows, ref, paired, spec, y):
     import platform
     y_lab = spec["appearance"].get("y_label") or y
     each = "; ".join(
-        f"{r['group']}: mean difference {r['mean_diff']:.3g} (95% CI {r['ci_low']:.3g} to "
-        f"{r['ci_high']:.3g}), Hedges' g = {r['hedges_g']:.2f}, t({r['df']:.3g}) = "
-        f"{r['statistic']:.2f}, P = {r['p_value']:.2g}" for _, r in rows.iterrows())
+        f"{r['group']}: mean difference {sig_text(r['mean_diff'])} (95% CI {sig_text(r['ci_low'])} to "
+        f"{sig_text(r['ci_high'])}), Hedges' g = {r['hedges_g']:.2f}, t({r['df']:.3g}) = "
+        f"{r['statistic']:.2f}, P = {sig_text(r['p_value'], 2)}" for _, r in rows.iterrows())
     draw = ("each resample drawing the subject indices of the pairs as floor(u n). " if paired else
             "each resample drawing the reference indices first and then the group indices, as "
             "floor(u n). ")

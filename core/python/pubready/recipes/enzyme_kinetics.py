@@ -19,7 +19,7 @@ from scipy import optimize, stats
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, palette
-from ..util import cap_first
+from ..util import cap_first, sig_text
 from .estimation_plot import nice_ticks, wrap
 
 _FIT_OPTS = {"maxfev": 20000, "ftol": 1e-12, "xtol": 1e-12, "gtol": 1e-12}
@@ -218,7 +218,7 @@ def fmt_test(name, t):
     """
     if t is None:
         return f"{name}: not computed"
-    p = "P < 0.001" if t["p_value"] < 0.001 else f"P = {t['p_value']:.2g}"
+    p = "P < 0.001" if t["p_value"] < 0.001 else f"P = {sig_text(t['p_value'], 2)}"
     return f"{name}: F({t['df1']}, {t['df2']}) = {t['statistic']:.2f}, {p}"
 
 
@@ -323,7 +323,7 @@ def _plot(d, groups, rows, shared_km, shared_vmax, spec, x, y, grp, has_group):
     """
     ap = spec["appearance"]
     pal = palette(len(groups), ap.get("palette"))
-    labels = [f"{wrap(g, 18)}\nVmax {r['vmax']:.3g}, Km {r['km']:.3g}"
+    labels = [f"{wrap(g, 18)}\nVmax {sig_text(r['vmax'])}, Km {sig_text(r['km'])}"
               for g, (_, r) in zip(groups, rows.iterrows())]
     key_lines = max(lab.count("\n") for lab in labels) + 1
     w, h = (6.6 if has_group else 4.8), max(4.4, 1.4 + 0.165 * len(groups) * key_lines)
@@ -346,8 +346,8 @@ def _plot(d, groups, rows, shared_km, shared_vmax, spec, x, y, grp, has_group):
         sub = fmt_test("Shared Km", shared_km) + "\n" + fmt_test("Shared Vmax", shared_vmax)
     else:
         r = rows.iloc[0]
-        sub = (f"Vmax = {r['vmax']:.3g} (95% CI {r['vmax_ci_low']:.3g} to {r['vmax_ci_high']:.3g})\n"
-               f"Km = {r['km']:.3g} (95% CI {r['km_ci_low']:.3g} to {r['km_ci_high']:.3g})")
+        sub = (f"Vmax = {sig_text(r['vmax'])} (95% CI {sig_text(r['vmax_ci_low'])} to {sig_text(r['vmax_ci_high'])})\n"
+               f"Km = {sig_text(r['km'])} (95% CI {sig_text(r['km_ci_low'])} to {sig_text(r['km_ci_high'])})")
     ax.set_title(sub, fontsize=10, color="#4d4d4d")
     if ap.get("title"):
         fig.suptitle(ap["title"], fontweight="bold")
@@ -378,7 +378,7 @@ def _test_text(name, t):
     """
     if t is None:
         return f"{name} not computed, because the shared fit did not converge"
-    return f"{name} F({t['df1']}, {t['df2']}) = {t['statistic']:.2f}, P = {t['p_value']:.2g}"
+    return f"{name} F({t['df1']}, {t['df2']}) = {t['statistic']:.2f}, P = {sig_text(t['p_value'], 2)}"
 
 
 def _points_text(replicated):
@@ -422,9 +422,9 @@ def _methods(rows, shared_km, shared_vmax, n_points, spec, x, y, grp, replicated
     x_lab = spec["appearance"].get("x_label") or x
     multi = len(rows) > 1
     fits = "; ".join(
-        f"{(str(r['group']) + ': ') if multi else ''}Vmax = {r['vmax']:.3g} (95% CI "
-        f"{r['vmax_ci_low']:.3g} to {r['vmax_ci_high']:.3g}), Km = {r['km']:.3g} (95% CI "
-        f"{r['km_ci_low']:.3g} to {r['km_ci_high']:.3g}), R2 = {r['r_squared']:.3f}"
+        f"{(str(r['group']) + ': ') if multi else ''}Vmax = {sig_text(r['vmax'])} (95% CI "
+        f"{sig_text(r['vmax_ci_low'])} to {sig_text(r['vmax_ci_high'])}), Km = {sig_text(r['km'])} (95% CI "
+        f"{sig_text(r['km_ci_low'])} to {sig_text(r['km_ci_high'])}), R2 = {r['r_squared']:.3f}"
         for _, r in rows.iterrows())
     shared_txt = ""
     if multi:

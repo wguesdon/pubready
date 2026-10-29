@@ -21,7 +21,7 @@ from scipy import linalg, stats
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
-from ..util import cap_first
+from ..util import cap_first, sig_text
 
 
 def p_label(p):
@@ -33,7 +33,7 @@ def p_label(p):
     Returns:
         str: "P < 0.001" or "P = <value>".
     """
-    return "P < 0.001" if p < 0.001 else f"P = {p:.2g}"
+    return "P < 0.001" if p < 0.001 else f"P = {sig_text(p, 2)}"
 
 
 def mauchly(m, p, df):
@@ -314,7 +314,7 @@ def _methods(rows, res, use_gg, method, n_subj, n_time, n_drop, has_group, spec,
     mt = res["mauchly"]
     if method == "auto":
         corr_txt = (f" Sphericity was assessed with Mauchly's test (W = {mt['W']:.3f}, "
-                    f"P = {mt['p_value']:.2g}); " +
+                    f"P = {sig_text(mt['p_value'], 2)}); " +
                     (f"because it was rejected, the within-subject effects carry the "
                      f"Greenhouse-Geisser correction (epsilon = {res['eps']:.3f})." if use_gg
                      else "it was not rejected, so no correction was applied."))

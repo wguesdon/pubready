@@ -27,7 +27,7 @@ from scipy import optimize, stats
 
 from ..bundle import slugify
 from ..theme import R_POINT_PT, apply_pub_style, new_fig, palette, plain_log_axis
-from ..util import cap_first
+from ..util import cap_first, sig_text
 
 _FIT_OPTS = {"maxfev": 20000, "ftol": 1e-12, "xtol": 1e-12, "gtol": 1e-12}
 
@@ -471,7 +471,7 @@ def recipe_dose_response(df, spec):
             # The key of a fitted curve shows the point on the line, as in R.
             handles.append(Line2D([], [], color=pal[i], lw=1.6, marker="o",
                                   markersize=2 * R_POINT_PT,
-                                  label=f"{g} ({r['midpoint']} = {r['ec50']:.3g})"))
+                                  label=f"{g} ({r['midpoint']} = {sig_text(r['ec50'])})"))
         else:
             handles.append(pts)
     ax.set_xscale("log")
@@ -542,11 +542,11 @@ def _subtitle(rows, shared, mid_name, has_group):
     det = (rows["fit_status"] == "fitted").to_numpy()
     if shared is not None:
         first = (f"Shared {mid_name} F test: F({shared['df1']}, {shared['df2']}) = "
-                 f"{shared['statistic']:.2f}, P = {shared['p_value']:.2g}")
+                 f"{shared['statistic']:.2f}, P = {sig_text(shared['p_value'], 2)}")
     elif det.any():
         r = rows[det].iloc[0]
-        first = (f"{(str(r['group']) + ' ') if has_group else ''}{r['midpoint']} = {r['ec50']:.3g} "
-                 f"(95% CI {r['ec50_ci_low']:.3g} to {r['ec50_ci_high']:.3g})")
+        first = (f"{(str(r['group']) + ' ') if has_group else ''}{r['midpoint']} = {sig_text(r['ec50'])} "
+                 f"(95% CI {sig_text(r['ec50_ci_low'])} to {sig_text(r['ec50_ci_high'])})")
     elif has_group:
         first = f"{mid_name} not determined for any curve"
     else:
@@ -599,8 +599,8 @@ def _methods(rows, shared, n_points, spec, x, y, replicated):
     multi = len(rows) > 1
     det = rows["fit_status"] == "fitted"
     fits = "; ".join(
-        f"{(str(r['group']) + ': ') if multi else ''}{r['midpoint']} = {r['ec50']:.3g} "
-        f"(95% CI {r['ec50_ci_low']:.3g} to {r['ec50_ci_high']:.3g}, Hill slope {r['hill']:.2f}, "
+        f"{(str(r['group']) + ': ') if multi else ''}{r['midpoint']} = {sig_text(r['ec50'])} "
+        f"(95% CI {sig_text(r['ec50_ci_low'])} to {sig_text(r['ec50_ci_high'])}, Hill slope {r['hill']:.2f}, "
         f"R2 = {r['r_squared']:.3f})" for _, r in rows[det].iterrows())
     fits = f"{fits}." if fits else ""
     nd = rows[~det]
@@ -618,7 +618,7 @@ def _methods(rows, shared, n_points, spec, x, y, replicated):
                       f"per curve over the {int(det.sum())} determined curves, with the shared fit "
                       "profiled over the midpoint and each Hill slope held between 0.05 and 20 in "
                       f"magnitude: F({shared['df1']}, {shared['df2']}) = {shared['statistic']:.2f}, "
-                      f"P = {shared['p_value']:.2g}.")
+                      f"P = {sig_text(shared['p_value'], 2)}.")
     elif multi and int(det.sum()) < 2:
         shared_txt = (" The shared-midpoint F test was not run, because fewer than two curves "
                       "were determined.")

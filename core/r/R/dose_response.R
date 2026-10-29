@@ -317,7 +317,7 @@ recipe_dose_response <- function(df, spec) {
   pal <- spec$appearance$palette %||% pubready_palette
   pal <- rep(pal, length.out = length(g_lv))
   mid_name <- .drc_mid_name(stats_df)
-  leg <- ifelse(det, sprintf("%s (%s = %s)", g_lv, stats_df$midpoint, sprintf("%.3g", stats_df$ec50)),
+  leg <- ifelse(det, sprintf("%s (%s = %s)", g_lv, stats_df$midpoint, sig_text(stats_df$ec50)),
                 sprintf("%s (not determined)", g_lv))
   names(pal) <- g_lv; names(leg) <- g_lv
 
@@ -385,12 +385,12 @@ recipe_dose_response <- function(df, spec) {
   det <- rows$fit_status == "fitted"
   first <- if (!is.null(shared)) {
     sprintf("Shared %s F test: F(%d, %d) = %.2f, P = %s", mid_name, shared$df1, shared$df2,
-            shared$statistic, sprintf("%.2g", shared$p_value))
+            shared$statistic, sig_text(shared$p_value, 2))
   } else if (any(det)) {
     r <- rows[which(det)[1], ]
     sprintf("%s%s = %s (95%% CI %s to %s)", if (has_group) paste0(r$group, " ") else "",
-            r$midpoint, sprintf("%.3g", r$ec50), sprintf("%.3g", r$ec50_ci_low),
-            sprintf("%.3g", r$ec50_ci_high))
+            r$midpoint, sig_text(r$ec50), sig_text(r$ec50_ci_low),
+            sig_text(r$ec50_ci_high))
   } else if (has_group) {
     sprintf("%s not determined for any curve", mid_name)
   } else {
@@ -424,9 +424,9 @@ recipe_dose_response <- function(df, spec) {
     paste0(paste(sprintf("%s%s = %s (95%% CI %s to %s, Hill slope %.2f, R2 = %.3f)",
                          if (nrow(rows) > 1) paste0(fr$group, ": ") else "",
                          fr$midpoint,
-                         sprintf("%.3g", fr$ec50),
-                         sprintf("%.3g", fr$ec50_ci_low),
-                         sprintf("%.3g", fr$ec50_ci_high),
+                         sig_text(fr$ec50),
+                         sig_text(fr$ec50_ci_low),
+                         sig_text(fr$ec50_ci_high),
                          fr$hill, fr$r_squared), collapse = "; "), ".")
   } else ""
   nd <- rows[!det, , drop = FALSE]
@@ -441,7 +441,7 @@ recipe_dose_response <- function(df, spec) {
   shared_txt <- if (!is.null(shared)) {
     sprintf(" An extra-sum-of-squares F test compared one shared %s with one %s per curve over the %d determined curves, with the shared fit profiled over the midpoint and each Hill slope held between 0.05 and 20 in magnitude: F(%d, %d) = %.2f, P = %s.",
             .drc_mid_name(rows), .drc_mid_name(rows), sum(det), shared$df1, shared$df2,
-            shared$statistic, sprintf("%.2g", shared$p_value))
+            shared$statistic, sig_text(shared$p_value, 2))
   } else if (nrow(rows) > 1 && sum(det) < 2) {
     " The shared-midpoint F test was not run, because fewer than two curves were determined."
   } else if (nrow(rows) > 1) {

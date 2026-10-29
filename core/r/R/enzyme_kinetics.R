@@ -113,13 +113,13 @@
 
 .enz_fmt_test <- function(name, t) {
   if (is.null(t)) return(sprintf("%s: not computed", name))
-  p <- if (t$p_value < 0.001) "P < 0.001" else sprintf("P = %.2g", t$p_value)
+  p <- if (t$p_value < 0.001) "P < 0.001" else paste("P =", sig_text(t$p_value, 2))
   sprintf("%s: F(%d, %d) = %.2f, %s", name, t$df1, t$df2, t$statistic, p)
 }
 
 .enz_legend_label <- function(i, rows) {
-  sprintf("%s\nVmax %s, Km %s", .est_wrap(rows$group[i], 18), sprintf("%.3g", rows$vmax[i]),
-          sprintf("%.3g", rows$km[i]))
+  sprintf("%s\nVmax %s, Km %s", .est_wrap(rows$group[i], 18), sig_text(rows$vmax[i]),
+          sig_text(rows$km[i]))
 }
 
 recipe_enzyme_kinetics <- function(df, spec) {
@@ -202,8 +202,8 @@ recipe_enzyme_kinetics <- function(df, spec) {
   } else {
     r <- stats_df[1, ]
     sprintf("Vmax = %s (95%% CI %s to %s)\nKm = %s (95%% CI %s to %s)",
-            sprintf("%.3g", r$vmax), sprintf("%.3g", r$vmax_ci_low), sprintf("%.3g", r$vmax_ci_high),
-            sprintf("%.3g", r$km), sprintf("%.3g", r$km_ci_low), sprintf("%.3g", r$km_ci_high))
+            sig_text(r$vmax), sig_text(r$vmax_ci_low), sig_text(r$vmax_ci_high),
+            sig_text(r$km), sig_text(r$km_ci_low), sig_text(r$km_ci_high))
   }
   p <- p +
     ggplot2::scale_colour_manual(values = pal, labels = leg, breaks = g_lv) +
@@ -251,9 +251,9 @@ recipe_enzyme_kinetics <- function(df, spec) {
   multi <- nrow(rows) > 1
   fits <- paste(sprintf("%sVmax = %s (95%% CI %s to %s), Km = %s (95%% CI %s to %s), R2 = %.3f",
                         if (multi) paste0(rows$group, ": ") else "",
-                        sprintf("%.3g", rows$vmax), sprintf("%.3g", rows$vmax_ci_low),
-                        sprintf("%.3g", rows$vmax_ci_high), sprintf("%.3g", rows$km),
-                        sprintf("%.3g", rows$km_ci_low), sprintf("%.3g", rows$km_ci_high),
+                        sig_text(rows$vmax), sig_text(rows$vmax_ci_low),
+                        sig_text(rows$vmax_ci_high), sig_text(rows$km),
+                        sig_text(rows$km_ci_low), sig_text(rows$km_ci_high),
                         rows$r_squared), collapse = "; ")
   shared_txt <- if (multi) {
     paste0(" Extra-sum-of-squares F tests compared the separate fits with one shared Km (a Vmax for each curve) and with one shared Vmax (a Km for each curve): ",
@@ -273,7 +273,7 @@ recipe_enzyme_kinetics <- function(df, spec) {
 
 .enz_test_text <- function(name, t) {
   if (is.null(t)) return(sprintf("%s not computed, because the shared fit did not converge", name))
-  sprintf("%s F(%d, %d) = %.2f, P = %s", name, t$df1, t$df2, t$statistic, sprintf("%.2g", t$p_value))
+  sprintf("%s F(%d, %d) = %.2f, P = %s", name, t$df1, t$df2, t$statistic, sig_text(t$p_value, 2))
 }
 
 .enz_emit_script <- function(spec, starts, algos, has_group, in_name, fig_stub) {

@@ -161,3 +161,10 @@ p_phrase <- function(p) {
   if (is.na(p)) return("P = NA")
   if (p < 0.001) "P < 0.001" else paste("P =", trimws(formatC(p, format = "g", digits = 2)))
 }
+
+# A number with a fixed count of significant digits for a figure label or a
+# methods sentence. Unlike "%.3g" it keeps the trailing zeros (3.70, not 3.7),
+# and it drops the trailing point that "%#g" leaves on a whole number.
+sig_text <- function(x, digits = 3) {
+  sub("\\.$", "", sprintf(paste0("%#.", digits, "g"), x))
+}
