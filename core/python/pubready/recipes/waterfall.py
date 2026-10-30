@@ -16,7 +16,7 @@ from matplotlib.patches import Patch
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
-from .spider_response import CATEGORIES, categorise
+from .spider_response import CATEGORIES, categorise, check_numeric_time
 
 
 def from_visits(d):
@@ -71,6 +71,8 @@ def recipe_waterfall(df, spec):
     pd_cut = 20.0 if ap.get("pd_threshold") is None else float(ap["pd_threshold"])
     pr_cut = -30.0 if ap.get("pr_threshold") is None else float(ap["pr_threshold"])
 
+    if has_time:
+        check_numeric_time(df[x], x)
     n0 = len(df)
     d = pd.DataFrame({"id": df[idc].astype(str).where(df[idc].notna()),
                       "time": pd.to_numeric(df[x], errors="coerce") if has_time else 0.0,

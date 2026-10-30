@@ -141,7 +141,14 @@ recipe_timecourse <- function(df, spec) {
     sprintf("Kept %d subject(s) at %d time points (%d values).", length(complete_ids), length(t_key), nrow(d)),
     sprintf("The time points of '%s' are in %s: %s.", x, tord$rule, paste(t_key, collapse = ", ")))
   if (length(t_key) < 2) stop("timecourse needs at least 2 time points")
-  if (length(complete_ids) - length(g_lv) < 1) stop("timecourse needs more complete subjects than groups")
+  if (length(complete_ids) == 0) {
+    stop(sprintf("timecourse needs complete subjects, and none of the %d subject(s) of '%s' has a value at every one of the %d time points of '%s' (%s)",
+                 length(counts), idc, length(t_key), x, paste(t_key, collapse = ", ")))
+  }
+  if (length(complete_ids) - length(g_lv) < 1) {
+    stop(sprintf("timecourse needs more complete subjects than groups, and it has %d complete subject(s) of '%s' in %d group(s)",
+                 length(complete_ids), idc, length(g_lv)))
+  }
   if (length(unique(d$y)) < 2) {
     stop(sprintf("the outcome '%s' has zero variance: every value of the %d complete subject(s) is %s, so the ANOVA has no variation to test",
                  y, length(complete_ids), level_labels(d$y[1])))

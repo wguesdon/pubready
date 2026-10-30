@@ -45,6 +45,31 @@ def categorise(best, worst, pr_cut, pd_cut):
     return "stable disease"
 
 
+def check_numeric_time(values, col):
+    """Stop when the time column holds no number, as check_numeric_time() in R.
+
+    The message says how many of the values are text, for example "week 0".
+    spider_response and waterfall share it.
+
+    Args:
+        values: The time column.
+        col: The column name, for the message.
+
+    Raises:
+        ValueError: If no value of the column reads as a number.
+    """
+    num = pd.to_numeric(values, errors="coerce")
+    if num.notna().any():
+        return
+    txt = values.astype(str).str.strip()
+    text = values.notna() & (txt != "")
+    if text.any():
+        raise ValueError(f"column '{col}' holds no number ({int(text.sum())} of {len(values)} "
+                         f"values are text, for example '{txt[text].iloc[0]}'), and the time "
+                         "has to be numeric")
+    raise ValueError(f"column '{col}' holds no number, and the time has to be numeric")
+
+
 def recipe_spider_response(df, spec):
     """Draw the change from baseline of every patient over time.
 
@@ -72,10 +97,9 @@ def recipe_spider_response(df, spec):
             raise ValueError(f"column '{c}' not found in data")
 
     d = df[cols].copy()
+    check_numeric_time(d[x], x)
     d[x] = pd.to_numeric(d[x], errors="coerce")
     d[y] = pd.to_numeric(d[y], errors="coerce")
-    if d[x].isna().all():
-        raise ValueError(f"column '{x}' holds no number, and the time has to be numeric")
     n_rows0 = len(d)
     d = d.dropna()
     d[idc] = d[idc].astype(str)

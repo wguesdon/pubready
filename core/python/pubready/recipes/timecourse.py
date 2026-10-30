@@ -201,8 +201,13 @@ def recipe_timecourse(df, spec):
     steps.append(f"The time points of '{x}' are in {tord['rule']}: {', '.join(t_key)}.")
     if len(t_lv) < 2:
         raise ValueError("timecourse needs at least 2 time points")
+    if not complete:
+        raise ValueError(f"timecourse needs complete subjects, and none of the {len(counts)} "
+                         f"subject(s) of '{idc}' has a value at every one of the {len(t_key)} "
+                         f"time points of '{x}' ({', '.join(t_key)})")
     if len(complete) - len(g_lv) < 1:
-        raise ValueError("timecourse needs more complete subjects than groups")
+        raise ValueError(f"timecourse needs more complete subjects than groups, and it has "
+                         f"{len(complete)} complete subject(s) of '{idc}' in {len(g_lv)} group(s)")
     if d["y"].nunique() < 2:
         raise ValueError(f"the outcome '{y}' has zero variance: every value of the "
                          f"{len(complete)} complete subject(s) is {_level_label(d['y'].iloc[0])}, "

@@ -234,3 +234,16 @@ test_that("Mauchly's test is not available with too few subjects, and GG applies
   expect_match(res$methods, "Mauchly's test was not available, because it needs at least 5 complete subjects (4 subject(s) in 2 group(s) at 4 time points)",
                fixed = TRUE)
 })
+
+test_that("waterfall names a text time and timecourse names a set with no complete subject (F92)", {
+  wf <- data.frame(patient = rep(c("P1", "P2"), each = 2), week = rep(c("week 0", "week 8"), 2),
+                   lesion = c(50, 40, 30, 36))
+  expect_error(recipe_waterfall(wf, v3c_spec("waterfall", x = "week", y = "lesion", id = "patient")),
+               "column 'week' holds no number (4 of 4 values are text, for example 'week 0')", fixed = TRUE)
+  expect_error(recipe_spider_response(wf, v3c_spec("spider_response", x = "week", y = "lesion", id = "patient")),
+               "column 'week' holds no number (4 of 4 values are text", fixed = TRUE)
+  tc <- data.frame(id = c("a", "a", "b", "b", "c", "c"), day = c(0, 7, 7, 14, 0, 14), y = 1:6)
+  expect_error(recipe_timecourse(tc, v3c_spec("timecourse", x = "day", y = "y", id = "id")),
+               "none of the 3 subject(s) of 'id' has a value at every one of the 3 time points of 'day' (0, 7, 14)",
+               fixed = TRUE)
+})

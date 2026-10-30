@@ -78,6 +78,12 @@ tag move together.
   `--test auto` then applies the Greenhouse-Geisser correction. The methods
   text says why, and `test_meta` records `available: false`. Before, Python
   wrote W = 0 and P = 1, and R stopped with an unclear error (F95).
+- `waterfall` and `spider_response` stop with a message that names the time
+  column and the count of text values, for example "week 0", when the time
+  holds no number. `timecourse` names the subject and time columns and the
+  counts when no subject, or too few, has a value at every time point. Before,
+  these inputs stopped with "waterfall needs at least one patient with a
+  response" or "timecourse needs more complete subjects than groups" (F92).
 
 ## [3.0.0] - 2026-10-29
 

@@ -52,6 +52,7 @@ recipe_waterfall <- function(df, spec) {
   pd_cut <- spec$appearance$pd_threshold %||% 20
   pr_cut <- spec$appearance$pr_threshold %||% -30
 
+  if (has_time) check_numeric_time(df[[x]], x)
   n0 <- nrow(df)
   d <- data.frame(id = as.character(df[[idc]]),
                   time = if (has_time) suppressWarnings(as.numeric(df[[x]])) else 0,

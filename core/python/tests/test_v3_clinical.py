@@ -12,7 +12,9 @@ from pubready.recipes.survival_km import (event_codes, km_break_step, km_median,
                                           recipe_survival_km)
 from pubready.recipes.sankey import recipe_sankey, time_level_order
 from pubready.recipes.swimmer import recipe_swimmer
+from pubready.recipes.spider_response import recipe_spider_response
 from pubready.recipes.timecourse import recipe_timecourse
+from pubready.recipes.waterfall import recipe_waterfall
 from pubready.spec import spec_from_args
 
 
@@ -285,3 +287,19 @@ def test_mauchly_is_not_available_with_too_few_subjects_and_gg_applies():
     assert list(res["stats"]["correction"]) == ["none", "Greenhouse-Geisser", "Greenhouse-Geisser"]
     assert ("Mauchly's test was not available, because it needs at least 5 complete subjects "
             "(4 subject(s) in 2 group(s) at 4 time points)") in res["methods"]
+
+
+def test_waterfall_names_a_text_time_and_timecourse_a_set_with_no_complete_subject():
+    """F92: both inputs stopped with an error that did not say what was wrong."""
+    wf = pd.DataFrame({"patient": ["P1", "P1", "P2", "P2"], "week": ["week 0", "week 8"] * 2,
+                       "lesion": [50, 40, 30, 36]})
+    with pytest.raises(ValueError, match=r"column 'week' holds no number \(4 of 4 values are text, "
+                                         r"for example 'week 0'\)"):
+        recipe_waterfall(wf, v3c_spec("waterfall", x="week", y="lesion", id="patient"))
+    with pytest.raises(ValueError, match=r"column 'week' holds no number \(4 of 4 values are text"):
+        recipe_spider_response(wf, v3c_spec("spider_response", x="week", y="lesion", id="patient"))
+    tc = pd.DataFrame({"id": ["a", "a", "b", "b", "c", "c"], "day": [0, 7, 7, 14, 0, 14],
+                       "y": [1, 2, 3, 4, 5, 6]})
+    with pytest.raises(ValueError, match=r"none of the 3 subject\(s\) of 'id' has a value at every one "
+                                         r"of the 3 time points of 'day' \(0, 7, 14\)"):
+        recipe_timecourse(tc, v3c_spec("timecourse", x="day", y="y", id="id"))

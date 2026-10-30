@@ -26,11 +26,9 @@ recipe_spider_response <- function(df, spec) {
   }
 
   d <- df[, cols, drop = FALSE]
+  check_numeric_time(d[[x]], x)
   d[[x]] <- suppressWarnings(as.numeric(d[[x]]))
   d[[y]] <- suppressWarnings(as.numeric(d[[y]]))
-  if (all(is.na(d[[x]]))) {
-    stop(sprintf("column '%s' holds no number, and the time has to be numeric", x))
-  }
   n_rows0 <- nrow(d)
   d <- d[stats::complete.cases(d), , drop = FALSE]
   d[[idc]] <- as.character(d[[idc]])
@@ -172,6 +170,21 @@ recipe_spider_response <- function(df, spec) {
        methods = methods, build_script = build_script,
        label = slugify(y), df_used = d, clean_steps = clean_steps,
        width = 5.8, height = 4.2)
+}
+
+# Stop when the time column holds no number, and say how many of its values are
+# text, for example "week 0". spider_response and waterfall share it, and the
+# Python engine has the same rule.
+check_numeric_time <- function(v, col) {
+  num <- suppressWarnings(as.numeric(as.character(v)))
+  if (any(!is.na(num))) return(invisible(NULL))
+  txt <- trimws(as.character(v))
+  text <- !is.na(v) & !is.na(txt) & txt != ""
+  if (any(text)) {
+    stop(sprintf("column '%s' holds no number (%d of %d values are text, for example '%s'), and the time has to be numeric",
+                 col, sum(text), length(v), txt[text][1]))
+  }
+  stop(sprintf("column '%s' holds no number, and the time has to be numeric", col))
 }
 
 .spider_methods <- function(n_patients, n_rows, pd_cut, pr_cut, counts, spec) {
