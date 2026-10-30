@@ -147,3 +147,16 @@ def test_dose_response_fits_a_response_on_the_scale_of_1e12():
     assert st["midpoint"].iloc[0] == pytest.approx(0.3, rel=0.1)
     assert st["top"].iloc[0] == pytest.approx(1e12, rel=0.1)
     assert "The responses were divided by 1e+11 for the fit" in res["methods"]
+
+
+def test_a_long_curve_name_wraps_and_widens_the_figure():
+    """A long curve name wraps in the legend and the figure grows, as in R (F81)."""
+    from pubready.recipes.dose_response import figure_width
+    df = drc_three_curves()
+    long = "a very long compound name that goes on and on beyond sixty characters"
+    df.loc[df["compound"] == "active A", "compound"] = long
+    res = recipe_dose_response(df, drc_spec(x="dose", y="response", group="compound"))
+    assert res["width"] > 6.2
+    assert figure_width(["cmpd_A (IC50 = 0.045)", "compound"]) == pytest.approx(6.2)
+    assert figure_width(["a very long compound name", "that goes on"]) == pytest.approx(
+        4.6 + 0.2 + 0.065 * 25)

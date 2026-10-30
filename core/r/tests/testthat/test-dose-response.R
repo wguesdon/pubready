@@ -114,3 +114,13 @@ test_that("dose_response fits a response on the scale of 1e12", {
   expect_equal(res$stats$top, 1e12, tolerance = 0.1)
   expect_match(res$methods, "The responses were divided by 1e+11 for the fit", fixed = TRUE)
 })
+
+# A long curve name wraps in the legend and the figure grows with it (F81).
+test_that("a long dose_response curve name wraps and widens the figure", {
+  df <- drc_three_curves()
+  df$compound[df$compound == "active A"] <- "a very long compound name that goes on and on beyond sixty characters"
+  res <- recipe_dose_response(df, drc_spec(x = "dose", y = "response", group = "compound"))
+  expect_gt(res$width, 6.2)
+  expect_equal(.drc_width(c("cmpd_A (IC50 = 0.045)", "compound")), 6.2)
+  expect_equal(.drc_width(c("a very long compound name", "that goes on")), 4.6 + 0.2 + 0.065 * 25)
+})

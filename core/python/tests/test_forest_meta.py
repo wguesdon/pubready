@@ -97,3 +97,14 @@ def test_forest_meta_checks_each_study_and_names_the_bad_ones():
     df.loc[2, "study"] = ""
     res = recipe_forest_meta(df, spec)
     assert "Study 3" in list(res["stats"]["label"])
+
+
+def test_a_long_forest_meta_label_wraps_and_widens_the_figure():
+    """A long study label wraps and the figure grows, as in R (F81)."""
+    from pubready.recipes.forest_meta import figure_size
+    df = pd.DataFrame({"study": ["A very long study label that keeps going well past sixty "
+                                 "characters", "Trial B", "Trial C"],
+                       "hr": [0.8, 0.7, 0.95], "lo": [0.6, 0.55, 0.70], "hi": [1.07, 0.90, 1.30]})
+    res = recipe_forest_meta(df, fm_spec(y="hr", ci_low="lo", ci_high="hi", label="study"))
+    assert res["width"] > 8.2
+    assert figure_size(["Trial B", "Random effects (DL)"], 2)[0] == pytest.approx(8.2)

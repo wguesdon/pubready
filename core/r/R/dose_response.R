@@ -330,6 +330,9 @@ recipe_dose_response <- function(df, spec) {
   mid_name <- .drc_mid_name(stats_df)
   leg <- ifelse(det, sprintf("%s (%s = %s)", g_lv, stats_df$midpoint_type, sig_text(stats_df$midpoint)),
                 sprintf("%s (not determined)", g_lv))
+  # A long curve name wraps, and the figure grows with the longest line, so the
+  # legend does not squeeze the panel to nothing (F81). Python has the same rule.
+  leg <- .est_wrap(leg, 28)
   names(pal) <- g_lv; names(leg) <- g_lv
 
   curves <- do.call(rbind, lapply(det_lv, .drc_curve_grid, rows = stats_df, d = d))
@@ -361,7 +364,8 @@ recipe_dose_response <- function(df, spec) {
                   title = spec$appearance$title, subtitle = subtitle) +
     pub_theme(spec$appearance$theme) +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"),
-                   legend.position = if (has_group) "right" else "none")
+                   legend.position = if (has_group) "right" else "none",
+                   legend.key.spacing.y = ggplot2::unit(4, "pt"))
 
   test_meta <- list(
     name = "Four-parameter logistic fit",
@@ -380,7 +384,7 @@ recipe_dose_response <- function(df, spec) {
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script, label = slugify(y),
        df_used = df_used, clean_steps = clean_steps,
-       width = if (has_group) 6.2 else 4.6, height = 4.2)
+       width = if (has_group) .drc_width(c(leg, grp)) else 4.6, height = 4.2)
 }
 
 # IC50 when every determined curve falls, EC50 otherwise.
@@ -565,4 +569,12 @@ recipe_dose_response <- function(df, spec) {
   if (rs == 1) return("")
   sprintf("The responses were divided by %s for the fit, so that the optimiser works near 1, and the plateaus are reported on the original scale. ",
           sprintf("%g", rs))
+}
+
+# The width of a figure with a legend: the 4.6 inch panel and a legend column
+# that grows with the longest line of the wrapped labels and the legend title,
+# at least 1.6 inches (F81). The Python engine has the same rule.
+.drc_width <- function(labels) {
+  longest <- max(nchar(unlist(strsplit(labels, "\n", fixed = TRUE))))
+  4.6 + max(1.6, 0.2 + 0.065 * longest)
 }

@@ -28,6 +28,7 @@ from scipy import optimize, stats
 from ..bundle import slugify
 from ..theme import R_POINT_PT, apply_pub_style, new_fig, palette, plain_log_axis
 from ..util import cap_first, sig_text
+from .estimation_plot import wrap
 
 _FIT_OPTS = {"maxfev": 20000, "ftol": 1e-12, "xtol": 1e-12, "gtol": 1e-12}
 
@@ -525,7 +526,12 @@ def recipe_dose_response(df, spec):
     ap = spec["appearance"]
     pal = palette(len(groups), ap.get("palette"))
     mid_name = _mid_name(stats_df)
-    w, h = (6.2 if has_group else 4.6), 4.2
+    # A long curve name wraps, and the figure grows with the longest line, so the
+    # legend does not squeeze the panel to nothing (F81), as in R.
+    leg = [wrap(f"{g} ({r['midpoint_type']} = {sig_text(r['midpoint'])})" if det[i]
+                else f"{g} (not determined)", 28)
+           for i, (g, (_, r)) in enumerate(zip(groups, stats_df.iterrows()))]
+    w, h = (figure_width(leg + [str(grp)]) if has_group else 4.6), 4.2
     fig, ax = new_fig(w, h)
     replicated = bool((summ["n"] > 1).any())
     handles = []
@@ -538,7 +544,7 @@ def recipe_dose_response(df, spec):
                         ecolor=pal[i], elinewidth=0.8, capsize=2)
         # R draws the means with geom_point(size = 2).
         pts = ax.scatter(10 ** s["lx"], s["mean"], color=pal[i], s=(2 * R_POINT_PT) ** 2,
-                         zorder=3, label=f"{g} (not determined)")
+                         zorder=3, label=leg[i])
         if det[i]:
             lxg = d.loc[d["group"] == g, "lx"]
             grid = np.linspace(lxg.min(), lxg.max(), 200)
@@ -547,7 +553,7 @@ def recipe_dose_response(df, spec):
             # The key of a fitted curve shows the point on the line, as in R.
             handles.append(Line2D([], [], color=pal[i], lw=1.6, marker="o",
                                   markersize=2 * R_POINT_PT,
-                                  label=f"{g} ({r['midpoint_type']} = {sig_text(r['midpoint'])})"))
+                                  label=leg[i]))
         else:
             handles.append(pts)
     ax.set_xscale("log")
@@ -636,6 +642,22 @@ def _subtitle(rows, shared, mid_name, has_group):
     else:
         second = f"{len(nd)} curves not determined, left out of the test"
     return f"{first}\n{second}"
+
+
+def figure_width(labels):
+    """The width of a figure with a legend, as .drc_width() in R (F81).
+
+    The 4.6 inch panel and a legend column that grows with the longest line of
+    the wrapped labels and the legend title, at least 1.6 inches.
+
+    Args:
+        labels: The wrapped legend labels and the legend title.
+
+    Returns:
+        float: The width in inches.
+    """
+    longest = max(len(line) for lab in labels for line in str(lab).split("\n"))
+    return 4.6 + max(1.6, 0.2 + 0.065 * longest)
 
 
 def _nonpos_text(n):

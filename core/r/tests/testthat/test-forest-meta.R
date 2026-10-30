@@ -66,3 +66,13 @@ test_that("forest_meta checks each study and names the bad ones", {
   res <- recipe_forest_meta(df, spec)
   expect_true("Study 3" %in% res$stats$label)
 })
+
+# A long study label wraps at 30 characters and the figure grows with it (F81).
+test_that("a long forest_meta label wraps and widens the figure", {
+  df <- data.frame(study = c("A very long study label that keeps going well past sixty characters",
+                             "Trial B", "Trial C"),
+                   hr = c(0.8, 0.7, 0.95), lo = c(0.6, 0.55, 0.70), hi = c(1.07, 0.90, 1.30))
+  res <- recipe_forest_meta(df, fm_spec(y = "hr", ci_low = "lo", ci_high = "hi", label = "study"))
+  expect_gt(res$width, 8.2)
+  expect_equal(.fm_size(c("Trial B", "Random effects (DL)"), 2)$width, 8.2)
+})

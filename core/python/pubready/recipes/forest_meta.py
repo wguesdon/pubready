@@ -19,6 +19,7 @@ from statsmodels.stats.meta_analysis import combine_effects
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, log_ticks_ref, new_fig, palette, plain_log_axis
+from .estimation_plot import wrap
 
 Z975 = stats.norm.ppf(0.975)
 
@@ -304,6 +305,31 @@ def recipe_forest_meta(df, spec):
     }
 
 
+#: The width of the forest panel in inches, (0.62 - 0.27) of the 8.2 inch default.
+PANEL_IN = (0.62 - 0.27) * 8.2
+
+
+def figure_size(labels, k):
+    """The figure size, as .fm_size() in R (F81).
+
+    The label column grows with the longest line of the wrapped labels, at
+    least the 2.21 inches of the default layout, and each extra line of a
+    wrapped label adds 0.2 inch of height.
+
+    Args:
+        labels: The wrapped row labels.
+        k: The count of studies.
+
+    Returns:
+        tuple: The width, the height and the label column width, in inches.
+    """
+    parts = [str(s).split("\n") for s in labels]
+    label_in = max(0.27 * 8.2, 0.25 + 0.075 * max(len(p) for lines in parts for p in lines))
+    w = 8.2 - 0.27 * 8.2 + label_in
+    h = 1.6 + 0.3 * (k + 3) + 0.2 * sum(len(lines) - 1 for lines in parts)
+    return w, h, label_in
+
+
 def _plot(studies, pooled, measure, spec):
     """Draw the forest plot with the estimate and weight columns on the right.
 
@@ -321,7 +347,10 @@ def _plot(studies, pooled, measure, spec):
     k = len(studies)
     sy = np.arange(k, 0, -1) + 2.0
     py = np.array([1.5, 0.5])
-    w, h = 8.2, 1.6 + 0.3 * (k + 3)
+    # A long study label wraps at 30 characters, and the figure grows with the
+    # longest line, so the panel keeps its width (F81), as in R.
+    ylabels = [wrap(s, 30) for s in studies["label"]] + ["Fixed effect", "Random effects (DL)"]
+    w, h, label_in = figure_size(ylabels, k)
     fig, ax = new_fig(w, h)
     ax.axvline(1 if measure == "ratio" else 0, ls="--", color="0.55", lw=0.8)
     ax.axvline(pooled["estimate"].iloc[1], ls=":", color=pal[1], lw=0.8)
@@ -347,7 +376,7 @@ def _plot(studies, pooled, measure, spec):
         ax.xaxis.set_minor_locator(NullLocator())
         plain_log_axis(ax.xaxis)
     ax.set_yticks(list(sy) + list(py))
-    ax.set_yticklabels(list(studies["label"]) + ["Fixed effect", "Random effects (DL)"], fontsize=10)
+    ax.set_yticklabels(ylabels, fontsize=10)
     ax.set_ylim(0, sy.max() + 0.9)
     ax.tick_params(axis="y", length=0)
     trans = ax.get_yaxis_transform()
@@ -369,7 +398,8 @@ def _plot(studies, pooled, measure, spec):
                   f"{spec['data']['y']} (95% CI{', log scale' if measure == 'ratio' else ''})")
     apply_pub_style(ax, ap.get("theme"))
     ax.spines["left"].set_visible(False)
-    fig.subplots_adjust(left=0.27, right=0.62, top=1 - 0.6 / h, bottom=0.9 / h)
+    fig.subplots_adjust(left=label_in / w, right=(label_in + PANEL_IN) / w, top=1 - 0.6 / h,
+                        bottom=0.9 / h)
     return fig, w, h
 
 

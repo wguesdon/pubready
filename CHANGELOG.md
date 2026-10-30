@@ -75,6 +75,10 @@ tag move together.
   less, by a power of ten before the fit, so the R fit converges on a scale of
   1e12 as the Python fit does. The plateaus and the sums of squares are
   reported on the original scale, and the methods text names the factor (F80).
+- `dose_response` wraps a legend label at 28 characters and `forest_meta` wraps
+  a study label at 30 characters, in both engines, and each figure grows with
+  its longest line. A long label no longer squeezes the R panel to nothing or
+  cuts the subtitle (F81).
 - `forest_meta` checks each study before the pooling and stops with the study
   name when its CI does not hold its estimate, its bounds are reversed, its CI
   has zero width or its standard error is 0 or below. An SE of 0 was dropped

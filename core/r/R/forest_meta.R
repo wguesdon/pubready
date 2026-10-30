@@ -141,7 +141,7 @@ recipe_forest_meta <- function(df, spec) {
        label = slugify(y),
        df_used = data.frame(label = labels, estimate = est, ci_low = lo, ci_high = hi,
                             yi = yi, se = sei, stringsAsFactors = FALSE),
-       clean_steps = clean_steps, width = 8.2, height = p$height)
+       clean_steps = clean_steps, width = p$width, height = p$height)
 }
 
 .fm_diamond <- function(i, pooled, ypos) {
@@ -168,7 +168,10 @@ recipe_forest_meta <- function(df, spec) {
                  pooled$i2[2], pooled$tau2[2])
   ylim <- c(0, max(sy) + 0.8)
   brk <- c(sy, py)
-  blab <- c(studies$label, "Fixed effect", "Random effects (DL)")
+  # A long study label wraps at 30 characters, and the figure grows with the
+  # longest line, so the panel keeps its width (F81). Python has the same rule.
+  blab <- c(.est_wrap(studies$label, 30), "Fixed effect", "Random effects (DL)")
+  size <- .fm_size(blab, k)
 
   forest <- ggplot2::ggplot() +
     ggplot2::geom_vline(xintercept = null_x, linetype = "dashed", colour = "grey55", linewidth = 0.4) +
@@ -214,8 +217,9 @@ recipe_forest_meta <- function(df, spec) {
                    axis.title.x = ggplot2::element_text(size = 13, colour = "white"),
                    axis.text.x = ggplot2::element_text(size = 11, colour = "white"),
                    plot.margin = ggplot2::margin(10, 10, 10, 0))
-  list(plot = ggpubr::ggarrange(forest, table, ncol = 2, widths = c(2.6, 1), align = "h"),
-       height = 1.6 + 0.3 * (k + 3))
+  list(plot = ggpubr::ggarrange(forest, table, ncol = 2,
+                                widths = c(size$width - 8.2 / 3.6, 8.2 / 3.6), align = "h"),
+       height = size$height, width = size$width)
 }
 
 .fm_methods <- function(pooled, measure, k, y, spec) {
@@ -269,4 +273,15 @@ recipe_forest_meta <- function(df, spec) {
   if (is.finite(q) && is.finite(q_df) && q < q_df) {
     "; Q was below its degrees of freedom, so the DerSimonian-Laird tau2 was truncated at zero and I2 is 0%"
   } else ""
+}
+
+# The figure size: the label column grows with the longest line of the wrapped
+# labels, at least the 2.21 inches of the default layout, and each extra line of
+# a wrapped label adds 0.2 inch of height (F81). The Python engine has the same
+# rule.
+.fm_size <- function(labels, k) {
+  parts <- strsplit(labels, "\n", fixed = TRUE)
+  label_in <- max(0.27 * 8.2, 0.25 + 0.075 * max(nchar(unlist(parts))))
+  list(width = 8.2 - 0.27 * 8.2 + label_in,
+       height = 1.6 + 0.3 * (k + 3) + 0.2 * sum(lengths(parts) - 1))
 }
