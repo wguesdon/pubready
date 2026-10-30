@@ -287,3 +287,19 @@ def test_factorial_anova_logs_each_reason_for_a_dropped_row():
                                   "2 row(s) have no value in 'y'.",
                                   "1 row(s) have no value in 't'.",
                                   "Dropped 3 row(s) with a missing value (16 -> 13 rows)."]
+
+
+# F53, F92: factorial_anova checks its design before the fit.
+def test_factorial_anova_stops_on_an_empty_cell_one_level_or_no_residual_df():
+    from pubready.recipes.factorial_anova import recipe_factorial_anova
+    fa = pd.DataFrame({"g": ["wt"] * 4 + ["het"] * 4 + ["ko"] * 4,
+                       "t": ["v", "v", "d", "d", "v", "v", "v", "v", "v", "v", "d", "d"],
+                       "y": [18, 17, 31, 26, 29, 29, 23, 29, 27, 25, 41, 37]})
+    with pytest.raises(ValueError, match="no row holds g = 'het', t = 'd'"):
+        recipe_factorial_anova(fa, v3_spec("factorial_anova", x="g", fill="t", y="y"))
+    one = pd.DataFrame({"g": ["wt"] * 4 + ["ko"] * 4, "t": ["v"] * 8, "y": range(1, 9)})
+    with pytest.raises(ValueError, match="'t' has 1 \\('v'\\)"):
+        recipe_factorial_anova(one, v3_spec("factorial_anova", x="g", fill="t", y="y"))
+    n1 = pd.DataFrame({"g": ["wt", "wt", "ko", "ko"], "t": ["v", "d", "v", "d"], "y": [1, 3, 2, 5]})
+    with pytest.raises(ValueError, match="the 4 cells hold one value each"):
+        recipe_factorial_anova(n1, v3_spec("factorial_anova", x="g", fill="t", y="y"))

@@ -44,6 +44,7 @@ recipe_factorial_anova <- function(df, spec) {
   for (f in factors[-1]) df[[f]] <- .fa_factor(df[[f]])
   clean_steps <- .fa_clean_steps(y, coerced, n_missing, n0, nrow(df))
   check_spread(df[[y]], "factorial_anova", sprintf("the outcome '%s'", y))
+  .fa_check_design(df, factors)
 
   # The models run on a copy with syntactic column names (.y, .f1, .f2, .f3),
   # so a column name with a space or a symbol cannot break a formula, also in
@@ -198,6 +199,42 @@ recipe_factorial_anova <- function(df, spec) {
 # The original name of a model term: ".f1:.f2" becomes "genotype:treatment".
 .fa_term_name <- function(term, safe, factors) {
   paste(factors[match(strsplit(term, ":", fixed = TRUE)[[1]], safe)], collapse = ":")
+}
+
+# The design check before the fit, in the same words as the Python engine. Each
+# factor needs 2 or more levels (F92). Every cell of the design needs a value,
+# because an empty cell makes some terms not estimable and the two engines then
+# test different hypotheses (F53). Some cell needs 2 or more values, else no
+# residual degree of freedom is left (F92).
+.fa_check_design <- function(df, factors) {
+  for (f in factors) {
+    lv <- levels(df[[f]])
+    if (length(lv) < 2) {
+      stop(sprintf("factorial_anova needs 2 or more levels in each factor; '%s' has %d (%s)",
+                   f, length(lv), quote_join(lv)))
+    }
+  }
+  cells <- as.data.frame(table(df[factors]), stringsAsFactors = FALSE)
+  names(cells) <- c(factors, "Freq")
+  empty <- cells[cells$Freq == 0, factors, drop = FALSE]
+  if (nrow(empty) > 0) {
+    txt <- vapply(seq_len(nrow(empty)), .fa_cell_text, character(1), cells = empty,
+                  factors = factors)
+    more <- if (length(txt) > 5) sprintf("; and %d more", length(txt) - 5) else ""
+    stop(sprintf("factorial_anova needs a value in every cell of the design; no row holds %s%s",
+                 paste(utils::head(txt, 5), collapse = "; "), more))
+  }
+  if (nrow(df) <= nrow(cells)) {
+    stop(sprintf("factorial_anova needs a cell with 2 or more values to estimate the residual variance; the %d cells hold one value each",
+                 nrow(cells)))
+  }
+  invisible(NULL)
+}
+
+# One cell of the design as text: genotype = 'ko', treatment = 'drug'.
+.fa_cell_text <- function(i, cells, factors) {
+  paste(sprintf("%s = '%s'", factors, unlist(cells[i, factors], use.names = FALSE)),
+        collapse = ", ")
 }
 
 # The count of missing values of one column.

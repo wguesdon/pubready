@@ -89,6 +89,13 @@ tag move together.
 - The data log of `factorial_anova` counts each reason for a dropped row on its
   own: the outcome values that became NA as numbers, and the rows with no value
   in each column. It named every column as the reason before (F124).
+- `factorial_anova` counts each cell of the design before the fit and stops
+  when a cell holds no value, and names the cell. The engines tested different
+  hypotheses on such a design: the interaction gave P = 2.5e-7 in Python and
+  P = 0.82 in R (F53).
+- `factorial_anova` stops with a message that names the column and the count
+  when a factor has only one level, or when every cell holds one value, so no
+  residual degree of freedom is left (F92).
 
 ## [3.0.0] - 2026-10-29
 

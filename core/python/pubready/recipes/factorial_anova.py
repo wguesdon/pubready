@@ -5,6 +5,7 @@ effect's p-value shown on top. ``--geom interaction`` draws the interaction plot
 of the same ANOVA instead: the mean +/- SEM of each cell, one line per --fill
 level."""
 import functools
+import itertools
 import textwrap
 
 import matplotlib.patches as mpatches
@@ -19,7 +20,7 @@ from matplotlib.ticker import MaxNLocator
 
 from ..theme import apply_pub_style, palette, rain_offsets
 from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, level_labels,
-                    level_order)
+                    level_order, quote_join)
 
 # The dodge width of the interaction plot, as position_dodge(0.25) in R.
 INT_DODGE = 0.25
@@ -45,6 +46,41 @@ def _plab(p):
     if p is None or (isinstance(p, float) and np.isnan(p)):
         return "P = NA"
     return "P < 0.001" if p < 0.001 else f"P = {p:.2g}"
+
+
+def check_design(df, factors, levels=None):
+    """Check the design before the fit, as .fa_check_design() of the R engine.
+
+    Each factor needs 2 or more levels. Every cell of the design needs a value,
+    because an empty cell makes some terms not estimable and the two engines
+    then test different hypotheses. Some cell needs 2 or more values, else no
+    residual degree of freedom is left.
+
+    Args:
+        df: The cleaned data, with the factors as text labels.
+        factors: The factor columns, --x first.
+        levels: The --levels order of --x, or None.
+
+    Raises:
+        ValueError: If the design cannot be fitted, in the words of the R engine.
+    """
+    lv = {f: level_order(df[f], levels if i == 0 else None, "level") for i, f in enumerate(factors)}
+    for f in factors:
+        if len(lv[f]) < 2:
+            raise ValueError(f"factorial_anova needs 2 or more levels in each factor; '{f}' has "
+                             f"{len(lv[f])} ({quote_join(lv[f])})")
+    counts = df.groupby(factors).size().to_dict()
+    # The cells in the order of R's table(): the first factor varies fastest.
+    cells = [tuple(reversed(c)) for c in itertools.product(*[lv[f] for f in reversed(factors)])]
+    empty = [c for c in cells if counts.get(c, 0) == 0]
+    if empty:
+        txt = [", ".join(f"{f} = '{v}'" for f, v in zip(factors, c)) for c in empty]
+        more = f"; and {len(txt) - 5} more" if len(txt) > 5 else ""
+        raise ValueError("factorial_anova needs a value in every cell of the design; no row holds "
+                         + "; ".join(txt[:5]) + more)
+    if len(df) <= len(cells):
+        raise ValueError("factorial_anova needs a cell with 2 or more values to estimate the "
+                         f"residual variance; the {len(cells)} cells hold one value each")
 
 
 def clean_step_lines(y, coerced, n_missing, n0, n1):
@@ -275,6 +311,7 @@ def recipe_factorial_anova(df, spec):
     df = df.dropna(subset=[y] + factors).reset_index(drop=True)
     clean_steps = clean_step_lines(y, coerced, n_missing, n0, len(df))
     check_spread(df[y], "factorial_anova", f"the outcome '{y}'")
+    check_design(df, factors, spec["data"].get("levels"))
 
     ren = {y: "_y_"}
     ren.update({f: f"_f{i}_" for i, f in enumerate(factors)})

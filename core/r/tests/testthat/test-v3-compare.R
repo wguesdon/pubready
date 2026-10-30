@@ -319,3 +319,18 @@ test_that("factorial_anova logs each reason for a dropped row", {
                                   "1 row(s) have no value in 't'.",
                                   "Dropped 3 row(s) with a missing value (16 -> 13 rows)."))
 })
+
+# F53, F92: factorial_anova checks its design before the fit.
+test_that("factorial_anova stops on an empty cell, one level or no residual df", {
+  fa <- data.frame(g = rep(c("wt", "het", "ko"), each = 4),
+                   t = c(rep("v", 2), rep("d", 2), rep("v", 4), rep("v", 2), rep("d", 2)),
+                   y = c(18, 17, 31, 26, 29, 29, 23, 29, 27, 25, 41, 37))
+  expect_error(recipe_factorial_anova(fa, v3_spec("factorial_anova", x = "g", fill = "t", y = "y")),
+               "no row holds g = 'het', t = 'd'")
+  one <- data.frame(g = rep(c("wt", "ko"), each = 4), t = "v", y = c(1, 2, 3, 4, 5, 6, 7, 8))
+  expect_error(recipe_factorial_anova(one, v3_spec("factorial_anova", x = "g", fill = "t", y = "y")),
+               "'t' has 1 \\('v'\\)")
+  n1 <- data.frame(g = c("wt", "wt", "ko", "ko"), t = c("v", "d", "v", "d"), y = c(1, 3, 2, 5))
+  expect_error(recipe_factorial_anova(n1, v3_spec("factorial_anova", x = "g", fill = "t", y = "y")),
+               "the 4 cells hold one value each")
+})
