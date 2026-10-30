@@ -24,6 +24,9 @@ For work on the repository itself, follow the rules below.
 | `skills/codex/AGENTS.md` | The Codex adapter, linked from the root `AGENTS.md`. |
 | `skills/opencode/` | The opencode adapter and the `/pubready` command. |
 | `reference/` | The statistical decision tree and the assumption-check notes. |
+| `reference/decision_tree.yaml` | The versioned tree that `figkit advise` walks. |
+| `core/python/pubready/advise.py`, `core/python/entry/advise.py` | The shared walker and its command entry. |
+| `tests/advise_test.sh` | The end-to-end advice and emitted-command checks. |
 | `docs/how_it_works.md` | The full option table, one example per recipe, and the bundle contents. |
 | `example/` | The committed input data and the reference figures. |
 | `tests/smoke_test.sh` | The end-to-end test over the example cases. |
@@ -54,6 +57,8 @@ For work on the repository itself, follow the rules below.
    run `./tests/install_test.sh`. It installs HEAD with uv and draws a figure
    from the installed `figkit`. A new top-level folder that `cli/figkit` mounts
    must also go into the `force-include` table of `pyproject.toml`.
+   Run `./tests/advise_test.sh` after a change to either decision tree, the
+   advise code, accepted test values or `cli/figkit`.
 5. Add a new recipe to the recipe table in all three adapters, to
    `docs/how_it_works.md`, to `example/README.md` and to the smoke test. Add a
    line with its options to `core/recipe_options.txt`. Add a public benchmark

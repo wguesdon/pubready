@@ -74,7 +74,10 @@ def fixture_spec(recipe, method):
     args = dict(recipe=recipe, data=str(base / (fixture["dataset"] + ".csv")),
                 x=None, y=None, test=method)
     args.update(flags)
-    return read_tidy(args["data"]), spec_from_args(SimpleNamespace(**args))
+    df = read_tidy(args["data"])
+    if recipe == "feature_panel" and method in ("welch_t", "wilcoxon"):
+        df = df[df["Species"].isin(df["Species"].unique()[:2])]
+    return df, spec_from_args(SimpleNamespace(**args))
 
 
 @pytest.mark.parametrize("recipe,method", TEST_CASES)

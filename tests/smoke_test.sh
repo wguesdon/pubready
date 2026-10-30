@@ -6,6 +6,7 @@ cd "$(dirname "$0")/.."
 
 OUT="test_output"
 rm -rf "$OUT"
+mkdir -p "$OUT"
 fail=0
 
 expect_files=(
@@ -35,6 +36,16 @@ json_array() {  # $1 = file, $2 = key
   awk -v key="\"$2\":" 'index($0, key) { on = 1 } on { print } on && /\]/ { exit }' "$1" |
     grep -o '"[^"]*"' | grep -v "^\"$2\"\$"
 }
+
+for case in "tumor_volume group volume independent" "paired_response condition value paired"; do
+  read -r dataset x y design <<< "$case"
+  if ./cli/figkit advise --data "example/$dataset.csv" --x "$x" --y "$y" \
+      --answer aim=compare --answer "design=$design" --format json > "$OUT/advise_$dataset.json"; then
+    echo "PASS: advise $dataset"
+  else
+    echo "FAIL: advise $dataset"; fail=1
+  fi
+done
 
 echo "[1] parametric path (expect t-test)"
 ./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \

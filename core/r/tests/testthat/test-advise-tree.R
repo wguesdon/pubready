@@ -10,7 +10,11 @@ advise_fixture <- function(recipe, method) {
   flags <- fixture$flags
   if (!is.null(flags$annotation)) flags$annotation <- file.path(base, flags$annotation)
   opt <- utils::modifyList(list(recipe = recipe, data = "fixture.csv", test = method), flags)
-  list(data = read_tidy(file.path(base, paste0(fixture$dataset, ".csv"))), spec = spec_from_opt(opt))
+  data <- read_tidy(file.path(base, paste0(fixture$dataset, ".csv")))
+  if (recipe == "feature_panel" && method %in% c("welch_t", "wilcoxon")) {
+    data <- data[data$Species %in% unique(data$Species)[1:2], , drop = FALSE]
+  }
+  list(data = data, spec = spec_from_opt(opt))
 }
 
 test_that("every advise leaf exists in R and its advertised tests report a listed outcome", {

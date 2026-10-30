@@ -824,3 +824,56 @@ to both benchmark suites and to `tests/benchmark_test.sh`.
   ship.
 - When an engine cannot do something faithfully, say so and route to the one that
   can.
+
+## Choose the recipe with figkit advise
+
+`figkit advise` selects a recipe from the versioned YAML tree. It reads data
+facts and the scientist's answers. It runs no statistical test and draws no
+figure. Both values of `--engine` use the Python walker.
+
+```bash
+./cli/figkit advise --data example/tumor_volume.csv --x group --y volume \
+  --answer aim=compare --answer design=independent --format json
+```
+
+Pass repeated `--answer KEY=VALUE` options or a YAML or JSON mapping with
+`--answers FILE`. Plot flags also supply answers. Different values for one
+answer give a usage error. The same value can appear more than once.
+
+The `aim` choices are `compare`, `association`, `agreement`, `discrimination`,
+`calibration`, `meta_analysis`, `curve`, `time_to_event` and `describe`.
+The tree asks further questions for the selected aim. An ambiguous numeric
+category requires `outcome_type`. A facet with an outcome requires `n_outcomes`
+to distinguish feature panels from factors.
+
+The scientist must choose the control with `--ref`, the case with `--positive`
+and the cause with `--cause`. Advise does not use recipe defaults for these
+choices. Data can propose paired or repeated observations, but the scientist
+must confirm the design.
+
+| Exit code | Meaning |
+|---|---|
+| 0 | The command is complete. |
+| 1 | A file, tree or runtime error prevents the walk. |
+| 2 | An answer or option is invalid or has conflicting duplicates. |
+| 3 | An answer or required flag is missing. |
+| 4 | The data or target engine contradicts an answer. |
+| 5 | No recipe supports the requested design. |
+
+The JSON contains `advise_schema`, `pubready_version`, `tree_sha256`, `walker`,
+`status`, `exit_code`, `data`, `facts`, `path`, `recipe`, `doc_heading`, `test`,
+`command`, `command_text`, `next_step`, `open_questions`, `conflicts` and `notes`.
+Facts use dotted keys, such as `x.levels`. The tree hash identifies the rules
+that produced the answer. The output has no timestamp and repeats byte for byte.
+
+The command fields are null unless the result is complete. Use the argument
+array directly; do not reconstruct a shell command from unquoted answers.
+`next_step` names diagnose when normality selects the test, or plot when the
+test is forced or normality does not select it. Show the diagnose evidence to
+the scientist before the final plot.
+
+For an agent, ask each scientist question and repeat advise with the answer.
+Never answer a scientist question from column names alone. Unsupported designs
+include strata, covariate adjustment, rates of change and control-only comparisons.
+The command checks structure; a complete result does not guarantee a successful
+model fit. The recipe performs the statistical checks.

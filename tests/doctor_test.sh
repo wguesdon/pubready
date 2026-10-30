@@ -279,6 +279,11 @@ for want in "1 python3 /opt/pubready/core/python/entry/render.py" \
 done
 
 echo
+STUB_LOG="$TMP/advise.log" STUB_PODMAN=ok run_figkit "$STUB" advise --engine r --data data.csv
+OUT="$(cat "$TMP/advise.log")"
+expect_out "python3 /opt/pubready/core/python/entry/advise.py"
+expect_out "reference:/opt/pubready/reference:ro"
+
 if [ "$fail" -eq 0 ]; then
   echo "All doctor tests passed."
 else

@@ -277,7 +277,7 @@ nodes:
       doc_heading: Association between two continuous variables → `correlation`
       reason: Measure association between two numeric variables.
       flags: {required: [x, y]}
-      test: {default: auto, allowed: ["auto", "pearson", "spearman", "kendall"], checks: Shapiro-Wilk checks both variables., outcomes: [{when: Both normal., test: Pearson correlation}, {when: Otherwise., test: Spearman correlation}, {when: Forced kendall., test: Kendall correlation}]}
+      test: {default: auto, allowed: ["auto", "pearson", "spearman", "kendall"], checks: Shapiro-Wilk checks both variables., outcomes: [{when: Both normal., test: Pearson correlation}, {when: Otherwise., test: Spearman rank correlation}, {when: Forced kendall., test: Kendall rank correlation}]}
       next_step: diagnose
   bland_altman:
     leaf: {recipe: bland_altman, doc_heading: Two methods that measure the same quantity → `bland_altman`, reason: Measure agreement as x minus y., flags: {required: [x, y]}}

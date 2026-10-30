@@ -105,3 +105,10 @@ without rerunning anything.
 and are still recorded, so the bundle shows both what the data suggested and what was
 actually run. Use this when domain knowledge outweighs a borderline assumption test;
 the methods paragraph will state the forced choice.
+
+## Advice before the test
+
+`figkit advise` reuses the inspect functions for data facts. It does not run
+Shapiro-Wilk or another statistical test. Its next action is diagnose when the
+recipe chooses its test from normality. The recipe applies the attainable-P
+rule to the usable observations.

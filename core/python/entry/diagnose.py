@@ -63,7 +63,7 @@ def main():
                   "qq_plot": "qc_normality.png"}
     else:
         print("\nThis recipe does not choose its test from a normality check, so there is")
-        print("no QQ diagnostic. See reference/decision_tree.md for how its test is chosen.")
+        print("no QQ diagnostic. Run figkit advise to check the recipe and its test choices.")
         report = {"recipe": spec["recipe"], "engine": "python", "recommended_test": rec,
                   "normality_quantity": None}
 

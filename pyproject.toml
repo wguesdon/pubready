@@ -41,6 +41,7 @@ packages = ["src/pubready_cli"]
 "container" = "pubready_cli/tree/container"
 "core/r" = "pubready_cli/tree/core/r"
 "core/recipe_options.txt" = "pubready_cli/tree/core/recipe_options.txt"
+"core/advise_test_fixtures.json" = "pubready_cli/tree/core/advise_test_fixtures.json"
 "core/python/pubready" = "pubready_cli/tree/core/python/pubready"
 "core/python/entry" = "pubready_cli/tree/core/python/entry"
 "core/python/tests" = "pubready_cli/tree/core/python/tests"

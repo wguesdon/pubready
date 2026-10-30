@@ -23,6 +23,7 @@ be in that folder or below it.
 figkit build                                  # once, builds the image
 figkit doctor                                 # checks Podman, the image and the mounts, prints each fix
 figkit inspect --data FILE [--format json]    # columns, types, group sizes, candidate x/y
+figkit advise --data FILE --format json ...  # recipe, command and unanswered questions
 figkit diagnose --recipe NAME --data FILE ... # QQ + assumption check, recommend a test (no figure)
 figkit plot --recipe NAME --data FILE ...     # draw + test, writes a bundle
 figkit render --config plot_config.yaml       # redraw from an edited spec, recompute stats
@@ -50,10 +51,11 @@ git ignores.
 1. Run `figkit inspect` on the data. Read the real column types and group sizes.
    Do not guess them. `inspect` also names the candidate groups, numeric codes
    among them, and each column that looks like a subject id.
-2. Talk through the design with the scientist: how many groups, paired or not, one
-   factor or several, time to event, or a matrix. If they are unsure which test
-   applies, walk the plain-language questions in `reference/decision_tree.md`.
-   Confirm the design before drawing.
+2. Run `figkit advise --data FILE --format json` with the known plot flags and
+   `--answer KEY=VALUE` answers. Ask the scientist each unanswered question.
+   Never supply a scientist answer yourself. Repeat advise until it returns
+   `complete`, then follow `next_step`. Resolve a conflict before any plot.
+   Exit code 5 means that no recipe supports the design.
 3. If no test is named, run `figkit diagnose --recipe … --data … [--x --y …]`. It
    draws a QQ plot with the Shapiro-Wilk p, skewness, and kurtosis for the quantity
    the test depends on, and prints a recommended test. Show the scientist the

@@ -12,3 +12,7 @@ agent walks these during the chat rather than picking a test from a single promp
 
 Every rule in these files matches the recipe code, so the reference and the
 analysis stay in step.
+
+`decision_tree.yaml` is the machine-readable tree for `figkit advise`.
+The prose tree and YAML are edited together. Tests check the recipes, headings,
+canonical test values and recipe option lists.

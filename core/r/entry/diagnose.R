@@ -61,7 +61,7 @@ if (!is.null(res$qc)) {
              file.path(ddir, "diagnostics.json"))
 } else {
   cat("\nThis recipe does not choose its test from a normality check, so there is\n")
-  cat("no QQ diagnostic. See reference/decision_tree.md for how its test is chosen.\n")
+  cat("no QQ diagnostic. Run figkit advise to check the recipe and its test choices.\n")
   writeLines(jsonlite::toJSON(list(recipe = spec$recipe, engine = "r",
                                    recommended_test = rec, normality_quantity = NA),
                               auto_unbox = TRUE, pretty = TRUE, na = "null"),

@@ -34,7 +34,7 @@ fi
 echo "[3] figkit where holds the adapters, the reference notes and the example"
 where="$("$fk" where)"
 for f in skills/claude-code/SKILL.md skills/codex/AGENTS.md skills/opencode/AGENTS.md \
-         reference/decision_tree.md docs/how_it_works.md container/Containerfile \
+         reference/decision_tree.md reference/decision_tree.yaml docs/how_it_works.md container/Containerfile \
          core/r/bootstrap.R core/python/pubready/run.py core/recipe_options.txt \
          example/tumor_volume.csv; do
   if [ ! -f "$where/$f" ]; then echo "  MISSING: $f"; fail=1; fi
@@ -58,6 +58,14 @@ for engine in r python; do
     echo "FAIL: $engine plot from the installed figkit"; fail=1
   fi
 done
+
+if (cd "$work" && "$fk" advise --data tumor_volume.csv --x group --y volume \
+      --answer aim=compare --answer design=independent --format json > advise.json) && \
+      grep -q '"recipe": "two_group_compare"' "$work/advise.json"; then
+  echo "PASS: installed advise reads the tree and selects the recipe"
+else
+  echo "FAIL: installed advise"; fail=1
+fi
 
 echo
 if [ "$fail" -eq 0 ]; then echo "INSTALL TEST PASSED"; else echo "INSTALL TEST FAILED"; exit 1; fi

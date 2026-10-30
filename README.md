@@ -231,3 +231,13 @@ a figure needs Codex run outside its sandbox, since Podman needs a user namespac
 - [example/README.md](example/README.md) — worked examples for every recipe.
 - [benchmarks/README.md](benchmarks/README.md) lists the public datasets that check 32 of the 34 recipes, in both engines, against an independent reference value. Only the smoke test checks `spider_response` and `waterfall`.
 - [CHANGELOG.md](CHANGELOG.md) — what changed in each release.
+
+## Recipe advice
+
+`figkit advise` uses a versioned tree to select among all 34 recipes and asks
+for missing scientist answers. It returns commands without a figure or test.
+
+```bash
+./cli/figkit advise --data example/tumor_volume.csv --x group --y volume \
+  --answer aim=compare --answer design=independent --format json
+```

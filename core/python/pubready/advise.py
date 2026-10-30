@@ -391,6 +391,23 @@ def check_leaf_data(leaf, df, options, facts, result):
         result: Mutable result.
     """
     recipe = leaf["recipe"]
+    numeric_y = {"two_group_compare", "multi_group_compare", "paired_compare", "factorial_anova",
+                 "feature_panel", "estimation_plot", "timecourse", "correlation", "bland_altman",
+                 "dose_response", "enzyme_kinetics", "standard_curve", "distribution",
+                 "forest_meta", "embedding", "manhattan", "spider_response", "waterfall"}
+    if recipe in numeric_y and "y.numeric" in facts and not facts["y.numeric"]:
+        raise AdviceError("The selected outcome must contain finite numeric values.", "conflict")
+    if recipe in ("correlation", "bland_altman", "embedding", "manhattan", "dose_response",
+                  "enzyme_kinetics", "standard_curve") and "x.numeric" in facts and not facts["x.numeric"]:
+        raise AdviceError("The selected x column must contain finite numeric values.", "conflict")
+    if recipe in ("survival_km", "cox_forest", "cumulative_incidence", "swimmer") and "time.numeric" in facts:
+        if not facts["time.numeric"] or bool((df[options["time"]].dropna() < 0).any()):
+            raise AdviceError("Time must contain finite nonnegative numbers.", "conflict")
+    if recipe in ("two_group_compare", "paired_compare") and facts.get("x.n_levels", 2) != 2:
+        raise AdviceError("This comparison needs exactly two groups.", "conflict")
+    if recipe == "feature_panel" and options.get("test") in ("welch_t", "wilcoxon"):
+        if facts.get("x.n_levels", 2) != 2:
+            raise AdviceError("This feature-panel test needs exactly two groups.", "conflict")
     if recipe in ("roc_curve", "calibration") and "y.n_levels" in facts:
         if facts["y.n_levels"] != 2:
             raise AdviceError("The outcome must have exactly two levels.", "conflict")
@@ -413,6 +430,15 @@ def check_leaf_data(leaf, df, options, facts, result):
         need_flag("annotation", result)
     if options.get("annotation") and not Path(options["annotation"]).is_file():
         raise AdviceError("The annotation file does not exist.")
+    if options.get("x") and options["x"] not in df and recipe not in ("roc_curve", "calibration"):
+        raise AdviceError("This recipe needs a single x column.", "conflict")
+    if recipe in ("roc_curve", "calibration") and options.get("x"):
+        for column in split_list_option(options["x"]):
+            info = column_facts(df, column, "marker")
+            if not info["marker.numeric"]:
+                raise AdviceError(f"Marker {column} must be finite and numeric.", "conflict")
+            if recipe == "calibration" and not df[column].dropna().between(0, 1).all():
+                raise AdviceError(f"Predictions in {column} must be between zero and one.", "conflict")
     if recipe in ("paired_compare", "timecourse", "sankey") or options.get("paired"):
         x, id_col = options.get("x"), options.get("id")
         if x in df and id_col in df:
@@ -549,6 +575,12 @@ def advise(options, entries=(), filename=None, tree_path=None, frame=None):
             raise AdviceError("The data has no rows.", "conflict")
         facts = collect_facts(df, options)
         result["facts"] = facts
+        # Check data-derived constraints before any missing upstream answer.
+        for key in ("ref", "positive", "cause"):
+            question = tree["questions"][key]
+            allowed = facts.get(question["answers_from"])
+            if key in answers and allowed is not None and answers[key] not in allowed:
+                raise AdviceError(f"Invalid {key}={answers[key]}. Choose from {', '.join(allowed)}.")
         node_id = "start"
         while True:
             node = tree["nodes"][node_id]
@@ -563,6 +595,8 @@ def advise(options, entries=(), filename=None, tree_path=None, frame=None):
                 if not options.get(required):
                     need_flag(required, result)
                     break
+                if required == "x" and facts.get("x.n_levels", 2) < 2:
+                    raise AdviceError("The comparison needs at least two groups.", "conflict")
             value = ask_question(key, tree, answers, facts, result, node_id)
             if value is None:
                 break

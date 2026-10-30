@@ -795,3 +795,12 @@ recipes added in v2.0.0:
 ![py Manhattan](expected/manhattan_gwas_summary_manhattan_py/figure_gwas_summary_manhattan_py.png)
 ![py feature panel](expected/feature_panel_cytokine_panel_fpanel_py/figure_cytokine_panel_fpanel_py.png)
 ![py embedding](expected/embedding_umap_clusters_embedding_py/figure_umap_clusters_embedding_py.png)
+
+## Recipe advice
+
+Advise returns the recipe and the next command without a figure or statistical test.
+
+```bash
+./cli/figkit advise --data example/tumor_volume.csv --x group --y volume \
+  --answer aim=compare --answer design=independent --format json
+```
