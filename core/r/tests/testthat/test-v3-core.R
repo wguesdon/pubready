@@ -101,3 +101,19 @@ test_that("the manifest records every plot option (F101)", {
   expect_match(txt, '"paired":false', fixed = TRUE)
   expect_match(txt, '"top_n":15', fixed = TRUE)
 })
+
+# One CSV form for a stats table in both engines (F126).
+stats_csv_expected <- c(
+  "name,n,p,ok,d,flag",
+  "a,3,0.5,TRUE,-Inf,TRUE",
+  "b,NA,NA,FALSE,2,FALSE",
+  "c,5,Inf,NA,NA,TRUE")
+
+test_that("the stats CSV writes NA, booleans, infinity and integers in one form (F126)", {
+  df <- data.frame(name = c("a", "b", "c"), n = c(3, NA, 5), p = c(0.5, NaN, Inf),
+                   ok = c(TRUE, FALSE, NA), d = c(-Inf, 2, NA), flag = c(TRUE, FALSE, TRUE),
+                   stringsAsFactors = FALSE)
+  path <- tempfile(fileext = ".csv")
+  write_stats_csv(df, path)
+  expect_equal(readLines(path), stats_csv_expected)
+})

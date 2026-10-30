@@ -6,9 +6,11 @@ import sys
 from types import SimpleNamespace
 
 import numpy as np
+import pandas as pd
 import pytest
 
-from pubready.bundle import manifest_arguments, reproduce_md, write_json
+from pubready.bundle import (_markdown_value, manifest_arguments, reproduce_md, write_json,
+                             write_stats_csv)
 from pubready.io import read_tidy, read_tidy_logged
 from pubready.spec import spec_from_args
 
@@ -128,3 +130,26 @@ def test_python_reproduce_md_names_the_image_digest():
     txt = reproduce_md({"image": "img", "image_id": "abc", "digest": "sha256:1"}, "c0ffee",
                        "script.py")
     assert "- Image digest: `sha256:1`" in txt
+
+
+#: One CSV form for a stats table in both engines (F126).
+STATS_CSV_EXPECTED = [
+    "name,n,p,ok,d,flag",
+    "a,3,0.5,TRUE,-Inf,TRUE",
+    "b,NA,NA,FALSE,2,FALSE",
+    "c,5,Inf,NA,NA,TRUE"]
+
+
+def test_stats_csv_writes_na_booleans_infinity_and_integers_in_one_form(tmp_path):
+    df = pd.DataFrame({"name": ["a", "b", "c"], "n": [3.0, np.nan, 5.0],
+                       "p": [0.5, np.nan, np.inf], "ok": [True, False, None],
+                       "d": [-np.inf, 2.0, np.nan], "flag": [True, False, True]})
+    path = str(tmp_path / "stats.csv")
+    write_stats_csv(df, path)
+    assert open(path).read().splitlines() == STATS_CSV_EXPECTED
+
+
+def test_report_table_writes_the_r_forms():
+    assert _markdown_value(float("nan")) == ""
+    assert _markdown_value(np.bool_(True)) == "TRUE"
+    assert _markdown_value(float("-inf")) == "-Inf"

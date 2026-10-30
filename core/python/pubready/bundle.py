@@ -118,9 +118,80 @@ def _markdown_value(value):
     Returns:
         The escaped text.
     """
+    value = stats_cell(value)
     if value is None:
         return ""
     return str(value).replace("|", r"\|").replace("\n", " ")
+
+
+def stats_cell(value):
+    """Give one stats value the form that the R engine writes.
+
+    Args:
+        value: One cell of a stats table.
+
+    Returns:
+        "TRUE" or "FALSE" for a boolean, "Inf" or "-Inf" for an infinite
+        number, None for a missing value, else the value.
+    """
+    if isinstance(value, (bool, np.bool_)):
+        return "TRUE" if value else "FALSE"
+    if value is None or value is pd.NA or value is pd.NaT:
+        return None
+    if isinstance(value, (float, np.floating)):
+        if np.isnan(value):
+            return None
+        if np.isinf(value):
+            return "Inf" if value > 0 else "-Inf"
+    return value
+
+
+def stats_csv_frame(frame):
+    """Give a stats table the CSV form that both engines share.
+
+    A missing value is NA, a boolean is TRUE or FALSE, an infinite number is
+    Inf or -Inf, and a column of whole numbers has no decimal part. The R
+    engine writes the same forms.
+
+    Args:
+        frame: The stats table.
+
+    Returns:
+        pandas.DataFrame: A copy to write with na_rep="NA".
+    """
+    out = integer_columns(frame)
+    for col in out.columns:
+        values = out[col]
+        if values.dtype == bool:
+            out[col] = values.map(stats_cell)
+        elif values.dtype == object:
+            out[col] = values.map(stats_cell).astype(object)
+        elif values.dtype.kind == "f" and np.isinf(values.to_numpy()).any():
+            finite = values[np.isfinite(values.to_numpy())]
+            whole = len(finite) and bool(np.all(finite == np.round(finite))
+                                         and np.all(np.abs(finite) < 1e15))
+            cells = values.astype(object).map(stats_cell)
+            if whole:
+                cells = cells.map(_whole_text_or_keep)
+            out[col] = cells
+    return out
+
+
+def _whole_text_or_keep(value):
+    """Write a finite float of a whole-number column with no decimal part."""
+    if isinstance(value, (float, np.floating)):
+        return str(int(value))
+    return value
+
+
+def write_stats_csv(frame, path):
+    """Write a stats table in the CSV form that both engines share.
+
+    Args:
+        frame: The stats table.
+        path: The output file.
+    """
+    stats_csv_frame(frame).to_csv(path, index=False, na_rep="NA")
 
 
 def integer_columns(frame):
@@ -555,7 +626,7 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
         qfig.savefig(os.path.join(bdir, f"qc_normality_{ts}.pdf"), facecolor="white")
         plt.close(qfig)
 
-    integer_columns(result["stats"]).to_csv(os.path.join(bdir, f"stats_{ts}.csv"), index=False)
+    write_stats_csv(result["stats"], os.path.join(bdir, f"stats_{ts}.csv"))
 
     ext = os.path.splitext(raw_input)[1].lstrip(".") or "csv"
     in_name = f"input_{base}.{ext}"

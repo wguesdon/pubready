@@ -46,6 +46,11 @@ tag move together.
   same order in both engines. Before, R recorded five options and Python seven,
   and neither recorded `--group`, `--id` or `--levels`. The Python
   `REPRODUCE.md` names the image digest, as the R file does (F101).
+- The stats CSV files use one form in both engines: `NA` for a missing value,
+  `TRUE` and `FALSE`, `Inf` and `-Inf`, and no decimal part in a column of
+  whole numbers. Before, Python wrote an empty cell, `True`, `inf` and `2.0`,
+  and R wrote `NaN` apart from `NA`. The report table of Python uses the same
+  forms (F126).
 
 ## [3.0.0] - 2026-10-29
 

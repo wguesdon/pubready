@@ -84,6 +84,19 @@ READ_RULE_TEXT <- paste(
   "when each present cell is a number with \".\" as the decimal mark, and as",
   "logical when each present cell is TRUE or FALSE.")
 
+# NaN becomes NA, so a missing value has one form in the stats table.
+nan_to_na <- function(v) {
+  if (is.double(v)) v[is.nan(v)] <- NA_real_
+  v
+}
+
+# Write a stats table in the form that both engines share: NA for a missing
+# value, TRUE and FALSE, Inf and -Inf, and a whole number with no decimal part.
+write_stats_csv <- function(stats_df, path) {
+  stats_df[] <- lapply(stats_df, nan_to_na)
+  readr::write_csv(stats_df, path, na = "NA")
+}
+
 write_data_log <- function(path, raw_path, in_name, sums, df_used, steps,
                            read_steps = character(0)) {
   types <- vapply(df_used, function(v) class(v)[1], character(1))
@@ -531,7 +544,7 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
                     width = d$width, height = d$height, device = grDevices::cairo_pdf)
   }
 
-  readr::write_csv(stats_df, file.path(bdir, sprintf("stats_%s.csv", ts)))
+  write_stats_csv(stats_df, file.path(bdir, sprintf("stats_%s.csv", ts)))
 
   in_ext  <- tools::file_ext(raw_input_path)
   in_name <- sprintf("input_%s.%s", base, if (nzchar(in_ext)) in_ext else "csv")
