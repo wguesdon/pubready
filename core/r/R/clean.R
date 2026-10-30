@@ -27,3 +27,39 @@ clean_tidy <- function(df, spec) {
   if (length(steps) == 0) steps <- "No cleaning applied; input used as-is."
   list(df = df, steps = steps)
 }
+
+# Classify and coerce the numeric columns of a table, one rule in both engines.
+# A column is numeric when it is already numeric, or when 80% or more of its
+# cells that are not missing read as finite numbers. A cell of such a column
+# that does not read as a number, for example "<0.1" or "45 y", becomes NA, and
+# a step records the count and the first such value. Every other column is text.
+# `cols` limits the check to the named columns. Returns the table, the names of
+# the numeric and the text columns, and the steps.
+coerce_numeric_columns <- function(df, cols = names(df), threshold = 0.8) {
+  steps <- character(0)
+  numeric <- character(0)
+  text <- character(0)
+  for (cn in cols) {
+    v <- df[[cn]]
+    if (is.numeric(v)) {
+      numeric <- c(numeric, cn)
+      next
+    }
+    present <- !is.na(v) & trimws(as.character(v)) != ""
+    num <- suppressWarnings(as.numeric(as.character(v)))
+    ok <- present & is.finite(num)
+    if (sum(present) > 0 && sum(ok) / sum(present) >= threshold) {
+      bad <- present & !ok
+      if (any(bad)) {
+        steps <- c(steps, sprintf(
+          "Coerced column '%s' to numeric; %d value(s) became NA, for example '%s'.",
+          cn, sum(bad), as.character(v[bad][1])))
+      }
+      df[[cn]] <- ifelse(ok, num, NA_real_)
+      numeric <- c(numeric, cn)
+    } else {
+      text <- c(text, cn)
+    }
+  }
+  list(df = df, numeric = numeric, text = text, steps = steps)
+}

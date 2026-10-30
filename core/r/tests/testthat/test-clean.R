@@ -22,3 +22,15 @@ test_that("clean_tidy errors on a missing column", {
   df <- data.frame(group = c("A", "B"), value = c(1, 2))
   expect_error(clean_tidy(df, make_spec(y = "missing")), "not found")
 })
+
+test_that("coerce_numeric_columns keeps a mostly numeric column", {
+  df <- data.frame(tnf = c("1.5", "2.0", "<0.1", "3.2", "4.1"),
+                   group = c("a", "a", "b", "b", "b"),
+                   il6 = c(1, 2, 3, 4, 5), stringsAsFactors = FALSE)
+  out <- coerce_numeric_columns(df)
+  expect_equal(out$numeric, c("tnf", "il6"))
+  expect_equal(out$text, "group")
+  expect_equal(sum(is.na(out$df$tnf)), 1)
+  expect_equal(out$steps,
+               "Coerced column 'tnf' to numeric; 1 value(s) became NA, for example '<0.1'.")
+})
