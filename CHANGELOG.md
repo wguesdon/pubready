@@ -48,6 +48,9 @@ tag move together.
   gives the `--test` values of each recipe, the option table, the read rule,
   the `inspect` output, the render rule, the data checks of each recipe and the
   files that carry the version (F101, F129).
+- `figkit --help` gives the `--test` values of each recipe, the option rule,
+  `--visit_levels`, `--features`, `--sheet`, the render defaults, and the full
+  recipe lists of `--id`, `--group`, `--label`, `--geom` and `--theme` (F63, F129).
 - The three adapters and `reference/decision_tree.md` list the designs that no
   recipe fits: strata, covariate adjustment, rates of change, and a comparison
   with one control only. The agent tells the scientist and does not force the

@@ -16,9 +16,10 @@ figkit — reproducible publication figures
 
 Usage:
   figkit inspect --data FILE [--sheet S] [--format text|json]
-  figkit diagnose --recipe NAME --data FILE [--x COL --y COL ...]
+  figkit diagnose --recipe NAME --data FILE [plot options]
   figkit plot --recipe NAME --data FILE --x COL --y COL [options]
-  figkit render --config plot_config.yaml [--data FILE]
+  figkit render --config plot_config.yaml [--data FILE] [--engine r|python]
+                        # input and engine from the config by default
   figkit build
   figkit doctor         # check Podman, the image and the mounts; print a fix for each problem
   figkit shell
@@ -26,7 +27,8 @@ Usage:
   figkit version
   figkit where          # the folder that holds the adapters, reference/ and docs/
 
-Common plot options:
+Common plot options. Each recipe reads its own options (core/recipe_options.txt),
+and any other option stops the run:
   --engine r|python                        recipe engine (default r)
   --llm-provider NAME                     LLM provider recorded in the report
   --llm-model NAME                        LLM model recorded in the report
@@ -35,7 +37,8 @@ Common plot options:
   --x, --y                                 axis columns (tidy data)
   --fill, --facet                          extra factors (factorial_anova); --facet is
                                            the feature column of feature_panel
-  --time, --event                          survival columns (1 = event, 0 = censored);
+  --time, --event                          survival columns (1 = event, 0 = censored,
+                                           or TRUE/FALSE);
                                            swimmer duration and status (0 = ongoing);
                                            cumulative_incidence status (0 = censored,
                                            other codes = causes)
@@ -43,21 +46,26 @@ Common plot options:
   --ref LEVEL                              reference (control) group (estimation_plot)
   --cause CODE                             event code of the cause of interest
                                            (cumulative_incidence, default 1)
-  --levels "a,b,c"                         state order (sankey) or group order
-                                           (proportions); every value of the
-                                           data must be listed
+  --levels "a,b,c"                         order of the --x values (comparison recipes,
+                                           proportions, paired_compare, timecourse)
+                                           or of the sankey states; every value of
+                                           the data must be listed; use "a|b" when a
+                                           value holds a comma
+  --visit_levels "a,b,c"                   order of the sankey visits
+  --features "a,b"                         feature columns (pca)
   --covariates "a,b,c"                     Cox model covariates
   --annotation FILE                        heatmap column annotation CSV
   --id COL                                 subject or sample column (paired_compare,
                                            spider_response, timecourse, waterfall,
-                                           estimation_plot, standard_curve, sankey,
-                                           composition)
+                                           swimmer, estimation_plot, standard_curve,
+                                           sankey, feature_panel, composition, pca)
   --group COL                              grouping column (pca, dose_response, timecourse,
-                                           spider_response, waterfall, enzyme_kinetics,
-                                           composition, embedding); the chromosome
-                                           column of manhattan
+                                           spider_response, waterfall, swimmer,
+                                           enzyme_kinetics, composition, embedding);
+                                           the chromosome column of manhattan
   --label COL                              label column (volcano, ma_plot, manhattan,
-                                           enrichment_dot, pca, forest_meta)
+                                           enrichment_dot, pca, forest_meta,
+                                           feature_panel)
   --positive LEVEL                         case level of the outcome (roc_curve,
                                            calibration)
   --ci_low COL, --ci_high COL, --se COL    study interval or standard error (forest_meta)
@@ -68,18 +76,29 @@ Common plot options:
   --fc_cutoff N, --p_cutoff N              volcano and ma_plot thresholds (default 1, 0.05)
   --top_n N                                labels / terms / intersections to show
                                            (volcano, ma_plot, manhattan, enrichment_dot, upset)
-  --test auto|welch_t|wilcoxon|anova|kruskal|art   choose or force the test
-                                           (correlation: auto|pearson|spearman|kendall;
+  --test VALUE                             choose or force the test; an unknown value
+                                           stops the run
+                                           (two_group_compare: auto|welch_t|student_t|wilcoxon;
+                                            multi_group_compare: auto|anova|welch|kruskal;
+                                            paired_compare: auto|t|wilcoxon;
+                                            factorial_anova: auto|anova|art;
+                                            feature_panel: auto|welch_t|wilcoxon|anova|kruskal;
+                                            estimation_plot: auto|welch_t;
+                                            correlation, correlation_heatmap:
+                                              auto|pearson|spearman|kendall;
                                             proportions: auto|chisq|fisher;
                                             timecourse: auto|gg|uncorrected;
                                             standard_curve: auto|linear|4pl;
-                                            feature_panel: auto|welch_t|wilcoxon|anova|kruskal)
+                                            heatmap: auto (no test)|welch_t)
   --paired                                 paired design
-  --geom box|violin|bar|raincloud          plot geometry (comparison recipes);
-                                           factorial_anova also takes interaction
-  --theme pubready_house|prism              figure style (comparison + correlation)
+  --geom box|violin|bar|raincloud          plot geometry (two_group_compare,
+                                           multi_group_compare); factorial_anova
+                                           takes box, bar and interaction
+  --theme pubready_house|prism              figure style (most recipes; not the
+                                           heatmaps or upset)
   --xlab, --ylab, --title                  labels
   --palette "#3B6DB3,#C1432B"              fill colors
+  --sheet S                                Excel sheet of the data file
   --out DIR                                output root (default pubready_output)
 
 Recipes: two_group_compare, multi_group_compare, factorial_anova,
