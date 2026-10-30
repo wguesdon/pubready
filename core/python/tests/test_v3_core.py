@@ -3,12 +3,14 @@ spec and the inspect report. The R suite (tests/testthat/test-v3-core.R) holds
 the same cases with the same expected values."""
 import json
 import sys
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
 
-from pubready.bundle import write_json
+from pubready.bundle import manifest_arguments, reproduce_md, write_json
 from pubready.io import read_tidy, read_tidy_logged
+from pubready.spec import spec_from_args
 
 
 def write_tmp_csv(tmp_path, lines):
@@ -91,3 +93,38 @@ def test_manifest_keeps_the_full_precision_of_each_number(tmp_path):
     write_json({"intercept": 0.00508612345678912, "p": 1.5e-12}, path)
     back = json.loads(open(path).read())
     assert back == {"intercept": 0.00508612345678912, "p": 1.5e-12}
+
+
+#: The arguments block of the manifest, the same list in both engines (F101).
+MANIFEST_ARG_NAMES = [
+    "x", "y", "fill", "facet", "time", "event", "covariates", "annotation", "id",
+    "group", "label", "positive", "se", "ci_low", "ci_high", "measure", "markers",
+    "ref", "cause", "levels", "visit_levels", "features", "test", "paired",
+    "p_adjust", "scale", "cluster", "fc_cutoff", "p_cutoff", "top_n",
+    "pd_threshold", "pr_threshold", "geom", "theme", "xlab", "ylab", "title",
+    "palette"]
+
+
+def test_manifest_records_every_plot_option(tmp_path):
+    a = SimpleNamespace(recipe="sankey", data="d.csv", x="week", y="response", id="patient",
+                        levels="CR|PR", covariates="age", xlab="Week", test="auto")
+    args = manifest_arguments(spec_from_args(a))
+    assert list(args) == MANIFEST_ARG_NAMES
+    path = str(tmp_path / "manifest.json")
+    write_json({"arguments": args}, path)
+    back = json.loads(open(path).read())["arguments"]
+    assert back["id"] == "patient"
+    assert back["levels"] == ["CR", "PR"]
+    assert back["covariates"] == ["age"]
+    assert back["fill"] is None
+    assert back["xlab"] == "Week"
+    assert back["paired"] is False
+    assert back["top_n"] == 15
+
+
+def test_python_reproduce_md_names_the_image_digest():
+    txt = reproduce_md({"image": "img", "image_id": "abc", "digest": ""}, "c0ffee", "script.py")
+    assert "- Image digest: `n/a (local build)`" in txt
+    txt = reproduce_md({"image": "img", "image_id": "abc", "digest": "sha256:1"}, "c0ffee",
+                       "script.py")
+    assert "- Image digest: `sha256:1`" in txt

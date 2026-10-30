@@ -446,6 +446,46 @@ def write_packages(path, script_text=None):
     open(path, "w").write("\n".join(lines) + "\n")
 
 
+#: The plot options that the manifest records, in this order, with the spec
+#: field that holds each one. Each option is recorded, with null when the run
+#: did not set it. The R engine records the same options in the same order.
+MANIFEST_DATA_ARGS = ("x", "y", "fill", "facet", "time", "event", "covariates",
+                      "annotation", "id", "group", "label", "positive", "se",
+                      "ci_low", "ci_high", "measure", "markers", "ref", "cause",
+                      "levels", "visit_levels", "features")
+MANIFEST_APPEARANCE_ARGS = (("scale", "scale"), ("cluster", "cluster"),
+                            ("fc_cutoff", "fc_cutoff"), ("p_cutoff", "p_cutoff"),
+                            ("top_n", "top_n"), ("pd_threshold", "pd_threshold"),
+                            ("pr_threshold", "pr_threshold"), ("geom", "geom"),
+                            ("theme", "theme"), ("xlab", "x_label"), ("ylab", "y_label"),
+                            ("title", "title"), ("palette", "palette"))
+MANIFEST_LIST_ARGS = ("covariates", "markers", "levels", "visit_levels", "features",
+                      "palette")
+
+
+def manifest_arguments(spec):
+    """The arguments block of the manifest.
+
+    Args:
+        spec: The figure spec.
+
+    Returns:
+        dict: Every plot option, named as the command line names it, with None
+        for an option that the run did not set.
+    """
+    data, test, ap = spec.get("data") or {}, spec.get("test") or {}, spec.get("appearance") or {}
+    out = {k: data.get(k) for k in MANIFEST_DATA_ARGS}
+    out["test"] = test.get("method") or "auto"
+    out["paired"] = bool(test.get("paired", False))
+    out["p_adjust"] = test.get("p_adjust") or "none"
+    for k, field in MANIFEST_APPEARANCE_ARGS:
+        out[k] = ap.get(field)
+    for k in MANIFEST_LIST_ARGS:
+        if out[k] is not None:
+            out[k] = [str(v) for v in (out[k] if isinstance(out[k], (list, tuple)) else [out[k]])]
+    return out
+
+
 def build_manifest(spec, in_name, orig, sums, n_rows, test_meta, container, git_commit, created, fig_stub):
     return {
         "pubready_version": PUBREADY_VERSION,
@@ -454,8 +494,7 @@ def build_manifest(spec, in_name, orig, sums, n_rows, test_meta, container, git_
         "engine": "python",
         "recipe": spec["recipe"],
         "recipe_version": "1",
-        "arguments": {k: spec["data"].get(k) for k in
-                      ("x", "y", "fill", "facet", "time", "event", "covariates")},
+        "arguments": manifest_arguments(spec),
         "input": {"file": in_name, "original_name": orig, "md5": sums["md5"],
                   "sha256": sums["sha256"], "n_rows": n_rows},
         "statistical_test": test_meta,
@@ -479,6 +518,7 @@ def reproduce_md(container, git_commit, script_name):
         "## 1. Get the pinned environment\n\n"
         f"- Container image: `{img}`\n"
         f"- Image id: `{container.get('image_id', 'unknown')}`\n"
+        f"- Image digest: `{container.get('digest') or 'n/a (local build)'}`\n"
         f"- pubready commit: `{git_commit}`\n\n"
         "## 2. Run the standalone script\n\n"
         "From inside this folder:\n\n"

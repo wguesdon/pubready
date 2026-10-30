@@ -76,3 +76,28 @@ test_that("the manifest writes NaN, infinity and NA as null (F69)", {
   txt <- manifest_json(list(a = NaN, b = Inf, c = NA_real_, d = c(1.5, -Inf)))
   expect_equal(gsub("\\s", "", as.character(txt)), '{"a":null,"b":null,"c":null,"d":[1.5,null]}')
 })
+
+# The arguments block of the manifest, the same list in both engines (F101).
+manifest_arg_names <- c(
+  "x", "y", "fill", "facet", "time", "event", "covariates", "annotation", "id",
+  "group", "label", "positive", "se", "ci_low", "ci_high", "measure", "markers",
+  "ref", "cause", "levels", "visit_levels", "features", "test", "paired",
+  "p_adjust", "scale", "cluster", "fc_cutoff", "p_cutoff", "top_n",
+  "pd_threshold", "pr_threshold", "geom", "theme", "xlab", "ylab", "title",
+  "palette")
+
+test_that("the manifest records every plot option (F101)", {
+  spec <- spec_from_opt(list(recipe = "sankey", data = "d.csv", x = "week", y = "response",
+                             id = "patient", levels = "CR|PR", covariates = "age",
+                             xlab = "Week", test = "auto"))
+  args <- manifest_arguments(spec)
+  expect_equal(names(args), manifest_arg_names)
+  txt <- gsub("\\s", "", as.character(manifest_json(list(arguments = args))))
+  expect_match(txt, '"id":"patient"', fixed = TRUE)
+  expect_match(txt, '"levels":["CR","PR"]', fixed = TRUE)
+  expect_match(txt, '"covariates":["age"]', fixed = TRUE)
+  expect_match(txt, '"fill":null', fixed = TRUE)
+  expect_match(txt, '"xlab":"Week"', fixed = TRUE)
+  expect_match(txt, '"paired":false', fixed = TRUE)
+  expect_match(txt, '"top_n":15', fixed = TRUE)
+})

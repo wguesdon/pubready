@@ -115,6 +115,40 @@ write_data_log <- function(path, raw_path, in_name, sums, df_used, steps,
   writeLines(lines, path)
 }
 
+# The plot options that the manifest records, in this order, with the spec
+# field that holds each one. Each option is recorded, with null when the run did
+# not set it. The Python engine records the same options in the same order.
+MANIFEST_DATA_ARGS <- c("x", "y", "fill", "facet", "time", "event", "covariates",
+                        "annotation", "id", "group", "label", "positive", "se",
+                        "ci_low", "ci_high", "measure", "markers", "ref", "cause",
+                        "levels", "visit_levels", "features")
+MANIFEST_APPEARANCE_ARGS <- c(scale = "scale", cluster = "cluster",
+                              fc_cutoff = "fc_cutoff", p_cutoff = "p_cutoff",
+                              top_n = "top_n", pd_threshold = "pd_threshold",
+                              pr_threshold = "pr_threshold", geom = "geom",
+                              theme = "theme", xlab = "x_label", ylab = "y_label",
+                              title = "title", palette = "palette")
+MANIFEST_LIST_ARGS <- c("covariates", "markers", "levels", "visit_levels",
+                        "features", "palette")
+
+# The arguments block of the manifest: every plot option, named as the command
+# line names it.
+manifest_arguments <- function(spec) {
+  out <- list()
+  for (k in MANIFEST_DATA_ARGS) out[k] <- list(spec$data[[k]])
+  out["test"] <- list(spec$test$method %||% "auto")
+  out["paired"] <- list(isTRUE(spec$test$paired))
+  out["p_adjust"] <- list(spec$test$p_adjust %||% "none")
+  for (k in names(MANIFEST_APPEARANCE_ARGS)) {
+    out[k] <- list(spec$appearance[[MANIFEST_APPEARANCE_ARGS[[k]]]])
+  }
+  # A list option stays a JSON array when it holds one item.
+  for (k in MANIFEST_LIST_ARGS) {
+    if (!is.null(out[[k]])) out[[k]] <- I(as.character(unlist(out[[k]])))
+  }
+  out
+}
+
 build_manifest <- function(spec, resolved, in_name, orig_name, sums, n_rows,
                            test_meta, container, git_commit, created, fig_stub) {
   list(
@@ -124,9 +158,7 @@ build_manifest <- function(spec, resolved, in_name, orig_name, sums, n_rows,
     engine             = spec$engine,
     recipe             = spec$recipe,
     recipe_version     = "1",
-    arguments          = list(x = spec$data$x, y = spec$data$y,
-                              test = spec$test$method, paired = spec$test$paired,
-                              p_adjust = spec$test$p_adjust),
+    arguments          = manifest_arguments(spec),
     input = list(file = in_name, original_name = orig_name,
                  md5 = sums$md5, sha256 = sums$sha256, n_rows = n_rows),
     statistical_test = test_meta,
@@ -144,7 +176,8 @@ build_manifest <- function(spec, resolved, in_name, orig_name, sums, n_rows,
 # The JSON text of a manifest. Each number keeps its full precision, because
 # some values, such as the standard-curve intercept, are only in the manifest.
 manifest_json <- function(manifest) {
-  jsonlite::toJSON(manifest, auto_unbox = TRUE, pretty = TRUE, na = "null", digits = NA)
+  jsonlite::toJSON(manifest, auto_unbox = TRUE, pretty = TRUE, na = "null", null = "null",
+                   digits = NA)
 }
 
 methods_paragraph <- function(resolved, stats_df, test_meta, spec) {

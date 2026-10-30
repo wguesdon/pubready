@@ -41,6 +41,11 @@ tag move together.
 - The Python manifest, `report_provenance.json` and the `diagnose` report are
   valid JSON: NaN and infinity are written as `null`, as R writes them. Before,
   the manifest held bare `NaN` and `Infinity` (F69).
+- The `arguments` block of the manifest records every plot option, with the
+  command-line name and `null` for an option that the run did not set, in the
+  same order in both engines. Before, R recorded five options and Python seven,
+  and neither recorded `--group`, `--id` or `--levels`. The Python
+  `REPRODUCE.md` names the image digest, as the R file does (F101).
 
 ## [3.0.0] - 2026-10-29
 
