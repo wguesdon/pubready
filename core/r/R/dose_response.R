@@ -152,10 +152,10 @@
 .drc_curve_row <- function(g, lx, y, fitres, span_ref) {
   fit <- fitres$fit
   base <- data.frame(group = g, n = length(y), doses = length(unique(lx)),
-                     midpoint = if (fitres$start$hill < 0) "IC50" else "EC50",
+                     midpoint_type = if (fitres$start$hill < 0) "IC50" else "EC50",
                      bottom = NA_real_, top = NA_real_, hill = NA_real_,
-                     log_ec50 = NA_real_, se_log_ec50 = NA_real_, ec50 = NA_real_,
-                     ec50_ci_low = NA_real_, ec50_ci_high = NA_real_,
+                     log_midpoint = NA_real_, se_log_midpoint = NA_real_, midpoint = NA_real_,
+                     midpoint_ci_low = NA_real_, midpoint_ci_high = NA_real_,
                      r_squared = NA_real_, rss = NA_real_, df_resid = NA_integer_,
                      fit_status = "not determined",
                      status_reason = if (isTRUE(fitres$flat)) fitres$reason else "the fit did not converge",
@@ -176,10 +176,10 @@
   }
   data.frame(
     group = g, n = length(y), doses = length(unique(lx)),
-    midpoint = if (cf[["hill"]] < 0) "IC50" else "EC50",
+    midpoint_type = if (cf[["hill"]] < 0) "IC50" else "EC50",
     bottom = cf[["bottom"]], top = cf[["top"]], hill = cf[["hill"]],
-    log_ec50 = cf[["log_ec50"]], se_log_ec50 = unname(se[["log_ec50"]]),
-    ec50 = 10^cf[["log_ec50"]], ec50_ci_low = ci_low, ec50_ci_high = ci_high,
+    log_midpoint = cf[["log_ec50"]], se_log_midpoint = unname(se[["log_ec50"]]),
+    midpoint = 10^cf[["log_ec50"]], midpoint_ci_low = ci_low, midpoint_ci_high = ci_high,
     r_squared = 1 - rss / sum((y - mean(y))^2),
     rss = rss, df_resid = as.integer(dfr), fit_status = "fitted",
     status_reason = NA_character_, stringsAsFactors = FALSE)
@@ -249,7 +249,7 @@
   r <- rows[rows$group == g, ]
   lxg <- d$lx[d$group == g]
   grid <- seq(min(lxg), max(lxg), length.out = 200)
-  cf <- c(bottom = r$bottom, top = r$top, log_ec50 = r$log_ec50, hill = r$hill)
+  cf <- c(bottom = r$bottom, top = r$top, log_ec50 = r$log_midpoint, hill = r$hill)
   data.frame(group = g, dose = 10^grid, y = .drc_predict(cf, grid), stringsAsFactors = FALSE)
 }
 
@@ -317,7 +317,7 @@ recipe_dose_response <- function(df, spec) {
   pal <- spec$appearance$palette %||% pubready_palette
   pal <- rep(pal, length.out = length(g_lv))
   mid_name <- .drc_mid_name(stats_df)
-  leg <- ifelse(det, sprintf("%s (%s = %s)", g_lv, stats_df$midpoint, sig_text(stats_df$ec50)),
+  leg <- ifelse(det, sprintf("%s (%s = %s)", g_lv, stats_df$midpoint_type, sig_text(stats_df$midpoint)),
                 sprintf("%s (not determined)", g_lv))
   names(pal) <- g_lv; names(leg) <- g_lv
 
@@ -374,8 +374,8 @@ recipe_dose_response <- function(df, spec) {
 
 # IC50 when every determined curve falls, EC50 otherwise.
 .drc_mid_name <- function(rows) {
-  mids <- rows$midpoint[rows$fit_status == "fitted"]
-  if (length(mids) == 0) mids <- rows$midpoint
+  mids <- rows$midpoint_type[rows$fit_status == "fitted"]
+  if (length(mids) == 0) mids <- rows$midpoint_type
   if (all(mids == "IC50")) "IC50" else "EC50"
 }
 
@@ -389,8 +389,8 @@ recipe_dose_response <- function(df, spec) {
   } else if (any(det)) {
     r <- rows[which(det)[1], ]
     sprintf("%s%s = %s (95%% CI %s to %s)", if (has_group) paste0(r$group, " ") else "",
-            r$midpoint, sig_text(r$ec50), sig_text(r$ec50_ci_low),
-            sig_text(r$ec50_ci_high))
+            r$midpoint_type, sig_text(r$midpoint), sig_text(r$midpoint_ci_low),
+            sig_text(r$midpoint_ci_high))
   } else if (has_group) {
     sprintf("%s not determined for any curve", mid_name)
   } else {
@@ -408,8 +408,8 @@ recipe_dose_response <- function(df, spec) {
 
 .drc_meta_row <- function(i, rows) {
   r <- rows[i, ]
-  list(midpoint = r$midpoint, fit_status = r$fit_status, status_reason = r$status_reason,
-       ec50 = r$ec50, ci_low = r$ec50_ci_low, ci_high = r$ec50_ci_high,
+  list(midpoint_type = r$midpoint_type, fit_status = r$fit_status, status_reason = r$status_reason,
+       midpoint = r$midpoint, ci_low = r$midpoint_ci_low, ci_high = r$midpoint_ci_high,
        hill = r$hill, bottom = r$bottom, top = r$top, r_squared = r$r_squared)
 }
 
@@ -423,17 +423,17 @@ recipe_dose_response <- function(df, spec) {
   fits <- if (nrow(fr) > 0) {
     paste0(paste(sprintf("%s%s = %s (95%% CI %s to %s, Hill slope %.2f, R2 = %.3f)",
                          if (nrow(rows) > 1) paste0(fr$group, ": ") else "",
-                         fr$midpoint,
-                         sig_text(fr$ec50),
-                         sig_text(fr$ec50_ci_low),
-                         sig_text(fr$ec50_ci_high),
+                         fr$midpoint_type,
+                         sig_text(fr$midpoint),
+                         sig_text(fr$midpoint_ci_low),
+                         sig_text(fr$midpoint_ci_high),
                          fr$hill, fr$r_squared), collapse = "; "), ".")
   } else ""
   nd <- rows[!det, , drop = FALSE]
   nd_txt <- if (nrow(nd) > 0) {
     paste0(" ", paste(sprintf("%s was not determined, because %s.",
-                              if (nrow(rows) > 1) paste0("The ", nd$midpoint, " of ", nd$group)
-                              else paste0("The ", nd$midpoint),
+                              if (nrow(rows) > 1) paste0("The ", nd$midpoint_type, " of ", nd$group)
+                              else paste0("The ", nd$midpoint_type),
                               nd$status_reason), collapse = " "),
            " A curve that is not determined is drawn as its mean +/- SEM without a fit",
            if (nrow(rows) > 1) " and is left out of the shared-midpoint F test." else ".")

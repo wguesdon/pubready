@@ -160,7 +160,7 @@ def recipe_volcano(df, spec):
     n_up = int(np.sum((fc >= fcc) & (p <= pcc)))
     n_down = int(np.sum((fc <= -fcc) & (p <= pcc)))
     stats_df = pd.DataFrame({
-        "gene": lab[top], "log2FC": fc[top], "p_value": p[top],
+        "gene": lab[top], "log2FC": fc[top], p_col: p[top],
         "neg_log10_p": neglog[top], "direction": np.where(fc[top] > 0, "up", "down"),
     })
     test_meta = {"name": "Volcano plot", "fc_cutoff": fcc, "p_cutoff": pcc,

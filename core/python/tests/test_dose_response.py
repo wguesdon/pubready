@@ -47,10 +47,10 @@ def test_dose_response_reports_a_flat_curve_as_not_determined():
                                drc_spec(x="dose", y="response", group="compound"))
     st = res["stats"]
     assert list(st["fit_status"]) == ["fitted", "fitted", "not determined"]
-    assert np.isnan(st["ec50"].iloc[2])
-    assert st[["ec50_ci_low", "ec50_ci_high", "hill"]].iloc[2].isna().all()
+    assert np.isnan(st["midpoint"].iloc[2])
+    assert st[["midpoint_ci_low", "midpoint_ci_high", "hill"]].iloc[2].isna().all()
     assert st["status_reason"].iloc[2] == "the mean responses vary by less than 10% of the data range"
-    assert st["ec50"].iloc[:2].to_numpy() == pytest.approx([0.3, 3], rel=0.1)
+    assert st["midpoint"].iloc[:2].to_numpy() == pytest.approx([0.3, 3], rel=0.1)
     assert res["test_meta"]["n_determined"] == 2
     assert res["test_meta"]["shared_ec50_test"]["df1"] == 1
     assert "not determined" in res["methods"]
@@ -114,3 +114,14 @@ def test_dose_and_kinetics_methods_say_what_each_point_shows():
     assert "single response" in dose_response._points_text(False)
     assert "small points show each replicate" in enzyme_kinetics._points_text(True)
     assert "single rate" in enzyme_kinetics._points_text(False)
+
+
+def test_dose_response_stats_name_the_midpoint_columns():
+    """The midpoint columns say midpoint, so an IC50 is not stored as "ec50" (F123)."""
+    res = recipe_dose_response(drc_three_curves(),
+                               drc_spec(x="dose", y="response", group="compound"))
+    cols = set(res["stats"].columns)
+    assert {"midpoint_type", "midpoint", "log_midpoint", "se_log_midpoint",
+            "midpoint_ci_low", "midpoint_ci_high"} <= cols
+    assert not any("ec50" in c for c in cols)
+    assert res["stats"]["midpoint_type"].iloc[0] == "IC50"

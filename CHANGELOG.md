@@ -16,6 +16,11 @@ tag move together.
 ### Added
 
 ### Changed
+- The `dose_response` stats table names its midpoint columns `midpoint_type`,
+  `midpoint`, `log_midpoint`, `se_log_midpoint`, `midpoint_ci_low` and
+  `midpoint_ci_high`, so an IC50 is no longer stored in a column named `ec50`.
+  The `volcano` stats table names its p column after the `--y` column, for
+  example `padj` (F123).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of

@@ -16,9 +16,9 @@ test_that("dose_response reports an IC50 for a falling curve and drops the zero 
   df <- data.frame(dose = dose,
                    response = fpl_value(pmax(dose, 1e-6), 5, 100, 0.3, -1.2) + stats::rnorm(24, 0, 1))
   res <- recipe_dose_response(df, new_spec("dose_response", x = "dose", y = "response"))
-  expect_equal(res$stats$midpoint, "IC50")
+  expect_equal(res$stats$midpoint_type, "IC50")
   expect_lt(res$stats$hill, 0)
-  expect_equal(res$stats$ec50, 0.3, tolerance = 0.1)
+  expect_equal(res$stats$midpoint, 0.3, tolerance = 0.1)
   expect_true(any(grepl("zero or below", res$clean_steps)))
   expect_equal(res$stats$n, 21)
 })

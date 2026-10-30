@@ -87,7 +87,7 @@ recipe_volcano <- function(df, spec) {
   pal <- c(NS = "grey70", FC = "#2E8B57", p = "#3B6DB3", `FC and p` = "#C1432B")
   present <- .volcano_present(cat)
 
-  pdat <- data.frame(fc = fc, neglog = neglog, ydisp = .volcano_display_y(neglog, is_zero, pcc),
+  pdat <- data.frame(fc = fc, p = p, neglog = neglog, ydisp = .volcano_display_y(neglog, is_zero, pcc),
                      cat = cat, lab = lab, shape = ifelse(is_zero, 17, 16),
                      stringsAsFactors = FALSE)
   sig  <- pdat[pdat$cat == "FC and p", , drop = FALSE]
@@ -121,9 +121,12 @@ recipe_volcano <- function(df, spec) {
                    plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"))
 
   stats_df <- data.frame(
-    gene = lab_df$lab, log2FC = lab_df$fc, p_value = 10^(-lab_df$neglog),
+    gene = lab_df$lab, log2FC = lab_df$fc, p_value = lab_df$p,
     neg_log10_p = lab_df$neglog,
     direction = ifelse(lab_df$fc > 0, "up", "down"), stringsAsFactors = FALSE)
+  # The p column keeps the name of the input column, so padj is not shown as a
+  # raw p (F123).
+  names(stats_df)[3] <- cols$p
 
   test_meta <- list(
     name = "Volcano plot", fc_cutoff = fcc, p_cutoff = pcc,

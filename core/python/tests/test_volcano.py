@@ -22,7 +22,7 @@ def test_volcano_counts_and_columns():
     assert tm["n_up"] == 2      # g0 (+3.0), g3 (+2.5)
     assert tm["n_down"] == 1    # g1 (-3.0)
     assert tm["n_significant"] == 3
-    assert set(res["stats"].columns) >= {"gene", "log2FC", "p_value", "direction"}
+    assert set(res["stats"].columns) >= {"gene", "log2FC", "pvalue", "direction"}
 
 
 def test_volcano_legend_skips_empty_classes_and_labels_do_not_overlap():
@@ -77,3 +77,16 @@ def test_volcano_keeps_zero_p_and_stops_on_p_above_one():
     df.loc[2, "pvalue"] = 1.7
     with pytest.raises(ValueError, match="outside 0 to 1"):
         recipe_volcano(df, spec)
+
+
+def test_volcano_stats_name_the_p_column_after_the_input():
+    """The p column of the stats table keeps the input name (F123)."""
+    df = pd.DataFrame({"gene": [f"g{i}" for i in range(1, 5)],
+                       "log2FoldChange": [3.0, -3.0, 0.1, 2.0],
+                       "padj": [1e-8, 1e-9, 0.5, 1e-6]})
+    a = SimpleNamespace(recipe="volcano", data="de.csv", x=None, y="padj", label=None,
+                        fc_cutoff=1.0, p_cutoff=0.05, top_n=15)
+    res = recipe_volcano(df, spec_from_args(a))
+    st = res["stats"]
+    assert list(st.columns) == ["gene", "log2FC", "padj", "neg_log10_p", "direction"]
+    assert st.loc[st["gene"] == "g1", "padj"].iloc[0] == 1e-8

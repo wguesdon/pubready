@@ -160,7 +160,8 @@ test_that("DNase: the 4PL fit matches the self-starting SSfpl model", {
   bench_skip()
   res <- recipe_dose_response(bench_data("dnase_run1"),
                               bench_spec("dose_response", x = "conc", y = "density"))
-  for (q in c("bottom", "top", "ec50", "hill", "rss")) expect_ref(res$stats[[q]], "dnase_4pl", q)
+  cols <- c(bottom = "bottom", top = "top", ec50 = "midpoint", hill = "hill", rss = "rss")
+  for (q in names(cols)) expect_ref(res$stats[[cols[[q]]]], "dnase_4pl", q)
   sh <- recipe_dose_response(bench_data("dnase"),
                              bench_spec("dose_response", x = "conc", y = "density", group = "Run"))
   expect_ref(sh$test_meta$shared_ec50_test$statistic, "dnase_shared", "statistic")

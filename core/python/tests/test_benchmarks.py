@@ -220,8 +220,10 @@ def test_titanic_and_ucb_chi_squared():
 def test_dnase_four_parameter_logistic():
     res = recipe_dose_response(bench_data("dnase_run1"), bench_spec(
         "dose_response", x="conc", y="density"))
-    for q in ("bottom", "top", "ec50", "hill", "rss"):
-        expect_ref(res["stats"][q].iloc[0], "dnase_4pl", q)
+    # The reference quantity "ec50" is the stats column "midpoint" (F123).
+    cols = {"bottom": "bottom", "top": "top", "ec50": "midpoint", "hill": "hill", "rss": "rss"}
+    for q, col in cols.items():
+        expect_ref(res["stats"][col].iloc[0], "dnase_4pl", q)
     sh = recipe_dose_response(bench_data("dnase"), bench_spec(
         "dose_response", x="conc", y="density", group="Run"))
     expect_ref(sh["test_meta"]["shared_ec50_test"]["statistic"], "dnase_shared", "statistic")

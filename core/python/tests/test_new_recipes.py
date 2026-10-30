@@ -39,9 +39,9 @@ def test_dose_response_reports_an_ic50_and_drops_the_zero_dose():
     res = recipe_dose_response(pd.DataFrame({"dose": dose, "response": resp}),
                                new_spec("dose_response", x="dose", y="response"))
     row = res["stats"].iloc[0]
-    assert row["midpoint"] == "IC50"
+    assert row["midpoint_type"] == "IC50"
     assert row["hill"] < 0
-    assert row["ec50"] == pytest.approx(0.3, rel=0.1)
+    assert row["midpoint"] == pytest.approx(0.3, rel=0.1)
     assert any("zero or below" in s for s in res["clean_steps"])
     assert row["n"] == 21
 

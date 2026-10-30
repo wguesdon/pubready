@@ -28,10 +28,10 @@ test_that("dose_response reports a flat curve as not determined and keeps the fi
                               drc_spec(x = "dose", y = "response", group = "compound"))
   st <- res$stats
   expect_equal(st$fit_status, c("fitted", "fitted", "not determined"))
-  expect_true(is.na(st$ec50[3]))
-  expect_true(all(is.na(st[3, c("ec50_ci_low", "ec50_ci_high", "hill")])))
+  expect_true(is.na(st$midpoint[3]))
+  expect_true(all(is.na(st[3, c("midpoint_ci_low", "midpoint_ci_high", "hill")])))
   expect_equal(st$status_reason[3], "the mean responses vary by less than 10% of the data range")
-  expect_equal(st$ec50[1:2], c(0.3, 3), tolerance = 0.1)
+  expect_equal(st$midpoint[1:2], c(0.3, 3), tolerance = 0.1)
   expect_equal(res$test_meta$n_determined, 2L)
   expect_equal(res$test_meta$shared_ec50_test$df1, 1)
   expect_match(res$methods, "not determined")
@@ -81,4 +81,14 @@ test_that("the dose and kinetics methods say what each point shows", {
   expect_match(.drc_points_text(FALSE), "single response", fixed = TRUE)
   expect_match(.enz_points_text(TRUE), "small points show each replicate", fixed = TRUE)
   expect_match(.enz_points_text(FALSE), "single rate", fixed = TRUE)
+})
+
+# The midpoint columns say midpoint, so an IC50 is not stored as "ec50" (F123).
+test_that("the dose_response stats table names the midpoint columns", {
+  res <- recipe_dose_response(drc_three_curves(),
+                              drc_spec(x = "dose", y = "response", group = "compound"))
+  expect_true(all(c("midpoint_type", "midpoint", "log_midpoint", "se_log_midpoint",
+                    "midpoint_ci_low", "midpoint_ci_high") %in% names(res$stats)))
+  expect_false(any(grepl("ec50", names(res$stats))))
+  expect_equal(res$stats$midpoint_type[1], "IC50")
 })

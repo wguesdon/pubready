@@ -230,9 +230,9 @@ def curve_row(g, lx, y, popt, pcov, start, span_ref, flat_reason=None):
     nan = float("nan")
     base = {
         "group": g, "n": int(len(y)), "doses": int(len(np.unique(lx))),
-        "midpoint": "IC50" if start["hill"] < 0 else "EC50",
-        "bottom": nan, "top": nan, "hill": nan, "log_ec50": nan, "se_log_ec50": nan,
-        "ec50": nan, "ec50_ci_low": nan, "ec50_ci_high": nan, "r_squared": nan,
+        "midpoint_type": "IC50" if start["hill"] < 0 else "EC50",
+        "bottom": nan, "top": nan, "hill": nan, "log_midpoint": nan, "se_log_midpoint": nan,
+        "midpoint": nan, "midpoint_ci_low": nan, "midpoint_ci_high": nan, "r_squared": nan,
         "rss": nan, "df_resid": nan, "fit_status": "not determined",
         "status_reason": flat_reason or "the fit did not converge",
     }
@@ -257,10 +257,10 @@ def curve_row(g, lx, y, popt, pcov, start, span_ref, flat_reason=None):
         return base
     return {
         "group": g, "n": int(len(y)), "doses": int(len(np.unique(lx))),
-        "midpoint": "IC50" if hill < 0 else "EC50",
+        "midpoint_type": "IC50" if hill < 0 else "EC50",
         "bottom": bottom, "top": top, "hill": hill,
-        "log_ec50": log_ec50, "se_log_ec50": float(se[2]),
-        "ec50": 10 ** log_ec50, "ec50_ci_low": ci_low, "ec50_ci_high": ci_high,
+        "log_midpoint": log_ec50, "se_log_midpoint": float(se[2]),
+        "midpoint": 10 ** log_ec50, "midpoint_ci_low": ci_low, "midpoint_ci_high": ci_high,
         "r_squared": 1 - rss / float(np.sum((y - y.mean()) ** 2)),
         "rss": rss, "df_resid": dfr, "fit_status": "fitted", "status_reason": None,
     }
@@ -466,12 +466,12 @@ def recipe_dose_response(df, spec):
         if det[i]:
             lxg = d.loc[d["group"] == g, "lx"]
             grid = np.linspace(lxg.min(), lxg.max(), 200)
-            cf = (r["bottom"], r["top"], r["log_ec50"], r["hill"])
+            cf = (r["bottom"], r["top"], r["log_midpoint"], r["hill"])
             ax.plot(10 ** grid, fpl(grid, *cf), color=pal[i], lw=1.6)
             # The key of a fitted curve shows the point on the line, as in R.
             handles.append(Line2D([], [], color=pal[i], lw=1.6, marker="o",
                                   markersize=2 * R_POINT_PT,
-                                  label=f"{g} ({r['midpoint']} = {sig_text(r['ec50'])})"))
+                                  label=f"{g} ({r['midpoint_type']} = {sig_text(r['midpoint'])})"))
         else:
             handles.append(pts)
     ax.set_xscale("log")
@@ -492,9 +492,9 @@ def recipe_dose_response(df, spec):
         "n_curves": len(groups),
         "n_determined": len(det_groups),
         "not_determined": nd_groups,
-        "curves": {r["group"]: {"midpoint": r["midpoint"], "fit_status": r["fit_status"],
-                                "status_reason": r["status_reason"], "ec50": r["ec50"],
-                                "ci_low": r["ec50_ci_low"], "ci_high": r["ec50_ci_high"],
+        "curves": {r["group"]: {"midpoint_type": r["midpoint_type"], "fit_status": r["fit_status"],
+                                "status_reason": r["status_reason"], "midpoint": r["midpoint"],
+                                "ci_low": r["midpoint_ci_low"], "ci_high": r["midpoint_ci_high"],
                                 "hill": r["hill"], "bottom": r["bottom"], "top": r["top"],
                                 "r_squared": r["r_squared"]} for r in rows},
         "shared_ec50_test": shared,
@@ -518,9 +518,9 @@ def _mid_name(rows):
     Returns:
         str: "IC50" or "EC50".
     """
-    mids = rows.loc[rows["fit_status"] == "fitted", "midpoint"]
+    mids = rows.loc[rows["fit_status"] == "fitted", "midpoint_type"]
     if len(mids) == 0:
-        mids = rows["midpoint"]
+        mids = rows["midpoint_type"]
     return "IC50" if (mids == "IC50").all() else "EC50"
 
 
@@ -545,8 +545,8 @@ def _subtitle(rows, shared, mid_name, has_group):
                  f"{shared['statistic']:.2f}, P = {sig_text(shared['p_value'], 2)}")
     elif det.any():
         r = rows[det].iloc[0]
-        first = (f"{(str(r['group']) + ' ') if has_group else ''}{r['midpoint']} = {sig_text(r['ec50'])} "
-                 f"(95% CI {sig_text(r['ec50_ci_low'])} to {sig_text(r['ec50_ci_high'])})")
+        first = (f"{(str(r['group']) + ' ') if has_group else ''}{r['midpoint_type']} = {sig_text(r['midpoint'])} "
+                 f"(95% CI {sig_text(r['midpoint_ci_low'])} to {sig_text(r['midpoint_ci_high'])})")
     elif has_group:
         first = f"{mid_name} not determined for any curve"
     else:
@@ -599,15 +599,15 @@ def _methods(rows, shared, n_points, spec, x, y, replicated):
     multi = len(rows) > 1
     det = rows["fit_status"] == "fitted"
     fits = "; ".join(
-        f"{(str(r['group']) + ': ') if multi else ''}{r['midpoint']} = {sig_text(r['ec50'])} "
-        f"(95% CI {sig_text(r['ec50_ci_low'])} to {sig_text(r['ec50_ci_high'])}, Hill slope {r['hill']:.2f}, "
+        f"{(str(r['group']) + ': ') if multi else ''}{r['midpoint_type']} = {sig_text(r['midpoint'])} "
+        f"(95% CI {sig_text(r['midpoint_ci_low'])} to {sig_text(r['midpoint_ci_high'])}, Hill slope {r['hill']:.2f}, "
         f"R2 = {r['r_squared']:.3f})" for _, r in rows[det].iterrows())
     fits = f"{fits}." if fits else ""
     nd = rows[~det]
     nd_txt = ""
     if len(nd):
         nd_txt = " " + " ".join(
-            f"The {r['midpoint']}{(' of ' + str(r['group'])) if multi else ''} was not determined, "
+            f"The {r['midpoint_type']}{(' of ' + str(r['group'])) if multi else ''} was not determined, "
             f"because {r['status_reason']}." for _, r in nd.iterrows())
         nd_txt += (" A curve that is not determined is drawn as its mean +/- SEM without a fit"
                    + (" and is left out of the shared-midpoint F test." if multi else "."))

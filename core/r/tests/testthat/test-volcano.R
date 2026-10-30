@@ -49,3 +49,13 @@ test_that("the volcano keeps p = 0 and stops on a p above 1", {
   df$pvalue[3] <- 1.7
   expect_error(recipe_volcano(df, spec), "outside 0 to 1")
 })
+
+# The p column of the stats table keeps the name of the input column (F123).
+test_that("the volcano stats table names the p column after the input", {
+  df <- data.frame(gene = paste0("g", 1:4), log2FoldChange = c(3, -3, 0.1, 2),
+                   padj = c(1e-8, 1e-9, 0.5, 1e-6), stringsAsFactors = FALSE)
+  spec <- spec_from_opt(list(recipe = "volcano", data = "de.csv", y = "padj", top_n = 15))
+  res <- recipe_volcano(df, spec)
+  expect_equal(names(res$stats), c("gene", "log2FC", "padj", "neg_log10_p", "direction"))
+  expect_equal(res$stats$padj[res$stats$gene == "g1"], 1e-8)
+})
