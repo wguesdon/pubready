@@ -224,7 +224,15 @@ nodes:
       doc_heading: Two or three factors → `factorial_anova`
       reason: Estimate factorial effects on one continuous outcome.
       flags: {required: [x, y, fill]}
-      test: {default: auto, allowed: ["auto", "anova", "art"], checks: Shapiro-Wilk checks model residuals., outcomes: [{when: Normal residuals or forced anova., test: 2-way ANOVA}, {when: Non-normal residuals or forced art in R., test: "aligned rank transform ANOVA (2-way)"}]}
+      test:
+        default: auto
+        allowed: ["auto", "anova", "art"]
+        checks: Shapiro-Wilk checks model residuals.
+        outcomes:
+          - {when: Two factors with normal residuals or forced anova., test: 2-way ANOVA}
+          - {when: Three factors with normal residuals or forced anova., test: 3-way ANOVA}
+          - {when: Two factors with non-normal residuals or forced art in R., test: "aligned rank transform ANOVA (2-way)"}
+          - {when: Three factors with non-normal residuals or forced art in R., test: "aligned rank transform ANOVA (3-way)"}
       next_step: diagnose
       engine_notes:
         - {engine: python, forbidden: ["art"], note: The aligned rank transform is R only. Under auto Python stops and routes to R when residuals fail Shapiro-Wilk.}
