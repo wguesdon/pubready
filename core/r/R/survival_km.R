@@ -28,8 +28,16 @@ recipe_survival_km <- function(df, spec) {
     sprintf("Dropped %d row(s) with missing/invalid time, event, or group (%d -> %d rows).",
             n0 - nrow(df), n0, nrow(df))
   } else "No cleaning applied; input used as-is."
+  if (nrow(df) == 0) {
+    stop(sprintf("survival_km found no row with a time, an event and a group in '%s', '%s' and '%s'",
+                 time_col, event_col, group_col))
+  }
   df[[group_col]] <- factor(df[[group_col]])
   lvls <- levels(df[[group_col]])
+  if (length(lvls) < 2) {
+    stop(sprintf("survival_km compares groups, and column '%s' holds 1 group ('%s', n = %d); the log-rank test needs 2 or more",
+                 group_col, lvls, nrow(df)))
+  }
 
   # Bind Surv into the formula's environment so surv_fit/survdiff resolve it;
   # surv_fit (not survfit) stores the formula so ggsurvplot can recover the data.
@@ -170,7 +178,8 @@ event_codes <- function(v, col, meaning = "1 = event, 0 = censored") {
 # cuts the follow-up into at most 6 intervals. Python has the same rule.
 km_break_step <- function(tmax) {
   if (!is.finite(tmax) || tmax <= 0) return(1)
-  cand <- sort(as.vector(outer(c(1, 2, 5), 10^(-3:6))))
+  top <- max(1, ceiling(log10(tmax)) + 1)
+  cand <- sort(as.vector(outer(c(1, 2, 5), 10^(-3:top))))
   cand[which(tmax / cand <= 6 + 1e-9)[1]]
 }
 

@@ -69,3 +69,15 @@ test_that("the median survival takes the midpoint of a step at exactly 0.5 (F67)
   ref <- summary(survival::survfit(survival::Surv(time, event) ~ arm, data = d))$table[, "median"]
   expect_equal(unname(res$stats$median_survival), unname(ref))
 })
+
+test_that("survival_km names one group and draws follow-up times above 5e6 (F92)", {
+  d <- data.frame(time = c(3, 5, 8, 9), event = c(1, 0, 1, 1), arm = "control")
+  expect_error(recipe_survival_km(d, v3c_spec("survival_km", time = "time", event = "event", x = "arm")),
+               "column 'arm' holds 1 group ('control', n = 4)", fixed = TRUE)
+  expect_equal(km_break_step(1.038e8), 2e7)
+  expect_equal(km_break_step(5.5e12), 1e12)
+  d2 <- data.frame(time = c(1, 3, 5, 8, 9, 10) * 1e7, event = c(1, 0, 1, 1, 1, 0),
+                   arm = rep(c("a", "b"), each = 3))
+  res <- recipe_survival_km(d2, v3c_spec("survival_km", time = "time", event = "event", x = "arm"))
+  expect_equal(res$test_meta$at_risk$times, c(0, 2, 4, 6, 8, 10) * 1e7)
+})

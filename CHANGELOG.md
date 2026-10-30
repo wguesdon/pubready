@@ -34,6 +34,10 @@ tag move together.
   `survival::survfit`: when the curve sits at exactly 0.5 on a step, the median
   is the midpoint between the start of the step and the next drop. A median of
   52 in Python and 52.5 in R is now 52.5 in both engines (F67).
+- `survival_km` stops with a clear message when the group column holds one
+  group, and it draws follow-up times above 5e6. Before, R stopped with
+  "There is only 1 group", Python wrote "chi-square(0) = 0.00, P = NA", and a
+  time above 5e6 stopped both engines with an error that did not say why (F92).
 
 ## [3.0.0] - 2026-10-29
 

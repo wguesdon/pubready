@@ -29,7 +29,8 @@ def km_break_step(tmax):
     """
     if not np.isfinite(tmax) or tmax <= 0:
         return 1.0
-    cand = sorted(m * 10.0 ** k for k in range(-3, 7) for m in (1, 2, 5))
+    top = max(1, int(np.ceil(np.log10(tmax))) + 1)
+    cand = sorted(m * 10.0 ** k for k in range(-3, top + 1) for m in (1, 2, 5))
     return next(c for c in cand if tmax / c <= 6 + 1e-9)
 
 
@@ -242,11 +243,17 @@ def recipe_survival_km(df, spec):
     df[e] = event_codes(df[e], e)
     n0 = len(df)
     df = df.dropna(subset=[t, e, g])
-    df = df[df[t] >= 0].reset_index(drop=True)
+    df = df[np.isfinite(df[t]) & (df[t] >= 0)].reset_index(drop=True)
     clean_steps = (f"Dropped {n0 - len(df)} row(s) with missing/invalid values ({n0} -> {len(df)} rows)."
                    if len(df) < n0 else "No cleaning applied; input used as-is.")
+    if df.empty:
+        raise ValueError(f"survival_km found no row with a time, an event and a group in "
+                         f"'{t}', '{e}' and '{g}'")
     df[g] = df[g].astype(str)
     lv = sorted(df[g].unique())
+    if len(lv) < 2:
+        raise ValueError(f"survival_km compares groups, and column '{g}' holds 1 group "
+                         f"('{lv[0]}', n = {len(df)}); the log-rank test needs 2 or more")
     pal = palette(len(lv), spec["appearance"].get("palette"))
 
     # The x axis runs to the last time, so the last event is on the figure, with

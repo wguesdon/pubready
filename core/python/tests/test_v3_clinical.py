@@ -7,7 +7,8 @@ import pandas as pd
 import pytest
 
 from pubready.recipes.cox_forest import recipe_cox_forest
-from pubready.recipes.survival_km import event_codes, km_median, recipe_survival_km
+from pubready.recipes.survival_km import (event_codes, km_break_step, km_median,
+                                          recipe_survival_km)
 from pubready.recipes.swimmer import recipe_swimmer
 from pubready.spec import spec_from_args
 
@@ -87,3 +88,16 @@ def test_the_median_survival_takes_the_midpoint_of_a_step_at_exactly_one_half():
     assert list(res["stats"]["median_survival"]) == pytest.approx([5.5, 11, 2.5])
     assert np.isnan(km_median(np.array([0.0, 1, 2, 3]), np.array([1.0, 0.8, 0.6, 0.55])))
     assert km_median(np.array([0.0, 1, 2]), np.array([1.0, 0.75, 0.5])) == 2
+
+
+def test_survival_km_names_one_group_and_draws_times_above_5e6():
+    """F92: one group gave chi-square(0) in Python; times above 5e6 stopped both engines."""
+    d = pd.DataFrame({"time": [3, 5, 8, 9], "event": [1, 0, 1, 1], "arm": ["control"] * 4})
+    with pytest.raises(ValueError, match=r"column 'arm' holds 1 group \('control', n = 4\)"):
+        recipe_survival_km(d, v3c_spec("survival_km", time="time", event="event", x="arm"))
+    assert km_break_step(1.038e8) == 2e7
+    assert km_break_step(5.5e12) == 1e12
+    d2 = pd.DataFrame({"time": [v * 1e7 for v in (1, 3, 5, 8, 9, 10)],
+                       "event": [1, 0, 1, 1, 1, 0], "arm": ["a"] * 3 + ["b"] * 3})
+    res = recipe_survival_km(d2, v3c_spec("survival_km", time="time", event="event", x="arm"))
+    assert res["test_meta"]["at_risk"]["times"] == pytest.approx([v * 1e7 for v in (0, 2, 4, 6, 8, 10)])
