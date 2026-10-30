@@ -163,3 +163,16 @@ test_that("a covariate that separates the events is marked not estimable (F57)",
   ok <- recipe_cox_forest(v3c_cox_data(), v3c_cox_spec("arm,age"))
   expect_equal(ok$stats$note, c("estimated", "estimated"))
 })
+
+test_that("cumulative_incidence stops on a text or a negative status code (F58)", {
+  d <- data.frame(time = c(2, 3, 5, 6, 8, 9), arm = rep(c("a", "b"), 3),
+                  status = c("relapse", "censored", "death", "relapse", "censored", "death"))
+  sp <- v3c_spec("cumulative_incidence", time = "time", event = "status", x = "arm")
+  expect_error(recipe_cumulative_incidence(d, sp),
+               "column 'status' must hold 0 for a censored subject and a positive number for each cause, but it holds 'censored', 'death', 'relapse'",
+               fixed = TRUE)
+  d$status <- c(1, -1, 2, 1, -1, 2)
+  expect_error(recipe_cumulative_incidence(d, sp), "but it holds '-1'", fixed = TRUE)
+  d$status <- c(1, 0, 2, 1, 0, 2)
+  expect_equal(unlist(recipe_cumulative_incidence(d, sp)$test_meta$causes), c("1", "2"))
+})

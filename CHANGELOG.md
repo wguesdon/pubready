@@ -59,6 +59,10 @@ tag move together.
   stats table has a new `note` column, the term has no HR, CI or P, the figure
   writes the mark in the HR column, and the methods text explains it. Before,
   such a term read HR = 4e8, CI 0 to infinity and P = 1 with no warning (F57).
+- `cumulative_incidence` stops when the status holds text or a negative code,
+  and the message lists those codes. Before, each status other than "0" was a
+  cause, so a "censored" or -1 code became a competing event, and the text
+  could name "status = censored" as the event of interest (F58).
 
 ## [3.0.0] - 2026-10-29
 

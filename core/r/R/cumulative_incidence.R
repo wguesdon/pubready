@@ -49,6 +49,21 @@
   out
 }
 
+# The status holds 0 for a censored subject and a positive number for each
+# cause. A text code such as "censored" or a negative code such as -1 would
+# become a competing event, so it stops the run, and the message lists the
+# codes. The Python engine has the same rule.
+.cif_check_status <- function(status, ecol) {
+  s <- status[!is.na(status)]
+  num <- suppressWarnings(as.numeric(s))
+  bad <- unique(s[!is.finite(num) | num < 0])
+  if (length(bad) > 0) {
+    stop(sprintf("column '%s' must hold 0 for a censored subject and a positive number for each cause, but it holds %s; recode the status, for example 0 = censored, 1 = relapse, 2 = death",
+                 ecol, .km_value_list(level_order(bad))))
+  }
+  invisible(NULL)
+}
+
 # Group labels by the rule that both engines share (level_labels): a whole number
 # reads "80", not "80.0".
 .cif_group_labels <- function(v) {
@@ -217,6 +232,7 @@ recipe_cumulative_incidence <- function(df, spec) {
                   status = .cif_codes(df[[ecol]]),
                   group = if (has_group) .cif_group_labels(df[[gcol]]) else "all",
                   stringsAsFactors = FALSE)
+  .cif_check_status(d$status, ecol)
   keep <- is.finite(d$time) & d$time >= 0 & !is.na(d$status) & !is.na(d$group)
   d <- d[keep, , drop = FALSE]
   if (nrow(d) < 2) stop("cumulative_incidence needs at least 2 subjects with a time and a status")

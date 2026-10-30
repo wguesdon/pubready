@@ -205,3 +205,19 @@ def test_a_covariate_that_separates_the_events_is_marked_not_estimable():
     assert list(cox_separation(time, event, x)) == [1, -1, 0]
     ok = cox_run(cox_data(), "arm,age")
     assert list(ok["stats"]["note"]) == ["estimated", "estimated"]
+
+
+def test_cumulative_incidence_stops_on_a_text_or_a_negative_status_code():
+    """F58: "censored" or -1 became a competing event, even the cause of interest."""
+    d = pd.DataFrame({"time": [2, 3, 5, 6, 8, 9], "arm": ["a", "b"] * 3,
+                      "status": ["relapse", "censored", "death", "relapse", "censored", "death"]})
+    sp = v3c_spec("cumulative_incidence", time="time", event="status", x="arm")
+    with pytest.raises(ValueError, match="column 'status' must hold 0 for a censored subject and a "
+                                         "positive number for each cause, but it holds "
+                                         "'censored', 'death', 'relapse'"):
+        recipe_cumulative_incidence(d, sp)
+    d["status"] = [1, -1, 2, 1, -1, 2]
+    with pytest.raises(ValueError, match="but it holds '-1'"):
+        recipe_cumulative_incidence(d, sp)
+    d["status"] = [1, 0, 2, 1, 0, 2]
+    assert recipe_cumulative_incidence(d, sp)["test_meta"]["causes"] == ["1", "2"]
