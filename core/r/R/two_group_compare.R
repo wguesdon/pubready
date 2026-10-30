@@ -283,9 +283,6 @@ recipe_two_group_compare <- function(df, spec) {
     }
   } else ""
   eff_txt <- paste0(eff_txt, .tg_effect_definition(test_meta$effect_size$name))
-  adj_txt <- if (!identical(spec$test$p_adjust, "none")) {
-    sprintf(" P-values were adjusted for multiple comparisons using the %s method.", spec$test$p_adjust)
-  } else ""
   n_txt <- if (all(c("n1", "n2") %in% names(stats_df))) {
     sprintf(" Group sizes were n = %d and n = %d.", stats_df$n1[1], stats_df$n2[1])
   } else ""
@@ -293,7 +290,7 @@ recipe_two_group_compare <- function(df, spec) {
   paste0(
     sprintf("%s was compared between the two groups with a %s.",
             cap_first(y_label), resolved$label),
-    " ", norm_txt, var_txt, eff_txt, adj_txt,
+    " ", norm_txt, var_txt, eff_txt,
     " Significance was set at P < 0.05.",
     sprintf(" Analyses were performed in R %s with rstatix %s; figures were produced with ggpubr %s and ggprism %s.",
             rver, v$rstatix, v$ggpubr, v$ggprism),

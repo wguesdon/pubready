@@ -192,46 +192,6 @@ manifest_json <- function(manifest) {
                    digits = NA)
 }
 
-methods_paragraph <- function(resolved, stats_df, test_meta, spec) {
-  y_label <- spec$appearance$y_label %||% spec$data$y
-  v <- pkg_versions(c("rstatix", "ggpubr", "ggprism"))
-  rver <- paste(R.version$major, R.version$minor, sep = ".")
-
-  norm_txt <- "Normality was assessed with the Shapiro-Wilk test."
-  var_txt <- if (resolved$family == "t") {
-    if (isTRUE(resolved$var_equal)) " Equal variances were assumed."
-    else " Equal variances were not assumed, and the Welch correction was applied."
-  } else " A non-parametric test was used because the normality assumption was not met."
-  if (tolower(spec$test$method %||% "auto") != "auto") {
-    var_txt <- paste0(if (resolved$family == "t") var_txt else "", " The test was set by the user.")
-  }
-  eff_txt <- if (!is.null(test_meta$effect_size)) {
-    # The value is given, not only the name, so the paragraph can be read on its
-    # own. The Python engine writes the same sentence.
-    eff_v <- test_meta$effect_size$value
-    if (is.null(eff_v) || !is.finite(eff_v)) {
-      sprintf(" Effect size is reported as %s (%s minus %s).", test_meta$effect_size$name,
-              stats_df$group1[1], stats_df$group2[1])
-    } else {
-      sprintf(" Effect size is reported as %s = %s (%s minus %s).", test_meta$effect_size$name,
-              formatC(eff_v, format = "f", digits = 2), stats_df$group1[1], stats_df$group2[1])
-    }
-  } else ""
-  n_txt <- if (all(c("n1", "n2") %in% names(stats_df))) {
-    sprintf(" Group sizes were n = %d and n = %d.", stats_df$n1[1], stats_df$n2[1])
-  } else ""
-
-  paste0(
-    sprintf("%s was compared between the two groups with a %s.",
-            cap_first(y_label), resolved$label),
-    " ", norm_txt, var_txt, eff_txt,
-    " Significance was set at P < 0.05.",
-    sprintf(" Analyses were performed in R %s with rstatix %s; figures were produced with ggpubr %s and ggprism %s.",
-            rver, v$rstatix, v$ggpubr, v$ggprism),
-    n_txt
-  )
-}
-
 # The distribution geom of an emitted comparison script, as add_dist_geom() draws
 # it: box | violin | bar | raincloud, plus the points unless show_points is
 # FALSE. `prep` holds the lines that set the raincloud offsets on df before the
@@ -260,65 +220,6 @@ script_geom_lines <- function(x, geom = "box", show_points = TRUE) {
       '  geom_point(aes(x = .point_x, fill = .data[["%s"]]), size = 1.5, alpha = 0.7, shape = 21, stroke = 0.3) +', x))
   }
   list(prep = prep, layers = layers)
-}
-
-# A standalone, readable script that reproduces the figure from the bundled
-# input using the concrete resolved parameters.
-emit_script <- function(spec, resolved, in_name, fig_stub) {
-  x <- spec$data$x; y <- spec$data$y
-  pal <- spec$appearance$palette %||% pubready_palette[1:2]
-  pal_str <- paste0("c(", paste(sprintf('"%s"', pal), collapse = ", "), ")")
-  paired <- if (isTRUE(resolved$paired)) "TRUE" else "FALSE"
-  geom <- spec$appearance$geom %||% "box"
-  bracket_label <- spec$appearance$bracket$label %||% "p.signif"
-
-  if (identical(bracket_label, "p.format")) {
-    plabel_line <- 'stat$plabel <- paste0("p = ", formatC(stat$p, format = "g", digits = 2))'
-    label_arg <- "plabel"
-  } else {
-    plabel_line <- character(0)
-    label_arg <- "p.signif"
-  }
-
-  test_line <- if (resolved$family == "t") {
-    sprintf('stat <- rstatix::t_test(df, %s ~ %s, paired = %s, var.equal = %s)',
-            y, x, paired, if (isTRUE(resolved$var_equal)) "TRUE" else "FALSE")
-  } else {
-    sprintf('stat <- rstatix::wilcox_test(df, %s ~ %s, paired = %s)', y, x, paired)
-  }
-  gl <- script_geom_lines(x, geom, spec$appearance$show_points %||% TRUE)
-
-  c(
-    "#!/usr/bin/env Rscript",
-    "# Standalone reproduction of this figure. Run inside the pinned pubready",
-    "# container (see REPRODUCE.md) from this bundle folder.",
-    "suppressPackageStartupMessages({",
-    "  library(ggplot2); library(ggpubr); library(rstatix); library(readr)",
-    "})",
-    "",
-    sprintf('df <- as.data.frame(read_csv("%s", show_col_types = FALSE))', in_name),
-    sprintf('df[["%s"]] <- factor(df[["%s"]])', x, x),
-    sprintf('df[["%s"]] <- as.numeric(df[["%s"]])', y, y),
-    "",
-    test_line,
-    "stat <- rstatix::add_significance(stat)",
-    sprintf('stat <- rstatix::add_xy_position(stat, x = "%s")', x),
-    plabel_line,
-    "",
-    gl$prep,
-    sprintf('p <- ggplot(df, aes(x = .data[["%s"]], y = .data[["%s"]])) +', x, y),
-    gl$layers,
-    sprintf("  scale_fill_manual(values = %s) +", pal_str),
-    sprintf('  stat_pvalue_manual(stat, label = "%s", tip.length = 0.01, bracket.size = 0.4) +',
-            label_arg),
-    sprintf('  labs(x = "%s", y = "%s") +',
-            spec$appearance$x_label %||% x, spec$appearance$y_label %||% y),
-    "  theme_classic(base_size = 13) +",
-    '  theme(legend.position = "none")',
-    "",
-    sprintf('ggsave("%s.pdf", p, width = 3.8, height = 4.0)', fig_stub),
-    'cat("Reproduced figure.\\n")'
-  )
 }
 
 # A recipe returns its script builder either as a function of (in_name,
