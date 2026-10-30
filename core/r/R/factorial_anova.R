@@ -28,8 +28,11 @@ recipe_factorial_anova <- function(df, spec) {
   n0 <- nrow(df)
   df <- df[stats::complete.cases(df[, c(y, factors)]), , drop = FALSE]
   # The factors are made after the rows are dropped, so a level whose every
-  # outcome is missing does not stay as an empty slot of the axis.
-  for (f in factors) df[[f]] <- factor(df[[f]])
+  # outcome is missing does not stay as an empty slot of the axis. --levels
+  # orders the --x levels; --fill and --facet take the rule without a list:
+  # numeric order when every label is a number, else code-point order.
+  df[[f1]] <- .fa_factor(df[[f1]], unlist(spec$data$levels))
+  for (f in factors[-1]) df[[f]] <- .fa_factor(df[[f]])
   clean_steps <- if (nrow(df) < n0) {
     sprintf("Dropped %d row(s) with missing values in %s (%d -> %d rows).",
             n0 - nrow(df), paste(c(y, factors), collapse = ", "), n0, nrow(df))
@@ -165,7 +168,8 @@ recipe_factorial_anova <- function(df, spec) {
                        args = list(spec = spec, factors = factors, use_art = use_art,
                                    pal = pal[seq_len(nlevels(df[[f2]]))],
                                    width = size$width, height = size$height,
-                                   wrap_x = .fa_needs_wrap(levels(df[[f1]]))))
+                                   wrap_x = .fa_needs_wrap(levels(df[[f1]])),
+                                   fac_levels = lapply(df[factors], levels)))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
@@ -177,6 +181,19 @@ recipe_factorial_anova <- function(df, spec) {
 }
 
 .fa_null_on_error <- function(e) NULL
+
+# A factor column with the level rule of both engines (util level_order).
+.fa_factor <- function(v, levels = NULL) {
+  lab <- level_labels(v)
+  factor(lab, levels = level_order(lab, levels, "level"))
+}
+
+# The line of an emitted script that makes one factor with the levels of the
+# figure.
+.fa_factor_line <- function(i, factors, fac_levels) {
+  sprintf('df[["%s"]] <- factor(df[["%s"]], levels = c(%s))', factors[i], factors[i],
+          paste(sprintf('"%s"', fac_levels[[i]]), collapse = ", "))
+}
 
 # The dodge width of the interaction plot; the Python engine offsets each line
 # by the same amount.
@@ -263,7 +280,8 @@ recipe_factorial_anova <- function(df, spec) {
   df
 }
 
-.fa_emit_script <- function(spec, factors, use_art, pal, width, height, wrap_x, in_name, fig_stub) {
+.fa_emit_script <- function(spec, factors, use_art, pal, width, height, wrap_x, fac_levels,
+                            in_name, fig_stub) {
   y  <- spec$data$y
   f1 <- factors[1]; f2 <- factors[2]; f3 <- if (length(factors) >= 3) factors[3] else NULL
   pal_str <- paste0("c(", paste(sprintf('"%s"', pal), collapse = ", "), ")")
@@ -271,7 +289,7 @@ recipe_factorial_anova <- function(df, spec) {
   geom <- spec$appearance$geom %||% "box"
   if (geom == "interaction") {
     return(.fa_emit_interaction_script(spec, factors, use_art, pal_str, width, height, wrap_x,
-                                       in_name, fig_stub))
+                                       fac_levels, in_name, fig_stub))
   }
 
   omni_lines <- if (use_art) c(
@@ -311,7 +329,8 @@ recipe_factorial_anova <- function(df, spec) {
     "})",
     "",
     sprintf('df <- as.data.frame(read_csv("%s", show_col_types = FALSE))', in_name),
-    paste0(sprintf('df[["%s"]] <- factor(df[["%s"]]); ', factors, factors), collapse = ""),
+    vapply(seq_along(factors), .fa_factor_line, character(1), factors = factors,
+           fac_levels = fac_levels),
     sprintf('df[["%s"]] <- as.numeric(df[["%s"]])', y, y),
     "",
     omni_lines,
@@ -340,7 +359,7 @@ recipe_factorial_anova <- function(df, spec) {
 # The standalone script of the interaction geom: the same ANOVA, then the mean
 # +/- SEM of each cell joined by one line per --fill level.
 .fa_emit_interaction_script <- function(spec, factors, use_art, pal_str, width, height, wrap_x,
-                                        in_name, fig_stub) {
+                                        fac_levels, in_name, fig_stub) {
   y  <- spec$data$y
   f1 <- factors[1]; f2 <- factors[2]; f3 <- if (length(factors) >= 3) factors[3] else NULL
   rhs <- paste(sprintf("`%s`", factors), collapse = " * ")
@@ -363,7 +382,8 @@ recipe_factorial_anova <- function(df, spec) {
     "})",
     "",
     sprintf('df <- as.data.frame(read_csv("%s", show_col_types = FALSE))', in_name),
-    paste0(sprintf('df[["%s"]] <- factor(df[["%s"]]); ', factors, factors), collapse = ""),
+    vapply(seq_along(factors), .fa_factor_line, character(1), factors = factors,
+           fac_levels = fac_levels),
     sprintf('df[["%s"]] <- as.numeric(df[["%s"]])', y, y),
     "",
     omni_lines,

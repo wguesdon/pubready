@@ -9,8 +9,11 @@ recipe_two_group_compare <- function(df, spec) {
   x <- spec$data$x
   y <- spec$data$y
 
-  df[[x]] <- factor(df[[x]])
-  lvls <- levels(df[[x]])
+  # One level rule in both engines: the --levels order, else numeric order when
+  # every label is a number, else code-point order. The first level is group 1.
+  lab <- level_labels(df[[x]])
+  lvls <- level_order(lab, unlist(spec$data$levels), "group")
+  df[[x]] <- factor(lab, levels = lvls)
   if (length(lvls) != 2) {
     stop(sprintf("two_group_compare needs exactly 2 groups in '%s'; found %d (%s)",
                  x, length(lvls), paste(lvls, collapse = ", ")))
@@ -174,7 +177,8 @@ recipe_two_group_compare <- function(df, spec) {
   }
 
   methods <- .tg_methods(resolved, stats_df, test_meta, spec)
-  build_script <- list(fn = .tg_emit_script, args = list(spec = spec, resolved = resolved))
+  build_script <- list(fn = .tg_emit_script,
+                       args = list(spec = spec, resolved = resolved, lvls = lvls))
 
   qc <- if (paired) {
     list(quantity = "within-pair differences", panels = list(differences = diffs))
@@ -289,7 +293,7 @@ recipe_two_group_compare <- function(df, spec) {
 
 # A standalone, readable script that reproduces the figure from the bundled
 # input using the concrete resolved parameters.
-.tg_emit_script <- function(spec, resolved, in_name, fig_stub) {
+.tg_emit_script <- function(spec, resolved, lvls, in_name, fig_stub) {
   x <- spec$data$x; y <- spec$data$y
   pal <- spec$appearance$palette %||% pubready_palette[1:2]
   pal_str <- paste0("c(", paste(sprintf('"%s"', pal), collapse = ", "), ")")
@@ -322,7 +326,8 @@ recipe_two_group_compare <- function(df, spec) {
     "})",
     "",
     sprintf('df <- as.data.frame(read_csv("%s", show_col_types = FALSE))', in_name),
-    sprintf('df[["%s"]] <- factor(df[["%s"]])', x, x),
+    sprintf('df[["%s"]] <- factor(df[["%s"]], levels = c(%s))', x, x,
+            paste(sprintf('"%s"', lvls), collapse = ", ")),
     sprintf('df[["%s"]] <- as.numeric(df[["%s"]])', y, y),
     "",
     test_line,

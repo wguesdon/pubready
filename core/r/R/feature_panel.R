@@ -34,12 +34,6 @@
              stringsAsFactors = FALSE)
 }
 
-# The group levels: numeric groups in numeric order, text in C-locale order.
-.fp_group_levels <- function(g) {
-  if (is.numeric(g)) return(as.character(sort(unique(g))))
-  sort(unique(as.character(g)), method = "radix")
-}
-
 .fp_is_feature_col <- function(v) is.numeric(v)
 
 .fp_long <- function(df, spec) {
@@ -62,8 +56,10 @@
   n0 <- nrow(d)
   keep <- !is.na(d$feature) & nzchar(d$feature) & !is.na(d$group) & is.finite(d$value)
   d <- d[keep, , drop = FALSE]
-  glv <- .fp_group_levels(d$group)
-  d$group <- as.character(d$group)
+  # One level rule in both engines: the --levels order, else numeric order when
+  # every label is a number, else code-point order.
+  d$group <- level_labels(d$group)
+  glv <- level_order(d$group, unlist(spec$data$levels), "group")
   feats <- unique(d$feature)
   steps <- c(
     sprintf("Read %s data: %d feature(s), %d group(s).", layout, length(feats), length(glv)),
@@ -252,7 +248,8 @@ recipe_feature_panel <- function(df, spec) {
   list(plot = plot, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = .fp_methods(test_meta, stats_df, glv, y_lab, spec$data$x),
        build_script = list(fn = .fp_emit_script,
-                           args = list(spec = spec, layout = lg$layout, test = test, ncol = ncol)),
+                           args = list(spec = spec, layout = lg$layout, test = test, ncol = ncol,
+                                       glv = glv)),
        label = slugify(tools::file_path_sans_ext(spec$data$file)),
        df_used = d[, c("feature", "group", "value")], clean_steps = lg$steps, qc = qc,
        width = 0.9 + panel_w * ncol, height = 1.2 + 2.45 * nrow)
@@ -296,7 +293,7 @@ recipe_feature_panel <- function(df, spec) {
   if (r[1] == r[2]) as.character(r[1]) else sprintf("%d to %d", r[1], r[2])
 }
 
-.fp_emit_script <- function(spec, layout, test, ncol, in_name, fig_stub) {
+.fp_emit_script <- function(spec, layout, test, ncol, glv, in_name, fig_stub) {
   x <- spec$data$x
   read_lines <- if (layout == "long") {
     c(sprintf('d <- data.frame(feature = as.character(raw[["%s"]]), group = as.character(raw[["%s"]]), value = as.numeric(raw[["%s"]]))',
@@ -320,6 +317,8 @@ recipe_feature_panel <- function(df, spec) {
     sprintf('raw <- read.csv("%s", check.names = FALSE)', in_name),
     read_lines,
     "d <- d[is.finite(d$value) & !is.na(d$group), ]",
+    sprintf("d$group <- factor(d$group, levels = c(%s))",
+            paste(sprintf('"%s"', glv), collapse = ", ")),
     "feats <- unique(d$feature)",
     sprintf("test_one <- function(f) %s", test_call),
     "p <- vapply(feats, test_one, numeric(1))",

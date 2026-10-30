@@ -17,6 +17,7 @@ from .. import fisher as fisher_module
 from ..bundle import slugify
 from ..fisher import fisher_2x2, fisher_rxc_p
 from ..theme import apply_pub_style, category_width, legend_width, palette, wrap_labels
+from ..util import SCRIPT_LABEL_FN, level_labels
 
 
 def group_order(g, levels=None):
@@ -55,7 +56,8 @@ def recipe_proportions(df, spec):
     d = df[[x, y]].copy()
     n0 = len(d)
     d = d.dropna()
-    d[x] = d[x].astype(str); d[y] = d[y].astype(str)
+    # The labels of both engines: a whole number reads "6", not "6.0".
+    d[x] = level_labels(d[x]); d[y] = level_labels(d[y])
     groups = group_order(d[x], spec["data"].get("levels"))
     outcomes = list(pd.unique(d[y]))
     steps = ([f"Dropped {n0 - len(d)} row(s) with a missing group or outcome ({n0} -> {len(d)})."]
@@ -180,8 +182,11 @@ import matplotlib.ticker as mtick
 import numpy as np, pandas as pd
 from scipy import stats as ss
 
+
+{SCRIPT_LABEL_FN}
+
 raw = pd.read_csv("{in_name}").dropna(subset=["{x}", "{y}"])
-tab = pd.crosstab(raw["{x}"].astype(str), raw["{y}"].astype(str))
+tab = pd.crosstab(raw["{x}"].map(label), raw["{y}"].map(label))
 {test_line}
 prop = tab.div(tab.sum(axis=1), axis=0)
 fig, ax = plt.subplots(figsize=(4.2, 4.2))

@@ -295,7 +295,7 @@ test_that("anorexia (Hand 1994): the family therapy paired t-test matches stats:
   bench_skip()
   res <- recipe_paired_compare(bench_data("anorexia_ft"),
                                bench_spec("paired_compare", x = "condition", y = "weight_lbs",
-                                          id = "subject", test = "t"))
+                                          id = "subject", test = "t", levels = "pre,post"))
   expect_ref(res$stats$statistic, "anorexia_paired", "statistic")
   expect_ref(res$stats$p_value, "anorexia_paired", "p_value")
 })

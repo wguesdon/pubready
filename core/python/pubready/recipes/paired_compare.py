@@ -10,7 +10,8 @@ from scipy import stats as ss
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette, plain_number_axis, wrap_labels
-from ..util import (cap_first, is_zero_variance, p_stars, rank_biserial_paired, rank_floor_text,
+from ..util import (SCRIPT_LABEL_FN, cap_first, is_zero_variance, level_labels,
+                    level_order, p_stars, rank_biserial_paired, rank_floor_text,
                     rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
                     wilcoxon_signed_rank_r, zero_variance_message)
 
@@ -28,8 +29,11 @@ def recipe_paired_compare(df, spec):
     d = df[[idc, x, y]].copy()
     d[y] = pd.to_numeric(d[y], errors="coerce")
     d = d.dropna()
-    d[x] = d[x].astype(str)
-    lv = list(pd.unique(d[x]))  # preserve appearance order (pre before post)
+    # One level rule in both engines: the --levels order (--levels pre,post keeps
+    # pre left of post), else numeric order when every label is a number, else
+    # code-point order. The row order of the file no longer sets the sign.
+    d[x] = level_labels(d[x])
+    lv = level_order(d[x], spec["data"].get("levels"), "condition")
     if len(lv) != 2:
         raise ValueError(f"paired_compare needs exactly 2 conditions in '{x}'; found {len(lv)}")
 
@@ -163,10 +167,13 @@ import matplotlib.pyplot as plt
 import numpy as np, pandas as pd
 from scipy import stats as ss
 
+
+{SCRIPT_LABEL_FN}
+
 raw = pd.read_csv("{in_name}")
 raw["{y}"] = pd.to_numeric(raw["{y}"], errors="coerce")
 raw = raw.dropna(subset=["{idc}", "{x}", "{y}"])
-raw["{x}"] = raw["{x}"].astype(str)
+raw["{x}"] = raw["{x}"].map(label)
 lv = {lv}
 a = raw[raw["{x}"] == lv[0]][["{idc}", "{y}"]].drop_duplicates("{idc}").rename(columns={{"{y}": "v1"}})
 b = raw[raw["{x}"] == lv[1]][["{idc}", "{y}"]].drop_duplicates("{idc}").rename(columns={{"{y}": "v2"}})

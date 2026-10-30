@@ -350,7 +350,8 @@ def test_airway_upset_intersections():
 
 def test_anorexia_family_therapy_paired_t():
     res = recipe_paired_compare(bench_data("anorexia_ft"), bench_spec(
-        "paired_compare", x="condition", y="weight_lbs", id="subject", test="t"))
+        "paired_compare", x="condition", y="weight_lbs", id="subject", test="t",
+        levels="pre,post"))
     s = res["stats"].iloc[0]
     expect_ref(s["statistic"], "anorexia_paired", "statistic")
     expect_ref(s["p_value"], "anorexia_paired", "p_value")

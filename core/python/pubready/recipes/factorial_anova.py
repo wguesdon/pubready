@@ -18,7 +18,7 @@ from matplotlib.lines import Line2D
 from matplotlib.ticker import MaxNLocator
 
 from ..theme import apply_pub_style, palette, rain_offsets
-from ..util import cap_first
+from ..util import SCRIPT_LABEL_FN, cap_first, level_labels, level_order
 
 # The dodge width of the interaction plot, as position_dodge(0.25) in R.
 INT_DODGE = 0.25
@@ -232,7 +232,7 @@ def recipe_factorial_anova(df, spec):
             raise ValueError(f"column '{f}' not found")
     df = df.copy()
     for f in factors:
-        df[f] = df[f].astype(str)
+        df[f] = level_labels(df[f])
     df[y] = pd.to_numeric(df[y], errors="coerce")
     n0 = len(df)
     df = df.dropna(subset=[y] + factors).reset_index(drop=True)
@@ -266,9 +266,12 @@ def recipe_factorial_anova(df, spec):
                 if len(sig) else "No significant effects (P ≥ 0.05)")
 
     ap = spec["appearance"]
-    f1_lv = sorted(df[f1].unique()); f2_lv = sorted(df[f2].unique())
+    # --levels orders the --x levels; --fill and --facet take the rule without a
+    # list: numeric order when every label is a number, else code-point order.
+    f1_lv = level_order(df[f1], spec["data"].get("levels"), "level")
+    f2_lv = level_order(df[f2], None, "level")
     pal = palette(len(f2_lv), ap.get("palette"))
-    facet_lv = sorted(df[f3].unique()) if f3 else [None]
+    facet_lv = level_order(df[f3], None, "level") if f3 else [None]
     geom = ap.get("geom") or "box"
     w, h = fig_size(f1_lv, f2_lv, f2, len(facet_lv), bool(f3))
     wrap = needs_wrap(f1_lv)
@@ -397,7 +400,7 @@ def _script(spec, factors, f1_lv, f2_lv, facet_lv, pal, w, h, in_name, fig_stub)
     y = spec["data"]["y"]; f1, f2 = factors[0], factors[1]
     f3 = factors[2] if len(factors) >= 3 else None
     ap = spec["appearance"]
-    facet_line = (f'facet_lv = sorted(df["{f3}"].unique())' if f3 else "facet_lv = [None]")
+    facet_line = f"facet_lv = {facet_lv!r}"
     wrap_line = ('\n    ax.set_xticks(range(len(f1_lv))); ax.set_xticklabels([textwrap.fill(s, 12, break_on_hyphens=False) for s in f1_lv])'
                  if needs_wrap(f1_lv) else "")
     if (ap.get("geom") or "box") == "interaction":
@@ -435,9 +438,12 @@ import numpy as np
 import pandas as pd, seaborn as sns
 import statsmodels.api as sm, statsmodels.formula.api as smf
 
+
+{SCRIPT_LABEL_FN}
+
 df = pd.read_csv("{in_name}")
 factors = {factors}
-for f in factors: df[f] = df[f].astype(str)
+for f in factors: df[f] = df[f].map(label)
 ren = {{"{y}": "_y_"}}; ren.update({{f: "_f%d_" % i for i, f in enumerate(factors)}})
 d2 = df.rename(columns=ren)
 rhs = "*".join("C(_f%d_)" % i for i in range(len(factors)))

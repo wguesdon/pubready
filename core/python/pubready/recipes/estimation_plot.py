@@ -35,8 +35,8 @@ from scipy import special, stats
 from ..bundle import slugify
 from ..clean import clean_xy
 from ..theme import apply_pub_style, palette
-from ..util import (cap_first, is_zero_variance, sig_text, zero_variance_message,
-                    zero_variance_subject)
+from ..util import (SCRIPT_LABEL_FN, cap_first, is_zero_variance, level_labels, level_order,
+                    sig_text, zero_variance_message, zero_variance_subject)
 
 SEED = 20261029
 MODULUS = 2147483647
@@ -475,7 +475,7 @@ def recipe_estimation_plot(df, spec):
 
     d0, steps = clean_xy(df, x, y)
     steps = [s for s in steps if s != "No cleaning applied; input used as-is."]
-    d = pd.DataFrame({"group": d0[x].astype(str), "y": d0[y].astype(float),
+    d = pd.DataFrame({"group": level_labels(d0[x]), "y": d0[y].astype(float),
                       "id": id_text(d0[id_col]) if paired else np.nan})
     if paired:
         miss = d["id"].isna() | (d["id"] == "")
@@ -486,7 +486,10 @@ def recipe_estimation_plot(df, spec):
             raise ValueError(f"estimation_plot --paired needs one value per subject and group; "
                              f"'{id_col}' repeats a subject within a group")
 
-    lv_sorted = sorted(d["group"].unique())
+    # One level rule in both engines: the --levels order, else numeric order when
+    # every label is a number, else code-point order. --ref names the reference,
+    # which goes first; it is the first level when --ref is not given.
+    lv_sorted = level_order(d["group"], spec["data"].get("levels"), "group")
     ref = spec["data"].get("ref") or lv_sorted[0]
     if ref not in lv_sorted:
         raise ValueError(f"--ref '{ref}' is not a level of '{x}' (levels: {', '.join(lv_sorted)})")
@@ -910,9 +913,11 @@ def bca(r, g, paired):
     return est, *np.quantile(boot, stats.norm.cdf(z0 + (z0 + zq) / (1 - acc * (z0 + zq))))
 
 
+{SCRIPT_LABEL_FN}
+
 d = pd.read_csv("{in_name}")
 d = d[d["{x}"].notna() & np.isfinite(pd.to_numeric(d["{y}"], errors="coerce"))]
-d["{x}"] = d["{x}"].astype(str)
+d["{x}"] = d["{x}"].map(label)
 lv = {lv!r}
 res = []
 for g in lv[1:]:

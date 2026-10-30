@@ -13,7 +13,9 @@ from statannotations.Annotator import Annotator
 from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, new_fig, palette, plain_number_axis,
                      script_geom_code, wrap_labels)
-from ..util import (cap_first, cohens_d_r, is_zero_variance, mann_whitney_r, p_stars,
+from ..util import (SCRIPT_LABEL_FN, cap_first, cohens_d_r, is_zero_variance, level_labels,
+                    level_order,
+                    mann_whitney_r, p_stars,
                     rank_biserial_paired, rank_biserial_unpaired, rank_floor_text,
                     rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
                     wilcoxon_signed_rank_r, zero_variance_groups, zero_variance_message,
@@ -82,8 +84,10 @@ def _resolve(method, all_normal, equal_var, paired, rank_min_p=np.nan, t_can_run
 def recipe_two_group_compare(df, spec):
     x, y = spec["data"]["x"], spec["data"]["y"]
     df, steps = clean_xy(df, x, y)
-    df[x] = df[x].astype(str)
-    lv = sorted(df[x].unique())
+    # One level rule in both engines: the --levels order, else numeric order when
+    # every label is a number, else code-point order. The first level is group 1.
+    df[x] = level_labels(df[x])
+    lv = level_order(df[x], spec["data"].get("levels"), "group")
     if len(lv) != 2:
         raise ValueError(f"two_group_compare needs exactly 2 groups in '{x}'; found {len(lv)}")
     paired = bool(spec["test"].get("paired"))
@@ -331,8 +335,11 @@ import pandas as pd, seaborn as sns, pingouin as pg
 from scipy import stats as ss
 from statannotations.Annotator import Annotator
 
+
+{SCRIPT_LABEL_FN}
+
 df = pd.read_csv("{in_name}")
-df["{x}"] = df["{x}"].astype(str)
+df["{x}"] = df["{x}"].map(label)
 order = {lv}
 a = df.loc[df["{x}"] == order[0], "{y}"].to_numpy()
 b = df.loc[df["{x}"] == order[1], "{y}"].to_numpy()

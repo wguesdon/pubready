@@ -80,7 +80,8 @@ test_that("two_group_compare and paired_compare name the direction of the effect
   pdf <- data.frame(subject = rep(paste0("s", 1:8), 2), condition = rep(c("pre", "post"), each = 8),
                     value = c(1:8, (1:8) + c(2, 3, 2, 4, 3, 2, 3, 4)), stringsAsFactors = FALSE)
   pres <- recipe_paired_compare(pdf, spec_from_opt(list(
-    recipe = "paired_compare", data = "p.csv", x = "condition", y = "value", id = "subject", test = "t")))
+    recipe = "paired_compare", data = "p.csv", x = "condition", y = "value", id = "subject", test = "t",
+    levels = "pre,post")))
   expect_equal(pres$stats$contrast, "post - pre")
   expect_match(pres$methods, "(post minus pre)", fixed = TRUE)
 })

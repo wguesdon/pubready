@@ -179,3 +179,44 @@ def test_two_group_compare_reports_cohens_d_over_the_pooled_sd():
     assert res["stats"]["effect_size"].iloc[0] == pytest.approx((np.mean(a) - np.mean(b)) / sp,
                                                                 rel=1e-12)
     assert "Cohen's d is the mean difference over the pooled standard deviation." in res["methods"]
+
+
+# F38, F64: one level rule in both engines, with --levels in each comparison
+# recipe.
+def test_numeric_groups_sort_as_numbers_in_the_comparison_recipes():
+    df = pd.DataFrame({"conc": [160.0] * 5 + [80.0] * 5,
+                       "total": [20, 22, 19, 25, 23, 30, 31, 28, 33, 29]})
+    res = recipe_two_group_compare(df, v3_spec("two_group_compare", x="conc", y="total",
+                                               test="welch_t"))
+    row = res["stats"].iloc[0]
+    assert (row["group1"], row["group2"]) == ("80", "160")
+    assert row["statistic"] > 0
+    mg = pd.DataFrame({"dose": np.repeat([0, 160, 235, 310, 80], 4),
+                       "y": [1, 2, 3, 4, 5, 6, 7, 8, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5, 6]})
+    res = recipe_multi_group_compare(mg, v3_spec("multi_group_compare", x="dose", y="y",
+                                                 test="anova"))
+    assert list(res["stats"]["group1"][:4]) == ["0", "0", "0", "0"]
+    assert list(res["stats"]["group2"][:4]) == ["80", "160", "235", "310"]
+
+
+def test_text_groups_sort_by_code_point_and_levels_sets_the_order():
+    df = pd.DataFrame({"group": ["control"] * 5 + ["Drug"] * 5,
+                       "v": [1, 2, 3, 4, 5, 3, 4, 5, 6, 7.5]})
+    res = recipe_two_group_compare(df, v3_spec("two_group_compare", x="group", y="v",
+                                               test="wilcoxon"))
+    assert res["stats"]["group1"].iloc[0] == "Drug"
+    res = recipe_two_group_compare(df, v3_spec("two_group_compare", x="group", y="v",
+                                               test="wilcoxon", levels="control,Drug"))
+    assert res["stats"]["group1"].iloc[0] == "control"
+
+
+def test_paired_compare_takes_the_level_rule_not_the_row_order():
+    df = pd.DataFrame({"subject": list(range(1, 7)) * 2, "condition": ["pre"] * 6 + ["post"] * 6,
+                       "value": [1, 2, 3, 4, 5, 6, 2.1, 2.9, 4.4, 4.8, 6.3, 7.2]})
+    res = recipe_paired_compare(df, v3_spec("paired_compare", x="condition", y="value",
+                                            id="subject", test="t"))
+    assert res["stats"]["condition1"].iloc[0] == "post"
+    res = recipe_paired_compare(df, v3_spec("paired_compare", x="condition", y="value",
+                                            id="subject", test="t", levels="pre,post"))
+    assert res["stats"]["condition1"].iloc[0] == "pre"
+    assert res["stats"]["contrast"].iloc[0] == "post - pre"

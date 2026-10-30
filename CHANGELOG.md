@@ -28,6 +28,16 @@ tag move together.
   longer chooses Student's t-test. `--test t` also runs Welch's t-test, and
   `--test student_t` forces Student's t-test. The methods text says that the
   Welch t-test does not assume equal variances (F109).
+- The comparison recipes order their groups with one rule in both engines:
+  the `--levels` order, else numeric order when every label is a number, else
+  code-point order. A numeric group reads "80", not "80.0", and a dose axis
+  reads 0, 80, 160 in Python too. `--levels` now works in `two_group_compare`,
+  `multi_group_compare`, `paired_compare`, `factorial_anova` (the `--x`
+  levels), `estimation_plot` and `feature_panel`. The first level is group 1 of
+  a contrast. `paired_compare` no longer takes the order of first appearance,
+  so pass `--levels pre,post` to keep pre on the left. `estimation_plot` keeps
+  `--ref` for the reference, and `proportions` keeps its own order rule with
+  the new labels (F38, F64).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of

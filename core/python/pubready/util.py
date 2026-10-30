@@ -444,6 +444,15 @@ def _level_label(v):
     return str(v)
 
 
+SCRIPT_LABEL_FN = '''def label(v):
+    """Write a group value as the figure does: a whole number with no decimal point."""
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    return str(v)
+'''
+"""The label rule of level_labels() as source code, for an emitted script."""
+
+
 def level_labels(values):
     """Text labels for the values of a grouping column.
 

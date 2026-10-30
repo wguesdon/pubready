@@ -159,3 +159,43 @@ test_that("factorial_anova drops a level whose every outcome is missing", {
                                             y = "response"))
   expect_equal(levels(res$df_used$genotype), c("ko", "wt"))
 })
+
+# F38, F64: one level rule in both engines, with --levels in each comparison
+# recipe.
+test_that("numeric groups sort as numbers in the comparison recipes", {
+  df <- data.frame(conc = rep(c(160, 80), each = 5),
+                   total = c(20, 22, 19, 25, 23, 30, 31, 28, 33, 29))
+  res <- recipe_two_group_compare(df, v3_spec("two_group_compare", x = "conc", y = "total",
+                                              test = "welch_t"))
+  expect_equal(c(res$stats$group1, res$stats$group2), c("80", "160"))
+  expect_gt(res$stats$statistic, 0)
+  mg <- data.frame(dose = rep(c(0, 160, 235, 310, 80), each = 4),
+                   y = c(1, 2, 3, 4, 5, 6, 7, 8, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5, 6))
+  res <- recipe_multi_group_compare(mg, v3_spec("multi_group_compare", x = "dose", y = "y",
+                                                test = "anova"))
+  expect_equal(res$stats$group1[1:4], c("0", "0", "0", "0"))
+  expect_equal(res$stats$group2[1:4], c("80", "160", "235", "310"))
+})
+
+test_that("text groups sort by code point and --levels sets the order", {
+  df <- data.frame(group = rep(c("control", "Drug"), each = 5),
+                   v = c(1, 2, 3, 4, 5, 3, 4, 5, 6, 7.5))
+  res <- recipe_two_group_compare(df, v3_spec("two_group_compare", x = "group", y = "v",
+                                              test = "wilcoxon"))
+  expect_equal(res$stats$group1, "Drug")
+  res <- recipe_two_group_compare(df, v3_spec("two_group_compare", x = "group", y = "v",
+                                              test = "wilcoxon", levels = "control,Drug"))
+  expect_equal(res$stats$group1, "control")
+})
+
+test_that("paired_compare takes the level rule, not the row order", {
+  df <- data.frame(subject = rep(1:6, 2), condition = rep(c("pre", "post"), each = 6),
+                   value = c(1:6, c(2.1, 2.9, 4.4, 4.8, 6.3, 7.2)))
+  res <- recipe_paired_compare(df, v3_spec("paired_compare", x = "condition", y = "value",
+                                           id = "subject", test = "t"))
+  expect_equal(res$stats$condition1, "post")
+  res <- recipe_paired_compare(df, v3_spec("paired_compare", x = "condition", y = "value",
+                                           id = "subject", test = "t", levels = "pre,post"))
+  expect_equal(res$stats$condition1, "pre")
+  expect_equal(res$stats$contrast, "post - pre")
+})

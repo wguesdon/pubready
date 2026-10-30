@@ -14,7 +14,8 @@ from scipy import stats
 from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, category_width, geom_top, new_fig, palette,
                      plain_number_axis, script_geom_code, wrap_labels)
-from ..util import (cap_first, cld_letters, df_text, p_stars, rank_floor_text,
+from ..util import (SCRIPT_LABEL_FN, cap_first, cld_letters, df_text, level_labels, level_order,
+                    p_stars, rank_floor_text,
                     rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
                     zero_variance_groups, zero_variance_message, zero_variance_subject)
 
@@ -69,8 +70,10 @@ def _resolve(method, all_normal, equal_var, rank_min_p=np.nan, can_run=None):
 def recipe_multi_group_compare(df, spec):
     x, y = spec["data"]["x"], spec["data"]["y"]
     df, steps = clean_xy(df, x, y)
-    df[x] = df[x].astype(str)
-    lv = sorted(df[x].unique())
+    # One level rule in both engines: the --levels order, else numeric order when
+    # every label is a number, else code-point order.
+    df[x] = level_labels(df[x])
+    lv = level_order(df[x], spec["data"].get("levels"), "group")
     if len(lv) < 2:
         raise ValueError(f"multi_group_compare needs 2+ groups in '{x}'")
 
@@ -108,6 +111,7 @@ def recipe_multi_group_compare(df, spec):
                     eff=(float(row.H) - len(lv) + 1) / (len(df) - len(lv)))
         m = sp.posthoc_dunn(df, val_col=y, group_col=x, p_adjust="fdr_bh")
         pairs = [(str(i), str(j), float(m.loc[i, j])) for i, j in itertools.combinations(list(m.index), 2)]
+    pairs = order_pairs(pairs, lv)
 
     ap = spec["appearance"]
     pal = palette(len(lv), ap.get("palette"))
@@ -189,6 +193,38 @@ def recipe_multi_group_compare(df, spec):
         "build_script": functools.partial(_script, spec, fam, label, lv, pal, letters, w,
                                           blabel=blabel),
     }
+
+
+def _pair_key(row, pos):
+    """Sort key of a pair: the position of its first group, then of its second.
+
+    Args:
+        row: The pair as (group1, group2, p).
+        pos: The position of each group on the axis.
+
+    Returns:
+        tuple: The two positions.
+    """
+    return (pos[row[0]], pos[row[1]])
+
+
+def order_pairs(pairs, lv):
+    """Orient each pair along the axis and sort the pairs in the level order.
+
+    group1 is the group that comes first in the level order, and the pairs
+    follow combn(levels, 2) of the R engine, whatever order the post hoc
+    function gives.
+
+    Args:
+        pairs: The pairs as (group1, group2, p).
+        lv: The groups, in the order of the axis.
+
+    Returns:
+        list: The pairs, oriented and sorted.
+    """
+    pos = {g: i for i, g in enumerate(lv)}
+    out = [(a, b, p) if pos[a] < pos[b] else (b, a, p) for a, b, p in pairs]
+    return sorted(out, key=functools.partial(_pair_key, pos=pos))
 
 
 def _check_variance(fam, label, by_group):
@@ -370,7 +406,9 @@ def bracket_key(row):
     return (abs(i2 - i1), min(i1, i2))
 
 
-df = pd.read_csv("{in_name}"); df["{x}"] = df["{x}"].astype(str)
+{SCRIPT_LABEL_FN}
+
+df = pd.read_csv("{in_name}"); df["{x}"] = df["{x}"].map(label)
 order = {lv}
 {omni_line}
 {ph_line}

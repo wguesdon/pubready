@@ -21,7 +21,8 @@ from scipy import stats
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
-from ..util import (cap_first, is_zero_variance, mann_whitney_r, rank_biserial_unpaired,
+from ..util import (SCRIPT_LABEL_FN, cap_first, is_zero_variance, level_labels, level_order, mann_whitney_r,
+                    rank_biserial_unpaired,
                     rank_floor_text, rank_test_cannot_reach, rank_test_min_p, shapiro_normal)
 
 MAX_FEATURES = 36
@@ -79,34 +80,6 @@ def bh_adjust(p):
     return out
 
 
-def group_label(v):
-    """Text of one group value, as R's as.character writes it.
-
-    Args:
-        v: The value.
-
-    Returns:
-        str: The label; a whole number has no decimal part.
-    """
-    if isinstance(v, (float, np.floating)) and float(v).is_integer():
-        return str(int(v))
-    return str(v)
-
-
-def group_levels(g):
-    """The group levels: numbers in numeric order, text in code-point order.
-
-    Args:
-        g: The group values, as a pandas Series without missing values.
-
-    Returns:
-        list: The level labels.
-    """
-    if pd.api.types.is_numeric_dtype(g):
-        return [group_label(v) for v in sorted(pd.unique(g))]
-    return sorted(pd.unique(g.astype(str)))
-
-
 def long_table(df, spec):
     """Bring a long or a wide table to one row per value.
 
@@ -149,8 +122,10 @@ def long_table(df, spec):
     keep = (d["feature"].notna() & (d["feature"].astype(str).str.len() > 0)
             & d["group"].notna() & np.isfinite(d["value"]))
     d = d[keep].reset_index(drop=True)
-    glv = group_levels(d["group"])
-    d["group"] = [group_label(v) for v in d["group"]]
+    # One level rule in both engines: the --levels order, else numeric order when
+    # every label is a number, else code-point order.
+    d["group"] = level_labels(d["group"])
+    glv = level_order(d["group"], dat.get("levels"), "group")
     feats = list(pd.unique(d["feature"]))
     steps = [f"Read {layout} data: {len(feats)} feature(s), {len(glv)} group(s)."]
     if int((~keep).sum()):
@@ -433,7 +408,7 @@ def recipe_feature_panel(df, spec):
         "methods": _methods(test_meta, stats_df, glv, y_lab, spec["data"]["x"]),
         "df_used": d[["feature", "group", "value"]], "clean_steps": lg["steps"], "qc": qc,
         "label": slugify(os.path.splitext(spec["data"]["file"])[0]), "width": w, "height": h,
-        "build_script": functools.partial(_script, spec, lg["layout"], test, ncol),
+        "build_script": functools.partial(_script, spec, lg["layout"], test, ncol, glv),
     }
 
 
@@ -490,7 +465,7 @@ def _methods(tm, stats_df, glv, y_lab, x):
     )
 
 
-def _script(spec, layout, test, ncol, in_name, fig_stub):
+def _script(spec, layout, test, ncol, glv, in_name, fig_stub):
     """Write the standalone script that redraws the panel.
 
     Args:
@@ -498,6 +473,7 @@ def _script(spec, layout, test, ncol, in_name, fig_stub):
         layout: "long" or "wide".
         test: The test key.
         ncol: The count of panel columns.
+        glv: The group levels, in the order of the figure.
         in_name: The name of the input copy inside the bundle.
         fig_stub: The name of the figure file, without its extension.
 
@@ -508,11 +484,11 @@ def _script(spec, layout, test, ncol, in_name, fig_stub):
     x = dat["x"]
     if layout == "long":
         read = (f'd = pd.DataFrame({{"feature": raw["{dat["facet"]}"].astype(str), '
-                f'"group": raw["{x}"].astype(str), "value": pd.to_numeric(raw["{dat["y"]}"], '
+                f'"group": raw["{x}"].map(label), "value": pd.to_numeric(raw["{dat["y"]}"], '
                 'errors="coerce")})')
     else:
         read = (f'cols = [c for c in raw.select_dtypes("number").columns if c != "{x}"]\n'
-                f'd = pd.concat([pd.DataFrame({{"feature": c, "group": raw["{x}"].astype(str), '
+                f'd = pd.concat([pd.DataFrame({{"feature": c, "group": raw["{x}"].map(label), '
                 '"value": raw[c]}) for c in cols], ignore_index=True)')
     call = {"welch_t": "stats.ttest_ind(*g, equal_var=False).pvalue",
             "wilcoxon": "stats.mannwhitneyu(*g).pvalue",
@@ -527,11 +503,14 @@ import numpy as np, pandas as pd
 from scipy import stats
 from statsmodels.stats.multitest import multipletests
 
+
+{SCRIPT_LABEL_FN}
+
 raw = pd.read_csv("{in_name}")
 {read}
 d = d[np.isfinite(d["value"])]
 feats = list(pd.unique(d["feature"]))
-levels = sorted(pd.unique(d["group"]))
+levels = {glv!r}
 p = []
 for f in feats:
     g = [d.loc[(d["feature"] == f) & (d["group"] == lv), "value"].to_numpy() for lv in levels]

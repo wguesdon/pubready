@@ -13,10 +13,12 @@ recipe_paired_compare <- function(df, spec) {
   df[[y]] <- suppressWarnings(as.numeric(df[[y]]))
   n_rows0 <- nrow(df)
   df <- df[stats::complete.cases(df), , drop = FALSE]
-  # Preserve the order the conditions appear in (so pre stays left of post),
-  # rather than sorting alphabetically.
-  df[[x]] <- factor(df[[x]], levels = unique(as.character(df[[x]])))
-  lv <- levels(df[[x]])
+  # One level rule in both engines: the --levels order (--levels pre,post keeps
+  # pre left of post), else numeric order when every label is a number, else
+  # code-point order. The row order of the file no longer sets the sign.
+  lab <- level_labels(df[[x]])
+  lv <- level_order(lab, unlist(spec$data$levels), "condition")
+  df[[x]] <- factor(lab, levels = lv)
   if (length(lv) != 2) {
     stop(sprintf("paired_compare needs exactly 2 conditions in '%s'; found %d (%s)",
                  x, length(lv), paste(lv, collapse = ", ")))

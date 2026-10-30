@@ -12,6 +12,8 @@ recipe_proportions <- function(df, spec) {
   df <- df[, c(x, y)]
   n0 <- nrow(df)
   df <- df[stats::complete.cases(df), , drop = FALSE]
+  # The labels of both engines: a whole number reads "6", not "6.0".
+  df[[x]] <- level_labels(df[[x]]); df[[y]] <- level_labels(df[[y]])
   df[[x]] <- factor(df[[x]], levels = .prop_group_order(df[[x]], unlist(spec$data$levels)))
   df[[y]] <- factor(df[[y]], levels = unique(as.character(df[[y]])))
   clean_steps <- if (nrow(df) < n0) {

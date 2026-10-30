@@ -90,6 +90,7 @@ def test_two_group_and_paired_name_the_direction_of_the_effect():
                         "value": list(range(1, 9)) + [v + d for v, d in
                                                       zip(range(1, 9), [2, 3, 2, 4, 3, 2, 3, 4])]})
     pres = recipe_paired_compare(pdf, spec_from_args(SimpleNamespace(
-        recipe="paired_compare", data="p.csv", x="condition", y="value", id="subject", test="t")))
+        recipe="paired_compare", data="p.csv", x="condition", y="value", id="subject", test="t",
+        levels="pre,post")))
     assert pres["stats"]["contrast"].iloc[0] == "post - pre"
     assert "(post minus pre)" in pres["methods"]

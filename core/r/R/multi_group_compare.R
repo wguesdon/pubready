@@ -77,8 +77,11 @@ recipe_multi_group_compare <- function(df, spec) {
   x <- spec$data$x
   y <- spec$data$y
 
-  df[[x]] <- factor(df[[x]])
-  lvls <- levels(df[[x]])
+  # One level rule in both engines: the --levels order, else numeric order when
+  # every label is a number, else code-point order.
+  lab <- level_labels(df[[x]])
+  lvls <- level_order(lab, unlist(spec$data$levels), "group")
+  df[[x]] <- factor(lab, levels = lvls)
   if (length(lvls) < 2) {
     stop(sprintf("multi_group_compare needs 2 or more groups in '%s'; found %d", x, length(lvls)))
   }
@@ -224,7 +227,7 @@ recipe_multi_group_compare <- function(df, spec) {
   n_by_group <- vapply(by_group, length, integer(1))
   methods <- .mg_methods(resolved, omnibus, spec, n_by_group, display, nrow(sig))
   build_script <- list(fn = .mg_emit_script,
-                       args = list(spec = spec, resolved = resolved,
+                       args = list(spec = spec, resolved = resolved, lvls = lvls,
                                    pal = pal[seq_len(length(lvls))], cld = cld,
                                    width = category_width(length(lvls), wrap_labels(lvls))))
 
@@ -313,7 +316,7 @@ recipe_multi_group_compare <- function(df, spec) {
   )
 }
 
-.mg_emit_script <- function(spec, resolved, pal, cld, width, in_name, fig_stub) {
+.mg_emit_script <- function(spec, resolved, lvls, pal, cld, width, in_name, fig_stub) {
   x <- spec$data$x; y <- spec$data$y
   pal_str <- paste0("c(", paste(sprintf('"%s"', pal), collapse = ", "), ")")
   gl <- script_geom_lines(x, spec$appearance$geom %||% "box",
@@ -362,7 +365,8 @@ recipe_multi_group_compare <- function(df, spec) {
     "})",
     "",
     sprintf('df <- as.data.frame(read_csv("%s", show_col_types = FALSE))', in_name),
-    sprintf('df[["%s"]] <- factor(df[["%s"]])', x, x),
+    sprintf('df[["%s"]] <- factor(df[["%s"]], levels = c(%s))', x, x,
+            paste(sprintf('"%s"', lvls), collapse = ", ")),
     sprintf('df[["%s"]] <- as.numeric(df[["%s"]])', y, y),
     "",
     posthoc_line,

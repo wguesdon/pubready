@@ -315,7 +315,7 @@ recipe_estimation_plot <- function(df, spec) {
   steps <- cl$steps
   steps <- steps[steps != "No cleaning applied; input used as-is."]
   d0 <- cl$df
-  d <- data.frame(group = as.character(d0[[x]]), y = as.numeric(d0[[y]]),
+  d <- data.frame(group = level_labels(d0[[x]]), y = as.numeric(d0[[y]]),
                   id = if (paired) as.character(d0[[id]]) else NA_character_,
                   stringsAsFactors = FALSE)
   if (paired) {
@@ -329,7 +329,10 @@ recipe_estimation_plot <- function(df, spec) {
     }
   }
 
-  lv_sorted <- sort(unique(d$group), method = "radix")
+  # One level rule in both engines: the --levels order, else numeric order when
+  # every label is a number, else code-point order. --ref names the reference,
+  # which goes first; it is the first level when --ref is not given.
+  lv_sorted <- level_order(d$group, unlist(spec$data$levels), "group")
   ref <- spec$data$ref %||% lv_sorted[1]
   if (!ref %in% lv_sorted) {
     stop(sprintf("--ref '%s' is not a level of '%s' (levels: %s)", ref, x,
