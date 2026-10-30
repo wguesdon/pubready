@@ -113,6 +113,9 @@ rank_floor_text <- function(min_p, kept) {
 }
 
 # Resolve which two-group test to run from the request and the assumption checks.
+# The t-test of two independent groups is Welch's t-test, which does not assume
+# equal variances; --test student_t forces Student's t-test. Levene's test
+# (equal_var) still runs for the stats table, but it does not choose the test.
 # When the normality check fails but the rank test cannot reach P < 0.05 at the
 # group sizes (rank_min_p), --test auto keeps the parametric test, unless the
 # t-test cannot run (t_can_run, a variance of zero).
@@ -122,7 +125,7 @@ resolve_two_group_method <- function(method, all_normal, equal_var, paired,
   kept <- FALSE
   if (method == "auto") {
     if (isTRUE(all_normal)) {
-      family <- "t"; var_equal <- isTRUE(equal_var)
+      family <- "t"; var_equal <- FALSE
     } else if (rank_test_cannot_reach(rank_min_p) && isTRUE(t_can_run)) {
       family <- "t"; var_equal <- FALSE; kept <- TRUE
     } else {
@@ -130,9 +133,7 @@ resolve_two_group_method <- function(method, all_normal, equal_var, paired,
     }
   } else if (method %in% c("t", "t_test", "student_t", "welch_t")) {
     family <- "t"
-    var_equal <- if (method == "student_t") TRUE
-                 else if (method == "welch_t") FALSE
-                 else isTRUE(equal_var)
+    var_equal <- method == "student_t"
   } else if (method %in% c("wilcoxon", "mann_whitney", "wilcox", "mwu")) {
     family <- "wilcoxon"; var_equal <- NA
   } else {

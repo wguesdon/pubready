@@ -23,6 +23,11 @@ tag move together.
   and the methods text gives the attainable P. A forced rank test still runs,
   and the text gives the attainable P. `test_meta` records it as
   `rank_test_attainable_p` (F61).
+- Under `--test auto`, `two_group_compare` runs Welch's t-test when both groups
+  are normal. Levene's test still runs and goes to the stats table, but it no
+  longer chooses Student's t-test. `--test t` also runs Welch's t-test, and
+  `--test student_t` forces Student's t-test. The methods text says that the
+  Welch t-test does not assume equal variances (F109).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of

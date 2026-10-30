@@ -25,12 +25,16 @@ test_that("shapiro_safe guards small and large samples", {
 })
 
 test_that("resolve_two_group_method picks the test from assumptions", {
-  student <- resolve_two_group_method("auto", all_normal = TRUE, equal_var = TRUE, paired = FALSE)
-  expect_equal(student$family, "t")
-  expect_equal(student$label, "Student's two-sample t-test")
+  # Welch's t-test is the auto default whatever Levene's test gives (F109).
+  welch_eq <- resolve_two_group_method("auto", all_normal = TRUE, equal_var = TRUE, paired = FALSE)
+  expect_equal(welch_eq$family, "t")
+  expect_equal(welch_eq$label, "Welch two-sample t-test")
 
   welch <- resolve_two_group_method("auto", all_normal = TRUE, equal_var = FALSE, paired = FALSE)
   expect_equal(welch$label, "Welch two-sample t-test")
+
+  student <- resolve_two_group_method("student_t", all_normal = TRUE, equal_var = FALSE, paired = FALSE)
+  expect_equal(student$label, "Student's two-sample t-test")
 
   mwu <- resolve_two_group_method("auto", all_normal = FALSE, equal_var = TRUE, paired = FALSE)
   expect_equal(mwu$family, "wilcoxon")

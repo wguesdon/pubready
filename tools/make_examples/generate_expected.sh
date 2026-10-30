@@ -15,7 +15,7 @@ FINAL="${PUBREADY_EXPECTED_OUT:-example/expected}"
 OUT="test_output/expected_stage"
 rm -rf "$OUT"
 
-# Parametric path -> Student's t-test
+# Parametric path -> Welch's t-test
 ./cli/figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
   --x group --y volume --ylab "Tumor volume (mm^3)" --xlab "Group" \
   --stamp ttest --out "$OUT"

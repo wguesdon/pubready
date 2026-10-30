@@ -8,8 +8,11 @@ from pubready.spec import spec_from_args
 
 
 def test_resolve_picks_test_from_assumptions():
-    assert _resolve("auto", True, True, False)["label"] == "Student's two-sample t-test"
+    # Welch's t-test is the auto default whatever Levene's test gives (F109).
+    assert _resolve("auto", True, True, False)["label"] == "Welch two-sample t-test"
     assert _resolve("auto", True, False, False)["label"] == "Welch two-sample t-test"
+    assert _resolve("student_t", True, False, False)["label"] == "Student's two-sample t-test"
+    assert _resolve("t", True, True, False)["label"] == "Welch two-sample t-test"
     assert _resolve("auto", False, True, False)["label"] == "Mann-Whitney U test"
     assert _resolve("welch_t", False, True, False)["var_equal"] is False
     assert _resolve("t", True, True, True)["label"] == "paired t-test"

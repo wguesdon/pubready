@@ -207,7 +207,7 @@ recipe_two_group_compare <- function(df, spec) {
   var_txt <- if (resolved$family == "t") {
     if (isTRUE(resolved$paired)) ""
     else if (isTRUE(resolved$var_equal)) " Equal variances were assumed."
-    else " Equal variances were not assumed, and the Welch correction was applied."
+    else " The Welch t-test does not assume equal variances; Levene's test is reported in the stats table."
   } else " A non-parametric test was used because the normality assumption was not met."
   if (tolower(spec$test$method %||% "auto") != "auto") {
     var_txt <- paste0(if (resolved$family == "t") var_txt else "", " The test was set by the user.")

@@ -23,14 +23,18 @@ from ..util import (cap_first, cohens_d_r, is_zero_variance, mann_whitney_r, p_s
 def _resolve(method, all_normal, equal_var, paired, rank_min_p=np.nan, t_can_run=True):
     """Resolve the test from the request and the assumption checks.
 
-    When the normality check fails but the rank test cannot reach P < 0.05 at
-    the group sizes, --test auto keeps the parametric test, unless the t-test
-    cannot run, as resolve_two_group_method() of the R engine does.
+    The t-test of two independent groups is Welch's t-test, which does not
+    assume equal variances; --test student_t forces Student's t-test. Levene's
+    test still runs for the stats table, but it does not choose the test. When
+    the normality check fails but the rank test cannot reach P < 0.05 at the
+    group sizes, --test auto keeps the parametric test, unless the t-test cannot
+    run, as resolve_two_group_method() of the R engine does.
 
     Args:
         method: The --test value.
         all_normal: Whether the normality check passed.
-        equal_var: Whether Levene's test found equal variances.
+        equal_var: Whether Levene's test found equal variances. It is reported
+            only.
         paired: Whether the groups are paired.
         rank_min_p: The smallest P that the rank test can reach.
         t_can_run: Whether the variance of the t-test is not zero.
@@ -46,14 +50,14 @@ def _resolve(method, all_normal, equal_var, paired, rank_min_p=np.nan, t_can_run
     kept = False
     if method == "auto":
         if all_normal:
-            family, var_equal = "t", equal_var
+            family, var_equal = "t", False
         elif rank_test_cannot_reach(rank_min_p) and t_can_run:
             family, var_equal, kept = "t", False, True
         else:
             family, var_equal = "wilcoxon", None
     elif method in ("t", "t_test", "student_t", "welch_t"):
         family = "t"
-        var_equal = True if method == "student_t" else (False if method == "welch_t" else equal_var)
+        var_equal = method == "student_t"
     elif method in ("wilcoxon", "mann_whitney", "wilcox", "mwu"):
         family, var_equal = "wilcoxon", None
     else:
@@ -212,7 +216,8 @@ def _methods(r, stats_df, eff_name, eff_value, spec):
         var_txt = ""
     elif r["family"] == "t":
         var_txt = (" Equal variances were assumed." if r["var_equal"]
-                   else " Equal variances were not assumed, and the Welch correction was applied.")
+                   else " The Welch t-test does not assume equal variances; Levene's test is"
+                        " reported in the stats table.")
     else:
         var_txt = " A non-parametric test was used because the normality assumption was not met."
     if (spec["test"].get("method") or "auto").lower() != "auto":
