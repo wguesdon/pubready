@@ -118,3 +118,29 @@ test_that("a text cell in a numeric Cox covariate becomes NA and is logged (F42)
                "Coerced column 'age' to numeric; 1 value(s) became NA, for example '45 y'.")
   expect_match(res$clean_steps[2], "Dropped 1 row")
 })
+
+v3c_cox_spec <- function(covs) {
+  v3c_spec("cox_forest", time = "time", event = "event", covariates = covs)
+}
+
+test_that("cox_forest names a constant or collinear covariate and a data set with no event (F91)", {
+  d <- v3c_cox_data()
+  d$site <- "A"
+  d$dose <- 10
+  d$age_copy <- 2 * d$age + 1
+  d$arm2 <- d$arm
+  expect_error(recipe_cox_forest(d, v3c_cox_spec("arm,age,site")),
+               "covariate 'site' holds one value ('A') in the 16 subject(s) kept", fixed = TRUE)
+  expect_error(recipe_cox_forest(d, v3c_cox_spec("arm,dose")), "covariate 'dose' holds one value ('10')",
+               fixed = TRUE)
+  expect_error(recipe_cox_forest(d, v3c_cox_spec("arm,age,age_copy")),
+               "covariate 'age_copy' is collinear with the covariates before it", fixed = TRUE)
+  expect_error(recipe_cox_forest(d, v3c_cox_spec("arm,age,arm2")), "covariate 'arm2' is collinear", fixed = TRUE)
+  d$event <- 0
+  expect_error(recipe_cox_forest(d, v3c_cox_spec("arm,age")),
+               "column 'event' holds no 1 among the 16 subject(s) kept", fixed = TRUE)
+  x <- cbind(a = c(1, 2, 3, 5), b = c(2, 1, 4, 4))
+  expect_equal(cox_collinear_columns(cbind(x, x[, 1] + 2 * x[, 2])), 3L)
+  expect_equal(cox_collinear_columns(cbind(x[, 1], 3 - x[, 1], x[, 2])), 2L)
+  expect_equal(cox_collinear_columns(x), integer(0))
+})

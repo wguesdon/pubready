@@ -18,7 +18,7 @@ from matplotlib.ticker import NullLocator
 
 from ..clean import coerce_numeric_columns
 from ..theme import apply_pub_style, palette, plain_log_axis
-from ..util import format_p, level_order, p_phrase
+from ..util import format_p, level_labels, level_order, p_phrase
 from .survival_km import event_codes
 
 # Tick sequences of the hazard-ratio axis, from coarse to fine (mantissas per decade).
@@ -221,7 +221,7 @@ def design_and_rows(df, t, e, covs):
 
     Returns:
         tuple: The design data frame and a list of row dicts with the keys
-        ``label`` and ``term`` (None for a reference row).
+        ``label``, ``term`` (None for a reference row) and ``covariate``.
     """
     design = df[[t, e]].copy()
     rows = []
@@ -229,14 +229,94 @@ def design_and_rows(df, t, e, covs):
         s = df[c]
         if s.dtype == object or str(s.dtype).startswith("category") or not np.issubdtype(s.dtype, np.number):
             cats = level_order(s.astype(str))
-            rows.append({"label": f"{c}: {cats[0]}", "term": None})
+            rows.append({"label": f"{c}: {cats[0]}", "term": None, "covariate": c})
             for lvl in cats[1:]:
                 design[f"{c}{lvl}"] = (s.astype(str) == lvl).astype(int)
-                rows.append({"label": f"{c}: {lvl}", "term": f"{c}{lvl}"})
+                rows.append({"label": f"{c}: {lvl}", "term": f"{c}{lvl}", "covariate": c})
         else:
             design[c] = pd.to_numeric(s, errors="coerce")
-            rows.append({"label": c, "term": c})
+            rows.append({"label": c, "term": c, "covariate": c})
     return design, rows
+
+
+def check_covariates(df, e, covs):
+    """Check the data before the fit, with the rules and messages of the R engine.
+
+    Args:
+        df: The cleaned data.
+        e: The event column.
+        covs: The covariate columns.
+
+    Raises:
+        ValueError: If no row is left, if no event happened, or if a covariate
+            holds one value.
+    """
+    if df.empty:
+        raise ValueError("cox_forest found no row with a time, an event and a value of every "
+                         "covariate")
+    if df[e].sum() == 0:
+        raise ValueError(f"cox_forest needs at least one event, and column '{e}' holds no 1 "
+                         f"among the {len(df)} subject(s) kept")
+    for c in covs:
+        s = df[c]
+        numeric = pd.api.types.is_numeric_dtype(s) and not pd.api.types.is_bool_dtype(s)
+        u = list(pd.unique(level_labels(s) if numeric else s.astype(str)))
+        if len(u) < 2:
+            raise ValueError(f"covariate '{c}' holds one value ('{u[0]}') in the {len(df)} "
+                             "subject(s) kept, so the Cox model cannot estimate its effect; "
+                             "leave it out of --covariates")
+
+
+def collinear_columns(x, tol=1e-8):
+    """The model columns that are a linear combination of a constant and earlier columns.
+
+    Each centred column is reduced against the orthonormal basis of the columns
+    kept so far (modified Gram-Schmidt, two passes); a remainder below 1e-8 of
+    its length marks it. The R engine runs the same arithmetic.
+
+    Args:
+        x: The model matrix, one column per term, without an intercept.
+        tol: The largest remainder that marks a column.
+
+    Returns:
+        list: The 0-based indices of the marked columns.
+    """
+    x = np.asarray(x, dtype=float)
+    hits, basis = [], []
+    for j in range(x.shape[1]):
+        v = x[:, j] - x[:, j].mean()
+        nv = np.sqrt(np.sum(v ** 2))
+        if nv == 0:
+            hits.append(j)
+            continue
+        v = v / nv
+        for _ in range(2):
+            for q in basis:
+                v = v - q * np.sum(q * v)
+        r = np.sqrt(np.sum(v ** 2))
+        if r < tol:
+            hits.append(j)
+        else:
+            basis.append(v / r)
+    return hits
+
+
+def check_collinear(design, rows):
+    """Stop when a model column is collinear with the columns before it.
+
+    Args:
+        design: The design data frame from design_and_rows.
+        rows: The display rows from design_and_rows.
+
+    Raises:
+        ValueError: If a covariate is a linear combination of the ones before it.
+    """
+    terms = [r for r in rows if r["term"] is not None]
+    hit = collinear_columns(design[[r["term"] for r in terms]].to_numpy(float))
+    if hit:
+        raise ValueError(f"covariate '{terms[hit[0]]['covariate']}' is collinear with the "
+                         "covariates before it in --covariates (a linear combination of them), "
+                         "so the Cox model cannot estimate its effect; leave it or one of them out")
 
 
 def row_texts(row, stats):
@@ -380,8 +460,10 @@ def recipe_cox_forest(df, spec):
     if not clean_steps:
         clean_steps = ["No cleaning applied; input used as-is."]
 
+    check_covariates(df, e, covs)
     # Build a numeric design matrix; one-hot encode categoricals (drop first = reference).
     design, rows = design_and_rows(df, t, e, covs)
+    check_collinear(design, rows)
 
     cph = CoxPHFitter()
     # A tight precision makes lifelines converge to the estimate of survival::coxph;

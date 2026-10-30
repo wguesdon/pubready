@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pubready.recipes.cox_forest import recipe_cox_forest
+from pubready.recipes.cox_forest import collinear_columns, recipe_cox_forest
 from pubready.recipes.cumulative_incidence import recipe_cumulative_incidence
 from pubready.recipes.survival_km import (event_codes, km_break_step, km_median,
                                           recipe_survival_km)
@@ -147,3 +147,43 @@ def test_a_text_cell_in_a_numeric_cox_covariate_becomes_nan_and_is_logged():
     assert res["clean_steps"][0] == ("Coerced column 'age' to numeric; 1 value(s) became NA, "
                                      "for example '45 y'.")
     assert res["clean_steps"][1].startswith("Dropped 1 row")
+
+
+def cox_run(data, covs):
+    """Run cox_forest on the time and event columns of cox_data.
+
+    Args:
+        data: The table.
+        covs: The covariates, comma separated.
+
+    Returns:
+        dict: The bundle payload.
+    """
+    return recipe_cox_forest(data, v3c_spec("cox_forest", time="time", event="event",
+                                            covariates=covs))
+
+
+def test_cox_forest_names_a_constant_or_collinear_covariate_and_no_event():
+    """F91: these inputs stopped R, gave NA rows or a traceback in Python."""
+    d = cox_data()
+    d["site"] = "A"
+    d["dose"] = 10
+    d["age_copy"] = 2 * d["age"] + 1
+    d["arm2"] = d["arm"]
+    with pytest.raises(ValueError, match=r"covariate 'site' holds one value \('A'\) in the 16 "
+                                         r"subject\(s\) kept"):
+        cox_run(d, "arm,age,site")
+    with pytest.raises(ValueError, match=r"covariate 'dose' holds one value \('10'\)"):
+        cox_run(d, "arm,dose")
+    with pytest.raises(ValueError, match="covariate 'age_copy' is collinear with the covariates "
+                                         "before it"):
+        cox_run(d, "arm,age,age_copy")
+    with pytest.raises(ValueError, match="covariate 'arm2' is collinear"):
+        cox_run(d, "arm,age,arm2")
+    d["event"] = 0
+    with pytest.raises(ValueError, match=r"column 'event' holds no 1 among the 16 subject\(s\) kept"):
+        cox_run(d, "arm,age")
+    x = np.array([[1, 2], [2, 1], [3, 4], [5, 4]], dtype=float)
+    assert collinear_columns(np.column_stack([x, x[:, 0] + 2 * x[:, 1]])) == [2]
+    assert collinear_columns(np.column_stack([x[:, 0], 3 - x[:, 0], x[:, 1]])) == [1]
+    assert collinear_columns(x) == []

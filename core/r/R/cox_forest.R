@@ -41,6 +41,7 @@ recipe_cox_forest <- function(df, spec) {
   # A text covariate becomes a factor of the rows kept. Its levels sort by the
   # rule that both engines share (level_order), and the first is the reference.
   for (c in covs) if (is.character(df[[c]])) df[[c]] <- factor(df[[c]], levels = level_order(df[[c]]))
+  .cox_check_covariates(df, event_col, covs)
 
   Surv <- survival::Surv
   rhs <- paste(sprintf("`%s`", covs), collapse = " + ")
@@ -88,6 +89,58 @@ recipe_cox_forest <- function(df, spec) {
 }
 
 .cox_null_on_error <- function(e) NULL
+
+# Check the data before the fit, with the same rules and messages as the Python
+# engine: at least one event, two values or more in each covariate, and no model
+# column that is a linear combination of the columns before it.
+.cox_check_covariates <- function(df, event_col, covs) {
+  if (nrow(df) == 0) {
+    stop("cox_forest found no row with a time, an event and a value of every covariate")
+  }
+  if (sum(df[[event_col]]) == 0) {
+    stop(sprintf("cox_forest needs at least one event, and column '%s' holds no 1 among the %d subject(s) kept",
+                 event_col, nrow(df)))
+  }
+  for (c in covs) {
+    u <- unique(if (is.numeric(df[[c]])) level_labels(df[[c]]) else as.character(df[[c]]))
+    if (length(u) < 2) {
+      stop(sprintf("covariate '%s' holds one value ('%s') in the %d subject(s) kept, so the Cox model cannot estimate its effect; leave it out of --covariates",
+                   c, u[1], nrow(df)))
+    }
+  }
+  X <- stats::model.matrix(stats::as.formula(paste("~", paste(sprintf("`%s`", covs), collapse = " + "))),
+                           data = df)
+  owner <- covs[attr(X, "assign")[-1]]
+  hit <- cox_collinear_columns(X[, -1, drop = FALSE])
+  if (length(hit) > 0) {
+    stop(sprintf("covariate '%s' is collinear with the covariates before it in --covariates (a linear combination of them), so the Cox model cannot estimate its effect; leave it or one of them out",
+                 owner[hit[1]]))
+  }
+  invisible(NULL)
+}
+
+# The model columns that are a linear combination of a constant and the columns
+# before them. Each centred column is reduced against the orthonormal basis of
+# the columns kept so far (modified Gram-Schmidt, two passes); a remainder below
+# 1e-8 of its length marks it. The Python engine runs the same arithmetic.
+cox_collinear_columns <- function(X, tol = 1e-8) {
+  X <- as.matrix(X)
+  hits <- integer(0)
+  basis <- list()
+  for (j in seq_len(ncol(X))) {
+    v <- X[, j] - mean(X[, j])
+    nv <- sqrt(sum(v^2))
+    if (nv == 0) {
+      hits <- c(hits, j)
+      next
+    }
+    v <- v / nv
+    for (pass in 1:2) for (q in basis) v <- v - q * sum(q * v)
+    r <- sqrt(sum(v^2))
+    if (r < tol) hits <- c(hits, j) else basis[[length(basis) + 1]] <- v / r
+  }
+  hits
+}
 
 .cox_hr_entry <- function(i, stats_df) {
   list(term = stats_df$term[i], HR = stats_df$HR[i],

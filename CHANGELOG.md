@@ -48,6 +48,12 @@ tag move together.
   numeric. Each other cell, for example "45 y", becomes missing, and the data
   log names the column, the count and the first such value. Before, one such
   cell made `age` a factor of 36 levels with a hazard ratio of 8,952,453 (F42).
+- `cox_forest` checks the data before the fit and stops with a message that
+  names the problem: no event among the subjects kept, a covariate that holds
+  one value, or a covariate that is a linear combination of the covariates
+  before it. Before, R stopped with a contrasts error or wrote NA rows, and
+  Python dropped the covariate with no message or printed a convergence
+  traceback (F91).
 
 ## [3.0.0] - 2026-10-29
 
