@@ -148,3 +148,14 @@ test_that("two_group_compare reports Cohen's d over the pooled SD", {
   expect_match(res$methods, "Cohen's d is the mean difference over the pooled standard deviation.",
                fixed = TRUE)
 })
+
+# F54: a level whose every outcome is missing leaves no empty slot.
+test_that("factorial_anova drops a level whose every outcome is missing", {
+  df <- data.frame(genotype = rep(c("wt", "het", "ko"), each = 8),
+                   treatment = rep(rep(c("vehicle", "drug"), each = 4), 3),
+                   response = c(26.3, 19.5, 24.1, 23.5, 25.1, 28.1, 28.1, 23.5, rep(NA, 8),
+                                29, 28.3, 34.4, 30.3, 40.2, 42.5, 42.1, 42.5))
+  res <- recipe_factorial_anova(df, v3_spec("factorial_anova", x = "genotype", fill = "treatment",
+                                            y = "response"))
+  expect_equal(levels(res$df_used$genotype), c("ko", "wt"))
+})

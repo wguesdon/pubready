@@ -24,10 +24,12 @@ recipe_factorial_anova <- function(df, spec) {
   factors <- c(f1, f2, if (!is.null(f3) && nzchar(f3)) f3)
   for (f in factors) if (!f %in% names(df)) stop(sprintf("factor column '%s' not found", f))
   if (!y %in% names(df)) stop(sprintf("outcome column '%s' not found", y))
-  for (f in factors) df[[f]] <- factor(df[[f]])
   df[[y]] <- as.numeric(df[[y]])
   n0 <- nrow(df)
   df <- df[stats::complete.cases(df[, c(y, factors)]), , drop = FALSE]
+  # The factors are made after the rows are dropped, so a level whose every
+  # outcome is missing does not stay as an empty slot of the axis.
+  for (f in factors) df[[f]] <- factor(df[[f]])
   clean_steps <- if (nrow(df) < n0) {
     sprintf("Dropped %d row(s) with missing values in %s (%d -> %d rows).",
             n0 - nrow(df), paste(c(y, factors), collapse = ", "), n0, nrow(df))

@@ -53,6 +53,9 @@ tag move together.
   the Python engine and `feature_panel` do, and not over the average variance
   of `rstatix::cohens_d`. On the cats data both engines now give -0.95. The
   methods text states the formula (F65).
+- The R engine of `factorial_anova` makes its factors after it drops the rows
+  with a missing value, so a level whose every outcome is missing leaves no
+  empty slot, and the points sit on their boxes (F54).
 
 ## [3.0.0] - 2026-10-29
 
