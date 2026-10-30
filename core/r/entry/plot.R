@@ -32,6 +32,8 @@ opts <- list(
   make_option("--ref",      type = "character", default = NULL),
   make_option("--cause",    type = "character", default = NULL),
   make_option("--levels",   type = "character", default = NULL),
+  make_option("--visit_levels", type = "character", default = NULL),
+  make_option("--features", type = "character", default = NULL),
   make_option("--test",     type = "character", default = "auto"),
   make_option("--paired",   action = "store_true", default = FALSE),
   make_option("--p_adjust", type = "character", default = "none"),

@@ -64,3 +64,11 @@ test_that("spec_from_opt splits --levels with a comma inside an item", {
   expect_equal(spec_from_opt(opt)$data$levels,
                c("none", "edema, no diuretics", "edema despite diuretics"))
 })
+
+test_that("spec_from_opt carries --visit_levels and --features", {
+  opt <- list(recipe = "sankey", data = "v.csv", x = "visit", y = "state",
+              visit_levels = "M0,M3,M12", features = "f1, f2")
+  spec <- spec_from_opt(opt)
+  expect_equal(spec$data$visit_levels, c("M0", "M3", "M12"))
+  expect_equal(spec$data$features, c("f1", "f2"))
+})

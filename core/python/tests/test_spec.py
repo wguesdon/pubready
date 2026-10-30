@@ -62,3 +62,11 @@ def test_spec_from_args_splits_levels_with_a_comma_inside_an_item():
                         levels="none|edema, no diuretics|edema despite diuretics")
     spec = spec_from_args(a)
     assert spec["data"]["levels"] == ["none", "edema, no diuretics", "edema despite diuretics"]
+
+
+def test_spec_from_args_carries_visit_levels_and_features():
+    a = SimpleNamespace(recipe="sankey", data="v.csv", x="visit", y="state",
+                        visit_levels="M0,M3,M12", features="f1, f2")
+    spec = spec_from_args(a)
+    assert spec["data"]["visit_levels"] == ["M0", "M3", "M12"]
+    assert spec["data"]["features"] == ["f1", "f2"]

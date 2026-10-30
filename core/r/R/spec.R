@@ -61,6 +61,8 @@ spec_from_opt <- function(opt) {
                   measure = opt$measure,
                   ref = opt$ref, cause = opt$cause,
                   levels = split_list_option(opt$levels),
+                  visit_levels = split_list_option(opt$visit_levels),
+                  features = split_list_option(opt$features),
                   markers = split_list_option(opt$markers),
                   covariates = split_list_option(opt$covariates)),
     test   = list(

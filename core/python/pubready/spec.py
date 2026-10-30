@@ -91,6 +91,8 @@ def spec_from_args(a):
             "ref": getattr(a, "ref", None),
             "cause": getattr(a, "cause", None),
             "levels": split_list_option(getattr(a, "levels", None)),
+            "visit_levels": split_list_option(getattr(a, "visit_levels", None)),
+            "features": split_list_option(getattr(a, "features", None)),
             "markers": split_list_option(getattr(a, "markers", None)),
         },
         "test": {

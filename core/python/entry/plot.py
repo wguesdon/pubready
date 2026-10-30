@@ -27,6 +27,7 @@ def main():
     p.add_argument("--measure")
     p.add_argument("--markers")
     p.add_argument("--ref"); p.add_argument("--cause"); p.add_argument("--levels")
+    p.add_argument("--visit_levels"); p.add_argument("--features")
     p.add_argument("--test", default="auto")
     p.add_argument("--paired", action="store_true")
     p.add_argument("--p_adjust", default="none")
