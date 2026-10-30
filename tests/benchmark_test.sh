@@ -35,11 +35,11 @@ check_bundle() {  # $1 = output root, $2 = label
   [ "$missing" -eq 0 ] && echo "PASS: $2"
 }
 
-bench() {  # $1 = case name, $2 = text the methods paragraph must hold; rest = plot args
-  local name="$1" want="$2"; shift 2
+bench_on() {  # $1 = engines, $2 = case name, $3 = text the methods paragraph must hold; rest = plot args
+  local engines="$1" name="$2" want="$3"; shift 3
   if [ -n "$FILTER" ] && [[ "$name" != *"$FILTER"* ]]; then return; fi
   local engine dir
-  for engine in r python; do
+  for engine in $engines; do
     dir="$OUT/${name}_${engine}"
     ran=$((ran + 1))
     if ! ./cli/figkit plot --engine "$engine" "$@" --out "$dir" > "$dir.log" 2>&1; then
@@ -51,6 +51,12 @@ bench() {  # $1 = case name, $2 = text the methods paragraph must hold; rest = p
     fi
   done
 }
+
+bench() { bench_on "r python" "$@"; }  # $1 = case name, $2 = methods text; rest = plot args
+
+# A case whose method only the R engine has. The Python engine stops on it and
+# routes to --engine r, which the unit suites assert.
+bench_r() { bench_on "r" "$@"; }
 
 mkdir -p "$OUT"
 D=benchmarks/data
@@ -164,6 +170,70 @@ bench sleep_wilcoxon "Wilcoxon" --recipe paired_compare --data $D/sleep.csv \
   --x group --y extra --id ID --test wilcoxon
 bench normand_meta "DerSimonian-Laird" --recipe forest_meta --data $D/normand_stroke.csv \
   --y mean_difference --se se --label study --measure difference
+
+echo "--- Cases of the v3 numbers audit ---"
+bench cats_student "Student" --recipe two_group_compare --data $D/cats.csv \
+  --x Sex --y Hwt --test student_t
+bench cats_mann_whitney "Mann-Whitney" --recipe two_group_compare --data $D/cats.csv \
+  --x Sex --y Hwt --test wilcoxon
+bench plant_growth_mw_exact "Mann-Whitney" --recipe two_group_compare \
+  --data $D/plant_growth_ctrl_trt2.csv --x group --y weight --test wilcoxon
+bench sleep_two_group_paired "paired t-test" --recipe two_group_compare --data $D/sleep.csv \
+  --x group --y extra --paired --test t
+bench sleep_two_group_paired_auto "signed-rank" --recipe two_group_compare --data $D/sleep.csv \
+  --x group --y extra --paired
+bench nitrofen_two_group "Welch" --recipe two_group_compare --data $D/nitrofen_80_160.csv \
+  --x conc --y total --test welch_t
+bench cars93_origin "Mann-Whitney" --recipe two_group_compare --data $D/cars93.csv \
+  --x Origin --y MPG.highway --test wilcoxon
+bench cats_feature_panel "Welch" --recipe feature_panel --data $D/cats.csv \
+  --x Sex --test welch_t
+bench plant_growth_tukey "Tukey" --recipe multi_group_compare --data $D/plant_growth.csv \
+  --x group --y weight --test anova
+bench chickwts_games_howell "Games-Howell" --recipe multi_group_compare --data $D/chickwts.csv \
+  --x feed --y weight --test welch
+bench insect_sprays_dunn "Dunn" --recipe multi_group_compare --data $D/insect_sprays.csv \
+  --x spray --y count --test kruskal
+bench nitrofen_multi "Tukey" --recipe multi_group_compare --data $D/nitrofen.csv \
+  --x conc --y total --test anova
+bench quine_threeway_anova "3-way ANOVA" --recipe factorial_anova --data $D/quine.csv \
+  --x Eth --fill Sex --facet Lrn --y Days --test anova
+bench_r quine_threeway_art "aligned rank transform" --recipe factorial_anova --data $D/quine.csv \
+  --x Eth --fill Sex --facet Lrn --y Days --test art
+bench_r quine_threeway_auto "aligned rank transform" --recipe factorial_anova --data $D/quine.csv \
+  --x Eth --fill Sex --facet Lrn --y Days
+bench_r higgins_art "aligned rank transform" --recipe factorial_anova \
+  --data $D/higgins1990_table1.csv --x Row --fill Column --y Response --test art
+bench shoes_paired_estimation "Hedges" --recipe estimation_plot --data $D/shoes.csv \
+  --x material --y wear --paired --id boy --ref A
+bench oxboys_rm "repeated-measures" --recipe timecourse --data $D/oxboys.csv \
+  --x Occasion --y height --id Subject
+bench veteran_trt_km "log-rank" --recipe survival_km --data $D/veteran.csv \
+  --time time --event status --x trt --xlab "Days"
+bench colon_cox "Cox" --recipe cox_forest --data $D/colon_death.csv \
+  --time time --event status --covariates "rx,sex,age"
+bench cgd_cox "Cox" --recipe cox_forest --data $D/cgd_first.csv \
+  --time time --event status --covariates "treat,inherit,age"
+bench birthwt_roc "DeLong" --recipe roc_curve --data $D/birthwt.csv \
+  --y low --x lwt --positive 1
+bench davis_bland_altman "Bland and Altman" --recipe bland_altman --data $D/davis.csv \
+  --x weight --y repwt
+bench nitrendipene_ic50 "extra-sum-of-squares" --recipe dose_response --data $D/nitrendipene.csv \
+  --x NIF --y activity --group Tissue
+bench dnase_ec50_ci "log10 scale" --recipe dose_response --data $D/dnase_run1.csv \
+  --x conc --y density
+bench formaldehyde_linear "A straight line" --recipe standard_curve \
+  --data $D/formaldehyde_standard_curve.csv --x carb --y optden --id sample --test linear
+bench housing_kruskal "Kruskal-Wallis" --recipe composition --data $D/housing.csv \
+  --id sample --x Sat --y Freq --group Infl
+bench airway_pca_permanova "exact" --recipe pca --data $D/airway_pca.csv --group dex
+bench iris_pca_permanova "PERMANOVA" --recipe pca --data $D/iris.csv --group Species
+bench mtcars_pearson_ci "Pearson" --recipe correlation --data $D/mtcars.csv \
+  --x wt --y mpg --test pearson
+bench puromycin_ci "Michaelis-Menten" --recipe enzyme_kinetics --data $D/puromycin.csv \
+  --x conc --y rate --group state
+bench sleep_paired_effect "paired t-test" --recipe paired_compare --data $D/sleep.csv \
+  --x group --y extra --id ID --test t
 
 echo
 if [ "$ran" -eq 0 ]; then
