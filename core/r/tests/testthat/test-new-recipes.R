@@ -177,3 +177,20 @@ test_that("bland_altman skips the regression when the differences are constant",
   expect_equal(res$stats$bias, 1.1, tolerance = 1e-9)
   expect_match(res$methods, "The differences were constant", fixed = TRUE)
 })
+
+# The DeLong CI is not reported at an AUC of 1 or for a constant marker, and a
+# constant marker has no optimal threshold (F86). The Python suite matches.
+test_that("roc_curve flags complete separation and a constant marker", {
+  df <- data.frame(status = rep(c("healthy", "disease"), each = 6),
+                   perfect = c(1:6, 11:16), flat = 5,
+                   mixed = c(1, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 12))
+  res <- recipe_roc_curve(df, new_spec("roc_curve", y = "status", x = "perfect,flat,mixed",
+                                       positive = "disease"))
+  st <- res$stats
+  expect_equal(st$complete_separation, c(TRUE, FALSE, FALSE))
+  expect_equal(st$constant_marker, c(FALSE, TRUE, FALSE))
+  expect_true(all(is.na(c(st$auc_ci_low[1:2], st$youden_threshold[2]))))
+  expect_false(is.na(st$auc_ci_low[3]))
+  expect_match(res$methods, "flat is constant, so it does not discriminate the outcome", fixed = TRUE)
+  expect_match(res$methods, "the DeLong 95% CI is not valid", fixed = TRUE)
+})

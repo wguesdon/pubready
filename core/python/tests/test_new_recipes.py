@@ -246,3 +246,21 @@ def test_bland_altman_skips_the_regression_when_the_differences_are_constant():
     assert s["sd_diff"] == 0 and np.isnan(s["prop_bias_p"])
     assert s["bias"] == pytest.approx(1.1, rel=1e-9)
     assert "The differences were constant" in res["methods"]
+
+
+def test_roc_curve_flags_complete_separation_and_a_constant_marker():
+    """No DeLong CI at an AUC of 1 or for a constant marker, as in R (F86)."""
+    from pubready.recipes.roc_curve import recipe_roc_curve
+    df = pd.DataFrame({"status": ["healthy"] * 6 + ["disease"] * 6,
+                       "perfect": list(range(1, 7)) + list(range(11, 17)), "flat": 5.0,
+                       "mixed": [1, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 12]})
+    res = recipe_roc_curve(df, new_spec("roc_curve", y="status", x="perfect,flat,mixed",
+                                        positive="disease"))
+    st = res["stats"]
+    assert list(st["complete_separation"]) == [True, False, False]
+    assert list(st["constant_marker"]) == [False, True, False]
+    assert np.isnan(st["auc_ci_low"].iloc[0]) and np.isnan(st["auc_ci_low"].iloc[1])
+    assert np.isnan(st["youden_threshold"].iloc[1])
+    assert not np.isnan(st["auc_ci_low"].iloc[2])
+    assert "flat is constant, so it does not discriminate the outcome" in res["methods"]
+    assert "the DeLong 95% CI is not valid" in res["methods"]

@@ -109,6 +109,11 @@ tag move together.
   its points, has no fitted values in the stats table, and stays out of the
   shared-parameter F tests. The stats table gains `fit_status` and
   `status_reason` (F50).
+- `roc_curve` does not report the DeLong CI of a marker with an AUC of 0 or 1
+  or of a constant marker, where the CI has zero width, and says why. A
+  constant marker gets no optimal threshold, in place of "-Inf", and a warning
+  in the methods text. The stats table gains `constant_marker` and
+  `complete_separation` (F86).
 - `standard_curve` checks that the mean signal of the standards moves in one
   direction with the concentration. When it rises and then falls, or the
   reverse, the subtitle and the methods text warn of a possible hook effect
