@@ -47,6 +47,32 @@ def _plab(p):
     return "P < 0.001" if p < 0.001 else f"P = {p:.2g}"
 
 
+def clean_step_lines(y, coerced, n_missing, n0, n1):
+    """The data log of the cleaning, as .fa_clean_steps() of the R engine writes it.
+
+    Args:
+        y: The outcome column.
+        coerced: The count of outcome values that became NA as numbers.
+        n_missing: The count of missing values of each column, in order.
+        n0: The count of rows before the cleaning.
+        n1: The count of rows after it.
+
+    Returns:
+        list: The steps: the coerced values, the rows with no value in each
+        column (a row with two missing values counts in both), and the rows
+        dropped in all.
+    """
+    steps = []
+    if coerced:
+        steps.append(f"Coerced column '{y}' to numeric; {coerced} value(s) became NA.")
+    for col, n in n_missing.items():
+        if n:
+            steps.append(f"{n} row(s) have no value in '{col}'.")
+    if n1 < n0:
+        steps.append(f"Dropped {n0 - n1} row(s) with a missing value ({n0} -> {n1} rows).")
+    return steps or ["No cleaning applied; input used as-is."]
+
+
 def _clean_term(t, factors):
     """Turn a statsmodels term such as C(_f0_):C(_f1_) back into column names.
 
@@ -239,11 +265,15 @@ def recipe_factorial_anova(df, spec):
     df = df.copy()
     for f in factors:
         df[f] = level_labels(df[f])
+    # Each reason for a dropped row is counted on its own: a text value of the
+    # outcome that becomes NA, and a missing value in each column.
+    y_raw = df[y]
     df[y] = pd.to_numeric(df[y], errors="coerce")
+    coerced = int((df[y].isna() & y_raw.notna()).sum())
+    n_missing = {c: int(df[c].isna().sum()) for c in [y] + factors}
     n0 = len(df)
     df = df.dropna(subset=[y] + factors).reset_index(drop=True)
-    clean_steps = (f"Dropped {n0 - len(df)} row(s) with missing values ({n0} -> {len(df)} rows)."
-                   if len(df) < n0 else "No cleaning applied; input used as-is.")
+    clean_steps = clean_step_lines(y, coerced, n_missing, n0, len(df))
     check_spread(df[y], "factorial_anova", f"the outcome '{y}'")
 
     ren = {y: "_y_"}

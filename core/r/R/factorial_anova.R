@@ -28,7 +28,12 @@ recipe_factorial_anova <- function(df, spec) {
   factors <- c(f1, f2, if (!is.null(f3) && nzchar(f3)) f3)
   for (f in factors) if (!f %in% names(df)) stop(sprintf("factor column '%s' not found", f))
   if (!y %in% names(df)) stop(sprintf("outcome column '%s' not found", y))
-  df[[y]] <- as.numeric(df[[y]])
+  # Each reason for a dropped row is counted on its own: a text value of the
+  # outcome that becomes NA, and a missing value in each column.
+  y_raw <- df[[y]]
+  df[[y]] <- suppressWarnings(as.numeric(df[[y]]))
+  coerced <- sum(is.na(df[[y]]) & !is.na(y_raw))
+  n_missing <- vapply(c(y, factors), .fa_n_missing, integer(1), df = df)
   n0 <- nrow(df)
   df <- df[stats::complete.cases(df[, c(y, factors)]), , drop = FALSE]
   # The factors are made after the rows are dropped, so a level whose every
@@ -37,10 +42,7 @@ recipe_factorial_anova <- function(df, spec) {
   # numeric order when every label is a number, else code-point order.
   df[[f1]] <- .fa_factor(df[[f1]], unlist(spec$data$levels))
   for (f in factors[-1]) df[[f]] <- .fa_factor(df[[f]])
-  clean_steps <- if (nrow(df) < n0) {
-    sprintf("Dropped %d row(s) with missing values in %s (%d -> %d rows).",
-            n0 - nrow(df), paste(c(y, factors), collapse = ", "), n0, nrow(df))
-  } else "No cleaning applied; input used as-is."
+  clean_steps <- .fa_clean_steps(y, coerced, n_missing, n0, nrow(df))
   check_spread(df[[y]], "factorial_anova", sprintf("the outcome '%s'", y))
 
   # The models run on a copy with syntactic column names (.y, .f1, .f2, .f3),
@@ -196,6 +198,27 @@ recipe_factorial_anova <- function(df, spec) {
 # The original name of a model term: ".f1:.f2" becomes "genotype:treatment".
 .fa_term_name <- function(term, safe, factors) {
   paste(factors[match(strsplit(term, ":", fixed = TRUE)[[1]], safe)], collapse = ":")
+}
+
+# The count of missing values of one column.
+.fa_n_missing <- function(col, df) sum(is.na(df[[col]]))
+
+# The data log of the cleaning: the coerced outcome values, the rows with no
+# value in each column (a row with two missing values counts in both), and the
+# rows dropped in all. The Python engine writes the same steps.
+.fa_clean_steps <- function(y, coerced, n_missing, n0, n1) {
+  steps <- character(0)
+  if (coerced > 0) {
+    steps <- c(steps, sprintf("Coerced column '%s' to numeric; %d value(s) became NA.", y, coerced))
+  }
+  for (col in names(n_missing)[n_missing > 0]) {
+    steps <- c(steps, sprintf("%d row(s) have no value in '%s'.", n_missing[[col]], col))
+  }
+  if (n1 < n0) {
+    steps <- c(steps, sprintf("Dropped %d row(s) with a missing value (%d -> %d rows).",
+                              n0 - n1, n0, n1))
+  }
+  if (length(steps) == 0) "No cleaning applied; input used as-is." else steps
 }
 
 # A factor column with the level rule of both engines (util level_order).

@@ -273,3 +273,17 @@ def test_values_near_1e300_or_1e_minus_300_stop_with_a_clear_message():
     with pytest.raises(ValueError, match="the variance of the column 'a' is not a finite positive "
                                          "number"):
         recipe_correlation(cd, v3_spec("correlation", x="a", y="b"))
+
+
+# F124: the data log of factorial_anova counts each reason on its own.
+def test_factorial_anova_logs_each_reason_for_a_dropped_row():
+    from pubready.recipes.factorial_anova import recipe_factorial_anova
+    fa = pd.DataFrame({"g": ["wt"] * 8 + ["ko"] * 8, "t": ["v", "d"] * 8,
+                       "y": ["5 mg", "2", "3", "4", "5", "6", "7", "8.5", "<0.1", "3", "4", "5",
+                             "6", "7", "9", "10"]})
+    fa.loc[2, "t"] = None
+    res = recipe_factorial_anova(fa, v3_spec("factorial_anova", x="g", fill="t", y="y"))
+    assert res["clean_steps"] == ["Coerced column 'y' to numeric; 2 value(s) became NA.",
+                                  "2 row(s) have no value in 'y'.",
+                                  "1 row(s) have no value in 't'.",
+                                  "Dropped 3 row(s) with a missing value (16 -> 13 rows)."]

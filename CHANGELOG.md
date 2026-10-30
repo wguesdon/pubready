@@ -86,6 +86,9 @@ tag move together.
   variance of the outcome or of a column is not a finite positive number, as
   for values near 1e300 or near 1e-300. They gave a silent NA, P = 1 or a
   crash before (F83).
+- The data log of `factorial_anova` counts each reason for a dropped row on its
+  own: the outcome values that became NA as numbers, and the rows with no value
+  in each column. It named every column as the reason before (F124).
 
 ## [3.0.0] - 2026-10-29
 

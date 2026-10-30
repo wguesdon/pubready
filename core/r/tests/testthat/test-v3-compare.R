@@ -305,3 +305,17 @@ test_that("values near 1e300 or 1e-300 stop with a clear message", {
   expect_error(recipe_correlation(cd, v3_spec("correlation", x = "a", y = "b")),
                "the variance of the column 'a' is not a finite positive number")
 })
+
+# F124: the data log of factorial_anova counts each reason on its own.
+test_that("factorial_anova logs each reason for a dropped row", {
+  fa <- data.frame(g = rep(c("wt", "ko"), each = 8), t = rep(c("v", "d"), 8),
+                   y = c("5 mg", "2", "3", "4", "5", "6", "7", "8.5", "<0.1", "3", "4", "5", "6",
+                         "7", "9", "10"),
+                   stringsAsFactors = FALSE)
+  fa$t[3] <- NA
+  res <- recipe_factorial_anova(fa, v3_spec("factorial_anova", x = "g", fill = "t", y = "y"))
+  expect_equal(res$clean_steps, c("Coerced column 'y' to numeric; 2 value(s) became NA.",
+                                  "2 row(s) have no value in 'y'.",
+                                  "1 row(s) have no value in 't'.",
+                                  "Dropped 3 row(s) with a missing value (16 -> 13 rows)."))
+})
