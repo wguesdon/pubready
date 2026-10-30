@@ -165,3 +165,15 @@ test_that("swimmer refuses a status that is not coded 1 or 0", {
   expect_error(recipe_swimmer(df, new_spec("swimmer", id = "pt", time = "months", event = "ended")),
                "1 = the course ended")
 })
+
+# Constant differences, here equal up to rounding: the SD is 0 and the
+# regression is not run, in place of P = NaN or a slope of rounding noise (F82).
+test_that("bland_altman skips the regression when the differences are constant", {
+  a <- c(5.1, 6.1, 7.3, 8.9, 10.2, 12.7)
+  res <- recipe_bland_altman(data.frame(a = a, b = a - 1.1), new_spec("bland_altman", x = "a", y = "b"))
+  expect_true(res$stats$differences_constant)
+  expect_equal(res$stats$sd_diff, 0)
+  expect_true(is.na(res$stats$prop_bias_p))
+  expect_equal(res$stats$bias, 1.1, tolerance = 1e-9)
+  expect_match(res$methods, "The differences were constant", fixed = TRUE)
+})

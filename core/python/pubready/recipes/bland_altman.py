@@ -32,20 +32,78 @@ def agreement_stats(a, b):
     d = a - b
     m = (a + b) / 2
     n = len(d)
-    bias, s = float(d.mean()), float(d.std(ddof=1))
+    # Differences that are equal up to rounding have an SD of 0: the regression
+    # would fit rounding noise or give P = 1, so it is not run (F82), as in R.
+    constant = differences_constant(d, a, b)
+    bias, s = float(d.mean()), (0.0 if constant else float(d.std(ddof=1)))
     z, tq = stats.norm.ppf(0.975), stats.t.ppf(0.975, n - 1)
     se_bias = s / np.sqrt(n)
     se_loa = s * np.sqrt(1 / n + z ** 2 / (2 * (n - 1)))
-    reg = stats.linregress(m, d)
+    slope = slope_p = float("nan")
+    if not constant:
+        reg = stats.linregress(m, d)
+        slope, slope_p = float(reg.slope), float(reg.pvalue)
     return {
         "n": n, "bias": bias,
         "bias_ci_low": bias - tq * se_bias, "bias_ci_high": bias + tq * se_bias,
         "sd_diff": s, "loa_low": bias - z * s, "loa_high": bias + z * s,
         "loa_low_ci_low": bias - z * s - tq * se_loa, "loa_low_ci_high": bias - z * s + tq * se_loa,
         "loa_high_ci_low": bias + z * s - tq * se_loa, "loa_high_ci_high": bias + z * s + tq * se_loa,
-        "prop_bias_slope": float(reg.slope), "prop_bias_p": float(reg.pvalue),
-        "shapiro_p_diff": shapiro_normal(d)[0],
+        "prop_bias_slope": slope, "prop_bias_p": slope_p,
+        "shapiro_p_diff": float("nan") if constant else shapiro_normal(d)[0],
+        "differences_constant": constant,
     }
+
+
+def differences_constant(d, a, b):
+    """Whether the differences are constant, as .ba_constant() in R.
+
+    The differences are constant when their range is at most 1e-9 of the
+    largest reading, so that rounding noise does not count as spread.
+
+    Args:
+        d: The differences.
+        a: The readings of method A.
+        b: The readings of method B.
+
+    Returns:
+        bool: True when the differences are constant.
+    """
+    return bool(np.ptp(d) <= 1e-9 * max(np.abs(a).max(), np.abs(b).max()))
+
+
+def subtitle(s):
+    """The subtitle, as .ba_subtitle() in R.
+
+    Args:
+        s: The statistics.
+
+    Returns:
+        str: n and the proportional-bias test, or a note on constant differences.
+    """
+    if s["differences_constant"]:
+        return f"n = {s['n']}; the differences are constant, so no proportional bias test"
+    return (f"n = {s['n']}; proportional bias slope {s['prop_bias_slope']:.3f}, "
+            f"P = {sig_text(s['prop_bias_p'], 2)}")
+
+
+def checks_text(s):
+    """The methods sentences on the proportional bias and the normality checks.
+
+    Args:
+        s: The statistics.
+
+    Returns:
+        str: The sentences, as .ba_checks_text() in R.
+    """
+    if s["differences_constant"]:
+        return ("The differences were constant, so their SD is 0 and the limits of agreement "
+                "equal the bias; the regression of the difference on the mean and the "
+                "Shapiro-Wilk test of the differences were not run. ")
+    return (f"A linear regression of the difference on the mean gave a slope of "
+            f"{s['prop_bias_slope']:.3f} (P = {sig_text(s['prop_bias_p'], 2)}) as a test of "
+            "proportional bias. The normality of the differences, which the limits assume, was "
+            f"checked with the Shapiro-Wilk test (P = {sig_text(s['shapiro_p_diff'], 2)}). ")
 
 
 def recipe_bland_altman(df, spec):
@@ -98,8 +156,7 @@ def recipe_bland_altman(df, spec):
                     textcoords="offset points", ha="left", va="center", fontsize=9,
                     color="0.15", annotation_clip=False)
     ax.scatter(mean, diff, s=26, color=pal[0], alpha=0.85, zorder=3)
-    ax.set_title(f"n = {s['n']}; proportional bias slope {s['prop_bias_slope']:.3f}, "
-                 f"P = {sig_text(s['prop_bias_p'], 2)}", fontsize=10, color="#4d4d4d")
+    ax.set_title(subtitle(s), fontsize=10, color="#4d4d4d")
     if ap.get("title"):
         fig.suptitle(ap["title"], fontweight="bold")
     ax.set_xlabel(ap.get("x_label") or f"Mean of {x} and {y}")
@@ -140,10 +197,7 @@ def _methods(s, x, y):
         f"{sig_text(s['loa_low_ci_low'])} to {sig_text(s['loa_low_ci_high'])}) and {sig_text(s['loa_high'])} "
         f"(95% CI {sig_text(s['loa_high_ci_low'])} to {sig_text(s['loa_high_ci_high'])}), computed as the "
         "mean difference plus or minus 1.96 standard deviations, with confidence intervals from "
-        "the standard error of Bland and Altman (1999). A linear regression of the difference on "
-        f"the mean gave a slope of {s['prop_bias_slope']:.3f} (P = {sig_text(s['prop_bias_p'], 2)}) as a "
-        "test of proportional bias. The normality of the differences, which the limits assume, "
-        f"was checked with the Shapiro-Wilk test (P = {sig_text(s['shapiro_p_diff'], 2)}). Computed in "
+        f"the standard error of Bland and Altman (1999). {checks_text(s)}Computed in "
         f"Python {platform.python_version()} with scipy {v('scipy')} and drawn with matplotlib "
         f"{v('matplotlib')}."
     )

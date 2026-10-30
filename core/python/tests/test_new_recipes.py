@@ -234,3 +234,15 @@ def test_timecourse_groups_share_one_dodge_width_as_in_r():
     first_x = sorted(line.get_xdata()[0] for line in ax.lines if line.get_marker() == "o")
     # position_dodge(width = 0.012 * 20) over 4 groups: steps of 0.06, spread 0.18.
     assert first_x[-1] - first_x[0] == pytest.approx(0.012 * 20 * 3 / 4)
+
+
+def test_bland_altman_skips_the_regression_when_the_differences_are_constant():
+    """Constant differences: SD 0 and no regression, as in R (F82)."""
+    a = np.array([5.1, 6.1, 7.3, 8.9, 10.2, 12.7])
+    res = recipe_bland_altman(pd.DataFrame({"a": a, "b": a - 1.1}),
+                              new_spec("bland_altman", x="a", y="b"))
+    s = res["stats"].iloc[0]
+    assert bool(s["differences_constant"]) is True
+    assert s["sd_diff"] == 0 and np.isnan(s["prop_bias_p"])
+    assert s["bias"] == pytest.approx(1.1, rel=1e-9)
+    assert "The differences were constant" in res["methods"]

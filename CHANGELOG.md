@@ -69,6 +69,11 @@ tag move together.
 - `distribution` draws no density curve and reports no bandwidth for a group
   with no spread, so a group of equal values no longer stretches the shared x
   axis. The methods text names the group (F125).
+- `bland_altman` skips the proportional-bias regression and the Shapiro-Wilk
+  test when the differences are constant, sets their SD to 0 and says so. Two
+  identical methods gave "P = NaN" in R and P = 1.0 in Python, and a constant
+  difference gave a slope of rounding noise. The stats table gains
+  `differences_constant` (F82).
 - `calibration` reports the calibration slope and the Hosmer-Lemeshow test as
   not estimable when a model has fewer than 3 distinct predictions. Python
   reported a slope that the data cannot identify, and R stopped with "cannot
