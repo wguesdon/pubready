@@ -6,11 +6,13 @@ import functools
 import os
 
 import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
 import numpy as np
 import pandas as pd
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, significance_cmap
+from .volcano import DOUBLE_XMIN, display_y
 
 _TERM = ["Description", "ID", "pathway", "term", "Term", "NAME"]
 _PADJ = ["p.adjust", "padj", "qvalue", "q_value", "FDR", "pvalue", "p_value"]
@@ -154,22 +156,45 @@ def recipe_enrichment_dot(df, spec):
     nes_col = _pick(df, _NES)
 
     term = df[term_col].astype(str).to_numpy()
-    padj = pd.to_numeric(df[padj_col], errors="coerce").to_numpy()
+    padj = pd.to_numeric(df[padj_col], errors="coerce").to_numpy(dtype=float)
     count = (pd.to_numeric(df[count_col], errors="coerce").to_numpy()
              if count_col else np.full(len(term), np.nan))
+    # An adjusted p of exactly 0 is the strongest term, not a missing value. It is
+    # set to the smallest positive double, as manhattan does, and drawn as a
+    # triangle at the top of the colour scale (F51).
+    is_zero = np.isfinite(padj) & (padj == 0)
+    padj = np.where(is_zero, DOUBLE_XMIN, padj)
     gsea = nes_col is not None
-    if gsea:
-        xval = pd.to_numeric(df[nes_col], errors="coerce").to_numpy(); xlab = "NES"
-    elif ratio_col:
-        xval = _parse_ratio(df[ratio_col]); xlab = "gene ratio"
-    else:
-        xval = -np.log10(padj); xlab = "-log10 adjusted p"
+    neglog_x = not gsea and not ratio_col
+    with np.errstate(divide="ignore", invalid="ignore"):
+        if gsea:
+            xval = pd.to_numeric(df[nes_col], errors="coerce").to_numpy(); xlab = "NES"
+        elif ratio_col:
+            xval = _parse_ratio(df[ratio_col]); xlab = "gene ratio"
+        else:
+            xval = -np.log10(padj); xlab = "-log10 adjusted p"
 
-    keep = np.isfinite(padj) & np.isfinite(xval)
+    n0 = len(term)
+    keep = np.isfinite(padj) & np.isfinite(xval) & df[term_col].notna().to_numpy()
     term, padj, count, xval = term[keep], padj[keep], count[keep], xval[keep]
+    is_zero = is_zero[keep]
     if len(term) < 1:
         raise ValueError("enrichment_dot: no usable rows")
+    clean_steps = []
+    if (~keep).any():
+        clean_steps.append(f"Dropped {int((~keep).sum())} row(s) with a missing term, adjusted p "
+                           f"or x value ({n0} -> {len(term)}).")
+    if is_zero.any():
+        clean_steps.append(f"Replaced {int(is_zero.sum())} adjusted p value(s) of exactly 0 with the "
+                           f"smallest positive double ({DOUBLE_XMIN:.3g}), so that -log10 p is finite.")
+    if not clean_steps:
+        clean_steps = ["No cleaning applied; enrichment table used as-is."]
     df_used = pd.DataFrame({"term": term, "x": xval, "p_adjust": padj, "count": count})
+    # The colour, and the x of the -log10 p axis, of a p of 0 sits at a ceiling 12%
+    # above the largest other value, as in manhattan and volcano.
+    shade = display_y(-np.log10(padj), is_zero, 0.05)
+    if neglog_x:
+        xval = shade
 
     ap = spec["appearance"]
     topn = int(ap.get("top_n", 15))
@@ -180,11 +205,13 @@ def recipe_enrichment_dot(df, spec):
     top = {"term": term[idx], "x": xval[idx], "p_adjust": padj[idx], "count": count[idx]}
     yo = np.argsort(top["x"], kind="stable")
     t, x, pj, ct = top["term"][yo], top["x"][yo], top["p_adjust"][yo], top["count"][yo]
+    sh, zr = shade[idx][yo], is_zero[idx][yo]
+    n_zero_shown = int(zr.sum())
     has_size = not np.all(np.isnan(ct))
 
     labels = [wrap_label(s) for s in t]
     w, h, lab_in = figure_size(labels)
-    top_in = 0.6 if ap.get("title") else 0.3
+    top_in = (0.6 if ap.get("title") else 0.3) + (0.3 if n_zero_shown else 0.0)
     bottom_in = 0.75
     leg_in = 1.6
     panel_w = w - lab_in - leg_in - 0.2
@@ -200,14 +227,27 @@ def recipe_enrichment_dot(df, spec):
         sizes = 70
     # Colour by -log10 of the adjusted p: the values span orders of magnitude, so a
     # linear scale would paint almost every term the same colour.
-    sc = ax.scatter(x, ypos, c=-np.log10(pj), s=sizes, cmap=significance_cmap(), edgecolors="none")
+    norm = Normalize(vmin=float(sh.min()), vmax=float(sh.max()))
+    sizes = np.broadcast_to(np.asarray(sizes, dtype=float), (len(t),))
+    sc = ax.scatter(x[~zr], ypos[~zr], c=sh[~zr], s=sizes[~zr], cmap=significance_cmap(),
+                    norm=norm, edgecolors="none")
+    if n_zero_shown:
+        sc_zero = ax.scatter(x[zr], ypos[zr], c=sh[zr], s=sizes[zr], cmap=significance_cmap(),
+                             norm=norm, marker="^", edgecolors="none")
+        if not (~zr).any():
+            sc = sc_zero
     ax.set_yticks(ypos)
     ax.set_yticklabels(labels)
     ax.set_ylim(-0.6, len(t) - 0.4)
     ax.set_xlabel(ap.get("x_label") or xlab)
     if gsea:
         ax.axvline(0, ls="--", lw=0.6, color="grey")
-    if ap.get("title"):
+    if n_zero_shown:
+        ax.set_title(f"{n_zero_shown} term(s) with adjusted p = 0 drawn as triangles",
+                     fontsize=10, color="#4d4d4d")
+        if ap.get("title"):
+            fig.suptitle(ap["title"], fontweight="bold")
+    elif ap.get("title"):
         ax.set_title(ap["title"], fontweight="bold")
     apply_pub_style(ax, ap.get("theme"))
     ax.tick_params(axis="y", labelsize=10)
@@ -237,11 +277,12 @@ def recipe_enrichment_dot(df, spec):
         ("NES" if gsea else "gene_ratio" if ratio_col else "neg_log10_padj"): top["x"],
         "p_adjust": top["p_adjust"], "count": top["count"]})
     test_meta = {"name": "GSEA dot plot" if gsea else "ORA dot plot",
-                 "n_terms_total": len(term), "n_terms_shown": len(t), "x_axis": xlab}
-    methods = _methods(gsea, len(term), len(t), xlab)
+                 "n_terms_total": len(term), "n_terms_shown": len(t), "x_axis": xlab,
+                 "n_zero_p": int(is_zero.sum())}
+    methods = _methods(gsea, len(term), len(t), xlab, int(is_zero.sum()))
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
-        "df_used": df_used, "clean_steps": ["No cleaning applied; enrichment table used as-is."],
+        "df_used": df_used, "clean_steps": clean_steps,
         "label": slugify(os.path.splitext(spec["data"]["file"])[0]),
         "width": w, "height": h,
         "build_script": functools.partial(_script, term_col, padj_col, count_col, ratio_col,
@@ -249,15 +290,18 @@ def recipe_enrichment_dot(df, spec):
     }
 
 
-def _methods(gsea, n_total, n_shown, xlab):
+def _methods(gsea, n_total, n_shown, xlab, n_zero=0):
     from importlib.metadata import version as v
     import platform
     kind = "a GSEA" if gsea else "an over-representation (ORA)"
+    zero_txt = (f"{n_zero} term(s) with an adjusted p-value of exactly 0 were set to the smallest "
+                f"positive double ({DOUBLE_XMIN:.3g}) and are drawn as triangles at the top of the "
+                "colour scale. " if n_zero else "")
     return (
         f"The top {n_shown} of {n_total} enriched terms from {kind} analysis were shown as a "
         f"dot plot. The x-axis is {xlab}, dot color the -log10 of the adjusted p-value, and "
-        "dot size the gene count. The enrichment analysis was performed upstream; this figure "
-        "summarises its output. "
+        f"dot size the gene count. {zero_txt}The enrichment analysis was performed upstream; "
+        "this figure summarises its output. "
         f"Drawn in Python {platform.python_version()} with matplotlib {v('matplotlib')}."
     )
 
@@ -300,6 +344,8 @@ import numpy as np, pandas as pd
 raw = pd.read_csv("{in_name}")
 term = raw["{term_col}"].astype(str).to_numpy()
 padj = pd.to_numeric(raw["{padj_col}"], errors="coerce").to_numpy()
+# An adjusted p of exactly 0 is set to the smallest positive double, as in the figure.
+padj = np.where(padj == 0, np.finfo(float).tiny, padj)
 {count_line}
 {xline}
 idx = np.argsort(padj, kind="stable")[:{topn}]

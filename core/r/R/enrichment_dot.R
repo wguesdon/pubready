@@ -76,7 +76,13 @@ recipe_enrichment_dot <- function(df, spec) {
   term  <- as.character(df[[cols$term]])
   padj  <- suppressWarnings(as.numeric(df[[cols$padj]]))
   count <- if (!is.na(cols$count)) suppressWarnings(as.numeric(df[[cols$count]])) else rep(NA_real_, length(term))
+  # An adjusted p of exactly 0 is the strongest term, not a missing value. It is
+  # set to the smallest positive double, as manhattan does, and drawn as a
+  # triangle at the top of the colour scale (F51).
+  is_zero <- is.finite(padj) & padj == 0
+  padj[is_zero] <- .Machine$double.xmin
   gsea_mode <- !is.na(cols$nes)
+  neglog_x <- !gsea_mode && is.na(cols$ratio)
   if (gsea_mode) {
     xval <- suppressWarnings(as.numeric(df[[cols$nes]])); xlab_default <- "NES"
   } else if (!is.na(cols$ratio)) {
@@ -85,15 +91,29 @@ recipe_enrichment_dot <- function(df, spec) {
     xval <- -log10(padj); xlab_default <- "-log10 adjusted p"
   }
 
+  n0 <- length(term)
   keep <- is.finite(padj) & is.finite(xval) & !is.na(term)
   term <- term[keep]; padj <- padj[keep]; count <- count[keep]; xval <- xval[keep]
+  is_zero <- is_zero[keep]
   if (length(term) < 1) stop("enrichment_dot: no usable rows")
+  clean_steps <- c(
+    if (sum(!keep) > 0) sprintf("Dropped %d row(s) with a missing term, adjusted p or x value (%d -> %d).",
+                                sum(!keep), n0, length(term)),
+    if (any(is_zero)) sprintf("Replaced %d adjusted p value(s) of exactly 0 with the smallest positive double (%s), so that -log10 p is finite.",
+                              sum(is_zero), formatC(.Machine$double.xmin, format = "g", digits = 3)))
+  if (length(clean_steps) == 0) clean_steps <- "No cleaning applied; enrichment table used as-is."
   df_used <- data.frame(term = term, x = xval, p_adjust = padj, count = count, stringsAsFactors = FALSE)
+  # The colour, and the x of the -log10 p axis, of a p of 0 sits at a ceiling 12%
+  # above the largest other value, as in manhattan and volcano.
+  shade <- .volcano_display_y(-log10(padj), is_zero, 0.05)
+  if (neglog_x) xval <- shade
 
   topn <- spec$appearance$top_n %||% 15
   idx  <- utils::head(order(padj), topn)
   pd <- data.frame(term = term[idx], x = xval[idx], padj = padj[idx],
-                   count = count[idx], stringsAsFactors = FALSE)
+                   count = count[idx], shade = shade[idx],
+                   shape = ifelse(is_zero[idx], 17, 16), stringsAsFactors = FALSE)
+  n_zero_shown <- sum(is_zero[idx])
   pd$term <- factor(pd$term, levels = pd$term[order(pd$x)])
   # Long GO term names would take the whole width and leave no room for the dots,
   # so each label is wrapped at about 45 characters.
@@ -104,21 +124,26 @@ recipe_enrichment_dot <- function(df, spec) {
 
   p <- ggplot2::ggplot(pd, ggplot2::aes(x = x, y = label))
   p <- if (has_size) {
-    p + ggplot2::geom_point(ggplot2::aes(size = count, colour = -log10(padj)))
+    p + ggplot2::geom_point(ggplot2::aes(size = count, colour = shade, shape = shape))
   } else {
-    p + ggplot2::geom_point(ggplot2::aes(colour = -log10(padj)), size = 3)
+    p + ggplot2::geom_point(ggplot2::aes(colour = shade, shape = shape), size = 3)
+  }
+  subtitle <- if (n_zero_shown > 0) {
+    sprintf("%d term(s) with adjusted p = 0 drawn as triangles", n_zero_shown)
   }
   p <- p +
     # Colour by -log10 of the adjusted p: the values span orders of magnitude, so
     # a linear scale would paint almost every term the same colour.
     ggplot2::scale_colour_gradient(low = "#3B6DB3", high = "#C1432B", name = "-log10 p.adjust") +
     ggplot2::scale_size_continuous(name = "count") +
+    ggplot2::scale_shape_identity() +
     ggplot2::labs(x = spec$appearance$x_label %||% xlab_default, y = NULL,
-                  title = spec$appearance$title) +
+                  title = spec$appearance$title, subtitle = subtitle) +
     pub_theme(spec$appearance$theme) +
     ggplot2::theme(legend.position = "right", legend.justification = "top",
                    axis.title.y = ggplot2::element_blank(),
-                   axis.text.y = ggplot2::element_text(lineheight = 0.9))
+                   axis.text.y = ggplot2::element_text(lineheight = 0.9),
+                   plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"))
   if (gsea_mode) {
     p <- p + ggplot2::geom_vline(xintercept = 0, linetype = "dashed",
                                  linewidth = 0.3, colour = "grey50")
@@ -129,10 +154,11 @@ recipe_enrichment_dot <- function(df, spec) {
   names(stats_df)[2] <- if (gsea_mode) "NES" else if (!is.na(cols$ratio)) "gene_ratio" else "neg_log10_padj"
 
   test_meta <- list(name = if (gsea_mode) "GSEA dot plot" else "ORA dot plot",
-                    n_terms_total = length(term), n_terms_shown = nrow(pd), x_axis = xlab_default)
+                    n_terms_total = length(term), n_terms_shown = nrow(pd), x_axis = xlab_default,
+                    n_zero_p = sum(is_zero))
   resolved <- list(family = "enrichment_dot",
                    label = if (gsea_mode) "GSEA dot plot" else "ORA dot plot")
-  methods <- .enrich_methods(gsea_mode, length(term), nrow(pd), xlab_default)
+  methods <- .enrich_methods(gsea_mode, length(term), nrow(pd), xlab_default, sum(is_zero))
   build_script <- list(fn = .enrich_emit_script,
                        args = list(cols = cols, gsea_mode = gsea_mode, topn = topn,
                                    width = size$width, height = size$height))
@@ -140,19 +166,24 @@ recipe_enrichment_dot <- function(df, spec) {
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
        label = slugify(tools::file_path_sans_ext(spec$data$file)),
-       df_used = df_used, clean_steps = "No cleaning applied; enrichment table used as-is.",
+       df_used = df_used, clean_steps = clean_steps,
        width = size$width, height = size$height)
 }
 
-.enrich_methods <- function(gsea_mode, n_total, n_shown, xlab) {
+.enrich_methods <- function(gsea_mode, n_total, n_shown, xlab, n_zero = 0) {
   v    <- pkg_versions("ggplot2")
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   kind <- if (gsea_mode) "a GSEA" else "an over-representation (ORA)"
+  zero_txt <- if (n_zero > 0) {
+    sprintf("%d term(s) with an adjusted p-value of exactly 0 were set to the smallest positive double (%s) and are drawn as triangles at the top of the colour scale. ",
+            n_zero, formatC(.Machine$double.xmin, format = "g", digits = 3))
+  } else ""
   paste0(
     sprintf("The top %d of %d enriched terms from %s analysis were shown as a dot plot. ",
             n_shown, n_total, kind),
     sprintf(paste("The x-axis is %s, dot color the -log10 of the adjusted p-value, and dot size",
                   "the gene count. "), xlab),
+    zero_txt,
     "The enrichment analysis was performed upstream; this figure summarises its output. ",
     sprintf("Drawn in R %s with ggplot2 %s.", rver, v$ggplot2))
 }
@@ -163,7 +194,7 @@ recipe_enrichment_dot <- function(df, spec) {
   } else if (!is.na(cols$ratio)) {
     sprintf('d$x <- sapply(strsplit(as.character(raw[["%s"]]), "/"), function(a) as.numeric(a[1])/as.numeric(a[2])); xlab <- "gene ratio"', cols$ratio)
   } else {
-    sprintf('d$x <- -log10(as.numeric(raw[["%s"]])); xlab <- "-log10 adjusted p"', cols$padj)
+    'd$x <- -log10(d$padj); xlab <- "-log10 adjusted p"'
   }
   vline <- if (gsea_mode) '  + geom_vline(xintercept = 0, linetype = "dashed")' else ""
   c(
@@ -174,6 +205,8 @@ recipe_enrichment_dot <- function(df, spec) {
     sprintf('raw <- read.csv("%s", check.names = FALSE)', in_name),
     sprintf('d <- data.frame(term = as.character(raw[["%s"]]), padj = as.numeric(raw[["%s"]]))',
             cols$term, cols$padj),
+    "# An adjusted p of exactly 0 is set to the smallest positive double, as in the figure.",
+    "d$padj[!is.na(d$padj) & d$padj == 0] <- .Machine$double.xmin",
     if (!is.na(cols$count)) sprintf('d$count <- as.numeric(raw[["%s"]])', cols$count) else "d$count <- NA",
     xline,
     sprintf('d <- d[order(d$padj), ][seq_len(min(%d, nrow(d))), ]', topn),
