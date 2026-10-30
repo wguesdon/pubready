@@ -55,6 +55,10 @@ tag move together.
   one rule in both engines, and adds height for each extra line. Before, a
   one-panel QC figure cut its title and subtitle at the edges, in R and in
   Python (F119).
+- The R report table turns each column into text before it writes a missing
+  value as an empty cell, so `proportions` no longer prints "invalid factor
+  level, NA generated" twice after the bundle. A "|" in a cell is escaped with
+  one backslash, as in Python, so it no longer splits the cell (F120).
 
 ## [3.0.0] - 2026-10-29
 

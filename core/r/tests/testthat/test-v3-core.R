@@ -135,3 +135,10 @@ test_that("a one-panel QC figure wraps its title and subtitle (F119)", {
   res <- qc_normality(list(quantity = "x", panels = list(a = rnorm(10))))
   expect_equal(c(res$width, res$height), c(3.3, 3.9 + 0.18 * 2))
 })
+
+test_that("the report table writes a factor with NA and no warning (F120)", {
+  df <- data.frame(group = factor(c("a", NA, "b|c")), n = c(1, NA, 3))
+  expect_silent(txt <- report_markdown_table(df))
+  expect_equal(strsplit(txt, "\n")[[1]],
+               c("| group | n |", "| --- | --- |", "| a | 1 |", "|  |  |", "| b\\|c | 3 |"))
+})

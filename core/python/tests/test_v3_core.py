@@ -9,7 +9,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pubready.bundle import (_markdown_value, manifest_arguments, reproduce_md, write_json,
+from pubready.bundle import (_markdown_value, dataframe_markdown, manifest_arguments,
+                             reproduce_md, write_json,
                              write_stats_csv)
 from pubready.io import read_tidy, read_tidy_logged
 from pubready.qc import qc_layout, qc_normality
@@ -171,3 +172,9 @@ def test_one_panel_qc_figure_wraps_its_title_and_subtitle():
     assert three["title"] == ["Normality QC: group values"]
     fig, _ = qc_normality({"quantity": "x", "panels": {"a": np.arange(10.0)}})
     assert tuple(fig.get_size_inches()) == pytest.approx((3.3, 3.9 + 0.18 * 2))
+
+
+def test_report_table_writes_a_category_with_na():
+    df = pd.DataFrame({"group": pd.Categorical(["a", None, "b|c"])})
+    assert dataframe_markdown(df).splitlines() == [
+        "| group |", "| --- |", "| a |", "|  |", "| b\\|c |"]

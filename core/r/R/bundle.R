@@ -366,9 +366,13 @@ reproduce_md <- function(container, git_commit, script_name) {
   )
 }
 
+# One column of a report table as escaped text. The column becomes text before
+# the missing values become "", because a factor has no "" level. A "|" becomes
+# "\|", as in the Python engine.
 report_escape_column <- function(column) {
+  column <- as.character(column)
   column[is.na(column)] <- ""
-  gsub("|", "\\\\|", as.character(column), fixed = TRUE)
+  gsub("|", "\\|", column, fixed = TRUE)
 }
 
 report_markdown_row <- function(row) {
