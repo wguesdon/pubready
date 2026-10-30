@@ -110,6 +110,8 @@ Common options:
 | `--top_n N` | the number of labels in `volcano`, of terms in `enrichment_dot` and of intersections in `upset`, 15 by default. The `upset` title states how many intersections it hides. |
 | `--xlab`, `--ylab`, `--title`, `--palette` | labels and colors |
 | `--out DIR` | output root (default `pubready_output`) |
+| `--llm-provider`, `--llm-model` | the provider and the model of the LLM that chose the figure, recorded in the report (default `none`) |
+| `--agent-harness`, `--agent-harness-version` | the agent harness and its version, recorded in the report (default `manual` and `not_recorded`) |
 | `--ref LEVEL` | the reference group of `estimation_plot` (default: the first level in sorted order) |
 | `--test auto\|linear\|4pl` | the curve of `standard_curve`: auto fits a 4PL when the standards have 5 or more positive concentrations and the fit converges, and a line in all other conditions |
 | `--cause CODE` | the event code of the cause of interest of `cumulative_incidence` (default 1) |

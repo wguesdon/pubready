@@ -32,6 +32,9 @@ tag move together.
   `roc_curve` says that it does not warn on its default case level,
   `paired_compare` says how to give two columns, and the tree says that
   `timecourse` does not test a rate of change (F108).
+- The adapters tell the agent to pass `--llm-provider`, `--llm-model`,
+  `--agent-harness` and `--agent-harness-version`, so that the report names the
+  model and the harness. `docs/how_it_works.md` lists the four options (F102).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of

@@ -49,6 +49,9 @@ needs administrator rights.
    large n), so the QQ plot is the tiebreaker.
 4. Call `figkit plot` with the recipe and columns. Leave `--test auto` unless a test
    is forced. The bundle also includes the QC panel (`qc_normality_<ts>.png`).
+   Pass `--llm-provider`, `--llm-model`, `--agent-harness` and
+   `--agent-harness-version` with your own values, so that the report names the
+   model and the harness that made the figure.
 5. Point them at the bundle folder under `pubready_output/`: the figure, the
    standalone script, the stats table, the input copy, and a methods paragraph.
 6. To restyle, edit `plot_config.yaml` in the bundle and run `figkit render`. It
