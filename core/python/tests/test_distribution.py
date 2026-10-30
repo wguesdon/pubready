@@ -84,3 +84,19 @@ def test_numeric_group_labels_match_the_r_engine():
                        "v": [1.0, 2.0, 3.0, 2.0, 3.0, 5.0, 4.0, 6.0, 7.0, 1.0]})
     res = recipe_distribution(df, dist_spec(x="dose", y="v"))
     assert list(res["stats"]["group"]) == ["0.5", "1", "2"]
+
+
+def test_values_near_1e300_or_1e_minus_300_stop_the_run():
+    """A variance that is not finite at double precision stops the run (F83)."""
+    import pytest
+    from pubready.recipes.correlation_heatmap import recipe_correlation_heatmap
+    big = [-7.858e299, 4.285e299, 9.2e299, 1.1e299, -3.3e299]
+    with pytest.raises(ValueError, match="the variance of column 'value' is not finite"):
+        recipe_distribution(pd.DataFrame({"value": big}), dist_spec(y="value"))
+    tiny = [1.2e-300, 3.4e-300, 2.2e-300, 5.1e-300, 0.7e-300]
+    with pytest.raises(ValueError, match="not finite at double precision"):
+        recipe_distribution(pd.DataFrame({"value": tiny}), dist_spec(y="value"))
+    df = pd.DataFrame({"big": big, "b": [1, 3, 2, 5, 4], "c": [2, 1, 4, 3, 6]})
+    spec = spec_from_args(SimpleNamespace(recipe="correlation_heatmap", data="v.csv", x=None, y=None))
+    with pytest.raises(ValueError, match="correlation_heatmap: the variance of column 'big'"):
+        recipe_correlation_heatmap(df, spec)

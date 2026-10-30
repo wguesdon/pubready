@@ -26,6 +26,7 @@ from scipy import stats
 from ..bundle import slugify
 from ..qc import qc_moment_stats
 from ..theme import apply_pub_style, palette
+from .correlation_heatmap import check_finite_variance
 
 MAX_BINS = 200
 GRID_N = 512
@@ -291,6 +292,11 @@ def recipe_distribution(df, spec):
     if not steps:
         steps = ["No cleaning applied; input used as-is."]
     lv = sorted(d["group"].unique()) if has_group else ["all"]
+    # Values near 1e300 or 1e-300 give a variance that is not finite at double
+    # precision, and with it a silent NaN or a wrong curve. The run stops (F83).
+    check_finite_variance(d["value"], y, "distribution")
+    for g in lv:
+        check_finite_variance(d.loc[d["group"] == g, "value"], y, "distribution")
 
     bins = fd_bins(d["value"].to_numpy())
     vals = {g: d.loc[d["group"] == g, "value"].to_numpy() for g in lv}

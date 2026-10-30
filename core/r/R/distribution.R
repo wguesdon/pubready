@@ -169,6 +169,10 @@ recipe_distribution <- function(df, spec) {
   if (nrow(d) < 2) stop("distribution needs at least 2 finite values")
   if (length(steps) == 0) steps <- "No cleaning applied; input used as-is."
   lv <- if (has_group) sort(unique(d$group), method = "radix") else "all"
+  # Values near 1e300 or 1e-300 give a variance that is not finite at double
+  # precision, and with it a silent NA or a wrong curve. The run stops (F83).
+  .check_finite_variance(d$value, y, "distribution")
+  for (g in lv) .check_finite_variance(d$value[d$group == g], y, "distribution")
 
   bins <- .dist_bins(d$value)
   stats_df <- do.call(rbind, lapply(lv, .dist_group_row, d = d, bins = bins))

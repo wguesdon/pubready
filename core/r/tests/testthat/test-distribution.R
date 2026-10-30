@@ -45,3 +45,18 @@ test_that("distribution reports each group and leaves Shapiro-Wilk empty below 3
   expect_named(res$qc$panels, c("a", "b"))
   expect_s3_class(ggplot2::ggplot_build(res$plot), "ggplot_built")
 })
+
+# A variance that is not finite at double precision stops the run with a clear
+# message, in distribution and correlation_heatmap (F83).
+test_that("values near 1e300 or 1e-300 stop distribution and correlation_heatmap", {
+  big <- c(-7.858e299, 4.285e299, 9.2e299, 1.1e299, -3.3e299)
+  expect_error(recipe_distribution(data.frame(value = big), dist_spec(y = "value")),
+               "the variance of column 'value' is not finite at double precision")
+  tiny <- c(1.2e-300, 3.4e-300, 2.2e-300, 5.1e-300, 0.7e-300)
+  expect_error(recipe_distribution(data.frame(value = tiny), dist_spec(y = "value")),
+               "not finite at double precision")
+  df <- data.frame(big = big, b = c(1, 3, 2, 5, 4), c = c(2, 1, 4, 3, 6))
+  expect_error(recipe_correlation_heatmap(df, spec_from_opt(list(recipe = "correlation_heatmap",
+                                                                 data = "v.csv"))),
+               "correlation_heatmap: the variance of column 'big'")
+})

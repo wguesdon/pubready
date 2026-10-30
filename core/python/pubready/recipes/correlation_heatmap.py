@@ -35,6 +35,34 @@ def usable(v):
     return bool(np.isfinite(v).sum() >= 3 and np.nanstd(v) > 0)
 
 
+def check_finite_variance(v, col, recipe):
+    """Stop when the variance of a column is not finite at double precision.
+
+    The values differ, but values near 1e300 overflow the variance to inf and
+    values near 1e-300 underflow it to 0 (F83). distribution uses the same
+    check. The R engine has the same rule and message
+    (.check_finite_variance).
+
+    Args:
+        v: The values of the column.
+        col: The column name, for the message.
+        recipe: The recipe name, for the message.
+
+    Raises:
+        ValueError: If the variance is not a finite positive number.
+    """
+    v = np.asarray(v, dtype=float)
+    v = v[np.isfinite(v)]
+    if len(v) < 2 or len(np.unique(v)) < 2:
+        return
+    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        s2 = float(np.var(v, ddof=1))
+    if not np.isfinite(s2) or s2 <= 0:
+        raise ValueError(f"{recipe}: the variance of column '{col}' is not finite at double "
+                         f"precision (largest absolute value {np.abs(v).max():.2g}); rescale the "
+                         "column, for example to other units or to log10")
+
+
 def recipe_correlation_heatmap(df, spec):
     # coerce_numeric_columns() decides what is numeric: a column with one text
     # cell such as "<0.1" stays a variable, the cell becomes NaN, and the data
@@ -43,6 +71,8 @@ def recipe_correlation_heatmap(df, spec):
     if len(numeric) < 2:
         raise ValueError("correlation_heatmap needs at least 2 numeric columns")
     num = df[numeric].astype(float)
+    for c in numeric:
+        check_finite_variance(num[c], c, "correlation_heatmap")
     keep = [c for c in numeric if usable(num[c])]
     dropped = [c for c in numeric if c not in keep]
     num = num[keep]

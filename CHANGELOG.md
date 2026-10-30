@@ -58,6 +58,9 @@ tag move together.
   each text column that the recipe leaves out (F42).
 - `correlation_heatmap` keeps a numeric column that holds a few text cells in
   the same way as `pca`, and names each dropped column in the data log (F42).
+- `distribution` and `correlation_heatmap` stop with a clear message when the
+  variance of a column is not finite at double precision, as with values near
+  1e300 or 1e-300, in place of a silent NA, a wrong curve or a crash (F83).
 
 ## [3.0.0] - 2026-10-29
 

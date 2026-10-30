@@ -7,6 +7,21 @@
 # A column is a variable when it has 3 finite values or more and some variance.
 .ch_usable <- function(v) sum(is.finite(v)) >= 3 && isTRUE(stats::sd(v, na.rm = TRUE) > 0)
 
+# Stop when the values of a column differ but their variance is not a finite
+# positive number at double precision: values near 1e300 overflow it to Inf, and
+# values near 1e-300 underflow it to 0 (F83). distribution uses the same check.
+# The Python engine has the same rule and message.
+.check_finite_variance <- function(v, col, recipe) {
+  v <- v[is.finite(v)]
+  if (length(v) < 2 || length(unique(v)) < 2) return(invisible(TRUE))
+  s2 <- stats::var(v)
+  if (!is.finite(s2) || s2 <= 0) {
+    stop(sprintf("%s: the variance of column '%s' is not finite at double precision (largest absolute value %s); rescale the column, for example to other units or to log10",
+                 recipe, col, sprintf("%.2g", max(abs(v)))))
+  }
+  invisible(TRUE)
+}
+
 recipe_correlation_heatmap <- function(df, spec) {
   # coerce_numeric_columns() decides what is numeric: a column with one text
   # cell such as "<0.1" stays a variable, the cell becomes NA, and the data log
@@ -16,6 +31,7 @@ recipe_correlation_heatmap <- function(df, spec) {
     stop("correlation_heatmap needs at least 2 numeric columns")
   }
   mat <- as.matrix(co$df[, co$numeric, drop = FALSE])
+  for (cn in colnames(mat)) .check_finite_variance(mat[, cn], cn, "correlation_heatmap")
 
   keepc <- apply(mat, 2, .ch_usable)
   mat <- mat[, keepc, drop = FALSE]
