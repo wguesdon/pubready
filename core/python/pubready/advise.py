@@ -12,6 +12,7 @@ import yaml
 
 from .io import read_tidy
 from .run import inspect_column, inspect_id_candidate, inspect_labels
+from .recipes import enrichment_dot, ma_plot, volcano
 from .spec import PLOT_VALUE_OPTIONS, check_recipe_options, read_recipe_options, split_list_option
 from .util import level_order, time_level_order
 from .version import PUBREADY_VERSION
@@ -23,6 +24,8 @@ COLUMN_FLAGS = ("x", "y", "fill", "facet", "id", "group", "time", "event", "labe
                 "ci_low", "ci_high", "se", "covariates", "features", "markers")
 LIST_COLUMNS = {"covariates", "features", "markers"}
 OPERATORS = {"equals", "at_least", "at_most", "subset_of", "not_subset_of", "empty"}
+ERROR_PRIORITY = {"usage_error": 0, "conflict": 1, "out_of_scope": 2, "needs_answers": 3,
+                  "complete": 4}
 
 
 class AdviceError(ValueError):
@@ -313,6 +316,20 @@ def open_question(key, question, allowed, proposal=None):
             "reason": "The data does not decide this answer."}
 
 
+def record_issue(result, status, reason, **detail):
+    """Record a distinct problem without hiding later, higher-priority errors.
+
+    Args:
+        result: Mutable output.
+        status: Public error status.
+        reason: Explanation.
+        **detail: Question and data context.
+    """
+    issue = {"status": status, "reason": reason, **detail}
+    if issue not in result["conflicts"]:
+        result["conflicts"].append(issue)
+
+
 def ask_question(key, tree, answers, facts, result, node_id):
     """Resolve a question or append an open question.
 
@@ -336,8 +353,8 @@ def ask_question(key, tree, answers, facts, result, node_id):
         if not match_rule(rule, facts):
             continue
         if "forbid" in rule and explicit in rule["forbid"]:
-            raise AdviceError(rule.get("reason", f"The data rules out {key}={explicit}."),
-                              "conflict", question=key, answer=explicit, fact=rule["fact"])
+            record_issue(result, "conflict", rule.get("reason", f"The data rules out {key}={explicit}."),
+                         question=key, answer=explicit, fact=rule["fact"])
         if "answer" in rule:
             decided = rule["answer"]
         if "propose" in rule:
@@ -348,8 +365,8 @@ def ask_question(key, tree, answers, facts, result, node_id):
         if explicit is None:
             decided = proposal
     if explicit is not None and decided is not None and explicit != decided:
-        raise AdviceError(f"The data gives {key}={decided}, not {explicit}.",
-                          "conflict", question=key, answer=explicit, fact=decided)
+        record_issue(result, "conflict", f"The data gives {key}={decided}, not {explicit}.",
+                     question=key, answer=explicit, fact=decided)
     if explicit is None and decided is not None:
         value, source = decided, "data"
     if value is None and "default" in q:
@@ -383,6 +400,41 @@ def need_flag(key, result):
         "text": f"Which value should --{key} use?", "source": "scientist", "flag": key}, []))
 
 
+def descriptive_columns(recipe, df, options, result):
+    """Reuse the recipes' column selectors without running their analyses.
+
+    Args:
+        recipe: Selected recipe.
+        df: Input table.
+        options: Mutable command flags.
+        result: Mutable output.
+    """
+    spec = {"data": options}
+    if recipe == "volcano":
+        fc, p, _ = volcano._columns(df, spec)
+        for key, column in (("x", fc), ("y", p)):
+            if column is None:
+                need_flag(key, result)
+            else:
+                options[key] = column
+    elif recipe == "ma_plot":
+        columns = ma_plot.ma_columns(df, spec)
+        if columns["fc"] is None:
+            raise AdviceError("The MA plot needs a recognized upstream fold-change column.", "conflict")
+        for key, column in (("x", columns["a"]), ("y", columns["p"])):
+            if column is None:
+                need_flag(key, result)
+            else:
+                options[key] = column
+    elif recipe == "enrichment_dot":
+        term = enrichment_dot._pick(df, enrichment_dot._TERM, options.get("label"))
+        if term is None:
+            need_flag("label", result)
+        p = enrichment_dot._pick(df, enrichment_dot._PADJ + enrichment_dot._PRAW)
+        if p is None:
+            raise AdviceError("The enrichment table needs a recognized upstream P-value column.", "conflict")
+
+
 def check_leaf_data(leaf, df, options, facts, result):
     """Check structural constraints without fitting or running a test.
 
@@ -394,6 +446,10 @@ def check_leaf_data(leaf, df, options, facts, result):
         result: Mutable result.
     """
     recipe = leaf["recipe"]
+    descriptive_columns(recipe, df, options, result)
+    for role in ("x", "y"):
+        if role + ".column" not in facts and options.get(role) in df:
+            facts.update(column_facts(df, options[role], role))
     numeric_y = {"two_group_compare", "multi_group_compare", "paired_compare", "factorial_anova",
                  "feature_panel", "estimation_plot", "timecourse", "correlation", "bland_altman",
                  "dose_response", "enzyme_kinetics", "standard_curve", "distribution",
@@ -505,11 +561,11 @@ def finish_leaf(tree, node_id, df, options, answers, facts, result):
         check_recipe_options(recipe, options)
     except ValueError as error:
         raise AdviceError(str(error)) from error
-    check_leaf_data(leaf, df, options, facts, result)
     test = leaf.get("test", {})
     method = options.get("test", test.get("default"))
     if method is not None and method not in test.get("allowed", []):
         raise AdviceError(f"Invalid test {method} for {recipe}. Choose from {', '.join(test.get('allowed', []))}.")
+    check_leaf_data(leaf, df, options, facts, result)
     result["test"] = {"value": method, "source": "scientist" if "test" in options else "default",
                       "checks": test.get("checks", "This recipe does not select a test from normality."),
                       "outcomes": test.get("outcomes", [])}
@@ -522,6 +578,9 @@ def finish_leaf(tree, node_id, df, options, answers, facts, result):
         result["notes"].append("A group has fewer than three rows. The recipe checks usable rows and the attainable P.")
     if result["open_questions"]:
         return
+    forced_test = "test" in options and method != "auto"
+    if method is not None:
+        options["test"] = method
     command = [os.environ.get("PUBREADY_FIGKIT_CMD", "figkit"), "plot", "--recipe", recipe]
     for key in ("data", "engine") + tuple(sorted(set(options) - {"data", "engine"})):
         if key not in options:
@@ -536,7 +595,13 @@ def finish_leaf(tree, node_id, df, options, answers, facts, result):
                 command.append(f"--{key}={value}")
             else:
                 command.extend([f"--{key}", str(value)])
-    action = "plot" if "test" in options and method != "auto" else leaf.get("next_step", "plot")
+    for flag, env in (("llm-provider", "PUBREADY_LLM_PROVIDER"), ("llm-model", "PUBREADY_LLM_MODEL"),
+                      ("agent-harness", "PUBREADY_AGENT_HARNESS"),
+                      ("agent-harness-version", "PUBREADY_AGENT_HARNESS_VERSION")):
+        value = os.environ.get(env)
+        if value and value not in ("none", "manual", "not_recorded"):
+            command.extend([f"--{flag}", value])
+    action = "plot" if forced_test else leaf.get("next_step", "plot")
     following = command.copy()
     following[1] = action
     result.update(command=command, command_text=shlex.join(command),
@@ -578,6 +643,10 @@ def advise(options, entries=(), filename=None, tree_path=None, frame=None):
     result = empty_result(digest)
     try:
         answers = merge_answers(tree, options, entries, filename)
+        all_tests = {method for node in tree["nodes"].values()
+                     for method in node.get("leaf", {}).get("test", {}).get("allowed", [])}
+        if answers.get("test") is not None and answers["test"] not in all_tests:
+            record_issue(result, "usage_error", f"Unknown canonical test {answers['test']}.")
         options = dict(options)
         for key, value in answers.items():
             if key not in tree["questions"] or tree["questions"][key].get("flag"):
@@ -607,7 +676,8 @@ def advise(options, entries=(), filename=None, tree_path=None, frame=None):
             question = tree["questions"][key]
             allowed = facts.get(question["answers_from"])
             if key in answers and allowed is not None and answers[key] not in allowed:
-                raise AdviceError(f"Invalid {key}={answers[key]}. Choose from {', '.join(allowed)}.")
+                record_issue(result, "usage_error",
+                             f"Invalid {key}={answers[key]}. Choose from {', '.join(allowed)}.")
         node_id = "start"
         while True:
             node = tree["nodes"][node_id]
@@ -632,7 +702,11 @@ def advise(options, entries=(), filename=None, tree_path=None, frame=None):
             result["status"] = "needs_answers"
     except AdviceError as error:
         result["status"] = error.status
-        result["conflicts"].append({"reason": str(error), **error.detail})
+        record_issue(result, error.status, str(error), **error.detail)
+    for issue in result["conflicts"]:
+        if ERROR_PRIORITY[issue["status"]] < ERROR_PRIORITY[result["status"]]:
+            result["status"] = issue["status"]
+    if result["status"] != "complete":
         result["command"] = result["command_text"] = result["next_step"] = None
     result["exit_code"] = STATUS_CODES[result["status"]]
     return result
@@ -650,15 +724,34 @@ def render_result(result, output_format="json"):
     """
     if output_format == "json":
         return json.dumps(result, ensure_ascii=False, allow_nan=False, indent=2) + "\n"
-    lines = [f"figkit advise returned {result['status']}."]
+    lines = [f"figkit advise returned {result['status']} with exit code {result['exit_code']}.",
+             f"The output schema is {result['advise_schema']} and pubready is {result['pubready_version']}.",
+             f"The walker is {result['walker']} and the tree SHA256 is {result['tree_sha256']}."]
+    if result["data"]:
+        data = result["data"]
+        lines.append(f"The input is {data['file']} with {data['n_rows']} rows and {data['n_cols']} columns.")
+    for key, value in result["facts"].items():
+        lines.append(f"The fact {key} is {json.dumps(value, ensure_ascii=False, allow_nan=False)}.")
     for step in result["path"]:
         lines.append(f"The answer to {step['question']} is {step['answer']} from {step['source']}.")
+        lines.append(step["reason"])
+        if step.get("doc_heading"):
+            lines.append(f"The reference section is {step['doc_heading']}.")
     if result["recipe"]:
         lines.append(f"The selected recipe is {result['recipe']}.")
+    if result["test"]:
+        test = result["test"]
+        lines.append(f"The test option is {test['value']} from {test['source']}.")
+        lines.append(test["checks"])
+        for outcome in test["outcomes"]:
+            lines.append(f"The possible result is {outcome['test']}. {outcome['when']}")
     for item in result["open_questions"]:
         lines.extend([item["text"], f"Answer with {item['answer_with']}."])
         if item["allowed"]:
             lines.append("The allowed answers are " + ", ".join(item["allowed"]) + ".")
+        if item["proposal"]:
+            lines.append(f"The data proposes {item['proposal']}.")
+        lines.append(item["reason"])
     lines.extend(item["reason"] for item in result["conflicts"])
     lines.extend(result["notes"])
     if result["command_text"]:

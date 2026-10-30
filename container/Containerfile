@@ -131,6 +131,11 @@ RUN mkdir -p /usr/local/share/fonts/noto-emoji \
       -o /usr/local/share/fonts/noto-emoji/OFL.txt \
  && fc-cache -f
 
+RUN mkdir -p /opt/pubready/matplotlib \
+ && printf '%s\n' 'font.family: DejaVu Sans, Noto Sans CJK JP, Noto Sans, Noto Emoji, Symbola' \
+      > /opt/pubready/matplotlib/matplotlibrc
+ENV MPLCONFIGDIR=/opt/pubready/matplotlib
+
 RUN mkdir -p /opt/pubready/core
 
 ARG PUBREADY_VERSION=0.0.0

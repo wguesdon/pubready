@@ -29,7 +29,7 @@ CASES = [
     ("mtcars", dict(x="wt", y="mpg"), ["aim=association"], "correlation", 0),
     ("pefr", dict(x="wright_1", y="mini_1"), ["aim=agreement"], "bland_altman", 0),
     ("asah", dict(x="s100b,ndka", y="outcome", positive="Poor"), ["aim=discrimination"], "roc_curve", 0),
-    ("asah", dict(x="s100b,ndka", y="outcome", positive="Bad"), ["aim=discrimination"], None, 2),
+    ("asah", dict(x="s100b,ndka", y="outcome", positive="Bad"), ["aim=discrimination"], "roc_curve", 2),
     ("pima_te", dict(x="predicted", y="type", positive="Yes"), ["aim=calibration"], "calibration", 0),
     ("bcg", dict(y="risk_ratio", ci_low="ci_low", ci_high="ci_high", label="trial", measure="ratio"), ["aim=meta_analysis"], "forest_meta", 0),
     ("lung", dict(time="time", event="event", x="sex"), ["aim=time_to_event", "tte_aim=compare_groups"], "survival_km", 0),
@@ -120,7 +120,7 @@ def test_every_descriptive_route(recipe):
     """Reach every descriptive leaf, without requiring a statistical fit."""
     result = advise(dict(data=str(BENCH / "data/iris.csv")), ["aim=describe", f"describe_kind={recipe}"])
     assert result["recipe"] == recipe
-    assert result["exit_code"] in (0, 3)
+    assert result["exit_code"] in (0, 3, 4)
 
 
 def test_paired_flag_cannot_emit_row_order_pairing():
@@ -141,3 +141,36 @@ def test_binary_event_normalization_and_prediction_range():
     assert result["exit_code"] == 0
     bad = advise(dict(x="prediction", y="event", positive="TRUE"), ["aim=calibration"], frame=df)
     assert bad["exit_code"] == 4
+
+
+def test_usage_errors_precede_conflicts_and_missing_answers():
+    """Keep invalid tests above data conflicts and open questions."""
+    df = pd.DataFrame({"time": range(9), "event": [0, 1, 2] * 3})
+    result = advise(dict(time="time", event="event", test="unknown"),
+                    ["aim=time_to_event", "competing_events=absent"], frame=df)
+    assert result["exit_code"] == 2
+    assert {i["status"] for i in result["conflicts"]} == {"usage_error", "conflict"}
+    assert result["command"] is None
+
+
+def test_descriptive_columns_and_text_details():
+    """Require upstream fields and include decision evidence in text output."""
+    df = pd.DataFrame({"gene": ["a", "b"], "log2FoldChange": [1.0, 2.0], "pvalue": [0.1, 0.01]})
+    good = advise({}, ["aim=describe", "describe_kind=volcano"], frame=df)
+    assert good["exit_code"] == 0
+    assert "log2FoldChange" in good["command"]
+    text = render_result(good, "text")
+    assert good["tree_sha256"] in text
+    assert "The input is" in text
+    assert "The test option" in text
+    missing = advise({}, ["aim=describe", "describe_kind=volcano"], frame=df[["gene"]])
+    assert {q["id"] for q in missing["open_questions"]} == {"x", "y"}
+    assert missing["command"] is None
+
+
+def test_report_provenance_survives_advice(monkeypatch):
+    """Preserve provenance flags consumed by the shell dispatcher."""
+    monkeypatch.setenv("PUBREADY_LLM_PROVIDER", "example_provider")
+    result = advise(dict(data=str(BENCH / "data/sleep.csv"), x="group", y="extra"),
+                    ["aim=compare", "design=paired"])
+    assert result["command"][-2:] == ["--llm-provider", "example_provider"]
