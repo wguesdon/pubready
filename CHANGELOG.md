@@ -13,6 +13,16 @@ tag move together.
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+- `--levels`, `--markers` and `--covariates` accept "|" as the separator of
+  the items, so an item can hold a comma, for example
+  `--levels "none|edema, no diuretics"`. A value with no "|" splits on commas
+  as before (F96).
+
 ## [3.0.0] - 2026-10-29
 
 The fixes of the public data audit change figure output and stats tables in

@@ -22,6 +22,16 @@ default_appearance <- function() {
   )
 }
 
+# Split a list option such as --levels into its items. The items are split on
+# "|" when the value holds one, so an item can hold a comma, for example
+# --levels "edema, no diuretics|edema despite diuretics". Else they are split on
+# ",". NULL stays NULL.
+split_list_option <- function(x) {
+  if (is.null(x)) return(NULL)
+  sep <- if (grepl("|", x, fixed = TRUE)) "|" else ","
+  trimws(strsplit(x, sep, fixed = TRUE)[[1]])
+}
+
 # Build a spec from parsed command-line options.
 spec_from_opt <- function(opt) {
   ap <- default_appearance()
@@ -50,15 +60,9 @@ spec_from_opt <- function(opt) {
                   ci_low = opt$ci_low, ci_high = opt$ci_high,
                   measure = opt$measure,
                   ref = opt$ref, cause = opt$cause,
-                  levels = if (!is.null(opt$levels)) {
-                    trimws(strsplit(opt$levels, ",")[[1]])
-                  } else NULL,
-                  markers = if (!is.null(opt$markers)) {
-                    trimws(strsplit(opt$markers, ",")[[1]])
-                  } else NULL,
-                  covariates = if (!is.null(opt$covariates)) {
-                    trimws(strsplit(opt$covariates, ",")[[1]])
-                  } else NULL),
+                  levels = split_list_option(opt$levels),
+                  markers = split_list_option(opt$markers),
+                  covariates = split_list_option(opt$covariates)),
     test   = list(
       method   = opt$test %||% "auto",
       paired   = isTRUE(opt$paired),

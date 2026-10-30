@@ -48,3 +48,17 @@ def test_spec_from_args_carries_new_data_and_cutoff_fields():
     assert s["appearance"]["fc_cutoff"] == 2.0
     assert s["appearance"]["p_cutoff"] == 0.01
     assert s["appearance"]["top_n"] == 20
+
+
+def test_split_list_option_uses_the_bar_when_present():
+    from pubready.spec import split_list_option
+    assert split_list_option(None) is None
+    assert split_list_option("CR, PR,SD") == ["CR", "PR", "SD"]
+    assert split_list_option("edema, no diuretics|no edema") == ["edema, no diuretics", "no edema"]
+
+
+def test_spec_from_args_splits_levels_with_a_comma_inside_an_item():
+    a = SimpleNamespace(recipe="sankey", data="v.csv", x="visit", y="state",
+                        levels="none|edema, no diuretics|edema despite diuretics")
+    spec = spec_from_args(a)
+    assert spec["data"]["levels"] == ["none", "edema, no diuretics", "edema despite diuretics"]

@@ -25,6 +25,25 @@ def default_appearance():
     }
 
 
+def split_list_option(x):
+    """Split a list option such as --levels into its items.
+
+    The items are split on "|" when the value holds one, so an item can hold a
+    comma, for example --levels "edema, no diuretics|edema despite diuretics".
+    Else they are split on ",". The R engine uses the same rule.
+
+    Args:
+        x: The option value, or None.
+
+    Returns:
+        list or None: The stripped items, or None when x is None or empty.
+    """
+    if not x:
+        return None
+    sep = "|" if "|" in x else ","
+    return [s.strip() for s in x.split(sep)]
+
+
 def spec_from_args(a):
     ap = default_appearance()
     if getattr(a, "geom", None):
@@ -53,7 +72,7 @@ def spec_from_args(a):
         ap["pd_threshold"] = a.pd_threshold
     if getattr(a, "pr_threshold", None) is not None:
         ap["pr_threshold"] = a.pr_threshold
-    covs = [s.strip() for s in a.covariates.split(",")] if getattr(a, "covariates", None) else None
+    covs = split_list_option(getattr(a, "covariates", None))
     return {
         "engine": "python",
         "recipe": a.recipe,
@@ -71,10 +90,8 @@ def spec_from_args(a):
             "measure": getattr(a, "measure", None),
             "ref": getattr(a, "ref", None),
             "cause": getattr(a, "cause", None),
-            "levels": ([s.strip() for s in a.levels.split(",")]
-                       if getattr(a, "levels", None) else None),
-            "markers": ([s.strip() for s in a.markers.split(",")]
-                        if getattr(a, "markers", None) else None),
+            "levels": split_list_option(getattr(a, "levels", None)),
+            "markers": split_list_option(getattr(a, "markers", None)),
         },
         "test": {
             "method": getattr(a, "test", None) or "auto",

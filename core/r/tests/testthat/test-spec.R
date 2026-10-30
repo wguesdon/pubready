@@ -50,3 +50,17 @@ test_that("fix_axis_keys restores YAML-coerced boolean axis keys", {
   expect_false("TRUE" %in% names(fixed))
   expect_equal(fixed$y, "volume")
 })
+
+test_that("split_list_option uses the bar when the value holds one", {
+  expect_null(split_list_option(NULL))
+  expect_equal(split_list_option("CR, PR,SD"), c("CR", "PR", "SD"))
+  expect_equal(split_list_option("edema, no diuretics|no edema"),
+               c("edema, no diuretics", "no edema"))
+})
+
+test_that("spec_from_opt splits --levels with a comma inside an item", {
+  opt <- list(recipe = "sankey", data = "v.csv", x = "visit", y = "state",
+              levels = "none|edema, no diuretics|edema despite diuretics")
+  expect_equal(spec_from_opt(opt)$data$levels,
+               c("none", "edema, no diuretics", "edema despite diuretics"))
+})
