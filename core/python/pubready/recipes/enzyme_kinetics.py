@@ -114,13 +114,53 @@ def curve_row(g, s, v, popt, pcov):
     rss = float(np.sum((v - mm(s, vm, km)) ** 2))
     dfr = len(v) - 2
     tq = stats.t.ppf(0.975, dfr)
-    return {
+    row = {
         "group": g, "n": int(len(v)), "concentrations": int(len(np.unique(s))),
         "vmax": vm, "vmax_se": vse, "vmax_ci_low": vm - tq * vse, "vmax_ci_high": vm + tq * vse,
         "km": km, "km_se": kse, "km_ci_low": km - tq * kse, "km_ci_high": km + tq * kse,
         "residual_sd": float(np.sqrt(rss / dfr)), "r_squared": 1 - rss / float(np.sum((v - v.mean()) ** 2)),
-        "rss": rss, "df_resid": int(dfr),
+        "rss": rss, "df_resid": int(dfr), "fit_status": "fitted", "status_reason": None,
     }
+    reason = status_reason(row, float(np.max(s)))
+    if reason is None:
+        return row
+    for k in FIT_COLUMNS:
+        row[k] = float("nan")
+    row["fit_status"] = "not determined"
+    row["status_reason"] = reason
+    return row
+
+
+#: The columns that a fit that is not determined leaves empty, as dose_response does.
+FIT_COLUMNS = ("vmax", "vmax_se", "vmax_ci_low", "vmax_ci_high", "km", "km_se", "km_ci_low",
+               "km_ci_high", "residual_sd", "r_squared", "rss", "df_resid")
+
+
+def status_reason(r, smax):
+    """Say why a Michaelis-Menten fit is "not determined", as .enz_status_reason() in R.
+
+    The rule (F50): Vmax or Km is not positive, Km lies above the highest
+    substrate concentration, so the data do not reach half of Vmax, or the 95% CI
+    of Km or of Vmax holds 0.
+
+    Args:
+        r: The stats row of the fit.
+        smax: The highest substrate concentration of the curve.
+
+    Returns:
+        str or None: The reason, or None when the fit stands.
+    """
+    if not np.isfinite(r["vmax"]) or r["vmax"] <= 0:
+        return "Vmax is not positive"
+    if not np.isfinite(r["km"]) or r["km"] <= 0:
+        return "Km is not positive"
+    if r["km"] > smax:
+        return "Km lies above the highest substrate concentration"
+    if not np.isfinite(r["km_ci_low"]) or r["km_ci_low"] <= 0:
+        return "the 95% CI of Km holds 0"
+    if not np.isfinite(r["vmax_ci_low"]) or r["vmax_ci_low"] <= 0:
+        return "the 95% CI of Vmax holds 0"
+    return None
 
 
 def shared_km_model(x, *p):
@@ -275,19 +315,26 @@ def recipe_enzyme_kinetics(df, spec):
         popt, pcov, st, method = fit_curve(s, v)
         if popt is None:
             raise ValueError(f"the Michaelis-Menten fit did not converge for curve '{g}'")
-        rows.append(curve_row(g, s, v, popt, pcov))
-        starts[g] = st
-        methods[g] = method
+        row = curve_row(g, s, v, popt, pcov)
+        rows.append(row)
+        if row["fit_status"] == "fitted":
+            starts[g] = st
+            methods[g] = method
     stats_df = pd.DataFrame(rows)
+    det = (stats_df["fit_status"] == "fitted").to_numpy()
+    # A curve that is not determined stays out of the shared-parameter tests (F50).
     shared_km = shared_vmax = None
-    if len(groups) >= 2:
-        shared_km = shared_test(d, stats_df, "km")
-        shared_vmax = shared_test(d, stats_df, "vmax")
+    if det.sum() >= 2:
+        d_det = d[d["group"].isin(stats_df.loc[det, "group"])].reset_index(drop=True)
+        rows_det = stats_df[det].reset_index(drop=True)
+        shared_km = shared_test(d_det, rows_det, "km")
+        shared_vmax = shared_test(d_det, rows_det, "vmax")
 
     fig, w, h = _plot(d, groups, stats_df, shared_km, shared_vmax, spec, x, y, grp, has_group)
     test_meta = {
         "name": "Michaelis-Menten fit", "n_curves": len(groups),
-        "curves": {r["group"]: {k: r[k] for k in ("vmax", "vmax_ci_low", "vmax_ci_high", "km",
+        "curves": {r["group"]: {k: r[k] for k in ("fit_status", "status_reason", "vmax",
+                                                   "vmax_ci_low", "vmax_ci_high", "km",
                                                    "km_ci_low", "km_ci_high", "r_squared")}
                    for r in rows},
         "shared_km_test": shared_km, "shared_vmax_test": shared_vmax,
@@ -324,6 +371,7 @@ def _plot(d, groups, rows, shared_km, shared_vmax, spec, x, y, grp, has_group):
     ap = spec["appearance"]
     pal = palette(len(groups), ap.get("palette"))
     labels = [f"{wrap(g, 18)}\nVmax {sig_text(r['vmax'])}, Km {sig_text(r['km'])}"
+              if r["fit_status"] == "fitted" else f"{wrap(g, 18)}\nnot determined"
               for g, (_, r) in zip(groups, rows.iterrows())]
     key_lines = max(lab.count("\n") for lab in labels) + 1
     w, h = (6.6 if has_group else 4.8), max(4.4, 1.4 + 0.165 * len(groups) * key_lines)
@@ -340,15 +388,13 @@ def _plot(d, groups, rows, shared_km, shared_vmax, spec, x, y, grp, has_group):
             rep = s[s["n"] > 1]
             ax.errorbar(rep["s"], rep["mean"], yerr=rep["sem"], fmt="none", ecolor=pal[i],
                         elinewidth=1.0, capsize=0, zorder=3)
-        ax.plot(grid, mm(grid, r["vmax"], r["km"]), color=pal[i], lw=1.6, label=labels[i], zorder=4)
-        ax.scatter(s["s"], s["mean"], s=24, color=pal[i], zorder=5)
-    if has_group:
-        sub = fmt_test("Shared Km", shared_km) + "\n" + fmt_test("Shared Vmax", shared_vmax)
-    else:
-        r = rows.iloc[0]
-        sub = (f"Vmax = {sig_text(r['vmax'])} (95% CI {sig_text(r['vmax_ci_low'])} to {sig_text(r['vmax_ci_high'])})\n"
-               f"Km = {sig_text(r['km'])} (95% CI {sig_text(r['km_ci_low'])} to {sig_text(r['km_ci_high'])})")
-    ax.set_title(sub, fontsize=10, color="#4d4d4d")
+        if r["fit_status"] == "fitted":
+            ax.plot(grid, mm(grid, r["vmax"], r["km"]), color=pal[i], lw=1.6, label=labels[i],
+                    zorder=4)
+            ax.scatter(s["s"], s["mean"], s=24, color=pal[i], zorder=5)
+        else:
+            ax.scatter(s["s"], s["mean"], s=24, color=pal[i], zorder=5, label=labels[i])
+    ax.set_title(subtitle(rows, shared_km, shared_vmax), fontsize=10, color="#4d4d4d")
     if ap.get("title"):
         fig.suptitle(ap["title"], fontweight="bold")
     top = max(float(d["v"].max()), float(np.nanmax(summ["mean"] + summ["sem"].fillna(0))))
@@ -364,6 +410,37 @@ def _plot(d, groups, rows, shared_km, shared_vmax, spec, x, y, grp, has_group):
     nice_ticks(ax.yaxis)
     fig.tight_layout()
     return fig, w, h
+
+
+def subtitle(rows, shared_km, shared_vmax):
+    """Write the subtitle, as .enz_subtitle() of the R engine does.
+
+    The subtitle gives the two shared-parameter tests, or the estimates of the
+    one curve, and a line that names the curves that are not determined (F50).
+
+    Args:
+        rows: The stats table.
+        shared_km: The shared-Km test, or None.
+        shared_vmax: The shared-Vmax test, or None.
+
+    Returns:
+        str: The subtitle.
+    """
+    det = (rows["fit_status"] == "fitted").to_numpy()
+    if len(rows) == 1:
+        r = rows.iloc[0]
+        if not det[0]:
+            return f"Fit not determined: {r['status_reason']}"
+        return (f"Vmax = {sig_text(r['vmax'])} (95% CI {sig_text(r['vmax_ci_low'])} to "
+                f"{sig_text(r['vmax_ci_high'])})\nKm = {sig_text(r['km'])} (95% CI "
+                f"{sig_text(r['km_ci_low'])} to {sig_text(r['km_ci_high'])})")
+    out = fmt_test("Shared Km", shared_km) + "\n" + fmt_test("Shared Vmax", shared_vmax)
+    nd = [str(g) for g in rows.loc[~det, "group"]]
+    if not nd:
+        return out
+    if len(nd) <= 2:
+        return f"{out}\nNot determined, left out of the tests: {', '.join(nd)}"
+    return f"{out}\n{len(nd)} curves not determined, left out of the tests"
 
 
 def _test_text(name, t):
@@ -421,16 +498,32 @@ def _methods(rows, shared_km, shared_vmax, n_points, spec, x, y, grp, replicated
     y_lab = spec["appearance"].get("y_label") or y
     x_lab = spec["appearance"].get("x_label") or x
     multi = len(rows) > 1
+    det = rows["fit_status"] == "fitted"
     fits = "; ".join(
         f"{(str(r['group']) + ': ') if multi else ''}Vmax = {sig_text(r['vmax'])} (95% CI "
         f"{sig_text(r['vmax_ci_low'])} to {sig_text(r['vmax_ci_high'])}), Km = {sig_text(r['km'])} (95% CI "
         f"{sig_text(r['km_ci_low'])} to {sig_text(r['km_ci_high'])}), R2 = {r['r_squared']:.3f}"
-        for _, r in rows.iterrows())
+        for _, r in rows[det].iterrows())
+    fits = f"{fits}." if fits else ""
+    nd = rows[~det]
+    nd_txt = ""
+    if len(nd):
+        nd_txt = (" " if fits else "") + " ".join(
+            f"The fit {('of ' + str(r['group']) + ' ') if multi else ''}was not determined, "
+            f"because {r['status_reason']}." for _, r in nd.iterrows())
+        nd_txt += (" A curve that is not determined is drawn as its points without a fit"
+                   + (" and is left out of the F tests." if multi else "."))
     shared_txt = ""
-    if multi:
+    if multi and int(det.sum()) >= 2:
         shared_txt = (" Extra-sum-of-squares F tests compared the separate fits with one shared Km "
                       "(a Vmax for each curve) and with one shared Vmax (a Km for each curve): "
                       f"{_test_text('shared Km', shared_km)}; {_test_text('shared Vmax', shared_vmax)}.")
+    elif multi:
+        shared_txt = (" The F tests of a shared Km and a shared Vmax were not run, because fewer "
+                      "than two curves were determined.")
+    rule_txt = ("A fit was reported as not determined when Vmax or Km was not positive, when Km "
+                "lay above the highest substrate concentration, or when the 95% CI of Km or of "
+                "Vmax held 0. ")
     target = f"each level of {grp} ({len(rows)} curves)" if multi else "one curve"
     return (
         f"{cap_first(y_lab)} was modelled as a function of {x_lab} with the Michaelis-Menten "
@@ -438,7 +531,7 @@ def _methods(rows, shared_km, shared_vmax, n_points, spec, x, y, grp, replicated
         f"(n = {n_points} points). The starting values were the largest rate for Vmax and, for "
         "Km, the substrate concentration whose mean rate is nearest half of it. Each 95% "
         "confidence interval is the estimate plus or minus t(0.975, n - 2) times its asymptotic "
-        f"standard error. {_points_text(replicated)}{fits}.{shared_txt} Fitted in Python "
+        f"standard error. {_points_text(replicated)}{rule_txt}{fits}{nd_txt}{shared_txt} Fitted in Python "
         f"{platform.python_version()} with "
         f"scipy {v('scipy')} (curve_fit) and drawn with matplotlib {v('matplotlib')}."
     )
@@ -493,6 +586,11 @@ for g, p0 in starts.items():
     print(g, "Vmax, Km:", popt, "SE:", np.sqrt(np.diag(pcov)))
     ax.plot(grid, mm(grid, *popt), label=g)
     ax.scatter(s["s"], s["v"], s=14, alpha=0.6)
+# A curve that is not determined is drawn as points only, as in the figure.
+for g in d["group"].unique():
+    if g not in starts:
+        s = d[d["group"] == g]
+        ax.scatter(s["s"], s["v"], s=14, alpha=0.6, label=f"{{g}} (not determined)")
 ax.set_xlim(left=0); ax.set_ylim(bottom=0)
 ax.set_xlabel("{ap.get('x_label') or x}"); ax.set_ylabel("{ap.get('y_label') or y}")
 for side in ("top", "right"): ax.spines[side].set_visible(False)

@@ -161,3 +161,26 @@ test_that("the standard curve recovery counts only the levels read back", {
   rec$n_read_back <- 8; rec$n_within_80_120 <- 8
   expect_false(grepl("could not be read back", .stc_recovery_text(rec)))
 })
+
+# A Michaelis-Menten fit whose Km lies above the highest substrate, or whose CI
+# holds 0, is reported as not determined and stays out of the F tests (F50). The
+# Python suite uses the same data.
+ek_two_curves <- function() {
+  s <- c(1, 2, 5, 10, 20, 50)
+  noise <- c(0.8, -1.1, 0.6, -0.4, 0.9, -0.7)
+  data.frame(s = rep(s, 2), group = rep(c("mm", "linear"), each = 6),
+             v = c(100 * s / (5 + s) + noise, 0.1 * s + noise / 10))
+}
+
+test_that("enzyme_kinetics reports a fit above the substrate range as not determined", {
+  res <- recipe_enzyme_kinetics(ek_two_curves(),
+                                bench_recipe_spec("enzyme_kinetics", x = "s", y = "v", group = "group"))
+  st <- res$stats
+  expect_equal(st$fit_status, c("fitted", "not determined"))
+  expect_equal(st$status_reason[2], "Km lies above the highest substrate concentration")
+  expect_true(is.na(st$km[2]))
+  expect_equal(st$km[1], 5, tolerance = 0.1)
+  expect_null(res$test_meta$shared_km_test)
+  expect_match(res$methods, "fewer than two curves were determined", fixed = TRUE)
+  expect_match(res$plot$labels$subtitle, "Not determined, left out of the tests: linear", fixed = TRUE)
+})

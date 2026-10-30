@@ -50,11 +50,36 @@
   tq <- stats::qt(0.975, dfr)
   vm <- cf["vmax", "Estimate"]; vse <- cf["vmax", "Std. Error"]
   km <- cf["km", "Estimate"]; kse <- cf["km", "Std. Error"]
-  data.frame(group = g, n = length(v), concentrations = length(unique(s)),
+  row <- data.frame(group = g, n = length(v), concentrations = length(unique(s)),
              vmax = vm, vmax_se = vse, vmax_ci_low = vm - tq * vse, vmax_ci_high = vm + tq * vse,
              km = km, km_se = kse, km_ci_low = km - tq * kse, km_ci_high = km + tq * kse,
              residual_sd = sqrt(rss / dfr), r_squared = 1 - rss / sum((v - mean(v))^2),
-             rss = rss, df_resid = dfr, stringsAsFactors = FALSE)
+             rss = rss, df_resid = dfr, fit_status = "fitted", status_reason = NA_character_,
+             stringsAsFactors = FALSE)
+  reason <- .enz_status_reason(row, max(s))
+  if (is.na(reason)) return(row)
+  row[, .enz_fit_columns] <- NA_real_
+  row$fit_status <- "not determined"
+  row$status_reason <- reason
+  row
+}
+
+# The columns that a fit that is not determined leaves empty, as dose_response
+# does.
+.enz_fit_columns <- c("vmax", "vmax_se", "vmax_ci_low", "vmax_ci_high", "km", "km_se",
+                      "km_ci_low", "km_ci_high", "residual_sd", "r_squared", "rss", "df_resid")
+
+# Why a Michaelis-Menten fit is "not determined", or NA when it stands (F50). The
+# rule is the same in both engines: Vmax or Km is not positive, Km lies above
+# the highest substrate concentration, so the data do not reach half of Vmax,
+# or the 95% CI of Km or of Vmax holds 0.
+.enz_status_reason <- function(r, smax) {
+  if (!is.finite(r$vmax) || r$vmax <= 0) return("Vmax is not positive")
+  if (!is.finite(r$km) || r$km <= 0) return("Km is not positive")
+  if (r$km > smax) return("Km lies above the highest substrate concentration")
+  if (!is.finite(r$km_ci_low) || r$km_ci_low <= 0) return("the 95% CI of Km holds 0")
+  if (!is.finite(r$vmax_ci_low) || r$vmax_ci_low <= 0) return("the 95% CI of Vmax holds 0")
+  NA_character_
 }
 
 # One shared-parameter model fitted to all curves, from the separate estimates.
@@ -118,8 +143,32 @@
 }
 
 .enz_legend_label <- function(i, rows) {
+  if (rows$fit_status[i] != "fitted") {
+    return(sprintf("%s\nnot determined", .est_wrap(rows$group[i], 18)))
+  }
   sprintf("%s\nVmax %s, Km %s", .est_wrap(rows$group[i], 18), sig_text(rows$vmax[i]),
           sig_text(rows$km[i]))
+}
+
+# The subtitle: the two shared-parameter tests, or the estimates of the one
+# curve, and a line that names the curves that are not determined (F50).
+.enz_subtitle <- function(rows, shared_km, shared_vmax) {
+  det <- rows$fit_status == "fitted"
+  if (nrow(rows) == 1) {
+    r <- rows[1, ]
+    if (!det[1]) return(sprintf("Fit not determined: %s", r$status_reason))
+    return(sprintf("Vmax = %s (95%% CI %s to %s)\nKm = %s (95%% CI %s to %s)",
+                   sig_text(r$vmax), sig_text(r$vmax_ci_low), sig_text(r$vmax_ci_high),
+                   sig_text(r$km), sig_text(r$km_ci_low), sig_text(r$km_ci_high)))
+  }
+  out <- paste(.enz_fmt_test("Shared Km", shared_km), .enz_fmt_test("Shared Vmax", shared_vmax),
+               sep = "\n")
+  nd <- rows$group[!det]
+  if (length(nd) == 0) return(out)
+  second <- if (length(nd) <= 2) {
+    sprintf("Not determined, left out of the tests: %s", paste(nd, collapse = ", "))
+  } else sprintf("%d curves not determined, left out of the tests", length(nd))
+  paste(out, second, sep = "\n")
 }
 
 recipe_enzyme_kinetics <- function(df, spec) {
@@ -159,16 +208,21 @@ recipe_enzyme_kinetics <- function(df, spec) {
     fr <- .enz_fit_curve(d$s[sel], d$v[sel])
     if (is.null(fr$fit)) stop(sprintf("the Michaelis-Menten fit did not converge for curve '%s'", g))
     rows[[g]] <- .enz_curve_row(g, d$s[sel], d$v[sel], fr$fit)
-    starts[[g]] <- fr$start
-    algos[[g]] <- fr$algorithm
+    if (rows[[g]]$fit_status == "fitted") {
+      starts[[g]] <- fr$start
+      algos[[g]] <- fr$algorithm
+    }
   }
   stats_df <- do.call(rbind, rows)
   rownames(stats_df) <- NULL
+  det <- stats_df$fit_status == "fitted"
 
+  # A curve that is not determined stays out of the shared-parameter tests (F50).
   shared_km <- shared_vmax <- NULL
-  if (length(g_lv) >= 2) {
-    shared_km <- .enz_shared_test(d, stats_df, "km")
-    shared_vmax <- .enz_shared_test(d, stats_df, "vmax")
+  if (sum(det) >= 2) {
+    d_det <- d[d$group %in% stats_df$group[det], , drop = FALSE]
+    shared_km <- .enz_shared_test(d_det, stats_df[det, , drop = FALSE], "km")
+    shared_vmax <- .enz_shared_test(d_det, stats_df[det, , drop = FALSE], "vmax")
   }
 
   ap <- spec$appearance
@@ -176,11 +230,11 @@ recipe_enzyme_kinetics <- function(df, spec) {
   leg <- stats::setNames(vapply(seq_along(g_lv), .enz_legend_label, character(1), rows = stats_df), g_lv)
   # Each legend key is as tall as the longest label, so multi-line labels never overlap.
   key_lines <- max(lengths(regmatches(leg, gregexpr("\n", leg)))) + 1
-  curves <- do.call(rbind, lapply(seq_along(g_lv), .enz_curve_grid, rows = stats_df,
+  curves <- do.call(rbind, lapply(which(det), .enz_curve_grid, rows = stats_df,
                                   smax = max(d$s)))
   pts <- .enz_summary(d)
   replicated <- any(pts$n > 1)
-  curves$group <- factor(curves$group, levels = g_lv)
+  if (!is.null(curves)) curves$group <- factor(curves$group, levels = g_lv)
   pts$group <- factor(pts$group, levels = g_lv)
   raw <- d
   raw$group <- factor(raw$group, levels = g_lv)
@@ -194,17 +248,13 @@ recipe_enzyme_kinetics <- function(df, spec) {
                              ggplot2::aes(x = s, ymin = mean - sem, ymax = mean + sem, colour = group),
                              width = 0, linewidth = 0.5)
   }
-  p <- p +
-    ggplot2::geom_line(data = curves, ggplot2::aes(x = s, y = v, colour = group), linewidth = 0.8) +
-    ggplot2::geom_point(data = pts, ggplot2::aes(x = s, y = mean, colour = group), size = 2)
-  subtitle <- if (length(g_lv) >= 2) {
-    paste(.enz_fmt_test("Shared Km", shared_km), .enz_fmt_test("Shared Vmax", shared_vmax), sep = "\n")
-  } else {
-    r <- stats_df[1, ]
-    sprintf("Vmax = %s (95%% CI %s to %s)\nKm = %s (95%% CI %s to %s)",
-            sig_text(r$vmax), sig_text(r$vmax_ci_low), sig_text(r$vmax_ci_high),
-            sig_text(r$km), sig_text(r$km_ci_low), sig_text(r$km_ci_high))
+  if (!is.null(curves)) {
+    p <- p + ggplot2::geom_line(data = curves, ggplot2::aes(x = s, y = v, colour = group),
+                                linewidth = 0.8)
   }
+  p <- p +
+    ggplot2::geom_point(data = pts, ggplot2::aes(x = s, y = mean, colour = group), size = 2)
+  subtitle <- .enz_subtitle(stats_df, shared_km, shared_vmax)
   p <- p +
     ggplot2::scale_colour_manual(values = pal, labels = leg, breaks = g_lv) +
     ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = c(0, 0.04))) +
@@ -238,7 +288,8 @@ recipe_enzyme_kinetics <- function(df, spec) {
 
 .enz_meta_row <- function(i, rows) {
   r <- rows[i, ]
-  list(vmax = r$vmax, vmax_ci_low = r$vmax_ci_low, vmax_ci_high = r$vmax_ci_high,
+  list(fit_status = r$fit_status, status_reason = r$status_reason,
+       vmax = r$vmax, vmax_ci_low = r$vmax_ci_low, vmax_ci_high = r$vmax_ci_high,
        km = r$km, km_ci_low = r$km_ci_low, km_ci_high = r$km_ci_high,
        r_squared = r$r_squared)
 }
@@ -249,16 +300,31 @@ recipe_enzyme_kinetics <- function(df, spec) {
   y_lab <- spec$appearance$y_label %||% y
   x_lab <- spec$appearance$x_label %||% x
   multi <- nrow(rows) > 1
-  fits <- paste(sprintf("%sVmax = %s (95%% CI %s to %s), Km = %s (95%% CI %s to %s), R2 = %.3f",
-                        if (multi) paste0(rows$group, ": ") else "",
-                        sig_text(rows$vmax), sig_text(rows$vmax_ci_low),
-                        sig_text(rows$vmax_ci_high), sig_text(rows$km),
-                        sig_text(rows$km_ci_low), sig_text(rows$km_ci_high),
-                        rows$r_squared), collapse = "; ")
-  shared_txt <- if (multi) {
+  det <- rows$fit_status == "fitted"
+  fr <- rows[det, , drop = FALSE]
+  fits <- if (nrow(fr) > 0) {
+    paste0(paste(sprintf("%sVmax = %s (95%% CI %s to %s), Km = %s (95%% CI %s to %s), R2 = %.3f",
+                         if (multi) paste0(fr$group, ": ") else "",
+                         sig_text(fr$vmax), sig_text(fr$vmax_ci_low),
+                         sig_text(fr$vmax_ci_high), sig_text(fr$km),
+                         sig_text(fr$km_ci_low), sig_text(fr$km_ci_high),
+                         fr$r_squared), collapse = "; "), ".")
+  } else ""
+  nd <- rows[!det, , drop = FALSE]
+  nd_txt <- if (nrow(nd) > 0) {
+    paste0(if (nrow(fr) > 0) " " else "", paste(sprintf("The fit %swas not determined, because %s.",
+                              if (multi) paste0("of ", nd$group, " ") else "", nd$status_reason),
+                      collapse = " "),
+           " A curve that is not determined is drawn as its points without a fit",
+           if (multi) " and is left out of the F tests." else ".")
+  } else ""
+  shared_txt <- if (multi && sum(det) >= 2) {
     paste0(" Extra-sum-of-squares F tests compared the separate fits with one shared Km (a Vmax for each curve) and with one shared Vmax (a Km for each curve): ",
            .enz_test_text("shared Km", shared_km), "; ", .enz_test_text("shared Vmax", shared_vmax), ".")
+  } else if (multi) {
+    " The F tests of a shared Km and a shared Vmax were not run, because fewer than two curves were determined."
   } else ""
+  rule_txt <- "A fit was reported as not determined when Vmax or Km was not positive, when Km lay above the highest substrate concentration, or when the 95% CI of Km or of Vmax held 0. "
   paste0(
     sprintf("%s was modelled as a function of %s with the Michaelis-Menten equation v = Vmax S / (Km + S), fitted by nonlinear least squares to %s (n = %d points). ",
             cap_first(y_lab), x_lab,
@@ -267,7 +333,8 @@ recipe_enzyme_kinetics <- function(df, spec) {
     "The starting values were the largest rate for Vmax and, for Km, the substrate concentration whose mean rate is nearest half of it. ",
     "Each 95% confidence interval is the estimate plus or minus t(0.975, n - 2) times its asymptotic standard error. ",
     .enz_points_text(replicated),
-    fits, ".", shared_txt,
+    rule_txt,
+    fits, nd_txt, shared_txt,
     sprintf(" Fitted in R %s with stats::nls and drawn with ggplot2 %s.", rver, v$ggplot2))
 }
 
@@ -290,7 +357,7 @@ recipe_enzyme_kinetics <- function(df, spec) {
     sprintf('                group = %s)', if (has_group) sprintf('as.character(raw[["%s"]])', grp) else '"all"'),
     "d <- d[is.finite(d$s) & is.finite(d$v) & !is.na(d$group) & d$s >= 0, ]",
     "starts <- list(",
-    paste0("  ", start_lines, c(rep(",", length(start_lines) - 1), "")),
+    paste0("  ", start_lines, c(rep(",", max(length(start_lines) - 1, 0)), "")[seq_along(start_lines)]),
     ")",
     sprintf("algos <- c(%s)", paste(sprintf('"%s" = "%s"', names(algos), unlist(algos)), collapse = ", ")),
     "ctrl <- nls.control(maxiter = 1000, tol = 1e-8, minFactor = 1e-12)",
@@ -302,10 +369,12 @@ recipe_enzyme_kinetics <- function(df, spec) {
     "  grid <- seq(0, max(d$s), length.out = 200)",
     "  curves <- rbind(curves, data.frame(group = g, s = grid, v = predict(fit, data.frame(s = grid))))",
     "}",
-    "p <- ggplot() + geom_line(data = curves, aes(s, v, colour = group)) +",
+    "# A curve that is not determined is drawn as points only, as in the figure.",
+    "p <- ggplot() +",
     "  geom_point(data = d, aes(s, v, colour = group), alpha = 0.6) +",
     sprintf('  expand_limits(x = 0, y = 0) + labs(x = "%s", y = "%s") + theme_classic()',
             spec$appearance$x_label %||% x, spec$appearance$y_label %||% y),
+    "if (!is.null(curves)) p <- p + geom_line(data = curves, aes(s, v, colour = group))",
     sprintf('ggsave("%s.pdf", p, width = %s, height = 4.4)', fig_stub, if (has_group) "6.6" else "4.8"),
     'cat("Reproduced figure.\\n")'
   )

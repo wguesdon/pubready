@@ -69,6 +69,12 @@ tag move together.
 - `distribution` draws no density curve and reports no bandwidth for a group
   with no spread, so a group of equal values no longer stretches the shared x
   axis. The methods text names the group (F125).
+- `enzyme_kinetics` reports a fit as not determined, as `dose_response` does,
+  when Vmax or Km is not positive, when Km lies above the highest substrate
+  concentration, or when the 95% CI of Km or of Vmax holds 0. Such a curve keeps
+  its points, has no fitted values in the stats table, and stays out of the
+  shared-parameter F tests. The stats table gains `fit_status` and
+  `status_reason` (F50).
 - `upset` reads set membership with one rule in both engines: 1, TRUE, T, yes
   and y are members, 0, FALSE, F, no and n are not, in any case, and an empty
   cell is not a member and is counted in the data log. Any other value, such as
