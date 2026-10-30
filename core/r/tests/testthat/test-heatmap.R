@@ -98,3 +98,28 @@ test_that("the heatmap runs no test by default and checks --test welch_t", {
   expect_error(recipe_heatmap(hm_null_matrix(), hm_spec(annotation = ann, test = "anova")),
                "unknown --test 'anova'")
 })
+
+# One rule for a degenerate Welch test in both engines: a feature with no
+# variance in either group gets P = NA and stays out of the BH count. A sample
+# that the annotation misses, or a group of one sample, stops the run (F87).
+test_that("the heatmap leaves a degenerate feature out of the BH count", {
+  m <- hm_null_matrix()
+  m <- rbind(m, data.frame(gene = "g_floor", a1 = 0, a2 = 0, a3 = 0, b1 = 3, b2 = 3, b3 = 3))
+  ann <- hm_null_annotation()
+  res <- recipe_heatmap(m, hm_spec(annotation = ann, test = "welch_t"))
+  st <- res$stats
+  expect_true(is.na(st$p_value[st$feature == "g_floor"]))
+  expect_true(is.na(st$p_adj[st$feature == "g_floor"]))
+  ok <- st$feature != "g_floor"
+  expect_equal(st$p_adj[ok], stats::p.adjust(st$p_value[ok], "BH"))
+  expect_equal(res$test_meta$n_untested, 1)
+  expect_match(res$methods, "1 feature(s) had no variance in either group", fixed = TRUE)
+  short <- utils::read.csv(ann)[-6, ]
+  utils::write.csv(short, ann, row.names = FALSE)
+  expect_error(recipe_heatmap(m, hm_spec(annotation = ann)), "has no row for the sample\\(s\\) 'b3'")
+  one <- data.frame(sample = c("a1", "a2", "a3", "b1", "b2", "b3"),
+                    group = c("a", "a", "a", "a", "a", "b"))
+  utils::write.csv(one, ann, row.names = FALSE)
+  expect_error(recipe_heatmap(m, hm_spec(annotation = ann, test = "welch_t")),
+               "group 'b' has 1")
+})

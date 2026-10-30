@@ -38,6 +38,11 @@ tag move together.
 - The R `heatmap` draws a null result. When no feature has an adjusted P
   below 0.05, both engines draw no star column, and the methods text says that
   no star is drawn (F46).
+- `heatmap` stops and names each sample of the matrix that the annotation
+  does not list. Under `--test welch_t`, a sample with no group or a group of
+  one sample stops the run, and a feature with no variance in either group
+  gets P = NA in both engines and stays out of the Benjamini-Hochberg count.
+  The groups follow the level order of the other recipes (F87).
 
 ## [3.0.0] - 2026-10-29
 

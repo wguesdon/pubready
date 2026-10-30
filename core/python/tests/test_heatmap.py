@@ -185,3 +185,29 @@ def test_the_heatmap_runs_no_test_by_default(tmp_path):
     a.test = "anova"
     with pytest.raises(ValueError, match="unknown --test 'anova'"):
         recipe_heatmap(df, spec_from_args(a))
+
+
+def test_the_heatmap_leaves_a_degenerate_feature_out_of_the_bh_count(tmp_path):
+    """One rule for a degenerate Welch test, as in R (F87)."""
+    import pytest
+    from statsmodels.stats.multitest import multipletests
+    df, ann_path = hm_null(tmp_path)
+    df.loc[len(df)] = ["g_floor", 0.0, 0.0, 0.0, 3.0, 3.0, 3.0]
+    a = SimpleNamespace(recipe="heatmap", data="matrix.csv", x=None, y=None,
+                        annotation=str(ann_path), test="welch_t")
+    res = recipe_heatmap(df, spec_from_args(a))
+    st = res["stats"].set_index("feature")
+    assert np.isnan(st.loc["g_floor", "p_value"]) and np.isnan(st.loc["g_floor", "p_adj"])
+    ok = st.index != "g_floor"
+    assert np.allclose(st.loc[ok, "p_adj"], multipletests(st.loc[ok, "p_value"], method="fdr_bh")[1])
+    assert res["test_meta"]["n_untested"] == 1
+    assert "1 feature(s) had no variance in either group" in res["methods"]
+    pd.read_csv(ann_path).iloc[:5].to_csv(ann_path, index=False)
+    a.test = None
+    with pytest.raises(ValueError, match="has no row for the sample\\(s\\) 'b3'"):
+        recipe_heatmap(df, spec_from_args(a))
+    pd.DataFrame({"sample": ["a1", "a2", "a3", "b1", "b2", "b3"],
+                  "group": ["a"] * 5 + ["b"]}).to_csv(ann_path, index=False)
+    a.test = "welch_t"
+    with pytest.raises(ValueError, match="group 'b' has 1"):
+        recipe_heatmap(df, spec_from_args(a))
