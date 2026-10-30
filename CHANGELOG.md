@@ -22,6 +22,10 @@ tag move together.
   the items, so an item can hold a comma, for example
   `--levels "none|edema, no diuretics"`. A value with no "|" splits on commas
   as before (F96).
+- `volcano` keeps a gene with p = 0. The recipe sets the p to the smallest
+  positive double, draws the gene as a triangle at the top, and records the
+  count in the data log and the methods text. A p outside 0 to 1 stops the run
+  (F45).
 
 ## [3.0.0] - 2026-10-29
 

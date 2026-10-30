@@ -57,3 +57,23 @@ def test_volcano_methods_name_the_p_column_and_the_label_rule():
     res = recipe_volcano(df, spec_from_args(a))
     assert "|log2 fold change| >= 1 and padj <= 0.05" in res["methods"]
     assert "The 3 significant features with the largest product" in res["methods"]
+
+
+def test_volcano_keeps_zero_p_and_stops_on_p_above_one():
+    """A p of 0 is kept as the smallest double; a p above 1 stops the run (F45)."""
+    import pytest
+    df = pd.DataFrame({"gene": [f"g{i}" for i in range(5)],
+                       "log2FoldChange": [5.0, -4.0, 0.1, 2.0, -0.3],
+                       "pvalue": [0.0, 0.0, 0.5, 1e-6, 0.4]})
+    a = SimpleNamespace(recipe="volcano", data="de.csv", x=None, y=None, label=None,
+                        fc_cutoff=1.0, p_cutoff=0.05, top_n=15)
+    spec = spec_from_args(a)
+    res = recipe_volcano(df, spec)
+    tm = res["test_meta"]
+    assert tm["n_total"] == 5 and tm["n_zero_p"] == 2
+    assert tm["n_up"] == 2 and tm["n_down"] == 1
+    assert "Replaced 2 p value(s) of exactly 0" in " ".join(res["clean_steps"])
+    assert "drawn as triangles" in res["methods"]
+    df.loc[2, "pvalue"] = 1.7
+    with pytest.raises(ValueError, match="outside 0 to 1"):
+        recipe_volcano(df, spec)

@@ -13,6 +13,8 @@ from ..theme import apply_pub_style, new_fig
 
 _FC = ["log2FoldChange", "logFC", "log2FC", "log2fc", "avg_log2FC"]
 _P = ["pvalue", "P.Value", "PValue", "p_value", "pval", "p.value"]
+#: The smallest positive normalised double, R's .Machine$double.xmin.
+DOUBLE_XMIN = float(np.finfo(float).tiny)
 
 
 def _columns(df, spec):
@@ -75,13 +77,29 @@ def recipe_volcano(df, spec):
     lab = (df[lab_col].astype(str).to_numpy() if lab_col
            else np.array([str(i) for i in range(len(df))]))
     n0 = len(df)
-    mask = np.isfinite(fc) & np.isfinite(p) & (p > 0)
+    bad = int(np.sum(np.isfinite(p) & ((p < 0) | (p > 1))))
+    if bad:
+        raise ValueError(f"volcano: p must lie in 0 to 1; column '{p_col}' holds {bad} "
+                         "value(s) outside 0 to 1")
+    mask = np.isfinite(fc) & np.isfinite(p)
     fc, p, lab = fc[mask], p[mask], lab[mask]
     if len(fc) < 1:
         raise ValueError("volcano: no usable rows after cleaning")
+    # A p of exactly 0 is the strongest hit, not a missing value. It is set to the
+    # smallest positive double, as manhattan does, and drawn as a triangle.
+    is_zero = p == 0
+    n_zero = int(is_zero.sum())
+    p = np.where(is_zero, DOUBLE_XMIN, p)
     dropped = int((~mask).sum())
-    clean_steps = ([f"Dropped {dropped} row(s) with missing or non-finite fold change or p "
-                    f"({n0} -> {len(fc)})."] if dropped else ["No cleaning applied; input used as-is."])
+    clean_steps = []
+    if dropped:
+        clean_steps.append(f"Dropped {dropped} row(s) with missing or non-finite fold change or p "
+                           f"({n0} -> {len(fc)}).")
+    if n_zero:
+        clean_steps.append(f"Replaced {n_zero} p value(s) of exactly 0 with the smallest positive "
+                           f"double ({DOUBLE_XMIN:.3g}), so that -log10 p is finite.")
+    if not clean_steps:
+        clean_steps = ["No cleaning applied; input used as-is."]
     df_used = pd.DataFrame({(lab_col or "label"): lab, fc_col: fc, p_col: p})
 
     ap = spec["appearance"]
@@ -98,13 +116,17 @@ def recipe_volcano(df, spec):
     plab = "p" if p_col in _P else p_col
     legend = {"NS": "NS", "FC": "FC", "p": plab, "FC and p": f"FC and {plab}"}
 
+    ydisp = display_y(neglog, is_zero, pcc)
     w, h = 6.0, 5.6
     fig, ax = new_fig(w, h)
     for c in ("NS", "FC", "p", "FC and p"):
         m = cat == c
         if m.any():
-            ax.scatter(fc[m], neglog[m], s=10, alpha=0.7, c=colors[c], label=legend[c],
-                       edgecolors="none")
+            ax.scatter(fc[m & ~is_zero], ydisp[m & ~is_zero], s=10, alpha=0.7, c=colors[c],
+                       label=legend[c], edgecolors="none")
+            if (m & is_zero).any():
+                ax.scatter(fc[m & is_zero], ydisp[m & is_zero], s=14, alpha=0.7, c=colors[c],
+                           marker="^", edgecolors="none")
     ax.axvline(-fcc, ls="--", lw=0.6, color="grey")
     ax.axvline(fcc, ls="--", lw=0.6, color="grey")
     ax.axhline(-np.log10(pcc), ls="--", lw=0.6, color="grey")
@@ -118,7 +140,12 @@ def recipe_volcano(df, spec):
 
     ax.set_xlabel(ap.get("x_label") or "log2 fold change")
     ax.set_ylabel(ap.get("y_label") or f"-log10 {plab}")
-    if ap.get("title"):
+    if n_zero:
+        ax.set_title(f"{n_zero} feature(s) with p = 0 drawn as triangles at the top",
+                     fontsize=10, color="#4d4d4d")
+        if ap.get("title"):
+            fig.suptitle(ap["title"], fontweight="bold")
+    elif ap.get("title"):
         ax.set_title(ap["title"], fontweight="bold")
     apply_pub_style(ax, ap.get("theme"))
     leg = ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.13), ncol=4, frameon=False,
@@ -128,7 +155,7 @@ def recipe_volcano(df, spec):
     fig.tight_layout()
     # The labels are placed last, once the layout is final: adjustText works in
     # display units, so a later change of the axes size would undo its spacing.
-    place_labels(ax, fc, neglog, lab, top)
+    place_labels(ax, fc, ydisp, lab, top)
 
     n_up = int(np.sum((fc >= fcc) & (p <= pcc)))
     n_down = int(np.sum((fc <= -fcc) & (p <= pcc)))
@@ -138,8 +165,8 @@ def recipe_volcano(df, spec):
     })
     test_meta = {"name": "Volcano plot", "fc_cutoff": fcc, "p_cutoff": pcc,
                  "n_total": len(fc), "n_up": n_up, "n_down": n_down,
-                 "n_significant": n_up + n_down}
-    methods = _methods(len(fc), fcc, pcc, n_up, n_down, plab, len(top))
+                 "n_significant": n_up + n_down, "n_zero_p": n_zero}
+    methods = _methods(len(fc), fcc, pcc, n_up, n_down, plab, len(top), n_zero)
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": df_used, "clean_steps": clean_steps,
@@ -149,7 +176,28 @@ def recipe_volcano(df, spec):
     }
 
 
-def _methods(n, fcc, pcc, n_up, n_down, plab, n_lab):
+def display_y(neglog, is_zero, pcc):
+    """-log10 p for drawing; a p of exactly 0 sits at a ceiling.
+
+    The ceiling is 12% above the largest other value, or above the p cutoff
+    line, as in the R engine and in manhattan.
+
+    Args:
+        neglog: The -log10 p of every feature, zeros already set to the
+            smallest positive double.
+        is_zero: True where the input p was exactly 0.
+        pcc: The p cutoff.
+
+    Returns:
+        numpy.ndarray: The values to draw.
+    """
+    y = np.array(neglog, dtype=float)
+    top = float(y[~is_zero].max()) if (~is_zero).any() else 0.0
+    y[is_zero] = max(top, -np.log10(pcc)) * 1.12
+    return y
+
+
+def _methods(n, fcc, pcc, n_up, n_down, plab, n_lab, n_zero=0):
     from importlib.metadata import version as v
     import platform
     if n_up + n_down > 0:
@@ -158,10 +206,13 @@ def _methods(n, fcc, pcc, n_up, n_down, plab, n_lab):
     else:
         lab_txt = (f"No feature was significant, so the {n_lab} features with the smallest "
                    f"{plab} are labelled. ")
+    zero_txt = (f"{n_zero} {plab} value(s) of exactly 0 were set to the smallest positive double "
+                f"({DOUBLE_XMIN:.3g}) and are drawn as triangles at the top of the plot. "
+                if n_zero else "")
     return (
         f"Differential-expression results for {n} features were shown as a volcano plot. "
         f"Features with |log2 fold change| >= {float(fcc):g} and {plab} <= {float(pcc):g} were called "
-        f"significant; {n_up} were up-regulated and {n_down} down-regulated. {lab_txt}"
+        f"significant; {n_up} were up-regulated and {n_down} down-regulated. {zero_txt}{lab_txt}"
         "The differential test itself "
         "was performed upstream; this figure summarises its output. "
         f"Drawn in Python {platform.python_version()} with matplotlib {v('matplotlib')} and adjustText {v('adjustText')}."
@@ -182,8 +233,8 @@ raw = pd.read_csv("{in_name}")
 fc = pd.to_numeric(raw["{fc_col}"], errors="coerce").to_numpy()
 p = pd.to_numeric(raw["{p_col}"], errors="coerce").to_numpy()
 {lab_line}
-m = np.isfinite(fc) & np.isfinite(p) & (p > 0)
-fc, p, lab = fc[m], p[m], lab[m]
+m = np.isfinite(fc) & np.isfinite(p)
+fc, p, lab = fc[m], np.where(p[m] == 0, np.finfo(float).tiny, p[m]), lab[m]
 neglog = -np.log10(p)
 fcc, pcc = {fcc}, {pcc}
 cat = np.where((np.abs(fc) >= fcc) & (p <= pcc), "FC and p",
