@@ -259,6 +259,25 @@ else
   echo "SKIP: no Podman or no image on this host"
 fi
 
+echo "[22] render takes the engine from the config when no --engine is given"
+printf 'engine: python\nrecipe: two_group_compare\n' > "$TMP/py_config.yaml"
+printf 'engine: r\nrecipe: two_group_compare\n' > "$TMP/r_config.yaml"
+STUB_LOG="$TMP/render.log" STUB_PODMAN=ok run_figkit "$STUB" render --config "$TMP/py_config.yaml"
+STUB_LOG="$TMP/render.log" STUB_PODMAN=ok run_figkit "$STUB" render --config "$TMP/py_config.yaml" \
+  --engine r
+STUB_LOG="$TMP/render.log" STUB_PODMAN=ok run_figkit "$STUB" render --config "$TMP/r_config.yaml"
+for want in "1 python3 /opt/pubready/core/python/entry/render.py" \
+            "2 Rscript /opt/pubready/core/r/entry/render.R" \
+            "3 Rscript /opt/pubready/core/r/entry/render.R"; do
+  if sed -n "${want%% *}p" "$TMP/render.log" 2>/dev/null | grep -qF -- "${want#* }"; then
+    echo "PASS: render run ${want%% *} uses ${want#* }"
+  else
+    echo "FAIL: render run ${want%% *} does not use ${want#* }"
+    sed 's/^/  | /' "$TMP/render.log" 2>/dev/null
+    fail=1
+  fi
+done
+
 echo
 if [ "$fail" -eq 0 ]; then
   echo "All doctor tests passed."

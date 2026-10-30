@@ -10,6 +10,9 @@ container_info <- function() {
 }
 
 run_recipe <- function(spec, raw_input, out_root, sheet = NULL, stamp = NULL) {
+  # The manifest and plot_config.yaml record the engine that ran, also when a
+  # render reads a config of the other engine.
+  spec$engine <- "r"
   rd <- read_tidy_logged(raw_input, sheet)
   df <- rd$df
 

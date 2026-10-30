@@ -42,6 +42,9 @@ def container_info():
 
 
 def run_recipe(spec, raw_input, out_root, sheet=None, stamp=None):
+    # The manifest and plot_config.yaml record the engine that ran, also when a
+    # render reads a config of the other engine.
+    spec["engine"] = "python"
     df, read_steps = read_tidy_logged(raw_input, sheet)
     fn = get_recipe(spec["recipe"])
     result = fn(df, spec)

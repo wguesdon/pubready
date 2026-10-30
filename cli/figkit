@@ -531,14 +531,32 @@ run_doctor() {
   fi
 }
 
-# Read the value of --engine from the argument list (default r).
-engine_of() {
-  local prev="" e="r"
+# The value of an option in the argument list, or nothing when it is not given.
+# $1 = option, rest = arguments.
+option_value() {
+  local opt="$1" prev="" v=""
+  shift
   for a in "$@"; do
-    [ "$prev" = "--engine" ] && e="$a"
+    [ "$prev" = "$opt" ] && v="$a"
     prev="$a"
   done
-  echo "$e"
+  echo "$v"
+}
+
+# The engine of a run: --engine when it is given, else for render the top-level
+# engine: line of the config, else r. The config is parsed, not sourced.
+# $1 = command, rest = arguments.
+engine_of() {
+  local cmd="$1" e cfg
+  shift
+  e="$(option_value --engine "$@")"
+  if [ -z "$e" ] && [ "$cmd" = "render" ]; then
+    cfg="$(option_value --config "$@")"
+    if [ -n "$cfg" ] && [ -r "$cfg" ]; then
+      e="$(sed -n 's/^engine:[[:space:]]*//p' "$cfg" | head -1 | tr -d "\"' \r")"
+    fi
+  fi
+  echo "${e:-r}"
 }
 
 dispatch() {
@@ -549,7 +567,7 @@ dispatch() {
   parse_report_options "$@"
   # ${a[@]+"${a[@]}"} expands an empty array to nothing under set -u. A plain
   # "${a[@]}" stops bash before 4.4, such as the bash 3.2 of macOS.
-  if [ "$(engine_of ${REPORT_ARGS[@]+"${REPORT_ARGS[@]}"})" = "python" ]; then
+  if [ "$(engine_of "$cmd" ${REPORT_ARGS[@]+"${REPORT_ARGS[@]}"})" = "python" ]; then
     run_py "$cmd" ${REPORT_ARGS[@]+"${REPORT_ARGS[@]}"}
   else
     run_r "$cmd" ${REPORT_ARGS[@]+"${REPORT_ARGS[@]}"}

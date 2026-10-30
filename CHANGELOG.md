@@ -78,6 +78,10 @@ tag move together.
   config names the annotation copy by its bare file name, as it names the
   input copy. Before, `render` of a bundle config from the repository root
   stopped with "input file not found" (F74).
+- `figkit render` with no `--engine` runs the engine that the `engine:` line
+  of the config names, and the manifest and `plot_config.yaml` of the new
+  bundle record the engine that ran. Before, R redrew a Python bundle and the
+  manifest still said python (F60).
 
 ## [3.0.0] - 2026-10-29
 
