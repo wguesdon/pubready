@@ -106,6 +106,9 @@ tag move together.
 - The methods text of `factorial_anova --geom bar` says that the bars show the
   mean +/- SEM of each cell, and the text of `--geom interaction` says the same
   of the points (F122).
+- On the chi-squared branch of `proportions`, a 2 x 2 table with a zero cell
+  gives no odds ratio in both engines (NA), and the methods text says that a
+  cell is zero. R wrote Inf and Python an empty cell before (F93).
 
 ## [3.0.0] - 2026-10-29
 

@@ -327,3 +327,15 @@ def test_factorial_anova_bar_geom_states_the_mean_and_sem():
     res = recipe_factorial_anova(fa, v3_spec("factorial_anova", x="g", fill="t", y="y",
                                              geom="bar"))
     assert "The bars show the mean +/- SEM of each cell." in res["methods"]
+
+
+# F93: a zero cell of a 2 x 2 table on the chi-squared branch gives no odds
+# ratio, and the methods text says why.
+def test_proportions_gives_no_odds_ratio_for_a_zero_cell_on_the_chi_squared_branch():
+    from pubready.recipes.proportions import recipe_proportions
+    pr = pd.DataFrame({"arm": ["A"] * 50 + ["B"] * 50,
+                       "response": ["yes"] * 50 + ["yes"] * 25 + ["no"] * 25})
+    res = recipe_proportions(pr, v3_spec("proportions", x="arm", y="response", test="chisq"))
+    assert res["stats"]["odds_ratio"].isna().all()
+    assert ("The odds ratio is not given, because a cell of the 2 x 2 table is zero."
+            in res["methods"])

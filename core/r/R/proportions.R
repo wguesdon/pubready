@@ -43,7 +43,9 @@ recipe_proportions <- function(df, spec) {
     ct <- suppressWarnings(stats::chisq.test(tab, correct = FALSE))
     pval <- ct$p.value; stat <- unname(ct$statistic); dfree <- unname(ct$parameter)
     test_label <- "Pearson's chi-squared test"
-    if (is2x2) or <- (tab[1, 1] * tab[2, 2]) / (tab[1, 2] * tab[2, 1])
+    # A zero cell leaves the sample odds ratio at 0 or infinity, so it is not
+    # given (NA), and the methods text says why. The Python engine does the same.
+    if (is2x2 && all(tab > 0)) or <- (tab[1, 1] * tab[2, 2]) / (tab[1, 2] * tab[2, 1])
   }
 
   prop <- prop.table(tab, margin = 1)
@@ -84,7 +86,8 @@ recipe_proportions <- function(df, spec) {
                     n = sum(tab), any_expected_below_5 = small)
   resolved <- list(family = "proportions", label = test_label)
   methods  <- .prop_methods(test_label, nrow(tab), ncol(tab), sum(tab), pval, or, is2x2,
-                            stat, dfree, rownames(tab), colnames(tab))
+                            stat, dfree, rownames(tab), colnames(tab),
+                            zero_cell = is2x2 && !use_fisher && any(tab == 0))
   build_script <- list(fn = .prop_emit_script, args = list(spec = spec, use_fisher = use_fisher))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
@@ -95,7 +98,8 @@ recipe_proportions <- function(df, spec) {
        height = 4.2)
 }
 
-.prop_methods <- function(test_label, n_grp, n_out, n, pval, or, is2x2, stat, dfree, groups, outcomes) {
+.prop_methods <- function(test_label, n_grp, n_out, n, pval, or, is2x2, stat, dfree, groups, outcomes,
+                          zero_cell = FALSE) {
   v    <- pkg_versions("ggplot2")
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   # The odds ratio is the odds of the first outcome in the first group over the
@@ -103,6 +107,8 @@ recipe_proportions <- function(df, spec) {
   or_txt <- if (is2x2 && is.finite(or)) {
     sprintf(" The odds ratio of %s for %s versus %s was %s.", outcomes[1], groups[1], groups[2],
             formatC(or, format = "f", digits = 2))
+  } else if (zero_cell) {
+    " The odds ratio is not given, because a cell of the 2 x 2 table is zero."
   } else ""
   p_txt <- sprintf("P = %s", formatC(pval, format = "g", digits = 2))
   if (is.finite(stat)) p_txt <- sprintf("chi-square(%d) = %.2f, %s", as.integer(dfree), stat, p_txt)

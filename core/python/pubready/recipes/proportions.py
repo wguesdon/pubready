@@ -92,9 +92,11 @@ def recipe_proportions(df, spec):
             pval = fisher_rxc_p(counts)
     else:
         pval, stat, dof_out, test_label = p_chi, chi2, dof, "Pearson's chi-squared test"
-        if is2x2:
+        # A zero cell leaves the sample odds ratio at 0 or infinity, so it is not
+        # given (NaN), and the methods text says why, as in the R engine.
+        if is2x2 and (tab.to_numpy() > 0).all():
             a, b, c2, d2 = tab.to_numpy().ravel()
-            orr = (a * d2) / (b * c2) if (b * c2) else np.nan
+            orr = (a * d2) / (b * c2)
 
     prop = tab.div(tab.sum(axis=1), axis=0)
     ap = spec["appearance"]
@@ -141,7 +143,8 @@ def recipe_proportions(df, spec):
                  "or_conf_high": None if np.isnan(or_ci[1]) else or_ci[1],
                  "n": int(tab.to_numpy().sum()), "any_expected_below_5": small}
     methods = _methods(test_label, tab.shape[0], tab.shape[1], int(tab.to_numpy().sum()), pval, orr,
-                       is2x2, stat, dof_out, list(tab.index), list(tab.columns))
+                       is2x2, stat, dof_out, list(tab.index), list(tab.columns),
+                       zero_cell=is2x2 and not use_fisher and bool((tab.to_numpy() == 0).any()))
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": d.reset_index(drop=True), "clean_steps": steps, "label": slugify(y),
@@ -150,13 +153,16 @@ def recipe_proportions(df, spec):
     }
 
 
-def _methods(test_label, n_grp, n_out, n, pval, orr, is2x2, stat, dof, groups, outcomes):
+def _methods(test_label, n_grp, n_out, n, pval, orr, is2x2, stat, dof, groups, outcomes,
+             zero_cell=False):
     from importlib.metadata import version as v
     import platform
     # The odds ratio is the odds of the first outcome in the first group over the
     # odds in the second group, so the text names the outcome and both groups.
     or_txt = (f" The odds ratio of {outcomes[0]} for {groups[0]} versus {groups[1]} was {orr:.2f}."
-              if (is2x2 and np.isfinite(orr)) else "")
+              if (is2x2 and np.isfinite(orr)) else
+              " The odds ratio is not given, because a cell of the 2 x 2 table is zero."
+              if zero_cell else "")
     p_txt = f"P = {pval:.2g}"
     if stat is not None and np.isfinite(stat):
         p_txt = f"chi-square({int(dof)}) = {stat:.2f}, {p_txt}"

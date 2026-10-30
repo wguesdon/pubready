@@ -352,3 +352,14 @@ test_that("factorial_anova --geom bar states the mean +/- SEM", {
                                             geom = "bar"))
   expect_match(res$methods, "The bars show the mean +/- SEM of each cell.", fixed = TRUE)
 })
+
+# F93: a zero cell of a 2 x 2 table on the chi-squared branch gives no odds
+# ratio, and the methods text says why.
+test_that("proportions gives no odds ratio for a zero cell on the chi-squared branch", {
+  pr <- data.frame(arm = rep(c("A", "B"), each = 50),
+                   response = c(rep("yes", 50), rep(c("yes", "no"), each = 25)))
+  res <- recipe_proportions(pr, v3_spec("proportions", x = "arm", y = "response", test = "chisq"))
+  expect_true(all(is.na(res$stats$odds_ratio)))
+  expect_match(res$methods, "The odds ratio is not given, because a cell of the 2 x 2 table is zero.",
+               fixed = TRUE)
+})
