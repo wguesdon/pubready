@@ -56,6 +56,9 @@ tag move together.
 - `pca` keeps a numeric column that holds a few text cells, such as "<0.1":
   each such cell becomes a missing value, and the data log names the cell and
   each text column that the recipe leaves out (F42).
+- `composition` drops a category with a total count of zero and logs it. Its
+  P was NA, and the methods text counted it among the categories of the
+  Benjamini-Hochberg adjustment (F88).
 - `correlation_heatmap` keeps a numeric column that holds a few text cells in
   the same way as `pca`, and names each dropped column in the data log (F42).
 - `distribution` and `correlation_heatmap` stop with a clear message when the

@@ -25,6 +25,7 @@ from scipy import stats
 from ..bundle import slugify
 from ..theme import apply_pub_style, palette
 from ..util import mann_whitney_r
+from .pca import name_list
 from .distribution import as_labels
 
 
@@ -220,6 +221,15 @@ def recipe_composition(df, spec):
         ids = [s for s, t in zip(ids, totals) if t > 0]
         m = m[totals > 0]
         totals = totals[totals > 0]
+    # A category with no count in any sample has no proportion to test: its P
+    # would be NaN and it would still count in the BH adjustment, so it is
+    # dropped and logged (F88), as in R.
+    empty = m.sum(axis=0) == 0
+    if empty.any():
+        steps.append(f"Dropped {int(empty.sum())} category(ies) with a total count of zero: "
+                     f"{name_list([c for c, e in zip(cats, empty) if e])}.")
+        m = m[:, ~empty]
+        cats = [c for c, e in zip(cats, empty) if not e]
     if len(cats) < 2:
         raise ValueError("composition needs at least 2 categories")
     if not ids:
