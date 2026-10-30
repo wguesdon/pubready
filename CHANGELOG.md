@@ -23,6 +23,10 @@ tag move together.
   hold 57 datasets and 533 reference values.
 
 ### Changed
+- The three adapters and `reference/decision_tree.md` list the designs that no
+  recipe fits: strata, covariate adjustment, rates of change, and a comparison
+  with one control only. The agent tells the scientist and does not force the
+  nearest recipe (F62).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of

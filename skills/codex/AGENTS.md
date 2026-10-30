@@ -140,6 +140,23 @@ as a QQ plot so the scientist can confirm the choice. Override any step with `--
 Event columns code `1 = event, 0 = censored`; `survival_km` needs `--x` for the
 grouping arm.
 
+## Designs that no recipe fits
+
+Some designs need a model that pubready does not have. When the design is one of
+these, tell the scientist, and do not force the nearest recipe. A pooled test on
+such data can give the wrong answer. For example, the pooled admissions of UC
+Berkeley give an odds ratio of 1.84 against women, but within the departments the
+Mantel-Haenszel odds ratio is 0.90.
+
+- A third variable splits the data into strata, such as a department or a
+  center. The analysis needs a Mantel-Haenszel test or a regression model.
+- The comparison must adjust for a covariate, such as age. The analysis needs
+  ANCOVA or a regression model.
+- The question is about a rate of change, or the repeated measures have
+  missing visits. The analysis needs a mixed model.
+- Each group is compared with one control only. `multi_group_compare` compares
+  all pairs, and pubready has no Dunnett test.
+
 ## Engine limits
 
 Pick the engine per figure with `--engine`. Both write the same bundle and, where

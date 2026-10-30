@@ -140,8 +140,10 @@ then:
 - Any expected cell below 5 → Fisher's exact test.
 - Otherwise → Pearson's chi-squared test (no continuity correction).
 
-A 2x2 table also reports an odds ratio. The figure is a 100% stacked bar of the
-outcome proportions per group. Force with `--test chisq | fisher`.
+A 2x2 table also reports an odds ratio. When a third variable splits the data
+into strata, do not pool the table. See "Designs that no recipe fits". The
+figure is a 100% stacked bar of the outcome proportions per group. Force with
+`--test chisq | fisher`.
 
 ### The same patients in a category at each visit → `sankey`
 Use this recipe when each patient has a category at two or more visits, for
@@ -207,6 +209,21 @@ carry their own correction: Tukey's HSD and Games-Howell are inherently adjusted
 and Dunn's test uses Benjamini-Hochberg. The correlation heatmap adjusts across the
 matrix with Benjamini-Hochberg. A single two-group comparison needs no correction,
 so `--p_adjust` defaults to none there.
+
+## Designs that no recipe fits
+No recipe fits the designs below. Tell the scientist, and do not force the
+nearest recipe, because a pooled test can give the wrong answer.
+
+- A third variable splits the data into strata, such as a department or a
+  center. Pooled, the UC Berkeley admissions give an odds ratio of 1.84 against
+  women. Within the departments, the Mantel-Haenszel odds ratio is 0.90. The
+  analysis needs a Mantel-Haenszel test or a regression model.
+- The comparison must adjust for a covariate, such as age. The analysis needs
+  ANCOVA or a regression model.
+- The question is about a rate of change, or the repeated measures have
+  missing visits. The analysis needs a mixed model.
+- Each group is compared with one control only. `multi_group_compare` compares
+  all pairs, and pubready has no Dunnett test.
 
 ## Overriding
 The tree gives the default; the scientist decides. When the choice is not obvious, run
