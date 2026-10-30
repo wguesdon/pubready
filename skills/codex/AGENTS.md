@@ -64,7 +64,7 @@ needs administrator rights.
 | `survival_km` | time, event, group | `--time --event --x` | Kaplan-Meier + log-rank |
 | `cox_forest` | time, event, covariates | `--time --event --covariates "a,b,c"` | Cox proportional hazards |
 | `heatmap` | matrix CSV + annotation CSV | `--data --annotation` | per-feature Welch t-test when the annotation has two groups |
-| `correlation` | x, y (two numeric columns) | `--x --y` | Pearson / Spearman / Kendall, chosen from normality |
+| `correlation` | x, y (two numeric columns) | `--x --y` | Pearson / Spearman / Kendall, chosen from normality; not for the agreement of two methods, use `bland_altman` |
 | `correlation_heatmap` | table of numeric variables | `--data` | pairwise correlation, clustered, BH-adjusted stars |
 | `upset` | binary membership matrix | `--data [--top_n]` | descriptive intersection sizes, the 15 largest drawn by default (no test) |
 | `volcano` | DE table (log2FC + p) | `--data [--x --y --label]` | EnhancedVolcano-style scatter, top hits labeled |
@@ -107,7 +107,9 @@ of upset), `--id --group --label`, `--positive LEVEL` (roc_curve case level, cal
 
 For `roc_curve`, confirm the case level with the scientist: by default it is the
 second level in sorted order, so a `healthy`/`disease` outcome needs
-`--positive disease`. For `forest_meta`, pass `--measure ratio` for an odds, risk
+`--positive disease`. The recipe gives no warning when it takes the default.
+`bland_altman` reports `--x` minus `--y`, so put the new method in `--x` and the
+reference method in `--y`. For `forest_meta`, pass `--measure ratio` for an odds, risk
 or hazard ratio when the CIs are not given on the ratio scale.
 
 For `estimation_plot`, confirm the control group with the scientist and name
@@ -127,6 +129,9 @@ first appearance in the data. To set a clinical order, pass every state with
 The `proportions` groups also keep the order of their first appearance in the
 data. To set another order, pass every group with `--levels`, for example
 `--levels "1st,2nd,3rd,Crew"`.
+`paired_compare` reads long rows. When the two conditions are in two columns,
+such as `pre` and `post`, first make one row for each subject and condition,
+with the subject id in its own column.
 
 ## Choosing the test
 

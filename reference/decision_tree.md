@@ -74,9 +74,12 @@ the drop.
 - Otherwise → no correction.
 
 Both P values are in the stats table. Force with `--test gg | uncorrected`. Two
-time points with a subject id are better served by `paired_compare`. The QC panel
-shows the residuals. Growth data such as tumour volumes often give residuals
-that spread with the mean. In that condition, analyse the log of the value.
+time points with a subject id are better served by `paired_compare`. The
+ANOVA treats time as a factor, so it does not test a rate of change. A question
+about a growth rate needs a mixed model with time as a number, which no recipe
+fits. The QC panel shows the residuals. Growth data such as tumour volumes
+often give residuals that spread with the mean. In that condition, analyse the
+log of the value.
 
 ### Response against dose → `dose_response`
 A four-parameter logistic curve is fitted to each curve (`--group`). The midpoint
@@ -91,8 +94,9 @@ cannot go on a log axis, so the recipe drops it and records the drop.
 Do not use a correlation to show agreement: two methods can correlate well and
 still disagree. The Bland-Altman plot gives the bias and the 95% limits of
 agreement, each with a confidence interval. A regression of the difference on
-the mean tests for a proportional bias. The limits assume normal differences, so
-the QC panel shows their QQ plot.
+the mean tests for a proportional bias. The difference is `--x` minus `--y`,
+so put the new method in `--x` and the reference method in `--y`. The limits
+assume normal differences, so the QC panel shows their QQ plot.
 
 ### A marker that discriminates cases from controls → `roc_curve`
 The outcome must have exactly two levels. Confirm the case level with the

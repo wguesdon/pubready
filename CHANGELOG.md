@@ -27,6 +27,11 @@ tag move together.
   recipe fits: strata, covariate adjustment, rates of change, and a comparison
   with one control only. The agent tells the scientist and does not force the
   nearest recipe (F62).
+- The adapters close five gaps of the guide: the `correlation` row says that a
+  correlation does not show agreement, `bland_altman` names its direction,
+  `roc_curve` says that it does not warn on its default case level,
+  `paired_compare` says how to give two columns, and the tree says that
+  `timecourse` does not test a rate of change (F108).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of
