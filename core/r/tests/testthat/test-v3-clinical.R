@@ -213,3 +213,11 @@ test_that("sankey visits and timecourse time points share one time order (F39)",
   expect_true("The time points of 'day' are in the order that --levels gives: day 10, day 2, day 1." %in%
                 res$clean_steps)
 })
+
+test_that("timecourse stops on an outcome with zero variance (F90)", {
+  tc <- data.frame(id = rep(sprintf("m%d", 1:6), each = 3), day = rep(c(0, 7, 14), 6),
+                   arm = rep(c("a", "b"), each = 9), y = 100)
+  expect_error(recipe_timecourse(tc, v3c_spec("timecourse", x = "day", y = "y", id = "id", group = "arm")),
+               "the outcome 'y' has zero variance: every value of the 6 complete subject(s) is 100",
+               fixed = TRUE)
+})

@@ -70,6 +70,9 @@ tag move together.
   The data log records the order and the rule, and the `sankey` methods text
   names the rule. Before, "week 8" came after "week 24" in `sankey`, and
   `timecourse` kept the order of first appearance (F39).
+- `timecourse` stops with "the outcome has zero variance" when every value of
+  the complete subjects is the same. Before, R stopped with an unclear error,
+  and Python wrote F = nan or F values from rounding noise (F90).
 
 ## [3.0.0] - 2026-10-29
 

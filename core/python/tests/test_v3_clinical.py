@@ -262,3 +262,12 @@ def test_sankey_visits_and_timecourse_time_points_share_one_time_order():
                                          levels="day 10,day 2,day 1"))
     assert ("The time points of 'day' are in the order that --levels gives: day 10, day 2, "
             "day 1.") in res["clean_steps"]
+
+
+def test_timecourse_stops_on_an_outcome_with_zero_variance():
+    """F90: Python wrote F = nan or F values from rounding noise."""
+    tc = pd.DataFrame({"id": [f"m{i}" for i in range(1, 7) for _ in range(3)],
+                       "day": [0, 7, 14] * 6, "arm": ["a"] * 9 + ["b"] * 9, "y": [100.0] * 18})
+    with pytest.raises(ValueError, match=r"the outcome 'y' has zero variance: every value of the 6 "
+                                         r"complete subject\(s\) is 100"):
+        recipe_timecourse(tc, v3c_spec("timecourse", x="day", y="y", id="id", group="arm"))

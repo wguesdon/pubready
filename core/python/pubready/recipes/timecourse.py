@@ -21,7 +21,7 @@ from scipy import linalg, stats
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
-from ..util import cap_first, level_labels, sig_text
+from ..util import _level_label, cap_first, level_labels, sig_text
 from .sankey import time_level_order
 
 
@@ -190,6 +190,10 @@ def recipe_timecourse(df, spec):
         raise ValueError("timecourse needs at least 2 time points")
     if len(complete) - len(g_lv) < 1:
         raise ValueError("timecourse needs more complete subjects than groups")
+    if d["y"].nunique() < 2:
+        raise ValueError(f"the outcome '{y}' has zero variance: every value of the "
+                         f"{len(complete)} complete subject(s) is {_level_label(d['y'].iloc[0])}, "
+                         "so the ANOVA has no variation to test")
 
     wide = d.pivot(index="id", columns="time_key", values="y").loc[complete, t_key]
     ymat = wide.to_numpy(float)

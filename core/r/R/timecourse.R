@@ -137,6 +137,10 @@ recipe_timecourse <- function(df, spec) {
     sprintf("The time points of '%s' are in %s: %s.", x, tord$rule, paste(t_key, collapse = ", ")))
   if (length(t_key) < 2) stop("timecourse needs at least 2 time points")
   if (length(complete_ids) - length(g_lv) < 1) stop("timecourse needs more complete subjects than groups")
+  if (length(unique(d$y)) < 2) {
+    stop(sprintf("the outcome '%s' has zero variance: every value of the %d complete subject(s) is %s, so the ANOVA has no variation to test",
+                 y, length(complete_ids), level_labels(d$y[1])))
+  }
 
   ids <- sort(complete_ids, method = "radix")
   Y <- matrix(NA_real_, length(ids), length(t_key))
