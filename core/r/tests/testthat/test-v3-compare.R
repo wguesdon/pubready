@@ -118,3 +118,20 @@ test_that("the paired t-test of two_group_compare reports Cohen's dz", {
   expect_false(grepl("variances", res$methods))
   expect_match(res$methods, "Cohen's dz = -4.82 (a minus b)", fixed = TRUE)
 })
+
+# F36: under --paired, --test auto checks the normality of the within-pair
+# differences, as paired_compare does.
+test_that("two_group_compare --paired chooses the test from the differences", {
+  sleep_df <- data.frame(group = rep(c("1", "2"), each = 10),
+                         extra = c(0.7, -1.6, -0.2, -1.2, -0.1, 3.4, 3.7, 0.8, 0.0, 2.0,
+                                   1.9, 0.8, 1.1, 0.1, -0.1, 4.4, 5.5, 1.6, 4.6, 3.4))
+  res <- recipe_two_group_compare(sleep_df, v3_spec("two_group_compare", x = "group",
+                                                    y = "extra", paired = TRUE))
+  expect_equal(res$stats$test, "Wilcoxon signed-rank test")
+  expect_equal(res$stats$shapiro_p_diff, 0.03334161, tolerance = 1e-6)
+  expect_equal(res$qc$quantity, "within-pair differences")
+  expect_match(res$methods, "normality of the within-pair differences (1 minus 2)", fixed = TRUE)
+  expect_error(recipe_two_group_compare(sleep_df[-1, ], v3_spec("two_group_compare", x = "group",
+                                                                y = "extra", paired = TRUE)),
+               "need the same size")
+})

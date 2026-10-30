@@ -148,3 +148,21 @@ def test_the_paired_t_test_of_two_group_compare_reports_cohens_dz():
     assert row["effect_size"] == pytest.approx(d.mean() / d.std(ddof=1), rel=1e-9)
     assert "variances" not in res["methods"]
     assert "Cohen's dz = -4.82 (a minus b)" in res["methods"]
+
+
+# F36: under --paired, --test auto checks the normality of the within-pair
+# differences, as paired_compare does.
+def test_two_group_compare_paired_chooses_the_test_from_the_differences():
+    sleep_df = pd.DataFrame({"group": ["1"] * 10 + ["2"] * 10,
+                             "extra": [0.7, -1.6, -0.2, -1.2, -0.1, 3.4, 3.7, 0.8, 0.0, 2.0,
+                                       1.9, 0.8, 1.1, 0.1, -0.1, 4.4, 5.5, 1.6, 4.6, 3.4]})
+    res = recipe_two_group_compare(sleep_df, v3_spec("two_group_compare", x="group", y="extra",
+                                                     paired=True))
+    row = res["stats"].iloc[0]
+    assert row["test"] == "Wilcoxon signed-rank test"
+    assert row["shapiro_p_diff"] == pytest.approx(0.03334161, abs=1e-6)
+    assert res["qc"]["quantity"] == "within-pair differences"
+    assert "normality of the within-pair differences (1 minus 2)" in res["methods"]
+    with pytest.raises(ValueError, match="need the same size"):
+        recipe_two_group_compare(sleep_df.iloc[1:], v3_spec("two_group_compare", x="group",
+                                                           y="extra", paired=True))

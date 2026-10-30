@@ -43,6 +43,12 @@ tag move together.
 - The paired t-test of `two_group_compare --paired` writes no sentence about
   equal variances and names its effect size "Cohen's dz", the mean of the
   within-pair differences over their SD, group1 minus group2 (F66).
+- `two_group_compare --paired` chooses between the paired t-test and the
+  Wilcoxon signed-rank test from the Shapiro-Wilk test of the within-pair
+  differences, not of each group. The rows still pair by their order in each
+  group, and groups of unequal size stop the run. The stats table gets
+  `shapiro_p_diff`, the QC panel shows the differences, and the methods text
+  names them (F36).
 
 ## [3.0.0] - 2026-10-29
 

@@ -84,6 +84,14 @@ def recipe_two_group_compare(df, spec):
     b = df.loc[df[x] == lv[1], y].to_numpy()
     p1, n1 = shapiro_normal(a); p2, n2 = shapiro_normal(b)
     all_normal = bool(n1) and bool(n2)
+    # Under --paired the rows pair by their order in each group, and the test is
+    # chosen from the normality of the within-pair differences (group1 minus
+    # group2), the quantity that the paired tests use.
+    diffs, p_diff = None, np.nan
+    if paired:
+        diffs = _paired_diffs(a, b, lv, x)
+        p_diff, n_diff = shapiro_normal(diffs)
+        all_normal = bool(n_diff)
     try:
         var_p = float(stats.levene(a, b, center="median").pvalue)
     except Exception:
@@ -146,6 +154,7 @@ def recipe_two_group_compare(df, spec):
         "effect_size_name": eff_name, "effect_size": eff,
         "shapiro_p_group1": p1, "shapiro_p_group2": p2, "var_equal_p": var_p,
     }])
+    stats_df["shapiro_p_diff"] = p_diff
 
     test_meta = {
         "name": r["label"], "statistic": statistic, "p_value": pval,
@@ -157,15 +166,40 @@ def recipe_two_group_compare(df, spec):
         },
     }
     test_meta["rank_test_attainable_p"] = rank_min_p
+    if paired:
+        test_meta["assumptions"]["normality_of_differences"] = {"test": "shapiro-wilk", "p": p_diff}
 
     methods = _methods(r, stats_df, eff_name, eff, spec)
+    qc = ({"quantity": "within-pair differences", "panels": {"differences": diffs}} if paired
+          else {"quantity": "group values", "panels": {lv[0]: a, lv[1]: b}})
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
         "methods": methods, "df_used": df, "clean_steps": steps,
-        "width": w, "height": h,
-        "qc": {"quantity": "group values", "panels": {lv[0]: a, lv[1]: b}},
+        "width": w, "height": h, "qc": qc,
         "build_script": functools.partial(_script, spec, r, lv, pal, ann=ann),
     }
+
+
+def _paired_diffs(a, b, lv, x):
+    """The within-pair differences, group1 minus group2, paired by row order.
+
+    Args:
+        a: The values of the first group, in row order.
+        b: The values of the second group, in row order.
+        lv: The two groups.
+        x: The group column.
+
+    Returns:
+        numpy.ndarray: The differences.
+
+    Raises:
+        ValueError: If the groups differ in size, so the rows cannot pair.
+    """
+    if len(a) != len(b):
+        raise ValueError(f"two_group_compare --paired pairs the rows by their order in each group "
+                         f"of '{x}', so the groups need the same size; '{lv[0]}' has {len(a)} and "
+                         f"'{lv[1]}' has {len(b)}")
+    return np.asarray(a, dtype=float) - np.asarray(b, dtype=float)
 
 
 def _check_variance(r, a, b, lv):
@@ -231,9 +265,13 @@ def _methods(r, stats_df, eff_name, eff_value, spec):
     # its own. The R engine writes the same sentence.
     eff_txt = (eff_name if eff_value is None or not np.isfinite(eff_value)
                else f"{eff_name} = {eff_value:.2f}")
+    g1, g2 = stats_df["group1"].iloc[0], stats_df["group2"].iloc[0]
+    norm_txt = (" The rows were paired by their order in each group, and the normality of the "
+                f"within-pair differences ({g1} minus {g2}) was assessed with the Shapiro-Wilk test."
+                if r["paired"] else " Normality was assessed with the Shapiro-Wilk test.")
     return (
         f"{cap_first(y_label)} was compared between the two groups with a {r['label']}."
-        " Normality was assessed with the Shapiro-Wilk test." + var_txt +
+        + norm_txt + var_txt +
         f" Effect size is reported as {eff_txt} ({stats_df['group1'].iloc[0]} minus "
         f"{stats_df['group2'].iloc[0]})."
         " Significance was set at P < 0.05."

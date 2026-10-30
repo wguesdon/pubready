@@ -24,6 +24,16 @@ recipe_two_group_compare <- function(df, spec) {
   by_group <- split(df[[y]], df[[x]])
   norm <- lapply(by_group, shapiro_safe)
   all_normal <- all(vapply(norm, is_normal_check, logical(1)))
+  # Under --paired the rows pair by their order in each group, and the test is
+  # chosen from the normality of the within-pair differences (group1 minus
+  # group2), the quantity that the paired tests use.
+  diffs <- NULL
+  norm_diff <- list(p = NA_real_)
+  if (paired) {
+    diffs <- .tg_paired_diffs(by_group, lvls, x)
+    norm_diff <- shapiro_safe(diffs)
+    all_normal <- isTRUE(norm_diff$normal)
+  }
   var_p <- tryCatch(
     rstatix::levene_test(df, fml)$p[1],
     error = na_on_error
@@ -146,6 +156,7 @@ recipe_two_group_compare <- function(df, spec) {
     var_equal_p      = var_p,
     stringsAsFactors = FALSE
   )
+  stats_df$shapiro_p_diff <- norm_diff$p
 
   test_meta <- list(
     name        = resolved$label,
@@ -160,14 +171,32 @@ recipe_two_group_compare <- function(df, spec) {
     )
   )
   test_meta$rank_test_attainable_p <- rank_min_p
+  if (paired) {
+    test_meta$assumptions$normality_of_differences <- list(test = "shapiro-wilk", p = norm_diff$p)
+  }
 
   methods <- .tg_methods(resolved, stats_df, test_meta, spec)
   build_script <- list(fn = .tg_emit_script, args = list(spec = spec, resolved = resolved))
 
+  qc <- if (paired) {
+    list(quantity = "within-pair differences", panels = list(differences = diffs))
+  } else {
+    list(quantity = "group values", panels = by_group)
+  }
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
-       df_used = df, clean_steps = cl$steps,
-       qc = list(quantity = "group values", panels = by_group))
+       df_used = df, clean_steps = cl$steps, qc = qc)
+}
+
+# The within-pair differences, group1 minus group2, with the rows paired by
+# their order in each group. Groups of unequal size cannot pair.
+.tg_paired_diffs <- function(by_group, lvls, x) {
+  a <- by_group[[lvls[1]]]; b <- by_group[[lvls[2]]]
+  if (length(a) != length(b)) {
+    stop(sprintf("two_group_compare --paired pairs the rows by their order in each group of '%s', so the groups need the same size; '%s' has %d and '%s' has %d",
+                 x, lvls[1], length(a), lvls[2], length(b)))
+  }
+  a - b
 }
 
 # A t-test divides by a variance: the two-sample test by the variance of both
@@ -201,7 +230,10 @@ recipe_two_group_compare <- function(df, spec) {
   v <- pkg_versions(c("rstatix", "ggpubr", "ggprism"))
   rver <- paste(R.version$major, R.version$minor, sep = ".")
 
-  norm_txt <- "Normality was assessed with the Shapiro-Wilk test."
+  norm_txt <- if (isTRUE(resolved$paired)) {
+    sprintf("The rows were paired by their order in each group, and the normality of the within-pair differences (%s minus %s) was assessed with the Shapiro-Wilk test.",
+            stats_df$group1[1], stats_df$group2[1])
+  } else "Normality was assessed with the Shapiro-Wilk test."
   # A paired t-test works on the within-pair differences, so no variance
   # sentence applies to it.
   var_txt <- if (resolved$family == "t") {
