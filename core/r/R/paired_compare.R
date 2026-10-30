@@ -18,11 +18,12 @@ recipe_paired_compare <- function(df, spec) {
   df[[y]] <- suppressWarnings(as.numeric(df[[y]]))
   n_rows0 <- nrow(df)
   df <- df[stats::complete.cases(df), , drop = FALSE]
-  # One level rule in both engines: the --levels order (--levels pre,post keeps
-  # pre left of post), else numeric order when every label is a number, else
-  # code-point order. The row order of the file no longer sets the sign.
+  # The two conditions are usually two visits, so they follow the time rule of
+  # sankey and timecourse in both engines: the --levels order, else numeric
+  # order, else the one number that each label holds, else first appearance.
   lab <- level_labels(df[[x]])
-  lv <- level_order(lab, unlist(spec$data$levels), "condition")
+  cord <- time_level_order(lab, unlist(spec$data$levels), "condition", "--levels")
+  lv <- cord$levels
   df[[x]] <- factor(lab, levels = lv)
   if (length(lv) != 2) {
     stop(sprintf("paired_compare needs exactly 2 conditions in '%s'; found %d (%s)",
@@ -44,6 +45,8 @@ recipe_paired_compare <- function(df, spec) {
   dropped <- n_ids - nrow(m)
   if (nrow(m) < 2) stop("paired_compare needs at least 2 complete pairs")
   clean_steps <- c(
+    sprintf("Ordered the conditions as %s, by %s.",
+            paste(sprintf("'%s'", lv), collapse = ", "), cord$rule),
     sprintf("Kept %d complete pair(s) across the two conditions.", nrow(m)),
     if (dropped > 0) sprintf("Dropped %d subject(s) missing one condition.", dropped) else NULL)
 

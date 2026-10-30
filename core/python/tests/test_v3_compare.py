@@ -210,16 +210,16 @@ def test_text_groups_sort_by_code_point_and_levels_sets_the_order():
     assert res["stats"]["group1"].iloc[0] == "control"
 
 
-def test_paired_compare_takes_the_level_rule_not_the_row_order():
+def test_paired_compare_takes_the_time_rule_and_levels():
     df = pd.DataFrame({"subject": list(range(1, 7)) * 2, "condition": ["pre"] * 6 + ["post"] * 6,
                        "value": [1, 2, 3, 4, 5, 6, 2.1, 2.9, 4.4, 4.8, 6.3, 7.2]})
     res = recipe_paired_compare(df, v3_spec("paired_compare", x="condition", y="value",
                                             id="subject", test="t"))
-    assert res["stats"]["condition1"].iloc[0] == "post"
-    res = recipe_paired_compare(df, v3_spec("paired_compare", x="condition", y="value",
-                                            id="subject", test="t", levels="pre,post"))
     assert res["stats"]["condition1"].iloc[0] == "pre"
     assert res["stats"]["contrast"].iloc[0] == "post - pre"
+    res = recipe_paired_compare(df, v3_spec("paired_compare", x="condition", y="value",
+                                            id="subject", test="t", levels="post,pre"))
+    assert res["stats"]["condition1"].iloc[0] == "post"
 
 
 # F63: each recipe rejects a --test value that it does not know and lists the
@@ -390,3 +390,25 @@ def test_long_legend_labels_and_titles_wrap_in_factorial_anova_and_estimation_pl
     assert res["width"] < 6
     title = f"Mean difference against {long} with its 95% BCa bootstrap CI"
     assert title_text(title, 5.2) == wrap_label(title, 52)
+
+
+def test_paired_conditions_follow_the_time_rule():
+    import pandas as pd
+    from pubready.spec import default_appearance
+    from pubready.recipes.paired_compare import recipe_paired_compare
+    from pubready.recipes.two_group_compare import recipe_two_group_compare
+    rows = []
+    for i, (pre, post) in enumerate([(5.1, 6.0), (4.8, 5.9), (5.5, 6.1), (5.0, 6.4), (4.9, 5.2), (5.3, 6.6)]):
+        rows += [{"id": f"s{i}", "visit": "pre", "v": pre}, {"id": f"s{i}", "visit": "post", "v": post}]
+    df = pd.DataFrame(rows)
+    spec = {"recipe": "paired_compare", "data": {"x": "visit", "y": "v", "id": "id"},
+            "test": {"method": "t", "paired": False}, "appearance": default_appearance()}
+    res = recipe_paired_compare(df, spec)
+    assert "Ordered the conditions as 'pre', 'post', by the order of first appearance" in res["clean_steps"][0]
+    weeks = df.replace({"visit": {"pre": "week 0", "post": "week 12"}}).iloc[::-1]
+    res = recipe_paired_compare(weeks.reset_index(drop=True), spec)
+    assert res["clean_steps"][0].startswith("Ordered the conditions as 'week 0', 'week 12'")
+    spec2 = {"recipe": "two_group_compare", "data": {"x": "visit", "y": "v"},
+             "test": {"method": "t", "paired": True}, "appearance": default_appearance()}
+    res2 = recipe_two_group_compare(df[["visit", "v"]], spec2)
+    assert list(res2["stats"]["group1"])[0] == "pre"

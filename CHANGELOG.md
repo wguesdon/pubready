@@ -23,6 +23,11 @@ tag move together.
   hold 57 datasets and 533 reference values.
 
 ### Changed
+- `paired_compare` and `two_group_compare --paired` order the two conditions
+  with the time rule of `sankey` and `timecourse`: the `--levels` order, else
+  numeric order, else the one number that each label holds, else first
+  appearance. "pre" and "post" keep the order of the file, and "week 0" comes
+  before "week 12". The data log records the order and the rule.
 - The three adapters and `reference/decision_tree.md` list the designs that no
   recipe fits: strata, covariate adjustment, rates of change, and a comparison
   with one control only. The agent tells the scientist and does not force the

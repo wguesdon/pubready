@@ -13,7 +13,7 @@ from ..theme import apply_pub_style, new_fig, palette, plain_number_axis, wrap_l
 from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, is_zero_variance,
                     level_labels, level_order, p_stars, quote_join, rank_biserial_paired,
                     rank_floor_text, rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
-                    wilcoxon_signed_rank_r, zero_variance_message)
+                    time_level_order, wilcoxon_signed_rank_r, zero_variance_message)
 
 
 TESTS = ("auto", "t", "t_test", "paired_t", "student_t", "wilcoxon", "wilcox", "signed_rank", "mwu")
@@ -50,11 +50,12 @@ def recipe_paired_compare(df, spec):
     d = df[[idc, x, y]].copy()
     d[y] = pd.to_numeric(d[y], errors="coerce")
     d = d.dropna()
-    # One level rule in both engines: the --levels order (--levels pre,post keeps
-    # pre left of post), else numeric order when every label is a number, else
-    # code-point order. The row order of the file no longer sets the sign.
+    # The two conditions are usually two visits, so they follow the time rule of
+    # sankey and timecourse in both engines: the --levels order, else numeric
+    # order, else the one number that each label holds, else first appearance.
     d[x] = level_labels(d[x])
-    lv = level_order(d[x], spec["data"].get("levels"), "condition")
+    cord = time_level_order(list(d[x]), spec["data"].get("levels"), "condition", "--levels")
+    lv = cord["levels"]
     if len(lv) != 2:
         raise ValueError(f"paired_compare needs exactly 2 conditions in '{x}'; found {len(lv)}")
     check_spread(d[y], "paired_compare", f"the outcome '{y}'")
@@ -72,7 +73,9 @@ def recipe_paired_compare(df, spec):
     dropped = d[idc].nunique() - len(m)
     if len(m) < 2:
         raise ValueError("paired_compare needs at least 2 complete pairs")
-    steps = [f"Kept {len(m)} complete pair(s) across the two conditions."]
+    steps = ["Ordered the conditions as " + ", ".join(f"'{v}'" for v in lv)
+             + f", by {cord['rule']}.",
+             f"Kept {len(m)} complete pair(s) across the two conditions."]
     if dropped:
         steps.append(f"Dropped {dropped} subject(s) missing one condition.")
 

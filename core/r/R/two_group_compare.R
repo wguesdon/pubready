@@ -16,16 +16,21 @@ recipe_two_group_compare <- function(df, spec) {
 
   # One level rule in both engines: the --levels order, else numeric order when
   # every label is a number, else code-point order. The first level is group 1.
+  # Under --paired the two groups are usually two visits, so they follow the
+  # time rule of paired_compare instead.
+  paired <- isTRUE(spec$test$paired)
   lab <- level_labels(df[[x]])
-  lvls <- level_order(lab, unlist(spec$data$levels), "group")
+  lvls <- if (paired) {
+    time_level_order(lab, unlist(spec$data$levels), "condition", "--levels")$levels
+  } else {
+    level_order(lab, unlist(spec$data$levels), "group")
+  }
   df[[x]] <- factor(lab, levels = lvls)
   if (length(lvls) != 2) {
     stop(sprintf("two_group_compare needs exactly 2 groups in '%s'; found %d (%s)",
                  x, length(lvls), paste(lvls, collapse = ", ")))
   }
   check_spread(df[[y]], "two_group_compare", sprintf("the outcome '%s'", y))
-
-  paired <- isTRUE(spec$test$paired)
 
   # Assumption checks. Equal variance uses Levene's test, as the multi-group
   # recipe and both Python recipes do, so the column compares across engines.

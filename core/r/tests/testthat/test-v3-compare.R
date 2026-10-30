@@ -188,16 +188,16 @@ test_that("text groups sort by code point and --levels sets the order", {
   expect_equal(res$stats$group1, "control")
 })
 
-test_that("paired_compare takes the level rule, not the row order", {
+test_that("paired_compare takes the time rule and --levels", {
   df <- data.frame(subject = rep(1:6, 2), condition = rep(c("pre", "post"), each = 6),
                    value = c(1:6, c(2.1, 2.9, 4.4, 4.8, 6.3, 7.2)))
   res <- recipe_paired_compare(df, v3_spec("paired_compare", x = "condition", y = "value",
                                            id = "subject", test = "t"))
-  expect_equal(res$stats$condition1, "post")
-  res <- recipe_paired_compare(df, v3_spec("paired_compare", x = "condition", y = "value",
-                                           id = "subject", test = "t", levels = "pre,post"))
   expect_equal(res$stats$condition1, "pre")
   expect_equal(res$stats$contrast, "post - pre")
+  res <- recipe_paired_compare(df, v3_spec("paired_compare", x = "condition", y = "value",
+                                           id = "subject", test = "t", levels = "post,pre"))
+  expect_equal(res$stats$condition1, "post")
 })
 
 # F44: column names with a space run in the R recipes that build a formula.
@@ -423,4 +423,26 @@ test_that("long legend labels and titles wrap in factorial_anova and estimation_
                           5.2),
                wrap_label(paste("Mean difference against", long, "with its 95% BCa bootstrap CI"),
                           52))
+})
+
+test_that("the paired conditions follow the time rule", {
+  pre <- c(5.1, 4.8, 5.5, 5.0, 4.9, 5.3)
+  post <- c(6.0, 5.9, 6.1, 6.4, 5.2, 6.6)
+  df <- data.frame(id = rep(sprintf("s%d", 0:5), each = 2),
+                   visit = rep(c("pre", "post"), 6),
+                   v = as.vector(rbind(pre, post)), stringsAsFactors = FALSE)
+  spec <- spec_from_opt(list(recipe = "paired_compare", data = "d.csv", x = "visit", y = "v",
+                             id = "id", test = "t"))
+  res <- recipe_paired_compare(df, spec)
+  expect_match(res$clean_steps[1],
+               "Ordered the conditions as 'pre', 'post', by the order of first appearance", fixed = TRUE)
+  weeks <- df
+  weeks$visit <- ifelse(weeks$visit == "pre", "week 0", "week 12")
+  weeks <- weeks[rev(seq_len(nrow(weeks))), ]
+  res <- recipe_paired_compare(weeks, spec)
+  expect_match(res$clean_steps[1], "^Ordered the conditions as 'week 0', 'week 12'")
+  spec2 <- spec_from_opt(list(recipe = "two_group_compare", data = "d.csv", x = "visit", y = "v",
+                              test = "t", paired = TRUE))
+  res2 <- recipe_two_group_compare(df[, c("visit", "v")], spec2)
+  expect_equal(as.character(res2$stats$group1[1]), "pre")
 })
