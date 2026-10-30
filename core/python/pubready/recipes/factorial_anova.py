@@ -361,6 +361,11 @@ def recipe_factorial_anova(df, spec):
     pal = palette(len(f2_lv), ap.get("palette"))
     facet_lv = level_order(df[f3], None, "level") if f3 else [None]
     geom = ap.get("geom") or "box"
+    # A geom that the recipe does not draw stops the run, so a figure never shows
+    # a box where the config asks for a violin. The R engine has the same rule.
+    if geom not in ("box", "bar", "interaction"):
+        raise ValueError("factorial_anova draws the geoms box, bar and interaction; "
+                         f"got '{geom}'")
     w, h = fig_size(f1_lv, f2_lv, f2, len(facet_lv), bool(f3))
     wrap = needs_wrap(f1_lv)
     fig, axes = plt.subplots(1, len(facet_lv), figsize=(w, h), sharey=True, squeeze=False)

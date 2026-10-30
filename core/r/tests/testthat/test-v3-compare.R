@@ -446,3 +446,10 @@ test_that("the paired conditions follow the time rule", {
   res2 <- recipe_two_group_compare(df[, c("visit", "v")], spec2)
   expect_equal(as.character(res2$stats$group1[1]), "pre")
 })
+
+test_that("factorial_anova stops on a geom that it does not draw", {
+  df <- data.frame(g = rep(c("a", "a", "b", "b"), 3), t = rep(c("x", "y"), 6),
+                   v = c(1.0, 2.1, 3.2, 4.0, 1.3, 2.2, 3.1, 4.4, 0.9, 2.0, 3.3, 4.1))
+  spec <- v3_spec("factorial_anova", x = "g", fill = "t", y = "v", test = "anova", geom = "violin")
+  expect_error(recipe_factorial_anova(df, spec), "draws the geoms box, bar and interaction; got 'violin'")
+})

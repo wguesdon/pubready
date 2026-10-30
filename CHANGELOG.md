@@ -127,6 +127,8 @@ tag move together.
   does not hold two groups (F97).
 
 ### Fixed
+- `factorial_anova` stops on a geom that it does not draw, such as `--geom
+  violin`, in both engines. Before, it drew a box with no message (F71).
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of
   the items, so an item can hold a comma, for example
   `--levels "none|edema, no diuretics"`. A value with no "|" splits on commas

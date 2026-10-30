@@ -110,7 +110,12 @@ recipe_factorial_anova <- function(df, spec) {
   pal  <- spec$appearance$palette %||% pubready_palette
   pal  <- rep(pal, length.out = nlevels(df[[f2]]))
   geom <- spec$appearance$geom %||% "box"
-  if (!geom %in% c("box", "bar", "interaction")) geom <- "box"
+  # A geom that the recipe does not draw stops the run, so a figure never shows
+  # a box where the config asks for a violin. The Python engine has the same rule.
+  if (!geom %in% c("box", "bar", "interaction")) {
+    stop(sprintf("factorial_anova draws the geoms box, bar and interaction; got '%s'", geom),
+         call. = FALSE)
+  }
   pd   <- ggplot2::position_dodge(width = 0.8)
 
   if (geom == "interaction") {

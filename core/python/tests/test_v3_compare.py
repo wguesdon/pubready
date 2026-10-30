@@ -412,3 +412,14 @@ def test_paired_conditions_follow_the_time_rule():
              "test": {"method": "t", "paired": True}, "appearance": default_appearance()}
     res2 = recipe_two_group_compare(df[["visit", "v"]], spec2)
     assert list(res2["stats"]["group1"])[0] == "pre"
+
+
+def test_factorial_anova_stops_on_a_geom_that_it_does_not_draw():
+    import pytest
+    from pubready.recipes.factorial_anova import recipe_factorial_anova
+    df = pd.DataFrame({"g": ["a", "a", "b", "b"] * 3, "t": ["x", "y"] * 6,
+                       "v": [1.0, 2.1, 3.2, 4.0, 1.3, 2.2, 3.1, 4.4, 0.9, 2.0, 3.3, 4.1]})
+    spec = v3_spec("factorial_anova", x="g", fill="t", y="v", test="anova")
+    spec["appearance"]["geom"] = "violin"
+    with pytest.raises(ValueError, match="draws the geoms box, bar and interaction; got 'violin'"):
+        recipe_factorial_anova(df, spec)
