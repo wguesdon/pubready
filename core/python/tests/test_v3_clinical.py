@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from pubready.recipes.cox_forest import recipe_cox_forest
+from pubready.recipes.cumulative_incidence import recipe_cumulative_incidence
 from pubready.recipes.survival_km import (event_codes, km_break_step, km_median,
                                           recipe_survival_km)
 from pubready.recipes.swimmer import recipe_swimmer
@@ -101,3 +102,21 @@ def test_survival_km_names_one_group_and_draws_times_above_5e6():
                        "event": [1, 0, 1, 1, 1, 0], "arm": ["a"] * 3 + ["b"] * 3})
     res = recipe_survival_km(d2, v3c_spec("survival_km", time="time", event="event", x="arm"))
     assert res["test_meta"]["at_risk"]["times"] == pytest.approx([v * 1e7 for v in (0, 2, 4, 6, 8, 10)])
+
+
+def test_survival_cox_and_cumulative_incidence_share_one_level_order():
+    """F64: numeric groups sort as numbers and text levels in code-point order."""
+    d = pd.DataFrame({"time": [5, 8, 12, 3, 9, 14, 7, 10, 15, 4, 6, 11],
+                      "event": [1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0],
+                      "dose": [80] * 4 + [160] * 4 + [235] * 4,
+                      "inherit": ["X-linked", "autosomal"] * 6,
+                      "status": [1, 2, 0, 1, 1, 0, 2, 1, 0, 1, 2, 1]})
+    km = recipe_survival_km(d, v3c_spec("survival_km", time="time", event="event", x="dose"))
+    assert list(km["stats"]["group"]) == ["80", "160", "235"]
+    cx = recipe_cox_forest(d, v3c_spec("cox_forest", time="time", event="event",
+                                       covariates="inherit"))
+    assert list(cx["stats"]["term"]) == ["inheritautosomal"]
+    ci = recipe_cumulative_incidence(d, v3c_spec("cumulative_incidence", time="time",
+                                                 event="status", x="dose"))
+    assert ci["test_meta"]["groups"] == ["80", "160", "235"]
+    assert list(pd.unique(ci["stats"]["group"])) == ["80", "160", "235"]

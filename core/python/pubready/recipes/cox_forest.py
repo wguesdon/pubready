@@ -17,7 +17,7 @@ from matplotlib import transforms
 from matplotlib.ticker import NullLocator
 
 from ..theme import apply_pub_style, palette, plain_log_axis
-from ..util import format_p, p_phrase
+from ..util import format_p, level_order, p_phrase
 from .survival_km import event_codes
 
 # Tick sequences of the hazard-ratio axis, from coarse to fine (mantissas per decade).
@@ -207,9 +207,10 @@ def cox_zph_global(times, events, X, beta):
 def design_and_rows(df, t, e, covs):
     """Build the numeric design matrix and the display rows of the forest plot.
 
-    A categorical covariate is one-hot encoded with its first sorted level as the
-    reference, and gives a "reference" row plus one row per other level. A
-    numeric covariate gives one row.
+    A categorical covariate is one-hot encoded with its first level, by the
+    level rule that both engines share (level_order), as the reference. It
+    gives a "reference" row plus one row per other level. A numeric covariate
+    gives one row.
 
     Args:
         df: The cleaned data.
@@ -226,7 +227,7 @@ def design_and_rows(df, t, e, covs):
     for c in covs:
         s = df[c]
         if s.dtype == object or str(s.dtype).startswith("category") or not np.issubdtype(s.dtype, np.number):
-            cats = sorted(s.astype(str).unique())
+            cats = level_order(s.astype(str))
             rows.append({"label": f"{c}: {cats[0]}", "term": None})
             for lvl in cats[1:]:
                 design[f"{c}{lvl}"] = (s.astype(str) == lvl).astype(int)

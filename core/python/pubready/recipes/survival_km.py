@@ -11,7 +11,7 @@ from lifelines.statistics import multivariate_logrank_test
 from matplotlib.lines import Line2D
 
 from ..theme import apply_pub_style, longest_line, palette, wrap_labels
-from ..util import _level_label, level_order, p_phrase
+from ..util import _level_label, level_labels, level_order, p_phrase
 
 LEGEND_WRAP = 24
 """The legend labels wrap at this many characters, as in the R engine."""
@@ -249,8 +249,10 @@ def recipe_survival_km(df, spec):
     if df.empty:
         raise ValueError(f"survival_km found no row with a time, an event and a group in "
                          f"'{t}', '{e}' and '{g}'")
-    df[g] = df[g].astype(str)
-    lv = sorted(df[g].unique())
+    # The groups sort as numbers when every label is a number, else in code-point
+    # order, by the level rule that both engines share (level_order).
+    df[g] = level_labels(df[g])
+    lv = level_order(df[g])
     if len(lv) < 2:
         raise ValueError(f"survival_km compares groups, and column '{g}' holds 1 group "
                          f"('{lv[0]}', n = {len(df)}); the log-rank test needs 2 or more")
@@ -388,7 +390,9 @@ import pandas as pd
 from lifelines import KaplanMeierFitter
 from lifelines.statistics import multivariate_logrank_test
 
-df = pd.read_csv("{in_name}"); df["{g}"] = df["{g}"].astype(str)
+df = pd.read_csv("{in_name}")
+# The group labels as the recipe writes them: a whole number with no ".0".
+df["{g}"] = df["{g}"].astype(str).str.replace(r"\\.0$", "", regex=True)
 order, pal = {lv}, {pal}
 tmax = df["{t}"].max()
 breaks = [{step!r} * k for k in range(int(np.floor(tmax / {step!r} + 1e-9)) + 1)]

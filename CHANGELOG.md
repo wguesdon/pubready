@@ -38,6 +38,12 @@ tag move together.
   group, and it draws follow-up times above 5e6. Before, R stopped with
   "There is only 1 group", Python wrote "chi-square(0) = 0.00, P = NA", and a
   time above 5e6 stopped both engines with an error that did not say why (F92).
+- `survival_km`, `cox_forest` and `cumulative_incidence` order their groups
+  and factor levels with the level rule that both engines share: numeric order
+  when every label is a number, else code-point order. The first level is the
+  Cox reference. Before, Python sorted doses as text (0, 160, 80) and R sorted
+  text in the locale order, so the `cgd` reference level of `inherit` differed
+  between the engines (F64).
 
 ## [3.0.0] - 2026-10-29
 

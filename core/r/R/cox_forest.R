@@ -25,8 +25,6 @@ recipe_cox_forest <- function(df, spec) {
 
   df[[time_col]] <- suppressWarnings(as.numeric(df[[time_col]]))
   df[[event_col]] <- event_codes(df[[event_col]], event_col)
-  for (c in covs) if (is.character(df[[c]])) df[[c]] <- factor(df[[c]])
-
   n0   <- nrow(df)
   keep <- stats::complete.cases(df[, c(time_col, event_col, covs)]) &
           is.finite(df[[time_col]]) & df[[time_col]] >= 0
@@ -35,6 +33,9 @@ recipe_cox_forest <- function(df, spec) {
     sprintf("Dropped %d row(s) with missing/invalid values (%d -> %d rows).",
             n0 - nrow(df), n0, nrow(df))
   } else "No cleaning applied; input used as-is."
+  # A text covariate becomes a factor of the rows kept. Its levels sort by the
+  # rule that both engines share (level_order), and the first is the reference.
+  for (c in covs) if (is.character(df[[c]])) df[[c]] <- factor(df[[c]], levels = level_order(df[[c]]))
 
   Surv <- survival::Surv
   rhs <- paste(sprintf("`%s`", covs), collapse = " + ")
@@ -262,7 +263,8 @@ recipe_cox_forest <- function(df, spec) {
     "",
     sprintf('df <- as.data.frame(read_csv("%s", show_col_types = FALSE))', in_name),
     sprintf("covs <- c(%s)", paste(sprintf('"%s"', covs), collapse = ", ")),
-    "for (c in covs) if (is.character(df[[c]])) df[[c]] <- factor(df[[c]])",
+    "# The first level of each text covariate, in code-point order, is the reference.",
+    "for (c in covs) if (is.character(df[[c]])) df[[c]] <- factor(df[[c]], levels = sort(unique(df[[c]]), method = \"radix\"))",
     "",
     sprintf("cox <- coxph(Surv(`%s`, `%s`) ~ %s, data = df)", time_col, event_col, rhs),
     'ci <- exp(confint(cox)); pv <- summary(cox)$coefficients[, "Pr(>|z|)"]',

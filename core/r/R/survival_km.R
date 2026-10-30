@@ -32,8 +32,11 @@ recipe_survival_km <- function(df, spec) {
     stop(sprintf("survival_km found no row with a time, an event and a group in '%s', '%s' and '%s'",
                  time_col, event_col, group_col))
   }
-  df[[group_col]] <- factor(df[[group_col]])
-  lvls <- levels(df[[group_col]])
+  # The groups sort as numbers when every label is a number, else in code-point
+  # order, by the level rule that both engines share (level_order).
+  lab <- level_labels(df[[group_col]])
+  lvls <- level_order(lab)
+  df[[group_col]] <- factor(lab, levels = lvls)
   if (length(lvls) < 2) {
     stop(sprintf("survival_km compares groups, and column '%s' holds 1 group ('%s', n = %d); the log-rank test needs 2 or more",
                  group_col, lvls, nrow(df)))

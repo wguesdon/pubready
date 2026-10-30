@@ -81,3 +81,20 @@ test_that("survival_km names one group and draws follow-up times above 5e6 (F92)
   res <- recipe_survival_km(d2, v3c_spec("survival_km", time = "time", event = "event", x = "arm"))
   expect_equal(res$test_meta$at_risk$times, c(0, 2, 4, 6, 8, 10) * 1e7)
 })
+
+test_that("survival_km, cox_forest and cumulative_incidence share one level order (F64)", {
+  d <- data.frame(time = c(5, 8, 12, 3, 9, 14, 7, 10, 15, 4, 6, 11),
+                  event = c(1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0),
+                  dose = rep(c(80, 160, 235), each = 4),
+                  inherit = rep(c("X-linked", "autosomal"), 6),
+                  status = c(1, 2, 0, 1, 1, 0, 2, 1, 0, 1, 2, 1))
+  km <- recipe_survival_km(d, v3c_spec("survival_km", time = "time", event = "event", x = "dose"))
+  expect_equal(km$stats$group, c("80", "160", "235"))
+  cx <- recipe_cox_forest(d, v3c_spec("cox_forest", time = "time", event = "event",
+                                      covariates = "inherit"))
+  expect_equal(cx$stats$term, "inheritautosomal")
+  ci <- recipe_cumulative_incidence(d, v3c_spec("cumulative_incidence", time = "time",
+                                                event = "status", x = "dose"))
+  expect_equal(unlist(ci$test_meta$groups), c("80", "160", "235"))
+  expect_equal(unique(ci$stats$group), c("80", "160", "235"))
+})
