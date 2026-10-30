@@ -110,6 +110,83 @@ def back(v, measure):
     return np.exp(v) if measure == "ratio" else v
 
 
+def study_labels(v, n):
+    """The study labels, with "Study <row>" for an empty cell, as .fm_labels() in R.
+
+    Args:
+        v: The --label column, or None.
+        n: The count of rows.
+
+    Returns:
+        numpy.ndarray: The labels.
+    """
+    out = []
+    for i in range(n):
+        s = None if v is None or pd.isna(v.iloc[i]) else str(v.iloc[i]).strip()
+        out.append(s if s else f"Study {i + 1}")
+    return np.array(out, dtype=object)
+
+
+def _num(v):
+    """Format a number as R format() does, with 7 significant digits.
+
+    Args:
+        v: The number.
+
+    Returns:
+        str: The text.
+    """
+    return f"{float(v):.7g}"
+
+
+def study_problem(i, est, lo, hi, se):
+    """Say why one study row cannot be pooled, as .fm_study_problem() in R (F77).
+
+    Args:
+        i: The row.
+        est: The estimates.
+        lo: The lower CI bounds, or None with --se.
+        hi: The upper CI bounds, or None with --se.
+        se: The standard errors, or None with a CI.
+
+    Returns:
+        str or None: The reason, or None when the row can be pooled.
+    """
+    if se is not None:
+        return f"its standard error is {_num(se[i])}" if se[i] <= 0 else None
+    if lo[i] > hi[i]:
+        return f"its CI bounds are reversed ({_num(lo[i])} to {_num(hi[i])})"
+    if lo[i] == hi[i]:
+        return f"its CI has zero width ({_num(lo[i])} to {_num(hi[i])})"
+    if est[i] < lo[i] or est[i] > hi[i]:
+        return (f"its CI ({_num(lo[i])} to {_num(hi[i])}) does not hold its estimate "
+                f"{_num(est[i])}")
+    return None
+
+
+def check_studies(labels, est, lo, hi, se):
+    """Stop and name each study that cannot be pooled, as .fm_check_studies() in R.
+
+    Args:
+        labels: The study labels.
+        est: The estimates.
+        lo: The lower CI bounds, or None.
+        hi: The upper CI bounds, or None.
+        se: The standard errors, or None.
+
+    Raises:
+        ValueError: If a study row cannot be pooled.
+    """
+    bad = [(labels[i], why) for i in range(len(est))
+           if (why := study_problem(i, est, lo, hi, se)) is not None]
+    if not bad:
+        return
+    msg = "; ".join(f"study '{lab}': {why}" for lab, why in bad[:5])
+    if len(bad) > 5:
+        msg += f"; and {len(bad) - 5} more"
+    raise ValueError(f"forest_meta cannot pool {len(bad)} study row(s): {msg}")
+
+
 def recipe_forest_meta(df, spec):
     """Pool study estimates and draw a forest plot.
 
@@ -139,8 +216,7 @@ def recipe_forest_meta(df, spec):
 
     n0 = len(df)
     est = pd.to_numeric(df[y], errors="coerce").to_numpy(float)
-    labels = (df[lab].astype(str).to_numpy() if lab
-              else np.array([f"Study {i + 1}" for i in range(n0)]))
+    labels = study_labels(df[lab] if lab else None, n0)
     if has_ci:
         lo = pd.to_numeric(df[lo_col], errors="coerce").to_numpy(float)
         hi = pd.to_numeric(df[hi_col], errors="coerce").to_numpy(float)
@@ -149,10 +225,11 @@ def recipe_forest_meta(df, spec):
         se_in = None
     else:
         se_in = pd.to_numeric(df[se_col], errors="coerce").to_numpy(float)
-        keep = np.isfinite(est) & np.isfinite(se_in) & (se_in > 0)
+        keep = np.isfinite(est) & np.isfinite(se_in)
         se_in = se_in[keep]
         lo = hi = None
     est, labels = est[keep], labels[keep]
+    check_studies(labels, est, lo, hi, se_in)
     if len(est) < 2:
         raise ValueError("forest_meta needs at least 2 studies")
 

@@ -27,6 +27,44 @@
 
 .fm_back <- function(v, measure) if (measure == "ratio") exp(v) else v
 
+# The study labels: the --label column, with "Study <row>" for an empty cell, so
+# that no row reads "NA".
+.fm_labels <- function(v, n) {
+  out <- if (is.null(v)) rep(NA_character_, n) else trimws(as.character(v))
+  empty <- is.na(out) | !nzchar(out)
+  out[empty] <- sprintf("Study %d", which(empty))
+  out
+}
+
+# Why one study row cannot be pooled, or NA when it can (F77): its CI bounds are
+# reversed, its CI has zero width, its CI does not hold its estimate, or its
+# standard error is 0 or below. The Python engine has the same rule.
+.fm_study_problem <- function(i, est, lo, hi, se) {
+  if (!is.null(se)) {
+    if (se[i] <= 0) return(sprintf("its standard error is %s", format(se[i])))
+    return(NA_character_)
+  }
+  if (lo[i] > hi[i]) return(sprintf("its CI bounds are reversed (%s to %s)", format(lo[i]), format(hi[i])))
+  if (lo[i] == hi[i]) return(sprintf("its CI has zero width (%s to %s)", format(lo[i]), format(hi[i])))
+  if (est[i] < lo[i] || est[i] > hi[i]) {
+    return(sprintf("its CI (%s to %s) does not hold its estimate %s", format(lo[i]), format(hi[i]),
+                   format(est[i])))
+  }
+  NA_character_
+}
+
+# Stop and name each study that cannot be pooled.
+.fm_check_studies <- function(labels, est, lo, hi, se) {
+  why <- vapply(seq_along(est), .fm_study_problem, character(1), est = est, lo = lo, hi = hi,
+                se = se)
+  bad <- which(!is.na(why))
+  if (length(bad) == 0) return(invisible(TRUE))
+  msg <- paste(sprintf("study '%s': %s", labels[bad], why[bad])[seq_len(min(5, length(bad)))],
+               collapse = "; ")
+  if (length(bad) > 5) msg <- sprintf("%s; and %d more", msg, length(bad) - 5)
+  stop(sprintf("forest_meta cannot pool %d study row(s): %s", length(bad), msg))
+}
+
 recipe_forest_meta <- function(df, spec) {
   y <- spec$data$y; lab <- spec$data$label
   lo_col <- spec$data$ci_low; hi_col <- spec$data$ci_high; se_col <- spec$data$se
@@ -43,10 +81,11 @@ recipe_forest_meta <- function(df, spec) {
   lo <- if (has_ci) suppressWarnings(as.numeric(df[[lo_col]])) else NULL
   hi <- if (has_ci) suppressWarnings(as.numeric(df[[hi_col]])) else NULL
   se_in <- if (!has_ci) suppressWarnings(as.numeric(df[[se_col]])) else NULL
-  labels <- if (!is.null(lab)) as.character(df[[lab]]) else paste("Study", seq_len(n0))
-  keep <- is.finite(est) & (if (has_ci) is.finite(lo) & is.finite(hi) else is.finite(se_in) & se_in > 0)
+  labels <- .fm_labels(if (!is.null(lab)) df[[lab]] else NULL, n0)
+  keep <- is.finite(est) & (if (has_ci) is.finite(lo) & is.finite(hi) else is.finite(se_in))
   est <- est[keep]; labels <- labels[keep]
   if (has_ci) { lo <- lo[keep]; hi <- hi[keep] } else se_in <- se_in[keep]
+  .fm_check_studies(labels, est, lo, hi, se_in)
   if (length(est) < 2) stop("forest_meta needs at least 2 studies")
 
   measure <- .fm_resolve_measure(spec$data$measure, est, lo, hi)

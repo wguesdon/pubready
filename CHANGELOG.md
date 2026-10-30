@@ -75,6 +75,11 @@ tag move together.
   less, by a power of ten before the fit, so the R fit converges on a scale of
   1e12 as the Python fit does. The plateaus and the sums of squares are
   reported on the original scale, and the methods text names the factor (F80).
+- `forest_meta` checks each study before the pooling and stops with the study
+  name when its CI does not hold its estimate, its bounds are reversed, its CI
+  has zero width or its standard error is 0 or below. An SE of 0 was dropped
+  as a missing value, and a CI of zero width stopped with an unclear error. A
+  study with an empty label reads "Study <row>" in place of "NA" (F77).
 - `enrichment_dot` keeps a term with an adjusted p of 0: the p is set to the
   smallest positive double and the term is drawn as a triangle at the top of
   the colour scale. The data log records the replacement and each dropped row
