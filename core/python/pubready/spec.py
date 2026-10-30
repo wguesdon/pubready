@@ -68,6 +68,94 @@ def add_plot_arguments(p):
     return p
 
 
+#: The table of the options that each recipe reads, shared by both engines.
+RECIPE_OPTIONS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir,
+                                   os.pardir, "recipe_options.txt")
+
+
+def read_recipe_options(path=RECIPE_OPTIONS_PATH):
+    """Read the table of the options that each recipe reads.
+
+    Both engines read this one file, core/recipe_options.txt.
+
+    Args:
+        path: The table file.
+
+    Returns:
+        dict: One list of option names for each recipe, and "always" for the
+        options of every recipe.
+    """
+    table = {}
+    with open(path) as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split()
+            table[parts[0]] = parts[1:]
+    return table
+
+
+def given_options(args):
+    """The options that the user gave, from the argument list.
+
+    The names come from the "--name" and "--name=value" tokens, not from the
+    defaults of the parser.
+
+    Args:
+        args: The command-line arguments.
+
+    Returns:
+        list: The option names without the leading "--", each once.
+    """
+    out = []
+    for a in args:
+        if a.startswith("--"):
+            name = a[2:].split("=", 1)[0]
+            if name not in out:
+                out.append(name)
+    return out
+
+
+def unread_option_message(opt, recipe, table):
+    """The message for an option that a recipe does not read.
+
+    Args:
+        opt: The option name.
+        recipe: The recipe.
+        table: The table of read_recipe_options().
+
+    Returns:
+        str: The message, as the R engine writes it.
+    """
+    readers = [r for r, opts in table.items() if r != "always" and opt in opts]
+    if not readers:
+        return f"--{opt} is not an option of {recipe}; no recipe reads it"
+    return f"--{opt} is not an option of {recipe}; it is read by: {', '.join(readers)}"
+
+
+def check_recipe_options(recipe, given, table=None):
+    """Stop when the user gave an option that the recipe does not read.
+
+    An unknown recipe passes, so the run stops later with "unknown recipe".
+
+    Args:
+        recipe: The recipe.
+        given: The option names that the user gave.
+        table: The table of read_recipe_options(), or None to read it.
+
+    Raises:
+        ValueError: If an option is not on the line of the recipe.
+    """
+    table = read_recipe_options() if table is None else table
+    if recipe not in table:
+        return
+    allowed = set(table["always"]) | set(table[recipe])
+    extra = [g for g in given if g not in allowed]
+    if extra:
+        raise ValueError("\n".join(unread_option_message(o, recipe, table) for o in extra))
+
+
 def split_list_option(x):
     """Split a list option such as --levels into its items.
 

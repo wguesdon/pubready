@@ -63,6 +63,44 @@ plot_option_list <- function() {
   ))
 }
 
+# The table of the options that each recipe reads, core/recipe_options.txt. Both
+# engines read this one file. Returns a named list: one character vector of
+# option names for each recipe, and "always" for the options of every recipe.
+read_recipe_options <- function(path = file.path(Sys.getenv("PUBREADY_CORE", "/opt/pubready/core"),
+                                                 "recipe_options.txt")) {
+  lines <- trimws(readLines(path, warn = FALSE))
+  lines <- lines[nzchar(lines) & !startsWith(lines, "#")]
+  parts <- strsplit(lines, "[[:space:]]+")
+  stats::setNames(lapply(parts, `[`, -1), vapply(parts, `[`, character(1), 1))
+}
+
+# The options that the user gave, from the argument list and not from the
+# defaults of the parser: the name of each "--name" or "--name=value" token.
+given_options <- function(args) {
+  flags <- args[startsWith(args, "--")]
+  unique(sub("=.*$", "", substring(flags, 3)))
+}
+
+# The message for an option that a recipe does not read.
+unread_option_message <- function(opt, recipe, table) {
+  readers <- setdiff(names(table)[vapply(table, is.element, logical(1), el = opt)], "always")
+  if (length(readers) == 0) {
+    return(sprintf("--%s is not an option of %s; no recipe reads it", opt, recipe))
+  }
+  sprintf("--%s is not an option of %s; it is read by: %s", opt, recipe,
+          paste(readers, collapse = ", "))
+}
+
+# Stop when the user gave an option that the recipe does not read. An unknown
+# recipe passes, so the run stops later with "unknown recipe".
+check_recipe_options <- function(recipe, given, table = read_recipe_options()) {
+  if (is.null(recipe) || !recipe %in% names(table)) return(invisible(NULL))
+  extra <- setdiff(given, c(table[["always"]], table[[recipe]]))
+  if (length(extra) == 0) return(invisible(NULL))
+  msgs <- vapply(extra, unread_option_message, character(1), recipe = recipe, table = table)
+  stop(paste(msgs, collapse = "\n"), call. = FALSE)
+}
+
 # Split a list option such as --levels into its items. The items are split on
 # "|" when the value holds one, so an item can hold a comma, for example
 # --levels "edema, no diuretics|edema despite diuretics". Else they are split on

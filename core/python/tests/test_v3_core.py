@@ -3,6 +3,7 @@ spec and the inspect report. The R suite (tests/testthat/test-v3-core.R) holds
 the same cases with the same expected values."""
 import argparse
 import json
+import pkgutil
 import sys
 from types import SimpleNamespace
 
@@ -10,13 +11,16 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import pubready.recipes
 from pubready.bundle import (_markdown_value, dataframe_markdown, manifest_arguments,
-                             reproduce_md, write_json,
-                             write_stats_csv)
+                             reproduce_md, write_json, write_stats_csv)
 from pubready.io import read_tidy, read_tidy_logged
 from pubready.qc import qc_layout, qc_normality
+from pubready.recipes import get_recipe
 from pubready.run import inspect_data, print_inspect, run_entry
-from pubready.spec import add_plot_arguments, resolve_config_path, spec_from_args, spec_from_config
+from pubready.spec import (add_plot_arguments, check_recipe_options, given_options,
+                           read_recipe_options, resolve_config_path, spec_from_args,
+                           spec_from_config)
 
 
 def write_tmp_csv(tmp_path, lines):
@@ -275,3 +279,33 @@ def test_p_adjust_is_gone_and_an_old_config_drops_the_key(tmp_path):
     assert spec["test"]["method"] == "auto"
     a = SimpleNamespace(recipe="x", data="d.csv", x=None, y=None)
     assert "p_adjust" not in spec_from_args(a)["test"]
+
+
+def test_option_table_names_each_recipe_and_only_parser_options():
+    table = read_recipe_options()
+    recipes = [r for r in table if r != "always"]
+    modules = {m.name for m in pkgutil.iter_modules(pubready.recipes.__path__)}
+    assert set(recipes) == modules
+    for r in recipes:
+        get_recipe(r)
+    p = add_plot_arguments(argparse.ArgumentParser())
+    flags = {s[2:] for act in p._actions for s in act.option_strings if s.startswith("--")}
+    assert {o for opts in table.values() for o in opts} <= flags
+
+
+def test_option_that_a_recipe_does_not_read_stops_the_run():
+    table = {"always": ["recipe", "data"], "a": ["x", "title"], "b": ["x"], "c": ["title"]}
+    assert check_recipe_options("a", ["recipe", "x", "title"], table) is None
+    assert check_recipe_options("zzz", ["title"], table) is None
+    with pytest.raises(ValueError) as err:
+        check_recipe_options("b", ["recipe", "x", "title"], table)
+    assert str(err.value) == "--title is not an option of b; it is read by: a, c"
+    with pytest.raises(ValueError) as err:
+        check_recipe_options("b", ["p_adjust"], table)
+    assert str(err.value) == "--p_adjust is not an option of b; no recipe reads it"
+    assert given_options(["--recipe", "heatmap", "--ylab=-log10 p", "-x", "--title", "t"]) == [
+        "recipe", "ylab", "title"]
+    with pytest.raises(ValueError, match="^--title is not an option of heatmap; it is read by: "
+                                         "two_group_compare, "):
+        check_recipe_options("heatmap", ["title"])
+    check_recipe_options("sankey", ["x", "y", "id", "levels", "visit_levels"])

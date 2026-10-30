@@ -14,7 +14,8 @@ from pubready.io import read_tidy          # noqa: E402
 from pubready.qc import qc_normality       # noqa: E402
 from pubready.recipes import get_recipe    # noqa: E402
 from pubready.run import run_entry         # noqa: E402
-from pubready.spec import add_plot_arguments, spec_from_args   # noqa: E402
+from pubready.spec import (add_plot_arguments, check_recipe_options,  # noqa: E402
+                           given_options, spec_from_args)
 
 
 def _fmt(x, g=False):
@@ -25,8 +26,9 @@ def _fmt(x, g=False):
 
 def main():
     # diagnose accepts every option of figkit plot, so the recipe sees the same spec.
-    p = add_plot_arguments(argparse.ArgumentParser())
-    a, _ = p.parse_known_args()
+    p = add_plot_arguments(argparse.ArgumentParser(allow_abbrev=False))
+    a = p.parse_args()
+    check_recipe_options(a.recipe, given_options(sys.argv[1:]))
 
     spec = spec_from_args(a)
     df = read_tidy(a.data, a.sheet)

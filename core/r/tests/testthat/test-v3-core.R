@@ -217,3 +217,30 @@ test_that("--p_adjust is gone and an old config drops the key (F75)", {
   expect_equal(spec$test$method, "auto")
   expect_false("p_adjust" %in% names(spec_from_opt(list(recipe = "x", data = "d.csv"))$test))
 })
+
+# The option table of the recipes, one file for both engines (F71).
+test_that("the option table names each recipe and only parser options (F71)", {
+  table <- read_recipe_options()
+  recipes <- setdiff(names(table), "always")
+  expect_true(all(vapply(paste0("recipe_", recipes), exists, logical(1), mode = "function")))
+  ns_recipes <- sub("^recipe_", "", ls(environment(recipe_heatmap), pattern = "^recipe_"))
+  expect_setequal(recipes, ns_recipes)
+  flags <- sub("^--", "", vapply(plot_option_list(), methods::slot, character(1), "long_flag"))
+  expect_length(setdiff(unlist(table), flags), 0)
+})
+
+test_that("an option that a recipe does not read stops the run (F71)", {
+  table <- list(always = c("recipe", "data"), a = c("x", "title"), b = "x", c = "title")
+  expect_null(check_recipe_options("a", c("recipe", "x", "title"), table))
+  expect_null(check_recipe_options("zzz", c("title"), table))
+  expect_error(check_recipe_options("b", c("recipe", "x", "title"), table),
+               "--title is not an option of b; it is read by: a, c", fixed = TRUE)
+  expect_error(check_recipe_options("b", "p_adjust", table),
+               "--p_adjust is not an option of b; no recipe reads it", fixed = TRUE)
+  expect_equal(given_options(c("--recipe", "heatmap", "--ylab=-log10 p", "-x", "--title", "t")),
+               c("recipe", "ylab", "title"))
+  expect_error(check_recipe_options("heatmap", "title"),
+               "--title is not an option of heatmap; it is read by: two_group_compare, ",
+               fixed = TRUE)
+  expect_null(check_recipe_options("sankey", c("x", "y", "id", "levels", "visit_levels")))
+})

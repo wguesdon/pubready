@@ -24,6 +24,13 @@ tag move together.
   text, logical, date and other in both engines. The JSON output adds
   `level_counts`, `group_candidates`, `outcome_candidates` and
   `id_candidates` (F72).
+- `figkit plot` and `figkit diagnose` stop with an error when the user gives
+  an option that the recipe does not read, for example "--title is not an
+  option of survival_km; it is read by: ...". The new table
+  `core/recipe_options.txt` lists the options of each recipe, and both
+  engines read it. The Python engine also stops on an unknown option. Before,
+  `--facet` on `proportions` or `--title` on `survival_km` ran with exit code
+  0 and no message (F71).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of

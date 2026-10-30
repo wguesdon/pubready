@@ -1,0 +1,41 @@
+# The options that each recipe reads. figkit plot and figkit diagnose stop when
+# the user gives an option that is not on the line of the recipe, so an option
+# never runs with no effect. Both engines read this one file.
+#
+# Each line holds a recipe name and its options, without the leading "--". The
+# line "always" holds the options that every recipe reads.
+always recipe data engine out sheet stamp
+two_group_compare x y levels test paired geom theme xlab ylab title palette
+multi_group_compare x y levels test geom theme xlab ylab title palette
+factorial_anova x y fill facet levels test geom theme xlab ylab title palette
+survival_km x time event theme xlab ylab palette
+cox_forest time event covariates theme xlab title palette
+heatmap annotation scale cluster test
+correlation x y test theme xlab ylab title palette
+correlation_heatmap test cluster
+upset top_n title
+volcano x y label fc_cutoff p_cutoff top_n theme xlab ylab title
+enrichment_dot label top_n theme xlab title
+paired_compare x y id levels test theme xlab ylab title palette
+proportions x y levels test theme xlab ylab title palette
+pca group fill x label features theme xlab ylab title palette
+spider_response x y id group pd_threshold pr_threshold theme xlab ylab title palette
+dose_response x y group theme xlab ylab title palette
+roc_curve x y positive theme xlab ylab title palette
+bland_altman x y theme xlab ylab title palette
+forest_meta y label se ci_low ci_high measure theme xlab title palette
+timecourse x y id group levels test theme xlab ylab title palette
+waterfall x y id group pd_threshold pr_threshold theme xlab ylab title palette
+swimmer id time event group markers theme xlab ylab title palette
+estimation_plot x y id ref paired levels test theme xlab ylab title palette
+enzyme_kinetics x y group theme xlab ylab title palette
+standard_curve x y id test theme xlab ylab title palette
+cumulative_incidence x time event cause theme xlab ylab title palette
+calibration x y positive theme xlab ylab title palette
+sankey x y id levels visit_levels theme xlab title palette
+ma_plot x y label fc_cutoff p_cutoff top_n theme xlab ylab title
+manhattan x y group label top_n theme xlab ylab title
+feature_panel x y facet id label levels test theme xlab ylab title palette
+embedding x y group theme xlab ylab title palette
+distribution x y theme xlab ylab title palette
+composition x y id group theme xlab ylab title palette

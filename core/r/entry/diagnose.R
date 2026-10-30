@@ -10,6 +10,7 @@ source(file.path(Sys.getenv("PUBREADY_CORE", "/opt/pubready/core"), "r", "bootst
 # diagnose accepts every option of figkit plot, so the recipe sees the same spec.
 opt <- parse_args(OptionParser(option_list = plot_option_list()))
 for (req in c("recipe", "data")) if (is.null(opt[[req]])) stop(sprintf("missing required --%s", req))
+check_recipe_options(opt$recipe, given_options(commandArgs(trailingOnly = TRUE)))
 
 spec <- spec_from_opt(opt)
 df   <- read_tidy(opt$data, opt$sheet)

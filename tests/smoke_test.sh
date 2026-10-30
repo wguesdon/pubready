@@ -608,6 +608,20 @@ order_parity heatmap --recipe heatmap --data example/expression_matrix.csv \
   --annotation example/expression_annotation.csv
 order_parity correlation_heatmap --recipe correlation_heatmap --data example/correlation_vars.csv
 
+# Area B, core: the read, bundle and command layer.
+echo "[B1] an option that a recipe does not read stops the run before any output (F71)"
+for engine in r python; do
+  rc=0
+  msg="$(./cli/figkit plot --engine "$engine" --recipe survival_km --data example/survival_trial.csv \
+    --time time --event event --x arm --title "KM" --out "$OUT/b1_$engine" 2>&1)" || rc=$?
+  if [ "$rc" -ne 0 ] && [ ! -d "$OUT/b1_$engine" ] && \
+     printf '%s\n' "$msg" | grep -q -- "--title is not an option of survival_km; it is read by:"; then
+    echo "PASS: $engine stops on --title for survival_km"
+  else
+    echo "FAIL: $engine did not stop on --title for survival_km"; fail=1
+  fi
+done
+
 echo
 if [ "$fail" -eq 0 ]; then
   echo "ALL SMOKE TESTS PASSED"
