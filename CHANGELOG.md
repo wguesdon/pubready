@@ -44,6 +44,10 @@ tag move together.
   Cox reference. Before, Python sorted doses as text (0, 160, 80) and R sorted
   text in the locale order, so the `cgd` reference level of `inherit` differed
   between the engines (F64).
+- `cox_forest` reads a covariate whose cells read as numbers for 80% or more as
+  numeric. Each other cell, for example "45 y", becomes missing, and the data
+  log names the column, the count and the first such value. Before, one such
+  cell made `age` a factor of 36 levels with a hazard ratio of 8,952,453 (F42).
 
 ## [3.0.0] - 2026-10-29
 

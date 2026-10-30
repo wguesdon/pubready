@@ -120,3 +120,30 @@ def test_survival_cox_and_cumulative_incidence_share_one_level_order():
                                                  event="status", x="dose"))
     assert ci["test_meta"]["groups"] == ["80", "160", "235"]
     assert list(pd.unique(ci["stats"]["group"])) == ["80", "160", "235"]
+
+
+def cox_data():
+    """Sixteen subjects with an arm and an age.
+
+    Returns:
+        pandas.DataFrame: One row per subject.
+    """
+    return pd.DataFrame({
+        "time": [5, 8, 12, 3, 9, 14, 7, 10, 15, 4, 6, 11, 13, 2, 16, 9],
+        "event": [1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1],
+        "arm": ["control", "treated"] * 8,
+        "age": [61, 55, 70, 48, 66, 59, 52, 73, 45, 68, 57, 63, 50, 71, 58, 64]})
+
+
+def test_a_text_cell_in_a_numeric_cox_covariate_becomes_nan_and_is_logged():
+    """F42: one "45 y" made age a factor of many levels."""
+    d = cox_data()
+    d["age"] = d["age"].astype(str)
+    d.loc[2, "age"] = "45 y"
+    res = recipe_cox_forest(d, v3c_spec("cox_forest", time="time", event="event",
+                                        covariates="arm,age"))
+    assert list(res["stats"]["term"]) == ["armtreated", "age"]
+    assert res["test_meta"]["n"] == 15
+    assert res["clean_steps"][0] == ("Coerced column 'age' to numeric; 1 value(s) became NA, "
+                                     "for example '45 y'.")
+    assert res["clean_steps"][1].startswith("Dropped 1 row")

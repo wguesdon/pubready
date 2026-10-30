@@ -16,6 +16,7 @@ from lifelines import CoxPHFitter
 from matplotlib import transforms
 from matplotlib.ticker import NullLocator
 
+from ..clean import coerce_numeric_columns
 from ..theme import apply_pub_style, palette, plain_log_axis
 from ..util import format_p, level_order, p_phrase
 from .survival_km import event_codes
@@ -367,11 +368,17 @@ def recipe_cox_forest(df, spec):
     df = df.copy()
     df[t] = pd.to_numeric(df[t], errors="coerce")
     df[e] = event_codes(df[e], e)
+    # A covariate whose cells read as numbers for 80% or more is numeric, and each
+    # other cell, for example "45 y", becomes NaN and is logged.
+    df, _, _, clean_steps = coerce_numeric_columns(df, covs)
     n0 = len(df)
     df = df.dropna(subset=[t, e] + covs)
-    df = df[df[t] >= 0].reset_index(drop=True)
-    clean_steps = (f"Dropped {n0 - len(df)} row(s) with missing/invalid values ({n0} -> {len(df)} rows)."
-                   if len(df) < n0 else "No cleaning applied; input used as-is.")
+    df = df[np.isfinite(df[t]) & (df[t] >= 0)].reset_index(drop=True)
+    if len(df) < n0:
+        clean_steps.append(f"Dropped {n0 - len(df)} row(s) with missing/invalid values "
+                           f"({n0} -> {len(df)} rows).")
+    if not clean_steps:
+        clean_steps = ["No cleaning applied; input used as-is."]
 
     # Build a numeric design matrix; one-hot encode categoricals (drop first = reference).
     design, rows = design_and_rows(df, t, e, covs)

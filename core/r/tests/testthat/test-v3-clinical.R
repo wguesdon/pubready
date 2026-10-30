@@ -98,3 +98,23 @@ test_that("survival_km, cox_forest and cumulative_incidence share one level orde
   expect_equal(unlist(ci$test_meta$groups), c("80", "160", "235"))
   expect_equal(unique(ci$stats$group), c("80", "160", "235"))
 })
+
+v3c_cox_data <- function() {
+  data.frame(time = c(5, 8, 12, 3, 9, 14, 7, 10, 15, 4, 6, 11, 13, 2, 16, 9),
+             event = c(1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1),
+             arm = rep(c("control", "treated"), 8),
+             age = c(61, 55, 70, 48, 66, 59, 52, 73, 45, 68, 57, 63, 50, 71, 58, 64))
+}
+
+test_that("a text cell in a numeric Cox covariate becomes NA and is logged (F42)", {
+  d <- v3c_cox_data()
+  d$age <- as.character(d$age)
+  d$age[3] <- "45 y"
+  res <- recipe_cox_forest(d, v3c_spec("cox_forest", time = "time", event = "event",
+                                       covariates = "arm,age"))
+  expect_equal(res$stats$term, c("armtreated", "age"))
+  expect_equal(res$test_meta$n, 15L)
+  expect_equal(res$clean_steps[1],
+               "Coerced column 'age' to numeric; 1 value(s) became NA, for example '45 y'.")
+  expect_match(res$clean_steps[2], "Dropped 1 row")
+})
