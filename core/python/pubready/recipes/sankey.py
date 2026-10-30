@@ -1,11 +1,12 @@
 """Recipe: Sankey (alluvial) diagram of patient state transitions across visits.
 
 Mirrors the R recipe. Input is one row per patient visit: --id, --x (the visit)
-and --y (the state). Visits are sorted numerically when every visit is a number,
-else in code-point order; states in the order of --levels when it is given, else
-numerically when every state is a number, else by first appearance in the data.
-A patient missing at a visit takes no part in
-the transitions into or out of that visit.
+and --y (the state). Visits follow --visit_levels when it is given, else they
+sort numerically when every visit is a number, else by the one number that each
+visit holds ("week 8", "M12"), else by first appearance. States are in the order
+of --levels when it is given, else numerically when every state is a number,
+else by first appearance in the data. A patient missing at a visit takes no part
+in the transitions into or out of that visit.
 
 The layout (stacked nodes with small gaps, cubic ribbons coloured by the state
 of origin, labels where they fit) restates the arithmetic of the R engine. With
@@ -15,6 +16,7 @@ present at both visits, with statsmodels' SquareTable.
 """
 import functools
 import math
+import re
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,6 +27,7 @@ from statsmodels.stats.contingency_tables import SquareTable
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, palette
+from ..util import _level_number, level_order
 
 #: Half width of a node, in visit units.
 HW = 0.045
@@ -62,20 +65,72 @@ def labels_of(s):
     return s.map(fmt_value)
 
 
-def visit_order(v):
-    """Visit order: numeric when every value is a number, else code-point order.
+#: One number in a time label: digits with an optional decimal part.
+NUMBER = re.compile(r"[0-9]+(?:\.[0-9]+)?")
+
+
+def one_number(s):
+    """The one number that a time label holds, as .time_one_number() in R.
+
+    A minus sign counts when it starts the label or follows a space ("Day -7").
 
     Args:
-        v: The visit labels.
+        s: The label.
 
     Returns:
-        list: The visits in order.
+        float or None: The number, or None when the label holds none or more
+        than one.
     """
-    u = list(pd.unique(v))
-    num = pd.to_numeric(pd.Series(u), errors="coerce")
-    if num.notna().all():
-        return [u[i] for i in np.lexsort((np.array(u, dtype=object).astype(str), num.to_numpy()))]
-    return sorted(u)
+    found = list(NUMBER.finditer(s))
+    if len(found) != 1:
+        return None
+    v = float(found[0].group())
+    i = found[0].start()
+    if i >= 1 and s[i - 1] == "-" and (i == 1 or s[i - 2] == " "):
+        v = -v
+    return v
+
+
+def time_level_order(labels, levels=None, what="visit", option="--visit_levels"):
+    """The order of a time column, one rule for sankey and timecourse.
+
+    The listed order of --visit_levels (sankey) or --levels (timecourse) comes
+    first; a value that the list does not name stops the run. Else the values
+    sort as numbers when every value is a number; else by the one number that
+    each value holds, as in "week 8" and "M12", with a tie in code-point order;
+    else they keep the order of their first appearance. The R engine has the
+    same rule (time_level_order).
+
+    Args:
+        labels: The time labels, in row order.
+        levels: The listed order, or None.
+        what: The word for one time value, for the messages.
+        option: The option that lists the order, for the rule text.
+
+    Returns:
+        dict: The levels in order and the rule in words.
+
+    Raises:
+        ValueError: If a value of the data is missing from levels.
+    """
+    u = [v for v in dict.fromkeys(labels) if isinstance(v, str)]
+    if levels:
+        listed = [str(s).strip() for s in levels]
+        miss = [v for v in u if v not in listed]
+        if miss:
+            raise ValueError(f"{option} does not list the {what}(s) "
+                             + ", ".join(f"'{m}'" for m in miss) + " of the data")
+        return {"levels": level_order(u, levels, what),
+                "rule": f"the order that {option} gives"}
+    if u and all(_level_number(v) is not None for v in u):
+        return {"levels": level_order(u), "rule": "numeric order"}
+    nums = [one_number(v) for v in u]
+    if u and all(n is not None for n in nums):
+        return {"levels": [v for _, v in sorted(zip(nums, u))],
+                "rule": f"the order of the number that each {what} holds"}
+    return {"levels": u,
+            "rule": f"the order of first appearance, because the {what}s do not each hold "
+                    "one number"}
 
 
 def state_order(s, levels=None):
@@ -411,7 +466,8 @@ def recipe_sankey(df, spec):
     if d.duplicated(["id", "visit"]).any():
         raise ValueError("sankey needs one row per patient and visit; some patients have two "
                          "rows at the same visit")
-    visits = visit_order(d["visit"])
+    vord = time_level_order(list(d["visit"]), dat.get("visit_levels"), "visit", "--visit_levels")
+    visits = vord["levels"]
     if len(visits) < 2:
         raise ValueError("sankey needs at least 2 visits")
     levels = dat.get("levels") or []
@@ -425,6 +481,7 @@ def recipe_sankey(df, spec):
         steps.append(f"Dropped {int((~keep).sum())} row(s) with a missing patient, visit or state.")
     steps.append(f"Kept {len(d)} row(s) of {n0}: {n_pat} patient(s), {len(visits)} visit(s) "
                  f"({', '.join(visits)}), {len(states)} state(s) ({', '.join(states)}).")
+    steps.append(f"The visits of '{x}' are in {vord['rule']}: {', '.join(visits)}.")
     steps.append(f"{n_partial} patient(s) are missing at one visit or more and take no part in "
                  "the transitions into or out of that visit.")
 
@@ -459,7 +516,7 @@ def recipe_sankey(df, spec):
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
         "methods": _methods(test, trans, visits, n_pat, idc, x, y,
-                            states if levels else None),
+                            states if levels else None, vord["rule"]),
         "df_used": d, "clean_steps": steps, "label": slugify(y),
         "width": dims["width"], "height": dims["height"],
         "build_script": functools.partial(_script, spec, visits, dims),
@@ -524,7 +581,8 @@ def draw_figure(trans, nodes, hmax, visits, states, pal, dims, ap, x, y, ncol_le
     return fig
 
 
-def _methods(test, trans, visits, n_pat, idc, x, y, set_states=None):
+def _methods(test, trans, visits, n_pat, idc, x, y, set_states=None,
+             visit_rule="numeric order"):
     """Write the methods paragraph.
 
     Args:
@@ -536,6 +594,7 @@ def _methods(test, trans, visits, n_pat, idc, x, y, set_states=None):
         x: The visit column.
         y: The state column.
         set_states: The states in the order that --levels set, or None.
+        visit_rule: The rule that ordered the visits, in words.
 
     Returns:
         str: The paragraph.
@@ -547,8 +606,8 @@ def _methods(test, trans, visits, n_pat, idc, x, y, set_states=None):
                  "states numerically when every state is a number, else by their first "
                  "appearance in the data. ")
     txt = (f"The state {y} of {n_pat} patients ({idc}) was followed across {len(visits)} visits "
-           f"of {x} ({', '.join(visits)}). Visits are ordered numerically when every visit is a "
-           f"number, else alphabetically, and {state_txt}The diagram shows "
+           f"of {x} ({', '.join(visits)}). Visits are in {visit_rule}, and {state_txt}"
+           "The diagram shows "
            f"{int(trans['n'].sum())} transitions between consecutive visits; a patient missing at "
            "a visit takes no part in the transitions into or out of it, and the transitions table "
            "gives every count. ")

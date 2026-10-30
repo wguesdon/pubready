@@ -10,7 +10,9 @@ from pubready.recipes.cox_forest import collinear_columns, cox_separation, recip
 from pubready.recipes.cumulative_incidence import recipe_cumulative_incidence
 from pubready.recipes.survival_km import (event_codes, km_break_step, km_median,
                                           recipe_survival_km)
+from pubready.recipes.sankey import recipe_sankey, time_level_order
 from pubready.recipes.swimmer import recipe_swimmer
+from pubready.recipes.timecourse import recipe_timecourse
 from pubready.spec import spec_from_args
 
 
@@ -221,3 +223,42 @@ def test_cumulative_incidence_stops_on_a_text_or_a_negative_status_code():
         recipe_cumulative_incidence(d, sp)
     d["status"] = [1, 0, 2, 1, 0, 2]
     assert recipe_cumulative_incidence(d, sp)["test_meta"]["causes"] == ["1", "2"]
+
+
+def test_sankey_visits_and_timecourse_time_points_share_one_time_order():
+    """F39: text visits sorted in code-point order or by first appearance."""
+    assert time_level_order(["week 8", "week 24", "week 16"])["levels"] == \
+        ["week 8", "week 16", "week 24"]
+    assert time_level_order(["M0", "M12", "M3"])["rule"] == \
+        "the order of the number that each visit holds"
+    assert time_level_order(["Day 14", "Day -7", "Day 0"])["levels"] == ["Day -7", "Day 0", "Day 14"]
+    assert time_level_order(["week-8", "week-2"])["levels"] == ["week-2", "week-8"]
+    o = time_level_order(["10", "2", "1"])
+    assert o["levels"] == ["1", "2", "10"] and o["rule"] == "numeric order"
+    o = time_level_order(["week 4", "baseline", "C1D8"], what="time point")
+    assert o["levels"] == ["week 4", "baseline", "C1D8"]
+    assert o["rule"] == ("the order of first appearance, because the time points do not each hold "
+                         "one number")
+    assert time_level_order(["b1", "a1", "c0"])["levels"] == ["c0", "a1", "b1"]
+    o = time_level_order(["M0", "M3"], ["M3", "M0", "M6"])
+    assert o["levels"] == ["M3", "M0"] and o["rule"] == "the order that --visit_levels gives"
+    with pytest.raises(ValueError, match=r"--visit_levels does not list the visit\(s\) 'M3'"):
+        time_level_order(["M0", "M3"], ["M0"])
+    d = pd.DataFrame({"patient": [f"P{i}" for i in range(1, 5) for _ in range(3)],
+                      "visit": ["week 8", "week 24", "week 16"] * 4,
+                      "response": ["PR", "CR", "CR", "SD", "PR", "PR", "PD", "PD", "SD", "PR",
+                                   "PR", "CR"]})
+    res = recipe_sankey(d, v3c_spec("sankey", id="patient", x="visit", y="response"))
+    assert res["test_meta"]["visits"] == ["week 8", "week 16", "week 24"]
+    assert ("The visits of 'visit' are in the order of the number that each visit holds: week 8, "
+            "week 16, week 24.") in res["clean_steps"]
+    tc = pd.DataFrame({"id": [f"m{i}" for i in range(1, 7) for _ in range(3)],
+                       "day": ["day 10", "day 2", "day 1"] * 6,
+                       "y": [5, 3, 1, 6, 3, 2, 7, 4, 1, 6, 2, 2, 8, 4, 2, 5, 3, 1]})
+    res = recipe_timecourse(tc, v3c_spec("timecourse", x="day", y="y", id="id"))
+    assert ("The time points of 'day' are in the order of the number that each time point holds: "
+            "day 1, day 2, day 10.") in res["clean_steps"]
+    res = recipe_timecourse(tc, v3c_spec("timecourse", x="day", y="y", id="id",
+                                         levels="day 10,day 2,day 1"))
+    assert ("The time points of 'day' are in the order that --levels gives: day 10, day 2, "
+            "day 1.") in res["clean_steps"]

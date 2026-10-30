@@ -115,10 +115,15 @@ recipe_timecourse <- function(df, spec) {
   if (any(tapply(d$group, d$id, .tc_n_distinct) > 1)) {
     stop("each subject must belong to one group only")
   }
-  time_numeric <- is.numeric(d$time)
-  t_lv <- if (time_numeric) sort(unique(d$time)) else unique(as.character(d$time))
-  d$time_key <- as.character(d$time)
-  t_key <- as.character(t_lv)
+  # The time points follow --levels, else numeric order, else the number that each
+  # label holds ("day 10"), else first appearance (time_level_order, in sankey.R).
+  # A numeric time keeps its spacing on the axis unless --levels sets the order.
+  d$time_key <- level_labels(d$time)
+  t_levels <- unlist(spec$data$levels)
+  tord <- time_level_order(d$time_key, t_levels, "time point", "--levels")
+  t_key <- tord$levels
+  time_numeric <- is.numeric(d$time) && length(t_levels) == 0
+  t_lv <- if (time_numeric) as.numeric(t_key) else t_key
   counts <- table(d$id)
   complete_ids <- names(counts)[counts == length(t_key)]
   incomplete <- setdiff(unique(d$id), complete_ids)
@@ -128,7 +133,8 @@ recipe_timecourse <- function(df, spec) {
     if (n_missing > 0) sprintf("Dropped %d row(s) with a missing subject, time, value or group.", n_missing),
     if (length(incomplete) > 0) sprintf("Dropped %d subject(s) without a value at every one of the %d time points, because the repeated-measures ANOVA needs complete subjects.",
                                         length(incomplete), length(t_key)),
-    sprintf("Kept %d subject(s) at %d time points (%d values).", length(complete_ids), length(t_key), nrow(d)))
+    sprintf("Kept %d subject(s) at %d time points (%d values).", length(complete_ids), length(t_key), nrow(d)),
+    sprintf("The time points of '%s' are in %s: %s.", x, tord$rule, paste(t_key, collapse = ", ")))
   if (length(t_key) < 2) stop("timecourse needs at least 2 time points")
   if (length(complete_ids) - length(g_lv) < 1) stop("timecourse needs more complete subjects than groups")
 

@@ -63,6 +63,13 @@ tag move together.
   and the message lists those codes. Before, each status other than "0" was a
   cause, so a "censored" or -1 code became a competing event, and the text
   could name "status = censored" as the event of interest (F58).
+- The `sankey` visits and the `timecourse` time points share one order rule:
+  the list of `--visit_levels` (`sankey`) or `--levels` (`timecourse`) when it
+  is given, else numeric order, else the order of the one number that each
+  value holds ("week 8", "M12", "Day -7"), else the order of first appearance.
+  The data log records the order and the rule, and the `sankey` methods text
+  names the rule. Before, "week 8" came after "week 24" in `sankey`, and
+  `timecourse` kept the order of first appearance (F39).
 
 ## [3.0.0] - 2026-10-29
 

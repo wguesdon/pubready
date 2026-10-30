@@ -21,7 +21,8 @@ from scipy import linalg, stats
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
-from ..util import cap_first, sig_text
+from ..util import cap_first, level_labels, sig_text
+from .sankey import time_level_order
 
 
 def p_label(p):
@@ -162,9 +163,15 @@ def recipe_timecourse(df, spec):
                          "replicates first")
     if (d.groupby("id")["group"].nunique() > 1).any():
         raise ValueError("each subject must belong to one group only")
-    time_numeric = pd.api.types.is_numeric_dtype(d["time"])
-    t_lv = sorted(d["time"].unique()) if time_numeric else list(pd.unique(d["time"].astype(str)))
-    d["time_key"] = d["time"] if time_numeric else d["time"].astype(str)
+    # The time points follow --levels, else numeric order, else the number that each
+    # label holds ("day 10"), else first appearance (time_level_order, in sankey).
+    # A numeric time keeps its spacing on the axis unless --levels sets the order.
+    d["time_key"] = level_labels(d["time"])
+    t_levels = dat.get("levels") or []
+    tord = time_level_order(list(d["time_key"]), t_levels, "time point", "--levels")
+    t_key = tord["levels"]
+    time_numeric = pd.api.types.is_numeric_dtype(d["time"]) and not t_levels
+    t_lv = [float(k) for k in t_key] if time_numeric else t_key
     counts = d.groupby("id").size()
     complete = sorted(counts.index[counts == len(t_lv)])
     incomplete = int((counts != len(t_lv)).sum())
@@ -178,12 +185,13 @@ def recipe_timecourse(df, spec):
                      f"{len(t_lv)} time points, because the repeated-measures ANOVA needs "
                      "complete subjects.")
     steps.append(f"Kept {len(complete)} subject(s) at {len(t_lv)} time points ({len(d)} values).")
+    steps.append(f"The time points of '{x}' are in {tord['rule']}: {', '.join(t_key)}.")
     if len(t_lv) < 2:
         raise ValueError("timecourse needs at least 2 time points")
     if len(complete) - len(g_lv) < 1:
         raise ValueError("timecourse needs more complete subjects than groups")
 
-    wide = d.pivot(index="id", columns="time_key", values="y").loc[complete, t_lv]
+    wide = d.pivot(index="id", columns="time_key", values="y").loc[complete, t_key]
     ymat = wide.to_numpy(float)
     g = d.drop_duplicates("id").set_index("id").loc[complete, "group"].to_numpy()
     res = mixed_anova(ymat, g, g_lv)

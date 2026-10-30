@@ -176,3 +176,40 @@ test_that("cumulative_incidence stops on a text or a negative status code (F58)"
   d$status <- c(1, 0, 2, 1, 0, 2)
   expect_equal(unlist(recipe_cumulative_incidence(d, sp)$test_meta$causes), c("1", "2"))
 })
+
+test_that("sankey visits and timecourse time points share one time order (F39)", {
+  expect_equal(time_level_order(c("week 8", "week 24", "week 16"))$levels,
+               c("week 8", "week 16", "week 24"))
+  expect_equal(time_level_order(c("M0", "M12", "M3"))$rule,
+               "the order of the number that each visit holds")
+  expect_equal(time_level_order(c("Day 14", "Day -7", "Day 0"))$levels, c("Day -7", "Day 0", "Day 14"))
+  expect_equal(time_level_order(c("week-8", "week-2"))$levels, c("week-2", "week-8"))
+  o <- time_level_order(c("10", "2", "1"))
+  expect_equal(o$levels, c("1", "2", "10"))
+  expect_equal(o$rule, "numeric order")
+  o <- time_level_order(c("week 4", "baseline", "C1D8"), what = "time point")
+  expect_equal(o$levels, c("week 4", "baseline", "C1D8"))
+  expect_equal(o$rule, "the order of first appearance, because the time points do not each hold one number")
+  expect_equal(time_level_order(c("b1", "a1", "c0"))$levels, c("c0", "a1", "b1"))
+  o <- time_level_order(c("M0", "M3"), c("M3", "M0", "M6"))
+  expect_equal(o$levels, c("M3", "M0"))
+  expect_equal(o$rule, "the order that --visit_levels gives")
+  expect_error(time_level_order(c("M0", "M3"), "M0"), "--visit_levels does not list the visit(s) 'M3'",
+               fixed = TRUE)
+  d <- data.frame(patient = rep(sprintf("P%d", 1:4), each = 3),
+                  visit = rep(c("week 8", "week 24", "week 16"), 4),
+                  response = c("PR", "CR", "CR", "SD", "PR", "PR", "PD", "PD", "SD", "PR", "PR", "CR"))
+  res <- recipe_sankey(d, v3c_spec("sankey", id = "patient", x = "visit", y = "response"))
+  expect_equal(unlist(res$test_meta$visits), c("week 8", "week 16", "week 24"))
+  expect_true("The visits of 'visit' are in the order of the number that each visit holds: week 8, week 16, week 24." %in%
+                res$clean_steps)
+  tc <- data.frame(id = rep(sprintf("m%d", 1:6), each = 3), day = rep(c("day 10", "day 2", "day 1"), 6),
+                   y = c(5, 3, 1, 6, 3, 2, 7, 4, 1, 6, 2, 2, 8, 4, 2, 5, 3, 1))
+  res <- recipe_timecourse(tc, v3c_spec("timecourse", x = "day", y = "y", id = "id"))
+  expect_true("The time points of 'day' are in the order of the number that each time point holds: day 1, day 2, day 10." %in%
+                res$clean_steps)
+  res <- recipe_timecourse(tc, v3c_spec("timecourse", x = "day", y = "y", id = "id",
+                                        levels = "day 10,day 2,day 1"))
+  expect_true("The time points of 'day' are in the order that --levels gives: day 10, day 2, day 1." %in%
+                res$clean_steps)
+})

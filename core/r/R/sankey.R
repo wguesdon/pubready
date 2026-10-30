@@ -1,10 +1,11 @@
 # Recipe: Sankey (alluvial) diagram of patient state transitions across visits,
 # for example the response category at each assessment.
 # Input is one row per patient visit: the patient (--id), the visit (--x) and the
-# state (--y). Visits are sorted numerically when every visit is a number, else
-# in code-point order. States follow --levels when it is given, else they are
-# sorted numerically when every state is a number, else they keep the order of
-# their first appearance in the data. A
+# state (--y). Visits follow --visit_levels when it is given, else they sort
+# numerically when every visit is a number, else by the one number that each
+# visit holds ("week 8", "M12"), else by first appearance. States follow --levels
+# when it is given, else they are sorted numerically when every state is a
+# number, else they keep the order of their first appearance in the data. A
 # patient who is missing at a visit takes no part in the transitions into or out
 # of that visit, so the node of that visit holds only the patients present.
 #
@@ -30,11 +31,47 @@
   out
 }
 
-# Visit order: numeric when every value is a number, else code-point order.
-.sk_visit_order <- function(v) {
-  u <- unique(v)
-  num <- suppressWarnings(as.numeric(u))
-  if (all(!is.na(num))) u[order(num, u, method = "radix")] else sort(u, method = "radix")
+# The order of a time column, one rule for the sankey visits and the timecourse
+# time points, in both engines. The listed order of --visit_levels (sankey) or
+# --levels (timecourse) comes first; a value that the list does not name stops
+# the run. Else the values sort as numbers when every value is a number; else by
+# the one number that each value holds, as in "week 8" and "M12", with a tie in
+# code-point order; else they keep the order of their first appearance. Returns
+# the order and the rule in words, for the data log and the methods text.
+time_level_order <- function(labels, levels = NULL, what = "visit", option = "--visit_levels") {
+  labels <- as.character(labels)
+  u <- unique(labels[!is.na(labels)])
+  if (length(levels) > 0) {
+    miss <- setdiff(u, trimws(as.character(levels)))
+    if (length(miss) > 0) {
+      stop(sprintf("%s does not list the %s(s) %s of the data", option, what,
+                   paste(sprintf("'%s'", miss), collapse = ", ")))
+    }
+    return(list(levels = level_order(u, levels, what),
+                rule = sprintf("the order that %s gives", option)))
+  }
+  if (length(u) > 0 && !anyNA(suppressWarnings(as.numeric(u)))) {
+    return(list(levels = level_order(u), rule = "numeric order"))
+  }
+  num <- vapply(u, .time_one_number, numeric(1), USE.NAMES = FALSE)
+  if (length(u) > 0 && !anyNA(num)) {
+    return(list(levels = u[order(num, u, method = "radix")],
+                rule = sprintf("the order of the number that each %s holds", what)))
+  }
+  list(levels = u,
+       rule = sprintf("the order of first appearance, because the %ss do not each hold one number", what))
+}
+
+# The one number that a label holds, or NA when it holds none or more than one.
+# A minus sign counts when it starts the label or follows a space ("Day -7").
+.time_one_number <- function(s) {
+  m <- gregexpr("[0-9]+(\\.[0-9]+)?", s)[[1]]
+  if (m[1] == -1 || length(m) != 1) return(NA_real_)
+  start <- m[1]
+  v <- as.numeric(substr(s, start, start + attr(m, "match.length")[1] - 1))
+  if (start > 1 && substr(s, start - 1, start - 1) == "-" &&
+      (start == 2 || substr(s, start - 2, start - 2) == " ")) v <- -v
+  v
 }
 
 # State order: the order of --levels when it is given, else numeric when every
@@ -231,7 +268,8 @@ recipe_sankey <- function(df, spec) {
   if (anyDuplicated(d[, c("id", "visit")])) {
     stop("sankey needs one row per patient and visit; some patients have two rows at the same visit")
   }
-  visits <- .sk_visit_order(d$visit)
+  vord <- time_level_order(d$visit, unlist(spec$data$visit_levels), "visit", "--visit_levels")
+  visits <- vord$levels
   if (length(visits) < 2) stop("sankey needs at least 2 visits")
   levels <- unlist(spec$data$levels)
   states <- .sk_state_order(d$state, levels)
@@ -248,6 +286,7 @@ recipe_sankey <- function(df, spec) {
     sprintf("Kept %d row(s) of %d: %d patient(s), %d visit(s) (%s), %d state(s) (%s).",
             nrow(d), n0, n_pat, length(visits), paste(visits, collapse = ", "),
             length(states), paste(states, collapse = ", ")),
+    sprintf("The visits of '%s' are in %s: %s.", x, vord$rule, paste(visits, collapse = ", ")),
     sprintf("%d patient(s) are missing at one visit or more and take no part in the transitions into or out of that visit.",
             sum(table(d$id) < length(visits))))
 
@@ -330,7 +369,7 @@ recipe_sankey <- function(df, spec) {
   resolved <- list(family = "sankey", label = test_meta$name)
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = .sk_methods(test, trans, visits, states, n_pat, idc, x, y,
-                             levels_given = length(levels) > 0),
+                             levels_given = length(levels) > 0, visit_rule = vord$rule),
        build_script = list(fn = .sk_emit_script, args = list(spec = spec, visits = visits,
                                                              states = states, dims = dims)),
        label = slugify(y), df_used = d, clean_steps = clean_steps,
@@ -341,7 +380,8 @@ recipe_sankey <- function(df, spec) {
   stats::setNames(as.list(as.integer(tab[i, ])), states)
 }
 
-.sk_methods <- function(test, trans, visits, states, n_pat, idc, x, y, levels_given = FALSE) {
+.sk_methods <- function(test, trans, visits, states, n_pat, idc, x, y, levels_given = FALSE,
+                        visit_rule = "numeric order") {
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   v <- pkg_versions("ggplot2")
   state_txt <- if (levels_given) {
@@ -352,7 +392,7 @@ recipe_sankey <- function(df, spec) {
   txt <- paste0(
     sprintf("The state %s of %d patients (%s) was followed across %d visits of %s (%s). ",
             y, n_pat, idc, length(visits), x, paste(visits, collapse = ", ")),
-    "Visits are ordered numerically when every visit is a number, else alphabetically, and ",
+    sprintf("Visits are in %s, and ", visit_rule),
     state_txt,
     sprintf("The diagram shows %d transitions between consecutive visits; a patient missing at a visit takes no part in the transitions into or out of it, and the transitions table gives every count. ",
             sum(trans$n)))
