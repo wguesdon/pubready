@@ -284,7 +284,8 @@ def _methods(r, stats_df, eff_name, eff_value, spec):
                else f"{eff_name} = {eff_value:.2f}")
     g1, g2 = stats_df["group1"].iloc[0], stats_df["group2"].iloc[0]
     norm_txt = (" The rows were paired by their order in each group, and the normality of the "
-                f"within-pair differences ({g1} minus {g2}) was assessed with the Shapiro-Wilk test."
+                f"within-pair differences ({g1} minus {g2}) was assessed with the Shapiro-Wilk "
+                "test."
                 if r["paired"] else " Normality was assessed with the Shapiro-Wilk test.")
     return (
         f"{cap_first(y_label)} was compared between the two groups with a {r['label']}."

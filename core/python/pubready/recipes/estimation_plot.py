@@ -239,8 +239,8 @@ def check_variance(r, g, paired, ref_name, grp_name):
     """
     hint = "the estimation plot needs values that vary"
     if paired and is_zero_variance(g - r):
-        raise ValueError(zero_variance_message("paired t-test", "the within-subject differences have",
-                                               hint))
+        raise ValueError(zero_variance_message(
+            "paired t-test", "the within-subject differences have", hint))
     if not paired and is_zero_variance(r) and is_zero_variance(g):
         raise ValueError(zero_variance_message("Welch two-sample t-test",
                                                zero_variance_subject([ref_name, grp_name]), hint))

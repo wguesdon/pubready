@@ -256,7 +256,8 @@ def _check_variance(fam, label, by_group):
         raise ValueError(zero_variance_message(label, zero_variance_subject(zv),
                                                "use --test anova or --test kruskal"))
     if fam == "anova" and len(zv) == len(by_group):
-        raise ValueError(zero_variance_message(label, zero_variance_subject(zv), "use --test kruskal"))
+        raise ValueError(zero_variance_message(label, zero_variance_subject(zv),
+                                               "use --test kruskal"))
 
 
 def _bracket_key(row, pos):

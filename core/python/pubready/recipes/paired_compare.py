@@ -93,8 +93,8 @@ def recipe_paired_compare(df, spec):
     else:
         raise ValueError(f"unknown paired test '{method}' (use t or wilcoxon)")
     if family == "t" and is_zero_variance(diffs):
-        raise ValueError(zero_variance_message("paired t-test", "the within-subject differences have",
-                                               "use --test wilcoxon"))
+        raise ValueError(zero_variance_message(
+            "paired t-test", "the within-subject differences have", "use --test wilcoxon"))
 
     if family == "t":
         res = ss.ttest_rel(m["v2"], m["v1"])

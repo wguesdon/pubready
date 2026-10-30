@@ -317,7 +317,8 @@ def recipe_feature_panel(df, spec):
 
     # A constant feature (every value the same) is not tested: it stays out of
     # the normality check, of the tests and of the BH count.
-    const = np.array([is_zero_variance(d.loc[d["feature"] == f, "value"]) for f in feats], dtype=bool)
+    const = np.array([is_zero_variance(d.loc[d["feature"] == f, "value"]) for f in feats],
+                     dtype=bool)
     pairs = [(f, g) for f, c in zip(feats, const) if not c for g in glv]
     keys = [f"{f}: {g}" for f, g in pairs]
     samples = {k: d.loc[(d["feature"] == f) & (d["group"] == g), "value"].to_numpy(dtype=float)
@@ -474,8 +475,8 @@ def _methods(tm, stats_df, glv, y_lab, x):
         f"for each of {tm['n_features']} features. {choice}P values were adjusted across the "
         f"{tm['n_tested']} features with the Benjamini-Hochberg method; {tm['n_significant']} "
         f"features had an adjusted P (q) below 0.05. The effect size is {EFFECTS[tm['test']]}. "
-        f"{constant}{untested}Group sizes per feature: {nt}. Drawn in Python {platform.python_version()} "
-        f"with matplotlib {v('matplotlib')} and scipy {v('scipy')}."
+        f"{constant}{untested}Group sizes per feature: {nt}. Drawn in Python "
+        f"{platform.python_version()} with matplotlib {v('matplotlib')} and scipy {v('scipy')}."
     )
 
 
