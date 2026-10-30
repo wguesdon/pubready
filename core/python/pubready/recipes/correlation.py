@@ -12,7 +12,7 @@ from scipy import stats
 
 from ..bundle import slugify
 from ..theme import R_POINT_PT, apply_pub_style, new_fig, palette
-from ..util import check_test_method, is_zero_variance, quote_join, shapiro_normal
+from ..util import check_spread, check_test_method, is_zero_variance, quote_join, shapiro_normal
 
 
 TESTS = ("auto", "pearson", "spearman", "kendall")
@@ -169,6 +169,8 @@ def recipe_correlation(df, spec):
     if len(xv) < 3:
         raise ValueError("correlation needs at least 3 complete pairs")
     _check_constant(xv, yv, x, y)
+    check_spread(xv, "correlation", f"the column '{x}'")
+    check_spread(yv, "correlation", f"the column '{y}'")
 
     px, xn = shapiro_normal(xv)
     py, yn = shapiro_normal(yv)

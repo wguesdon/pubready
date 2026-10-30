@@ -293,3 +293,15 @@ test_that("a constant outcome stops the comparison recipes and factorial_anova",
   expect_error(recipe_factorial_anova(fa, v3_spec("factorial_anova", x = "g", fill = "t", y = "y")),
                "factorial_anova cannot run because the outcome 'y' has zero variance")
 })
+
+# F83: a variance that is not finite stops with a clear message.
+test_that("values near 1e300 or 1e-300 stop with a clear message", {
+  df <- data.frame(group = rep(c("a", "b"), each = 4),
+                   value = c(1.1e300, 1.0e300, 1.2e300, 1.3e300, 1.5e300, 1.6e300, 1.4e300, 1.7e300))
+  expect_error(recipe_two_group_compare(df, v3_spec("two_group_compare", x = "group", y = "value",
+                                                    test = "welch_t")),
+               "the variance of the outcome 'value' is not a finite positive number")
+  cd <- data.frame(a = c(-8.6e-301, -2.8e-301, -1.1e-300, 5e-301), b = c(1, 2, 3, 4.5))
+  expect_error(recipe_correlation(cd, v3_spec("correlation", x = "a", y = "b")),
+               "the variance of the column 'a' is not a finite positive number")
+})

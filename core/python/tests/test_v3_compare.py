@@ -258,3 +258,18 @@ def test_a_constant_outcome_stops_the_comparison_recipes_and_factorial_anova():
     with pytest.raises(ValueError, match="factorial_anova cannot run because the outcome 'y' has "
                                          "zero variance"):
         recipe_factorial_anova(fa, v3_spec("factorial_anova", x="g", fill="t", y="y"))
+
+
+# F83: a variance that is not finite stops with a clear message.
+def test_values_near_1e300_or_1e_minus_300_stop_with_a_clear_message():
+    df = pd.DataFrame({"group": ["a"] * 4 + ["b"] * 4,
+                       "value": [1.1e300, 1.0e300, 1.2e300, 1.3e300, 1.5e300, 1.6e300, 1.4e300,
+                                 1.7e300]})
+    with pytest.raises(ValueError, match="the variance of the outcome 'value' is not a finite "
+                                         "positive number"):
+        recipe_two_group_compare(df, v3_spec("two_group_compare", x="group", y="value",
+                                             test="welch_t"))
+    cd = pd.DataFrame({"a": [-8.6e-301, -2.8e-301, -1.1e-300, 5e-301], "b": [1, 2, 3, 4.5]})
+    with pytest.raises(ValueError, match="the variance of the column 'a' is not a finite positive "
+                                         "number"):
+        recipe_correlation(cd, v3_spec("correlation", x="a", y="b"))

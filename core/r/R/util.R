@@ -32,12 +32,22 @@ is_zero_variance <- function(v) {
   length(v) >= 2 && max(v) == min(v)
 }
 
-# Stop when a variable cannot carry a test because every value is the same.
-# `what` names it, for example "the outcome 'value'". The Python engine writes
-# the same words (util.check_spread).
+# Stop when a variable cannot carry a test: every value is the same, or the
+# variance is not a finite positive number, as for values near 1e300 (the
+# squares overflow) or near 1e-300 (the squares underflow). `what` names the
+# variable, for example "the outcome 'value'". The Python engine writes the same
+# words (util.check_spread).
 check_spread <- function(v, recipe, what) {
   if (is_zero_variance(v)) {
     stop(sprintf("%s cannot run because %s has zero variance (all values are equal)", recipe, what))
+  }
+  v <- v[is.finite(v)]
+  if (length(v) >= 2) {
+    s <- stats::var(v)
+    if (!is.finite(s) || s <= 0) {
+      stop(sprintf("%s cannot run because the variance of %s is not a finite positive number (the values run from %s to %s); rescale the values, for example to other units",
+                   recipe, what, sprintf("%.3g", min(v)), sprintf("%.3g", max(v))))
+    }
   }
   invisible(NULL)
 }

@@ -82,6 +82,10 @@ tag move together.
   `estimation_plot` and `factorial_anova` stop with "the outcome has zero
   variance" when every value of the outcome is the same. R stopped with an
   unclear error, and Python wrote "nan" or F values from rounding noise (F90).
+- The comparison recipes and `correlation` stop with a clear message when the
+  variance of the outcome or of a column is not a finite positive number, as
+  for values near 1e300 or near 1e-300. They gave a silent NA, P = 1 or a
+  crash before (F83).
 
 ## [3.0.0] - 2026-10-29
 

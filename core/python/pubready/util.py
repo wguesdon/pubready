@@ -146,7 +146,11 @@ def is_zero_variance(v):
 
 
 def check_spread(v, recipe, what):
-    """Stop when a variable cannot carry a test because every value is the same.
+    """Stop when a variable cannot carry a test.
+
+    The run stops when every value is the same, or when the variance is not a
+    finite positive number, as for values near 1e300 (the squares overflow) or
+    near 1e-300 (the squares underflow).
 
     Args:
         v: The values.
@@ -154,11 +158,21 @@ def check_spread(v, recipe, what):
         what: The variable, for example "the outcome 'value'".
 
     Raises:
-        ValueError: If every value is the same, in the words of the R engine.
+        ValueError: If the variable cannot carry a test, in the words of the R
+            engine.
     """
     if is_zero_variance(v):
         raise ValueError(f"{recipe} cannot run because {what} has zero variance (all values are "
                          "equal)")
+    v = np.asarray(v, dtype=float)
+    v = v[np.isfinite(v)]
+    if len(v) >= 2:
+        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+            s = float(np.var(v, ddof=1))
+        if not np.isfinite(s) or s <= 0:
+            raise ValueError(f"{recipe} cannot run because the variance of {what} is not a finite "
+                             f"positive number (the values run from {v.min():.3g} to "
+                             f"{v.max():.3g}); rescale the values, for example to other units")
 
 
 def zero_variance_groups(groups):

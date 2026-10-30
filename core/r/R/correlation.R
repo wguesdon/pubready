@@ -56,6 +56,8 @@ recipe_correlation <- function(df, spec) {
   } else "No cleaning applied; input used as-is."
   if (length(xv) < 3) stop("correlation needs at least 3 complete pairs")
   .cor_check_constant(xv, yv, x, y)
+  check_spread(xv, "correlation", sprintf("the column '%s'", x))
+  check_spread(yv, "correlation", sprintf("the column '%s'", y))
 
   x_norm <- shapiro_safe(xv)
   y_norm <- shapiro_safe(yv)
