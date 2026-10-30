@@ -96,6 +96,11 @@ tag move together.
   or below 0, and the data logs of `waterfall` and `spider_response` list each
   patient with no row at the first time point, whose baseline is then a later
   visit. Before, both cases ran with no record (F94).
+- The `swimmer`, `waterfall`, `spider_response` and `sankey` figures grow with
+  their longest label, and the legend and state labels wrap at 24 characters,
+  in both engines with one formula. Before, the R figures had a fixed width,
+  so a label of 60 characters shrank the panel to nothing, and a long state
+  made the `sankey` figure 28 in wide (F81).
 
 ## [3.0.0] - 2026-10-29
 

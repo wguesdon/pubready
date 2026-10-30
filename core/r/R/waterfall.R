@@ -14,6 +14,24 @@
 # The plot is descriptive, so there is no hypothesis test. The stats table holds
 # one row per patient, and the metadata counts the categories per group.
 
+# The legend labels wrap at this many characters, as in the Python engine.
+.wf_wrap <- 24
+
+# The figure width: 0.16 in per bar between 5 and 9 in, wider when the legend
+# needs more than 2 in, so a long label widens the figure instead of squeezing
+# the panel. The Python engine uses the same formula.
+waterfall_width <- function(n, legend_labels, title) {
+  max(5.0, min(9.0, 3.2 + 0.16 * n)) +
+    max(0, legend_width(wrap_labels(legend_labels, .wf_wrap), title) - 2.0)
+}
+
+# The figure height: 4.4 in, taller when the patient labels under the bars
+# (drawn up to 30 patients) need more than 0.5 in at 0.055 in per character.
+waterfall_height <- function(patients) {
+  chars <- if (length(patients) <= 30) max(nchar(patients), 0L) else 0L
+  4.4 + max(0, 0.055 * chars - 0.5)
+}
+
 .wf_first <- function(v) v[1]
 .wf_last <- function(v) v[length(v)]
 
@@ -107,7 +125,7 @@ recipe_waterfall <- function(df, spec) {
     ggplot2::geom_hline(yintercept = 0, colour = "grey20", linewidth = 0.4) +
     ggplot2::geom_hline(yintercept = c(pd_cut, pr_cut), linetype = "dashed", colour = "grey45",
                         linewidth = 0.4) +
-    ggplot2::scale_fill_manual(values = pal) +
+    ggplot2::scale_fill_manual(values = pal, labels = wrap_labels(levels(fill_var), .wf_wrap)) +
     ggplot2::scale_x_continuous(breaks = if (nrow(per) <= 30) per$rank else NULL,
                                 labels = if (nrow(per) <= 30) per$patient else NULL,
                                 expand = ggplot2::expansion(add = 0.6)) +
@@ -137,7 +155,8 @@ recipe_waterfall <- function(df, spec) {
                            args = list(spec = spec, has_time = has_time, pd_cut = pd_cut,
                                        pr_cut = pr_cut)),
        label = slugify(y), df_used = d, clean_steps = clean_steps,
-       width = max(5.0, min(9.0, 3.2 + 0.16 * nrow(per))), height = 4.4)
+       width = waterfall_width(nrow(per), levels(fill_var), legend_title),
+       height = waterfall_height(per$patient))
 }
 
 .wf_count_group <- function(gl, per, cats) {

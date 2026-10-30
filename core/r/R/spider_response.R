@@ -132,7 +132,7 @@ recipe_spider_response <- function(df, spec) {
                         colour = "grey55", linewidth = 0.4) +
     ggplot2::geom_line(linewidth = 0.6, alpha = 0.9) +
     ggplot2::geom_point(size = 1.8, alpha = 0.9) +
-    ggplot2::scale_colour_manual(values = pal) +
+    ggplot2::scale_colour_manual(values = pal, labels = wrap_labels(levels_seen, .sp_wrap)) +
     ggplot2::labs(x = spec$appearance$x_label %||% x,
                   y = spec$appearance$y_label %||% "Change from baseline (%)",
                   colour = legend_title,
@@ -176,7 +176,7 @@ recipe_spider_response <- function(df, spec) {
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
        label = slugify(y), df_used = d, clean_steps = clean_steps,
-       width = 5.8, height = 4.2)
+       width = spider_width(levels_seen, legend_title), height = 4.2)
 }
 
 # Stop when a patient has two rows or more at one time point, and name the
@@ -226,6 +226,16 @@ check_numeric_time <- function(v, col) {
                  col, sum(text), length(v), txt[text][1]))
   }
   stop(sprintf("column '%s' holds no number, and the time has to be numeric", col))
+}
+
+# The legend labels wrap at this many characters, as in the Python engine.
+.sp_wrap <- 24
+
+# The figure width: 5.8 in, wider when the legend needs more than 2 in, so a long
+# label widens the figure instead of squeezing the panel. The Python engine uses
+# the same formula.
+spider_width <- function(legend_labels, title) {
+  5.8 + max(0, legend_width(wrap_labels(legend_labels, .sp_wrap), title) - 2.0)
 }
 
 .sp_first <- function(v) v[1]

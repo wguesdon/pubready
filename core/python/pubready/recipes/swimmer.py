@@ -15,12 +15,37 @@ import pandas as pd
 from matplotlib.lines import Line2D
 
 from ..bundle import slugify
-from ..theme import apply_pub_style, new_fig, palette
+from ..theme import apply_pub_style, legend_width, new_fig, palette, wrap_label, wrap_labels
 from ..util import level_labels
 from .survival_km import event_codes
 
 #: The marker shapes, in the order of --markers, matched to the R engine.
 SHAPES = ("o", "^", "D", "s", "v")
+
+#: The legend labels wrap at this many characters, as in the R engine.
+LEGEND_WRAP = 24
+
+
+def swimmer_width(patients, arms, markers, title):
+    """The figure width, as swimmer_width() of the R engine.
+
+    3.8 in for the panel, the patient labels (when they are drawn, up to 40
+    patients) at 0.055 in per character, and the legend of the arms and the
+    markers, and never less than 6.4 in. A long label widens the figure instead
+    of squeezing the panel.
+
+    Args:
+        patients: The patient labels.
+        arms: The arms of the legend, or an empty list.
+        markers: The marker columns.
+        title: The legend title.
+
+    Returns:
+        float: The width in inches.
+    """
+    ychars = max([len(str(p)) for p in patients] + [0]) if len(patients) <= 40 else 0
+    leg = wrap_labels(list(arms) + list(markers), LEGEND_WRAP)
+    return max(6.4, 3.8 + 0.5 + 0.055 * ychars + legend_width(leg, title))
 
 
 def arm_summary(d, g):
@@ -131,20 +156,24 @@ def recipe_swimmer(df, spec):
     colour = {g: pal[i] for i, g in enumerate(g_lv)}
     span = float(d["duration"].max()) or 1.0
 
-    w, h = 6.4, max(3.6, min(10.0, 1.6 + 0.18 * len(d)))
+    w = swimmer_width(list(d["patient"]), g_lv if has_group else [], markers,
+                      grp if has_group else "")
+    h = max(3.6, min(10.0, 1.6 + 0.18 * len(d)))
     fig, ax = new_fig(w, h)
     ax.barh(d["rank"], d["duration"], height=0.6, color=[colour[g] for g in d["group"]])
     for _, r in d[d["ongoing"]].iterrows():
         ax.annotate("", xy=(r["duration"] + 0.04 * span, r["rank"]), xytext=(r["duration"], r["rank"]),
                     arrowprops={"arrowstyle": "-|>", "color": "0.12", "lw": 0.8})
-    handles = [Line2D([0], [0], color=colour[g], lw=6, label=g) for g in g_lv] if has_group else []
+    handles = ([Line2D([0], [0], color=colour[g], lw=6, label=wrap_label(g, LEGEND_WRAP))
+                for g in g_lv] if has_group else [])
     for i, m in enumerate(markers):
         sel = np.isfinite(d[m])
         if sel.any():
             ax.scatter(d.loc[sel, m], d.loc[sel, "rank"], marker=SHAPES[i % len(SHAPES)], s=30,
                        facecolor="white", edgecolor="black", linewidths=0.9, zorder=3)
         handles.append(Line2D([0], [0], marker=SHAPES[i % len(SHAPES)], ls="", markersize=6,
-                              markerfacecolor="white", markeredgecolor="black", label=m))
+                              markerfacecolor="white", markeredgecolor="black",
+                              label=wrap_label(m, LEGEND_WRAP)))
     if len(d) <= 40:
         ax.set_yticks(d["rank"])
         ax.set_yticklabels(d["patient"])
@@ -178,7 +207,7 @@ def recipe_swimmer(df, spec):
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
         "methods": _methods(d, g_lv, markers, tcol, has_event),
         "df_used": d, "clean_steps": steps, "label": slugify(tcol), "width": w, "height": h,
-        "build_script": functools.partial(_script, spec, has_event, has_group),
+        "build_script": functools.partial(_script, spec, has_event, has_group, w),
     }
 
 
@@ -215,13 +244,14 @@ def _methods(d, g_lv, markers, tcol, has_event):
     )
 
 
-def _script(spec, has_event, has_group, in_name, fig_stub):
+def _script(spec, has_event, has_group, w, in_name, fig_stub):
     """Write the standalone script that redraws the bars.
 
     Args:
         spec: The figure specification.
         has_event: Whether the input carries a status column.
         has_group: Whether the input carries an arm column.
+        w: The figure width in inches.
         in_name: The name of the input copy inside the bundle.
         fig_stub: The name of the figure file, without its extension.
 
@@ -242,7 +272,7 @@ import numpy as np, pandas as pd
 raw = pd.read_csv("{in_name}").sort_values("{tcol}").reset_index(drop=True)
 raw["ongoing"] = {ongoing}
 raw["colour"] = {colour}
-fig, ax = plt.subplots(figsize=(6.4, max(3.6, min(10, 1.6 + 0.18 * len(raw)))))
+fig, ax = plt.subplots(figsize=({w:.2f}, max(3.6, min(10, 1.6 + 0.18 * len(raw)))))
 ax.barh(np.arange(1, len(raw) + 1), raw["{tcol}"], color=plt.cm.tab10(raw["colour"]))
 ongoing = raw[raw["ongoing"]]
 ax.scatter(ongoing["{tcol}"], ongoing.index + 1, marker=">", color="black")

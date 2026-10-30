@@ -26,7 +26,7 @@ from scipy import stats
 from statsmodels.stats.contingency_tables import SquareTable
 
 from ..bundle import slugify
-from ..theme import apply_pub_style, palette
+from ..theme import apply_pub_style, longest_line, palette, wrap_labels
 from ..util import _level_number, level_order
 
 #: Half width of a node, in visit units.
@@ -35,6 +35,20 @@ HW = 0.045
 GAP_FRAC = 0.03
 #: Labels in one column stay at least this far apart, in inches.
 LABEL_IN = 0.17
+#: State labels wrap at this many characters.
+WRAP = 24
+
+
+def max_lines(labels):
+    """The count of lines of the longest wrapped label.
+
+    Args:
+        labels: The wrapped labels.
+
+    Returns:
+        int: The count, at least 1.
+    """
+    return max([s.count("\n") + 1 for s in labels] + [1])
 
 
 def fmt_value(v):
@@ -371,7 +385,7 @@ def figure_dims(nodes, visits, states, ncol_leg):
     """The figure size and the label room, matched to the R engine.
 
     Args:
-        nodes: The node table.
+        nodes: The node table, with the wrapped labels.
         visits: The visits in order.
         states: The states in order.
         ncol_leg: The legend columns.
@@ -380,14 +394,14 @@ def figure_dims(nodes, visits, states, ncol_leg):
         dict: The width, the height, the panel height, the x limits and the
         inches per visit.
     """
-    chars = max(len(f"{s} ({n})") for s, n in zip(nodes["state"], nodes["n"]))
+    chars = max(longest_line(s) for s in nodes["label"])
     label_in = 0.075 * chars + 0.25
     nv = len(visits)
     # Visits sit far enough apart for their axis labels, and for the node labels
     # of a middle visit, which sit between two columns.
     unit_in = max(2.0, 0.09 * max(len(v) for v in visits) + 0.4, label_in + 0.6 if nv > 2 else 0)
     legend_rows = math.ceil(len(states) / ncol_leg)
-    legend_h = 0.3 + 0.25 * legend_rows
+    legend_h = 0.3 + 0.25 * legend_rows * max_lines(wrap_labels(states, WRAP))
     height = max(4.2, 2.4 + 0.32 * len(states)) + legend_h
     pad = HW + 0.03 + label_in / unit_in
     return {"width": unit_in * (nv - 1) + 2 * (HW * unit_in + 0.03 * unit_in + label_in) + 0.6,
@@ -405,7 +419,7 @@ def legend_ncol(states, width):
     Returns:
         int: The count of columns.
     """
-    per = 0.085 * max(len(s) for s in states) + 0.6
+    per = 0.085 * max(longest_line(s) for s in wrap_labels(states, WRAP)) + 0.6
     ncol = min(len(states), max(1, math.floor((width - 0.5) / per)))
     return int(math.ceil(len(states) / math.ceil(len(states) / ncol)))
 
@@ -486,6 +500,10 @@ def recipe_sankey(df, spec):
                  "the transitions into or out of that visit.")
 
     nodes, hmax, _ = layout_nodes(d, visits, states)
+    # A long state wraps at WRAP characters in the node labels and the legend, so
+    # the figure grows by lines and not by one long line.
+    nodes["label"] = wrap_labels([f"{s} ({n})" for s, n in zip(nodes["state"], nodes["n"])],
+                                 WRAP)
     width0 = figure_dims(nodes, visits, states, len(states))["width"]
     ncol_leg = legend_ncol(states, width0)
     dims = figure_dims(nodes, visits, states, ncol_leg)
@@ -556,10 +574,10 @@ def draw_figure(trans, nodes, hmax, visits, states, pal, dims, ap, x, y, ncol_le
             continue
         ymid = (r.ytop + r.ybot) / 2
         if r.vi == 0:
-            ax.text(r.vi - HW - 0.03, ymid, f"{r.state} ({r.n})", ha="right", va="center",
+            ax.text(r.vi - HW - 0.03, ymid, r.label, ha="right", va="center",
                     fontsize=9, bbox=box, clip_on=False)
         else:
-            ax.text(r.vi + HW + 0.03, ymid, f"{r.state} ({r.n})", ha="left", va="center",
+            ax.text(r.vi + HW + 0.03, ymid, r.label, ha="left", va="center",
                     fontsize=9, bbox=box, clip_on=False)
     ax.set_xlim(*dims["xlim"])
     ax.set_ylim(-0.02 * hmax, 1.02 * hmax)
@@ -573,7 +591,8 @@ def draw_figure(trans, nodes, hmax, visits, states, pal, dims, ap, x, y, ncol_le
     ax.set_xlabel(ap.get("x_label") or x)
     ax.set_title(sub, fontsize=10, color="#4d4d4d")
     handles = [Patch(facecolor=pal[s], edgecolor="none") for s in states]
-    fig.legend(handles, states, title=y, loc="outside lower center", ncol=ncol_leg,
+    fig.legend(handles, wrap_labels(states, WRAP), title=y, loc="outside lower center",
+               ncol=ncol_leg,
                frameon=False, fontsize=10, title_fontsize=11, handlelength=1.1,
                handleheight=1.1)
     if ap.get("title"):
@@ -672,11 +691,12 @@ def label_fit(nodes, in_per_unit):
     """Which nodes show their label, matched to the R engine.
 
     From the top down, a node shows its label when the label centre is at least
-    LABEL_IN below the last label shown in the same column, so labels never
-    overlap.
+    LABEL_IN below the last label shown in the same column, times the mean line
+    count of the two labels, so labels never overlap.
 
     Args:
-        nodes: The node table, in column and stacking order.
+        nodes: The node table, in column and stacking order, with the wrapped
+            labels.
         in_per_unit: Inches per patient on the count axis.
 
     Returns:
@@ -686,7 +706,9 @@ def label_fit(nodes, in_per_unit):
     last = {}
     for i, r in enumerate(nodes.itertuples()):
         y_in = (r.ytop + r.ybot) / 2 * in_per_unit
-        if last.get(r.vi, math.inf) - y_in >= LABEL_IN:
+        lines = r.label.count("\n") + 1
+        prev_y, prev_lines = last.get(r.vi, (math.inf, 1))
+        if prev_y - y_in >= LABEL_IN * (prev_lines + lines) / 2:
             show[i] = True
-            last[r.vi] = y_in
+            last[r.vi] = (y_in, lines)
     return show

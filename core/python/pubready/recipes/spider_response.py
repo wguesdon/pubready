@@ -20,11 +20,30 @@ import numpy as np
 import pandas as pd
 
 from ..bundle import slugify
-from ..theme import apply_pub_style, new_fig, palette
+from ..theme import apply_pub_style, legend_width, new_fig, palette, wrap_label, wrap_labels
 from ..util import cap_first, level_labels
 
 #: The order a response legend reads in, from the best outcome to the worst.
 CATEGORIES = ("partial response", "stable disease", "progressive disease")
+
+#: The legend labels wrap at this many characters, as in the R engine.
+LEGEND_WRAP = 24
+
+
+def spider_width(legend_labels, title):
+    """The figure width, as spider_width() of the R engine.
+
+    5.8 in, wider when the legend needs more than 2 in, so a long label widens
+    the figure instead of squeezing the panel.
+
+    Args:
+        legend_labels: The legend labels.
+        title: The legend title.
+
+    Returns:
+        float: The width in inches.
+    """
+    return 5.8 + max(0.0, legend_width(wrap_labels(legend_labels, LEGEND_WRAP), title) - 2.0)
 
 
 def categorise(best, worst, pr_cut, pd_cut):
@@ -241,7 +260,7 @@ def recipe_spider_response(df, spec):
     pal = palette(len(levels), ap.get("palette"))
     colour_index = {name: pal[i] for i, name in enumerate(levels)}
 
-    w, h = 5.8, 4.2
+    w, h = spider_width(levels, legend_title), 4.2
     fig, ax = new_fig(w, h)
     ax.axhline(0, color="grey", lw=0.8)
     ax.axhline(pd_cut, color="grey", lw=0.8, ls="--")
@@ -250,7 +269,8 @@ def recipe_spider_response(df, spec):
         colour = colour_index[colour_of.loc[patient]]
         ax.plot(rows[x], rows["change"], color=colour, lw=1.1, alpha=0.9, zorder=2)
         ax.scatter(rows[x], rows["change"], color=colour, s=14, alpha=0.9, zorder=3)
-    handles = [ax.plot([], [], color=colour_index[name], lw=1.6, label=name)[0]
+    handles = [ax.plot([], [], color=colour_index[name], lw=1.6,
+                       label=wrap_label(name, LEGEND_WRAP))[0]
                for name in levels]
     ax.legend(handles=handles, title=legend_title, loc="center left",
               bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=9)

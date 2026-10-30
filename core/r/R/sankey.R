@@ -24,6 +24,10 @@
 .sk_hw <- 0.045          # half width of a node, in visit units
 .sk_gap_frac <- 0.03     # gap between nodes, as a fraction of the largest visit
 .sk_label_in <- 0.17     # labels in one column stay at least this far apart (in)
+.sk_wrap <- 24           # state labels wrap at this many characters
+
+# The count of lines of the longest wrapped label.
+.sk_max_lines <- function(labels) max(lengths(strsplit(labels, "\n", fixed = TRUE)), 1L)
 
 .sk_labels <- function(v) {
   out <- trimws(as.character(v))
@@ -219,14 +223,14 @@ time_level_order <- function(labels, levels = NULL, what = "visit", option = "--
 
 # Figure size and label room, matched to the Python engine.
 .sk_dims <- function(nodes, visits, states, ncol_leg) {
-  chars <- max(nchar(sprintf("%s (%d)", nodes$state, nodes$n)))
+  chars <- max(vapply(nodes$label, longest_line, integer(1)))
   label_in <- 0.075 * chars + 0.25
   nv <- length(visits)
   # Visits sit far enough apart for their axis labels, and for the node labels
   # of a middle visit, which sit between two columns.
   unit_in <- max(2.0, 0.09 * max(nchar(visits)) + 0.4, if (nv > 2) label_in + 0.6 else 0)
   legend_rows <- ceiling(length(states) / ncol_leg)
-  legend_h <- 0.3 + 0.25 * legend_rows
+  legend_h <- 0.3 + 0.25 * legend_rows * .sk_max_lines(wrap_labels(states, .sk_wrap))
   height <- max(4.2, 2.4 + 0.32 * length(states)) + legend_h
   pad <- .sk_hw + 0.03 + label_in / unit_in
   list(width = unit_in * (nv - 1) + 2 * (.sk_hw * unit_in + 0.03 * unit_in + label_in) + 0.6,
@@ -235,7 +239,7 @@ time_level_order <- function(labels, levels = NULL, what = "visit", option = "--
 }
 
 .sk_legend_ncol <- function(states, width) {
-  per <- 0.085 * max(nchar(states)) + 0.6
+  per <- 0.085 * max(vapply(wrap_labels(states, .sk_wrap), longest_line, integer(1))) + 0.6
   ncol <- min(length(states), max(1, floor((width - 0.5) / per)))
   as.integer(ceiling(length(states) / ceiling(length(states) / ncol)))
 }
@@ -292,6 +296,9 @@ recipe_sankey <- function(df, spec) {
 
   lay <- .sk_nodes(d, visits, states)
   nodes <- lay$nodes
+  # A long state wraps at .sk_wrap characters in the node labels and the legend,
+  # so the figure grows by lines and not by one long line.
+  nodes$label <- wrap_labels(sprintf("%s (%d)", nodes$state, nodes$n), .sk_wrap)
   pal <- stats::setNames(pub_palette(length(states), spec$appearance$palette), states)
   width0 <- .sk_dims(nodes, visits, states, length(states))$width
   ncol_leg <- .sk_legend_ncol(states, width0)
@@ -299,7 +306,6 @@ recipe_sankey <- function(df, spec) {
   sub <- .sk_subtitle(test, n_pat, length(visits), dims$width)
   if (grepl("\n", sub, fixed = TRUE)) dims$height <- dims$height + 0.2
   rib <- .sk_ribbons(trans, nodes, states)
-  nodes$label <- sprintf("%s (%d)", nodes$state, nodes$n)
   nodes$ymid <- (nodes$ytop + nodes$ybot) / 2
   nodes$show <- .sk_label_fit(nodes, dims$panel_h / (1.04 * lay$hmax))
   left <- nodes[nodes$show & nodes$vi == 0, , drop = FALSE]
@@ -322,7 +328,8 @@ recipe_sankey <- function(df, spec) {
     ggplot2::geom_label(data = right, ggplot2::aes(x = vi + .sk_hw + 0.03, y = ymid, label = label),
                         hjust = 0, size = 3.2, label.size = 0, label.padding = ggplot2::unit(0.08, "lines"),
                         fill = grDevices::adjustcolor("white", alpha.f = 0.75)) +
-    ggplot2::scale_fill_manual(values = pal, breaks = states, drop = FALSE) +
+    ggplot2::scale_fill_manual(values = pal, breaks = states, labels = wrap_labels(states, .sk_wrap),
+                               drop = FALSE) +
     ggplot2::scale_x_continuous(breaks = seq_along(visits) - 1, labels = visits,
                                 limits = dims$xlim, expand = ggplot2::expansion(0)) +
     ggplot2::scale_y_continuous(limits = c(-0.02 * lay$hmax, 1.02 * lay$hmax),
@@ -441,17 +448,21 @@ recipe_sankey <- function(df, spec) {
 }
 
 # A node shows its label when the label centre is at least .sk_label_in below
-# the last label shown in the same column, from the top down, so labels never
-# overlap. in_per_unit converts the count axis to inches.
+# the last label shown in the same column, times the mean line count of the two
+# labels, from the top down, so labels never overlap. in_per_unit converts the
+# count axis to inches.
 .sk_label_fit <- function(nodes, in_per_unit) {
   show <- logical(nrow(nodes))
+  lines <- lengths(strsplit(nodes$label, "\n", fixed = TRUE))
   for (v in unique(nodes$vi)) {
     last <- Inf
+    last_lines <- 1
     for (i in which(nodes$vi == v)) {
       y_in <- nodes$ymid[i] * in_per_unit
-      if (last - y_in >= .sk_label_in) {
+      if (last - y_in >= .sk_label_in * (last_lines + lines[i]) / 2) {
         show[i] <- TRUE
         last <- y_in
+        last_lines <- lines[i]
       }
     }
   }

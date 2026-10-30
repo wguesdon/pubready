@@ -11,10 +11,10 @@ from pubready.recipes.cumulative_incidence import recipe_cumulative_incidence
 from pubready.recipes.survival_km import (event_codes, km_break_step, km_median,
                                           recipe_survival_km)
 from pubready.recipes.sankey import recipe_sankey, time_level_order
-from pubready.recipes.swimmer import recipe_swimmer
-from pubready.recipes.spider_response import recipe_spider_response
+from pubready.recipes.swimmer import recipe_swimmer, swimmer_width
+from pubready.recipes.spider_response import recipe_spider_response, spider_width
 from pubready.recipes.timecourse import recipe_timecourse
-from pubready.recipes.waterfall import recipe_waterfall
+from pubready.recipes.waterfall import recipe_waterfall, waterfall_height, waterfall_width
 from pubready.spec import spec_from_args
 
 
@@ -352,3 +352,24 @@ def test_swimmer_logs_a_marker_outside_the_bar_and_spider_a_late_baseline():
     assert step in res["clean_steps"]
     res = recipe_waterfall(d, v3c_spec("waterfall", x="week", y="lesion", id="patient"))
     assert step in res["clean_steps"]
+
+
+def test_a_long_label_widens_the_swimmer_waterfall_spider_and_sankey_figures():
+    """F81: the R figures had a fixed width, so a long label squeezed the panel."""
+    long = "Wild-type littermate controls from the second breeding cohort 2026"
+    assert swimmer_width(["PT-01"], ["control", "treated"],
+                         ["response_month", "progression_month"], "arm") == pytest.approx(6.4)
+    assert swimmer_width(["x" * 60], ["A"], [], "arm") == pytest.approx(
+        3.8 + 0.5 + 0.055 * 60 + 0.55 + 0.075 * 3)
+    assert waterfall_width(16, ["control", "treated"], "arm") == pytest.approx(5.76)
+    assert waterfall_width(16, [long], "arm") == pytest.approx(5.76 + 0.55 + 0.075 * 24 - 2.0)
+    assert waterfall_height(["PT-01", "x" * 60]) == pytest.approx(4.4 + 0.055 * 60 - 0.5)
+    assert spider_width(["partial response", "stable disease", "progressive disease"],
+                        "Response") == pytest.approx(5.8)
+    d = pd.DataFrame({"patient": [f"R{i}" for i in range(1, 5) for _ in range(2)],
+                      "week": [0, 8] * 4,
+                      "response": [long, "PD", "PD", long, long, long, "PD", "PD"]})
+    res = recipe_sankey(d, v3c_spec("sankey", id="patient", x="week", y="response"))
+    # The same width and height as the R engine (see test-v3-clinical.R).
+    assert res["width"] == pytest.approx(7.0, rel=1e-9)
+    assert res["height"] == pytest.approx(5.25, rel=1e-9)

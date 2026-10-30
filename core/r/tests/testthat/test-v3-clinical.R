@@ -289,3 +289,20 @@ test_that("swimmer logs a marker outside the bar and spider a late baseline (F94
   res <- recipe_waterfall(d, v3c_spec("waterfall", x = "week", y = "lesion", id = "patient"))
   expect_true(step %in% res$clean_steps)
 })
+
+test_that("a long label widens the swimmer, waterfall, spider and sankey figures (F81)", {
+  long <- "Wild-type littermate controls from the second breeding cohort 2026"
+  expect_equal(swimmer_width("PT-01", c("control", "treated"),
+                             c("response_month", "progression_month"), "arm"), 6.4)
+  expect_equal(swimmer_width(strrep("x", 60), "A", character(0), "arm"),
+               3.8 + 0.5 + 0.055 * 60 + 0.55 + 0.075 * 3)
+  expect_equal(waterfall_width(16, c("control", "treated"), "arm"), 5.76)
+  expect_equal(waterfall_width(16, long, "arm"), 5.76 + 0.55 + 0.075 * 24 - 2.0)
+  expect_equal(waterfall_height(c("PT-01", strrep("x", 60))), 4.4 + 0.055 * 60 - 0.5)
+  expect_equal(spider_width(c("partial response", "stable disease", "progressive disease"), "Response"), 5.8)
+  d <- data.frame(patient = rep(sprintf("R%d", 1:4), each = 2), week = rep(c(0, 8), 4),
+                  response = c(long, "PD", "PD", long, long, long, "PD", "PD"))
+  res <- recipe_sankey(d, v3c_spec("sankey", id = "patient", x = "week", y = "response"))
+  expect_equal(res$width, 7.0, tolerance = 1e-9)
+  expect_equal(res$height, 5.25, tolerance = 1e-9)
+})

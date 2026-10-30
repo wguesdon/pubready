@@ -10,6 +10,19 @@
 # one row per patient, and the metadata gives the median duration and the count
 # of ongoing courses per arm.
 
+# The legend labels wrap at this many characters, as in the Python engine.
+.sw_wrap <- 24
+
+# The figure width: 3.8 in for the panel, the patient labels (when they are
+# drawn, up to 40 patients) at 0.055 in per character, and the legend of the
+# arms and the markers, and never less than 6.4 in. A long label widens the
+# figure instead of squeezing the panel. The Python engine uses the same formula.
+swimmer_width <- function(patients, arms, markers, title) {
+  ychars <- if (length(patients) <= 40) max(nchar(patients), 0L) else 0L
+  leg <- wrap_labels(c(arms, markers), .sw_wrap)
+  max(6.4, 3.8 + 0.5 + 0.055 * ychars + legend_width(leg, title))
+}
+
 .sw_count_present <- function(col, d) sum(is.finite(d[[col]]))
 
 .sw_arm_summary <- function(g, d) {
@@ -80,11 +93,12 @@ recipe_swimmer <- function(df, spec) {
       mk$marker <- factor(mk$marker, levels = markers)
       p <- p + ggplot2::geom_point(data = mk, ggplot2::aes(x = time, y = rank, shape = marker),
                                    size = 2.2, fill = "white", colour = "black") +
-        ggplot2::scale_shape_manual(values = c(21, 24, 23, 22, 25)[seq_along(markers)], drop = FALSE)
+        ggplot2::scale_shape_manual(values = c(21, 24, 23, 22, 25)[seq_along(markers)],
+                                    labels = wrap_labels(markers, .sw_wrap), drop = FALSE)
     }
   }
   p <- p +
-    ggplot2::scale_colour_manual(values = pal) +
+    ggplot2::scale_colour_manual(values = pal, labels = wrap_labels(g_lv, .sw_wrap)) +
     ggplot2::scale_y_continuous(breaks = if (nrow(d) <= 40) d$rank else NULL,
                                 labels = if (nrow(d) <= 40) d$patient else NULL,
                                 expand = ggplot2::expansion(add = 0.8)) +
@@ -112,13 +126,16 @@ recipe_swimmer <- function(df, spec) {
     arms = stats::setNames(lapply(g_lv, .sw_arm_summary, d = d), g_lv),
     markers = stats::setNames(lapply(markers, .sw_count_present, d = d), markers))
   resolved <- list(family = "swimmer", label = test_meta$name)
+  width <- swimmer_width(d$patient, if (has_group) g_lv else character(0), markers,
+                         if (has_group) grp else "")
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = .sw_methods(d, g_lv, markers, tcol, has_event),
        build_script = list(fn = .sw_emit_script,
                            args = list(spec = spec, markers = markers, has_event = has_event,
-                                       has_group = has_group)),
+                                       has_group = has_group, width = width)),
        label = slugify(tcol), df_used = d, clean_steps = clean_steps,
-       width = 6.4, height = max(3.6, min(10, 1.6 + 0.18 * nrow(d))))
+       width = width,
+       height = max(3.6, min(10, 1.6 + 0.18 * nrow(d))))
 }
 
 # A data log step for the values of one marker column that fall after the end
@@ -166,7 +183,7 @@ recipe_swimmer <- function(df, spec) {
           if (g == "all") "" else paste0(g, ": "), s$n, sprintf("%.3g", s$median_duration), s$ongoing)
 }
 
-.sw_emit_script <- function(spec, markers, has_event, has_group, in_name, fig_stub) {
+.sw_emit_script <- function(spec, markers, has_event, has_group, width, in_name, fig_stub) {
   idc <- spec$data$id; tcol <- spec$data$time; ev <- spec$data$event; grp <- spec$data$group
   c(
     "#!/usr/bin/env Rscript",
@@ -185,7 +202,7 @@ recipe_swimmer <- function(df, spec) {
     "  geom_point(data = d[d$ongoing, ], aes(x = duration, y = rank), shape = 62, size = 4) +",
     "  scale_y_continuous(breaks = d$rank, labels = d$patient) +",
     sprintf('  labs(x = "%s", y = "Patient") + theme_classic()', spec$appearance$x_label %||% tcol),
-    sprintf('ggsave("%s.pdf", p, width = 6.4, height = %s)', fig_stub,
+    sprintf('ggsave("%s.pdf", p, width = %.2f, height = %s)', fig_stub, width,
             "max(3.6, min(10, 1.6 + 0.18 * nrow(d)))"),
     'cat("Reproduced figure.\\n")'
   )
