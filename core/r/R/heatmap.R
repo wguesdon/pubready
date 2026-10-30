@@ -116,8 +116,12 @@ recipe_heatmap <- function(df, spec) {
     stars <- ifelse(is.na(padj), "",
              ifelse(padj < 0.001, "***", ifelse(padj < 0.01, "**",
              ifelse(padj < 0.05, "*", ""))))
-    right_anno <- ComplexHeatmap::rowAnnotation(
-      ` ` = ComplexHeatmap::anno_text(stars, gp = grid::gpar(fontsize = 10)))
+    # anno_text cannot size a column of empty strings, so a null result, with
+    # no star to draw, gets no star column (F46).
+    if (any(nzchar(stars))) {
+      right_anno <- ComplexHeatmap::rowAnnotation(
+        ` ` = ComplexHeatmap::anno_text(stars, gp = grid::gpar(fontsize = 10)))
+    }
     stats_df <- data.frame(
       feature = rownames(mat),
       mean_g1 = rowMeans(mat[, g == lv[1], drop = FALSE]),
@@ -189,9 +193,12 @@ recipe_heatmap <- function(df, spec) {
   if (cluster %in% c("both", "rows", "columns")) {
     clust_txt <- paste(clust_txt, "Clustering used complete linkage on the Euclidean distance of the displayed values, and at each merge the branch with the higher mean of the unscaled values was drawn first.")
   }
+  sig_txt <- if (isTRUE(n_sig > 0)) {
+    sprintf("%d of the %d features had an adjusted P below 0.05 and are marked with stars.", n_sig, n_feat)
+  } else "no feature had an adjusted P below 0.05, so no star is drawn."
   test_txt <- if (!is.null(test_levels)) {
-    sprintf(" Each feature was compared between %s and %s with a Welch two-sample t-test, which treats the samples as independent, and the P values were adjusted across the %d features with the Benjamini-Hochberg method; %d of the %d features had an adjusted P below 0.05 and are marked with stars.",
-            test_levels[1], test_levels[2], n_feat, n_sig, n_feat)
+    sprintf(" Each feature was compared between %s and %s with a Welch two-sample t-test, which treats the samples as independent, and the P values were adjusted across the %d features with the Benjamini-Hochberg method; %s",
+            test_levels[1], test_levels[2], n_feat, sig_txt)
   } else ""
   paste0(
     sprintf("A heatmap of %d features across %d samples was drawn with ComplexHeatmap. ",

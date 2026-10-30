@@ -58,3 +58,27 @@ test_that("the heatmap methods name the groups, the independence and the count",
   expect_match(txt, "38 of the 40 features had an adjusted P below 0.05", fixed = TRUE)
   expect_false(grepl("feature(s)", .hm_methods("row", "both", 40, 8, NULL, NA), fixed = TRUE))
 })
+
+# A null result has no star to draw. The heatmap gets no star column and draws,
+# where anno_text stopped on a column of empty strings (F46).
+hm_null_matrix <- function() {
+  data.frame(gene = paste0("g", 1:4),
+             a1 = c(5.1, 3.0, 7.2, 1.1), a2 = c(4.9, 3.3, 6.8, 0.9), a3 = c(5.3, 2.8, 7.0, 1.2),
+             b1 = c(5.0, 3.1, 7.1, 1.0), b2 = c(5.2, 2.9, 6.9, 1.3), b3 = c(4.8, 3.2, 7.3, 0.8))
+}
+
+hm_null_annotation <- function() {
+  path <- tempfile("hm_ann_", fileext = ".csv")
+  utils::write.csv(data.frame(sample = c("a1", "a2", "a3", "b1", "b2", "b3"),
+                              group = rep(c("a", "b"), each = 3)), path, row.names = FALSE)
+  path
+}
+
+test_that("a heatmap with no significant feature draws without a star column", {
+  res <- recipe_heatmap(hm_null_matrix(), hm_spec(annotation = hm_null_annotation(),
+                                                  test = "welch_t"))
+  expect_equal(res$test_meta$n_significant, 0)
+  grDevices::pdf(NULL)
+  on.exit(grDevices::dev.off(), add = TRUE)
+  expect_silent(res$draw())
+})

@@ -297,7 +297,7 @@ def recipe_heatmap(df, spec):
             row_names_side="right", col_names_side="bottom", plot_legend=False, verbose=0)
         fig = plt.gcf()
         label_axes = row_label_axes(plotter)
-        if star_of:
+        if any(star_of.values()):
             for a in label_axes:
                 add_row_stars(a, star_of)
         gap = 4.0 / 25.4 * fig.dpi / fig.get_window_extent().width
@@ -318,7 +318,7 @@ def recipe_heatmap(df, spec):
             col_colors=col_colors, figsize=(w, h), cbar_kws={"label": legend_name},
             xticklabels=True, yticklabels=True)
         fig = grid.figure
-        if star_of:
+        if any(star_of.values()):
             add_row_stars(grid.ax_heatmap, star_of)
 
     test_meta = {
@@ -359,11 +359,13 @@ def _methods(scale_mode, cluster, n_feat, n_samp, test_levels, n_sig, used_pch):
                       "values was drawn first.")
     test_txt = ""
     if test_levels:
+        sig_txt = (f"{n_sig} of the {n_feat} features had an adjusted P below 0.05 and are "
+                   "marked with stars." if n_sig else
+                   "no feature had an adjusted P below 0.05, so no star is drawn.")
         test_txt = (f" Each feature was compared between {test_levels[0]} and {test_levels[1]} with a "
                     "Welch two-sample t-test, which treats the samples as independent, and the P "
                     f"values were adjusted across the {n_feat} features with the Benjamini-Hochberg "
-                    f"method; {n_sig} of the {n_feat} features had an adjusted P below 0.05 and are "
-                    "marked with stars.")
+                    f"method; {sig_txt}")
     return (
         f"A heatmap of {n_feat} features across {n_samp} samples was drawn with {lib}. "
         + scale_txt + " " + clust_txt + test_txt +

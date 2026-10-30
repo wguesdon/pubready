@@ -134,3 +134,33 @@ def test_heatmap_legends_are_not_clipped_to_the_legend_axes(tmp_path):
     res = recipe_heatmap(df, spec_from_args(a))
     legends = [c for ax in res["fig"].axes for c in ax.get_children() if isinstance(c, Legend)]
     assert legends and not any(lg.get_clip_on() for lg in legends)
+
+
+def hm_null(tmp_path):
+    """A matrix and an annotation with no difference between the two groups.
+
+    Args:
+        tmp_path: The folder for the annotation file.
+
+    Returns:
+        tuple: The matrix and the path of the annotation.
+    """
+    df = pd.DataFrame({"gene": [f"g{i}" for i in range(1, 5)],
+                       "a1": [5.1, 3.0, 7.2, 1.1], "a2": [4.9, 3.3, 6.8, 0.9],
+                       "a3": [5.3, 2.8, 7.0, 1.2], "b1": [5.0, 3.1, 7.1, 1.0],
+                       "b2": [5.2, 2.9, 6.9, 1.3], "b3": [4.8, 3.2, 7.3, 0.8]})
+    ann_path = tmp_path / "ann.csv"
+    pd.DataFrame({"sample": ["a1", "a2", "a3", "b1", "b2", "b3"],
+                  "group": ["a"] * 3 + ["b"] * 3}).to_csv(ann_path, index=False)
+    return df, ann_path
+
+
+def test_a_null_heatmap_draws_no_star_column(tmp_path):
+    """A null result gets no star column in either engine (F46)."""
+    df, ann_path = hm_null(tmp_path)
+    a = SimpleNamespace(recipe="heatmap", data="matrix.csv", x=None, y=None,
+                        annotation=str(ann_path), test="welch_t")
+    res = recipe_heatmap(df, spec_from_args(a))
+    assert res["test_meta"]["n_significant"] == 0
+    stars = [t for ax in res["fig"].axes for t in ax.texts if set(t.get_text()) == {"*"}]
+    assert not stars

@@ -31,6 +31,9 @@ tag move together.
   positive double, draws the gene as a triangle at the top, and records the
   count in the data log and the methods text. A p outside 0 to 1 stops the run
   (F45).
+- The R `heatmap` draws a null result. When no feature has an adjusted P
+  below 0.05, both engines draw no star column, and the methods text says that
+  no star is drawn (F46).
 
 ## [3.0.0] - 2026-10-29
 
