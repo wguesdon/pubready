@@ -13,8 +13,10 @@ from statannotations.Annotator import Annotator
 from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, new_fig, palette, plain_number_axis,
                      script_geom_code, wrap_labels)
-from ..util import (cap_first, cohens_d_r, mann_whitney_r, p_stars, rank_biserial_paired,
-                    rank_biserial_unpaired, shapiro_normal, wilcoxon_signed_rank_r)
+from ..util import (cap_first, cohens_d_r, is_zero_variance, mann_whitney_r, p_stars,
+                    rank_biserial_paired, rank_biserial_unpaired, shapiro_normal,
+                    wilcoxon_signed_rank_r, zero_variance_groups, zero_variance_message,
+                    zero_variance_subject)
 
 
 def _resolve(method, all_normal, equal_var, paired):
@@ -57,6 +59,7 @@ def recipe_two_group_compare(df, spec):
     equal_var = np.isnan(var_p) or var_p > 0.05
 
     r = _resolve(spec["test"].get("method"), all_normal, equal_var, paired)
+    _check_variance(r, a, b, lv)
 
     if r["family"] == "t":
         res = pg.ttest(a, b, paired=paired, correction=not r["var_equal"])
@@ -127,6 +130,33 @@ def recipe_two_group_compare(df, spec):
         "qc": {"quantity": "group values", "panels": {lv[0]: a, lv[1]: b}},
         "build_script": functools.partial(_script, spec, r, lv, pal, ann=ann),
     }
+
+
+def _check_variance(r, a, b, lv):
+    """Stop a t-test whose variance is zero, as .tg_check_variance() of the R engine.
+
+    The two-sample test divides by the variance of both groups, and the paired
+    test by the variance of the differences. When that variance is zero the
+    statistic is infinite, so the run stops and names the samples.
+
+    Args:
+        r: The resolved test.
+        a: The values of the first group.
+        b: The values of the second group.
+        lv: The two groups.
+
+    Raises:
+        ValueError: If the variance of the test is zero.
+    """
+    if r["family"] != "t":
+        return
+    if r["paired"]:
+        if len(a) == len(b) and is_zero_variance(np.asarray(a) - np.asarray(b)):
+            raise ValueError(zero_variance_message(r["label"], "the within-pair differences have",
+                                                   "use --test wilcoxon"))
+    elif len(zero_variance_groups({lv[0]: a, lv[1]: b})) == 2:
+        raise ValueError(zero_variance_message(r["label"], zero_variance_subject(lv),
+                                               "use --test wilcoxon"))
 
 
 def _methods(r, stats_df, eff_name, eff_value, spec):

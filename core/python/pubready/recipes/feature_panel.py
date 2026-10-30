@@ -21,7 +21,8 @@ from scipy import stats
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
-from ..util import cap_first, mann_whitney_r, rank_biserial_unpaired, shapiro_normal
+from ..util import (cap_first, is_zero_variance, mann_whitney_r, rank_biserial_unpaired,
+                    shapiro_normal)
 
 MAX_FEATURES = 36
 MAX_QC_PANELS = 48
@@ -325,9 +326,13 @@ def recipe_feature_panel(df, spec):
     if len(glv) < 2:
         raise ValueError("feature_panel needs at least 2 groups")
 
-    keys = [f"{f}: {g}" for f in feats for g in glv]
+    # A constant feature (every value the same) is not tested: it stays out of
+    # the normality check, of the tests and of the BH count.
+    const = np.array([is_zero_variance(d.loc[d["feature"] == f, "value"]) for f in feats], dtype=bool)
+    pairs = [(f, g) for f, c in zip(feats, const) if not c for g in glv]
+    keys = [f"{f}: {g}" for f, g in pairs]
     samples = {k: d.loc[(d["feature"] == f) & (d["group"] == g), "value"].to_numpy(dtype=float)
-               for k, (f, g) in zip(keys, [(f, g) for f in feats for g in glv])}
+               for k, (f, g) in zip(keys, pairs)}
     sw = [bool(shapiro_normal(v)[1]) for v in samples.values()]
     all_normal = all(sw)
     method = spec["test"].get("method") or "auto"
@@ -335,15 +340,18 @@ def recipe_feature_panel(df, spec):
     forced = method.lower() != "auto"
 
     res = np.array([test_feature(d, f, glv, test) for f in feats], dtype=float).reshape(len(feats), 5)
+    res[const, :] = np.nan
     p = res[:, 3]
     q = bh_adjust(p)
     stats_df = pd.DataFrame({
         "feature": feats, "test": LABELS[test], "statistic": res[:, 0], "df1": res[:, 1],
         "df2": res[:, 2], "p_value": p, "p_adj": q, "p_adj_signif": [signif_stars(v) for v in q],
-        "effect_size": res[:, 4], "effect_size_name": EFFECTS[test]})
+        "effect_size": res[:, 4], "effect_size_name": EFFECTS[test],
+        "note": ["not tested: constant" if c else "" for c in const]})
     for g in glv:
         stats_df[f"n_{g}"] = [int(((d["feature"] == f) & (d["group"] == g)).sum()) for f in feats]
-    n_untested = int(np.isnan(p).sum())
+    n_untested = int((np.isnan(p) & ~const).sum())
+    n_tested = int((~np.isnan(p)).sum())
     n_sig = int(np.nansum(q < 0.05))
 
     ap = spec["appearance"]
@@ -376,8 +384,9 @@ def recipe_feature_panel(df, spec):
             ax.scatter(np.full(len(v), k) + jit, v, s=9, color=pal[k], alpha=0.8,
                        edgecolors="black", linewidths=0.25, zorder=3)
         qv = q[i]
-        ax.set_title(f"{title_name(f)}\nq = {'NA' if np.isnan(qv) else format(qv, '.2g')}", fontsize=10,
-                     linespacing=1.15)
+        qtxt = ("not tested: constant" if const[i] else
+                f"q = {'NA' if np.isnan(qv) else format(qv, '.2g')}")
+        ax.set_title(f"{title_name(f)}\n{qtxt}", fontsize=10, linespacing=1.15)
         ax.set_xticks(range(len(glv)))
         ax.set_xticklabels(ticks, fontsize=9, linespacing=0.95)
         ax.set_xlim(-0.6, len(glv) - 0.4)
@@ -394,7 +403,7 @@ def recipe_feature_panel(df, spec):
         axes[j // ncol][j % ncol].set_visible(False)
     fig.supxlabel(ap.get("x_label") or spec["data"]["x"], fontsize=13)
     fig.supylabel(y_lab, fontsize=13)
-    sub_txt = (f"{LABELS[test]} per feature; BH-adjusted q across {len(feats)} features; "
+    sub_txt = (f"{LABELS[test]} per feature; BH-adjusted q across {n_tested} features; "
                f"{n_sig} with q < 0.05")
     fig.suptitle(sub_txt, fontsize=10, color="#4d4d4d")
     fig.tight_layout(rect=(0, 0, 1, 1 - 0.12 / h))
@@ -407,7 +416,7 @@ def recipe_feature_panel(df, spec):
     test_meta = {
         "name": LABELS[test], "test": test, "p_adjust": "BH", "n_features": len(feats),
         "n_groups": len(glv), "groups": glv, "n_significant": n_sig, "n_untested": n_untested,
-        "forced": forced,
+        "n_constant": int(const.sum()), "n_tested": n_tested, "forced": forced,
         "assumptions": {"normality": {"test": "shapiro-wilk", "all_normal": all_normal,
                                       "n_checked": len(keys), "n_non_normal": int(len(sw) - sum(sw))}},
     }
@@ -451,12 +460,14 @@ def _methods(tm, stats_df, glv, y_lab, x):
     nt = ", ".join(f"{g} (n = {n_range(stats_df[f'n_{g}'])})" for g in glv)
     untested = (f"{tm['n_untested']} feature(s) had a group with fewer than 2 values and were not "
                 "tested. " if tm["n_untested"] else "")
+    constant = (f"{tm['n_constant']} feature(s) were constant (all values equal) and were not "
+                "tested. " if tm["n_constant"] else "")
     return (
         f"{cap_first(y_lab)} was compared between the levels of {x} ({', '.join(glv)}) separately "
         f"for each of {tm['n_features']} features. {choice}P values were adjusted across the "
-        f"{tm['n_features']} features with the Benjamini-Hochberg method; {tm['n_significant']} "
+        f"{tm['n_tested']} features with the Benjamini-Hochberg method; {tm['n_significant']} "
         f"features had an adjusted P (q) below 0.05. The effect size is {EFFECTS[tm['test']]}. "
-        f"{untested}Group sizes per feature: {nt}. Drawn in Python {platform.python_version()} "
+        f"{constant}{untested}Group sizes per feature: {nt}. Drawn in Python {platform.python_version()} "
         f"with matplotlib {v('matplotlib')} and scipy {v('scipy')}."
     )
 

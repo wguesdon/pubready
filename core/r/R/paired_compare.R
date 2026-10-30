@@ -41,6 +41,10 @@ recipe_paired_compare <- function(df, spec) {
   } else if (method %in% c("t", "t_test", "paired_t", "student_t")) "t"
     else if (method %in% c("wilcoxon", "wilcox", "signed_rank", "mwu")) "wilcoxon"
     else stop(sprintf("unknown paired test '%s' (use t or wilcoxon)", method))
+  if (family == "t" && is_zero_variance(diffs)) {
+    stop(zero_variance_message("paired t-test", "the within-subject differences have",
+                               "use --test wilcoxon"))
+  }
 
   if (family == "t") {
     tt <- stats::t.test(m$v2, m$v1, paired = TRUE)

@@ -13,14 +13,50 @@ is_normal_check <- function(n) isTRUE(n$normal)
 # The installed version of one package, as a string.
 pkg_version_string <- function(p) as.character(utils::packageVersion(p))
 
-# Shapiro-Wilk normality on a numeric vector, guarded for small and large n.
+# Shapiro-Wilk normality on a numeric vector, guarded for small and large n. A
+# sample with zero range (every value the same) is not normal and has no P, in
+# both engines (util.shapiro_normal).
 shapiro_safe <- function(v) {
   v <- v[is.finite(v)]
   n <- length(v)
   if (n < 3)   return(list(test = "shapiro-wilk", n = n, p = NA_real_, normal = NA))
+  if (max(v) == min(v)) return(list(test = "shapiro-wilk", n = n, p = NA_real_, normal = FALSE))
   if (n > 5000) return(list(test = "shapiro-wilk", n = n, p = NA_real_, normal = TRUE))
   p <- tryCatch(stats::shapiro.test(v)$p.value, error = na_on_error)
   list(test = "shapiro-wilk", n = n, p = p, normal = isTRUE(p > 0.05))
+}
+
+# Whether a sample has zero variance: two or more finite values, all equal.
+is_zero_variance <- function(v) {
+  v <- v[is.finite(v)]
+  length(v) >= 2 && max(v) == min(v)
+}
+
+# The names of the groups of a named list that have zero variance.
+zero_variance_groups <- function(groups) {
+  names(groups)[vapply(groups, is_zero_variance, logical(1))]
+}
+
+# The quoted names of a list, joined as text: 'a'; 'a' and 'b'; 'a', 'b' and 'c'.
+quote_join <- function(x) {
+  q <- sprintf("'%s'", x)
+  if (length(q) <= 1) return(paste(q, collapse = ""))
+  paste(paste(q[-length(q)], collapse = ", "), "and", q[length(q)])
+}
+
+# The message that stops a test that divides by a variance of zero. `subject`
+# names the samples, for example "the group 'a' has" or "the within-pair
+# differences have"; `hint` names what to run instead. The Python engine writes
+# the same words (util.zero_variance_message).
+zero_variance_message <- function(test, subject, hint) {
+  sprintf("%s cannot run because %s zero variance (all values are equal); %s",
+          test, subject, hint)
+}
+
+# The subject of zero_variance_message() for a set of groups.
+zero_variance_subject <- function(groups) {
+  if (length(groups) == 1) sprintf("the group %s has", quote_join(groups))
+  else sprintf("the groups %s have", quote_join(groups))
 }
 
 # Rank-biserial correlation for two independent groups, from the Mann-Whitney U

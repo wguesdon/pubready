@@ -12,7 +12,7 @@ from scipy import stats
 
 from ..bundle import slugify
 from ..theme import R_POINT_PT, apply_pub_style, new_fig, palette
-from ..util import shapiro_normal
+from ..util import is_zero_variance, quote_join, shapiro_normal
 
 
 def fisher_ci(r, n):
@@ -163,6 +163,7 @@ def recipe_correlation(df, spec):
              else ["No cleaning applied; input used as-is."])
     if len(xv) < 3:
         raise ValueError("correlation needs at least 3 complete pairs")
+    _check_constant(xv, yv, x, y)
 
     px, xn = shapiro_normal(xv)
     py, yn = shapiro_normal(yv)
@@ -235,6 +236,30 @@ def recipe_correlation(df, spec):
         "qc": {"quantity": "variable values", "panels": {x: xv, y: yv}},
         "build_script": functools.partial(_script, spec, r, pal[0]),
     }
+
+
+def _check_constant(xv, yv, x, y):
+    """Stop on a constant column, as .cor_check_constant() of the R engine.
+
+    A correlation divides by the standard deviation of each variable, so a
+    constant column stops the run and is named.
+
+    Args:
+        xv: The x values.
+        yv: The y values.
+        x: The x column.
+        y: The y column.
+
+    Raises:
+        ValueError: If a column is constant.
+    """
+    const = [c for c, v in ((x, xv), (y, yv)) if is_zero_variance(v)]
+    if len(const) == 1:
+        raise ValueError(f"correlation cannot run because the column {quote_join(const)} is "
+                         "constant (all values are equal)")
+    if len(const) == 2:
+        raise ValueError(f"correlation cannot run because the columns {quote_join(const)} are "
+                         "constant (all values are equal)")
 
 
 def _line_text(method):

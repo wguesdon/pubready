@@ -83,6 +83,7 @@ recipe_multi_group_compare <- function(df, spec) {
   equal_var <- is.na(lev_p) || lev_p > 0.05
 
   resolved <- resolve_multi_group_method(spec$test$method, all_normal, equal_var)
+  .mg_check_variance(resolved, by_group)
 
   # Omnibus test and matching post-hoc. The base R functions give full precision;
   # rstatix rounds the Tukey and Games-Howell P values to three decimals.
@@ -219,6 +220,22 @@ recipe_multi_group_compare <- function(df, spec) {
        df_used = df, clean_steps = cl$steps,
        qc = list(quantity = "group values", panels = by_group),
        width = category_width(length(lvls), wrap_labels(lvls)), height = 4.2)
+}
+
+# Welch's ANOVA weights each group by the inverse of its variance, and the
+# one-way ANOVA divides by the pooled variance. A variance of zero there makes
+# the statistic infinite, so the run stops and names the groups. The Python
+# engine has the same rule.
+.mg_check_variance <- function(resolved, by_group) {
+  zv <- zero_variance_groups(by_group)
+  if (resolved$family == "welch" && length(zv) > 0) {
+    stop(zero_variance_message(resolved$label, zero_variance_subject(zv),
+                               "use --test anova or --test kruskal"))
+  }
+  if (resolved$family == "anova" && length(zv) == length(by_group)) {
+    stop(zero_variance_message(resolved$label, zero_variance_subject(zv), "use --test kruskal"))
+  }
+  invisible(NULL)
 }
 
 # More significant pairs than this switch the figure to a compact letter display.

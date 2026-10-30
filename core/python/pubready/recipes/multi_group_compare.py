@@ -14,7 +14,8 @@ from scipy import stats
 from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, category_width, geom_top, new_fig, palette,
                      plain_number_axis, script_geom_code, wrap_labels)
-from ..util import cap_first, cld_letters, df_text, p_stars, shapiro_normal
+from ..util import (cap_first, cld_letters, df_text, p_stars, shapiro_normal,
+                    zero_variance_groups, zero_variance_message, zero_variance_subject)
 
 MAX_BRACKETS = 6
 """More significant pairs than this switch the figure to a compact letter display."""
@@ -55,6 +56,7 @@ def recipe_multi_group_compare(df, spec):
         lev_p = np.nan
     equal_var = np.isnan(lev_p) or lev_p > 0.05
     fam, label, posthoc_label = _resolve(spec["test"].get("method"), all_normal, equal_var)
+    _check_variance(fam, label, dict(zip(lv, groups)))
 
     if fam == "anova":
         row = pg.anova(data=df, dv=y, between=x).iloc[0]
@@ -155,6 +157,29 @@ def recipe_multi_group_compare(df, spec):
         "build_script": functools.partial(_script, spec, fam, label, lv, pal, letters, w,
                                           blabel=blabel),
     }
+
+
+def _check_variance(fam, label, by_group):
+    """Stop an ANOVA whose variance is zero, as .mg_check_variance() of the R engine.
+
+    Welch's ANOVA weights each group by the inverse of its variance, and the
+    one-way ANOVA divides by the pooled variance. A variance of zero there makes
+    the statistic infinite, so the run stops and names the groups.
+
+    Args:
+        fam: The test family: anova, welch or kruskal.
+        label: The omnibus test.
+        by_group: The values of each group.
+
+    Raises:
+        ValueError: If the variance of the test is zero.
+    """
+    zv = zero_variance_groups(by_group)
+    if fam == "welch" and zv:
+        raise ValueError(zero_variance_message(label, zero_variance_subject(zv),
+                                               "use --test anova or --test kruskal"))
+    if fam == "anova" and len(zv) == len(by_group):
+        raise ValueError(zero_variance_message(label, zero_variance_subject(zv), "use --test kruskal"))
 
 
 def _bracket_key(row, pos):

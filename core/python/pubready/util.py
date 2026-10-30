@@ -104,11 +104,24 @@ def format_p(p, digits=2):
 
 
 def shapiro_normal(x):
-    """Return (p_value, is_normal) guarded for small/large n."""
+    """Shapiro-Wilk normality, guarded for small and large n.
+
+    A sample with zero range (every value the same) is not normal and has no
+    P, as shapiro_safe() of the R engine gives it.
+
+    Args:
+        x: The values.
+
+    Returns:
+        tuple: The P value and whether the values look normal (None below 3
+        values).
+    """
     x = np.asarray(x, dtype=float)
     x = x[np.isfinite(x)]
     if len(x) < 3:
         return (np.nan, None)
+    if x.max() == x.min():
+        return (np.nan, False)
     if len(x) > 5000:
         return (np.nan, True)
     try:
@@ -116,6 +129,75 @@ def shapiro_normal(x):
     except Exception:
         return (np.nan, None)
     return (p, p > 0.05)
+
+
+def is_zero_variance(v):
+    """Whether a sample has zero variance: two or more finite values, all equal.
+
+    Args:
+        v: The values.
+
+    Returns:
+        bool: True for a sample with zero variance.
+    """
+    v = np.asarray(v, dtype=float)
+    v = v[np.isfinite(v)]
+    return bool(len(v) >= 2 and v.max() == v.min())
+
+
+def zero_variance_groups(groups):
+    """The names of the groups that have zero variance.
+
+    Args:
+        groups: A dict of the values of each group.
+
+    Returns:
+        list: The names, in the order of the dict.
+    """
+    return [str(g) for g, v in groups.items() if is_zero_variance(v)]
+
+
+def quote_join(names):
+    """The quoted names of a list, joined as text, as quote_join() of the R engine.
+
+    Args:
+        names: The names.
+
+    Returns:
+        str: 'a'; 'a' and 'b'; 'a', 'b' and 'c'.
+    """
+    q = [f"'{n}'" for n in names]
+    if len(q) <= 1:
+        return "".join(q)
+    return ", ".join(q[:-1]) + " and " + q[-1]
+
+
+def zero_variance_message(test, subject, hint):
+    """The message that stops a test that divides by a variance of zero.
+
+    Args:
+        test: The test, for example "Welch's one-way ANOVA".
+        subject: The samples with their verb, for example "the group 'a' has".
+        hint: What to run instead.
+
+    Returns:
+        str: The message, in the words of the R engine.
+    """
+    return f"{test} cannot run because {subject} zero variance (all values are equal); {hint}"
+
+
+def zero_variance_subject(groups):
+    """The subject of zero_variance_message() for a set of groups.
+
+    Args:
+        groups: The names of the groups.
+
+    Returns:
+        str: "the group 'a' has" or "the groups 'a' and 'b' have".
+    """
+    if len(groups) == 1:
+        return f"the group {quote_join(groups)} has"
+    return f"the groups {quote_join(groups)} have"
 
 
 def mann_whitney_r(a, b):

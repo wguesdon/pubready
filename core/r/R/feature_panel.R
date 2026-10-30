@@ -92,6 +92,8 @@
 
 .fp_shapiro_normal <- function(v) isTRUE(shapiro_safe(v)$normal)
 
+.fp_is_constant <- function(f, d) is_zero_variance(d$value[d$feature == f])
+
 .fp_cohens_d <- function(a, b) {
   na <- length(a); nb <- length(b)
   sp <- sqrt(((na - 1) * stats::var(a) + (nb - 1) * stats::var(b)) / (na + nb - 2))
@@ -159,7 +161,10 @@ recipe_feature_panel <- function(df, spec) {
   }
   if (length(glv) < 2) stop("feature_panel needs at least 2 groups")
 
-  keys <- as.vector(t(outer(feats, glv, paste, sep = ": ")))
+  # A constant feature (every value the same) is not tested: it stays out of the
+  # normality check, of the tests and of the BH count.
+  const <- vapply(feats, .fp_is_constant, logical(1), d = d)
+  keys <- as.vector(t(outer(feats[!const], glv, paste, sep = ": ")))
   sw <- vapply(split(d$value, factor(paste(d$feature, d$group, sep = ": "), levels = keys)),
                .fp_shapiro_normal, logical(1))
   all_normal <- all(sw)
@@ -168,6 +173,7 @@ recipe_feature_panel <- function(df, spec) {
 
   res <- vapply(feats, .fp_test_feature, numeric(5), d = d, glv = glv, test = test)
   res <- matrix(res, nrow = 5)
+  res[, const] <- NA_real_
   p <- res[4, ]
   q <- stats::p.adjust(p, method = "BH")
   counts <- matrix(vapply(feats, .fp_counts, numeric(length(glv)), d = d, glv = glv),
@@ -175,12 +181,15 @@ recipe_feature_panel <- function(df, spec) {
   stats_df <- data.frame(feature = feats, test = .fp_labels[[test]], statistic = res[1, ],
                          df1 = res[2, ], df2 = res[3, ], p_value = p, p_adj = q,
                          p_adj_signif = .fp_signif(q), effect_size = res[5, ],
-                         effect_size_name = .fp_effects[[test]], stringsAsFactors = FALSE)
+                         effect_size_name = .fp_effects[[test]],
+                         note = ifelse(const, "not tested: constant", ""), stringsAsFactors = FALSE)
   for (i in seq_along(glv)) stats_df[[paste0("n_", glv[i])]] <- as.integer(counts[i, ])
-  n_untested <- sum(is.na(p))
+  n_untested <- sum(is.na(p) & !const)
+  n_tested <- sum(!is.na(p))
 
   # Panels in the input order of the features, titled with the adjusted p.
   qtxt <- ifelse(is.na(q), "q = NA", paste0("q = ", formatC(q, format = "g", digits = 2)))
+  qtxt[const] <- "not tested: constant"
   titles <- paste0(.fp_title_name(feats), "\n", qtxt)
   d$panel <- factor(d$feature, levels = feats)
   d$group <- factor(d$group, levels = glv)
@@ -189,7 +198,7 @@ recipe_feature_panel <- function(df, spec) {
   pal <- pub_palette(length(glv), spec$appearance$palette)
   n_sig <- sum(q < 0.05, na.rm = TRUE)
   sub <- sprintf("%s per feature; BH-adjusted q across %d features; %d with q < 0.05",
-                 .fp_labels[[test]], length(feats), n_sig)
+                 .fp_labels[[test]], n_tested, n_sig)
   y_lab <- spec$appearance$y_label %||% if (lg$layout == "long") spec$data$y else "Value"
 
   plot <- ggplot2::ggplot(d, ggplot2::aes(x = group, y = value)) +
@@ -220,7 +229,7 @@ recipe_feature_panel <- function(df, spec) {
   test_meta <- list(
     name = .fp_labels[[test]], test = test, p_adjust = "BH", n_features = length(feats),
     n_groups = length(glv), groups = glv, n_significant = n_sig, n_untested = n_untested,
-    forced = forced,
+    n_constant = sum(const), n_tested = n_tested, forced = forced,
     assumptions = list(normality = list(test = "shapiro-wilk", all_normal = all_normal,
                                         n_checked = length(keys), n_non_normal = sum(!sw))))
   resolved <- list(family = "feature_panel", label = .fp_labels[[test]])
@@ -253,8 +262,9 @@ recipe_feature_panel <- function(df, spec) {
             cap_first(y_lab), x, paste(glv, collapse = ", "), tm$n_features),
     choice,
     sprintf("P values were adjusted across the %d features with the Benjamini-Hochberg method; %d features had an adjusted P (q) below 0.05. ",
-            tm$n_features, tm$n_significant),
+            tm$n_tested, tm$n_significant),
     sprintf("The effect size is %s. ", .fp_effects[[tm$test]]),
+    if (tm$n_constant > 0) sprintf("%d feature(s) were constant (all values equal) and were not tested. ", tm$n_constant) else "",
     if (tm$n_untested > 0) sprintf("%d feature(s) had a group with fewer than 2 values and were not tested. ", tm$n_untested) else "",
     sprintf("Group sizes per feature: %s. ", nt),
     sprintf("Drawn in R %s with ggplot2 %s.", rver, v$ggplot2))

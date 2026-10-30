@@ -51,6 +51,7 @@ recipe_correlation <- function(df, spec) {
             sum(!keep), x, y, n0, length(xv))
   } else "No cleaning applied; input used as-is."
   if (length(xv) < 3) stop("correlation needs at least 3 complete pairs")
+  .cor_check_constant(xv, yv, x, y)
 
   x_norm <- shapiro_safe(xv)
   y_norm <- shapiro_safe(yv)
@@ -128,6 +129,21 @@ recipe_correlation <- function(df, spec) {
        qc = list(quantity = "variable values",
                  panels = stats::setNames(list(xv, yv), c(x, y))),
        width = 4.6, height = 4.2)
+}
+
+# A correlation divides by the standard deviation of each variable, so a
+# constant column stops the run and is named. The Python engine has the same rule.
+.cor_check_constant <- function(xv, yv, x, y) {
+  const <- c(x, y)[c(is_zero_variance(xv), is_zero_variance(yv))]
+  if (length(const) == 1) {
+    stop(sprintf("correlation cannot run because the column %s is constant (all values are equal)",
+                 quote_join(const)))
+  }
+  if (length(const) == 2) {
+    stop(sprintf("correlation cannot run because the columns %s are constant (all values are equal)",
+                 quote_join(const)))
+  }
+  invisible(NULL)
 }
 
 .cor_methods <- function(resolved, stats_df, spec) {

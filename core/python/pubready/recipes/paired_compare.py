@@ -10,8 +10,8 @@ from scipy import stats as ss
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette, plain_number_axis, wrap_labels
-from ..util import (cap_first, p_stars, rank_biserial_paired, shapiro_normal,
-                    wilcoxon_signed_rank_r)
+from ..util import (cap_first, is_zero_variance, p_stars, rank_biserial_paired, shapiro_normal,
+                    wilcoxon_signed_rank_r, zero_variance_message)
 
 
 def recipe_paired_compare(df, spec):
@@ -53,6 +53,9 @@ def recipe_paired_compare(df, spec):
         family = "wilcoxon"
     else:
         raise ValueError(f"unknown paired test '{method}' (use t or wilcoxon)")
+    if family == "t" and is_zero_variance(diffs):
+        raise ValueError(zero_variance_message("paired t-test", "the within-subject differences have",
+                                               "use --test wilcoxon"))
 
     if family == "t":
         res = ss.ttest_rel(m["v2"], m["v1"])

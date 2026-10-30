@@ -22,6 +22,12 @@ tag move together.
   the items, so an item can hold a comma, for example
   `--levels "none|edema, no diuretics"`. A value with no "|" splits on commas
   as before (F96).
+- A sample with zero range is not normal in both engines, with a Shapiro P of
+  NA, so `--test auto` chooses the same test. A t-test, a one-way ANOVA or
+  Welch's ANOVA whose variance is zero stops with a message that names the
+  groups. `correlation` stops on a constant column and names it.
+  `feature_panel` reports a constant feature as "not tested: constant" and
+  leaves it out of the normality check and of the BH count (F43).
 
 ## [3.0.0] - 2026-10-29
 

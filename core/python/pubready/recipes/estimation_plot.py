@@ -35,7 +35,8 @@ from scipy import special, stats
 from ..bundle import slugify
 from ..clean import clean_xy
 from ..theme import apply_pub_style, palette
-from ..util import cap_first, sig_text
+from ..util import (cap_first, is_zero_variance, sig_text, zero_variance_message,
+                    zero_variance_subject)
 
 SEED = 20261029
 MODULUS = 2147483647
@@ -214,6 +215,32 @@ def t_test(r, g, paired):
     return float(res.statistic), float(df), float(res.pvalue)
 
 
+def check_variance(r, g, paired, ref_name, grp_name):
+    """Stop a comparison whose t-test divides by a variance of zero.
+
+    The t-test divides by the variance of both groups (paired: of the
+    differences). When that variance is zero the run stops and names the
+    samples, as .est_check_variance() of the R engine does.
+
+    Args:
+        r: The reference values.
+        g: The values of the compared group.
+        paired: Whether the values are pairs.
+        ref_name: The reference level.
+        grp_name: The compared level.
+
+    Raises:
+        ValueError: If the variance of the test is zero.
+    """
+    hint = "the estimation plot needs values that vary"
+    if paired and is_zero_variance(g - r):
+        raise ValueError(zero_variance_message("paired t-test", "the within-subject differences have",
+                                               hint))
+    if not paired and is_zero_variance(r) and is_zero_variance(g):
+        raise ValueError(zero_variance_message("Welch two-sample t-test",
+                                               zero_variance_subject([ref_name, grp_name]), hint))
+
+
 def compare(r, g, paired, ref_name, grp_name):
     """Compare one group with the reference.
 
@@ -227,6 +254,7 @@ def compare(r, g, paired, ref_name, grp_name):
     Returns:
         tuple: The stats row and the bootstrap differences.
     """
+    check_variance(r, g, paired, ref_name, grp_name)
     est = g.sum() / len(g) - r.sum() / len(r)
     boot = boot_diffs(r, g, paired)
     lo, hi = bca_interval(boot, est, jackknife(r, g, paired), float(np.max(np.abs(np.concatenate([r, g])))))

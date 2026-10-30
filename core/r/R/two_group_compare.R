@@ -31,6 +31,7 @@ recipe_two_group_compare <- function(df, spec) {
   equal_var <- is.na(var_p) || var_p > 0.05
 
   resolved <- resolve_two_group_method(spec$test$method, all_normal, equal_var, paired)
+  .tg_check_variance(resolved, by_group, lvls)
 
   if (resolved$family == "t") {
     stat <- rstatix::t_test(df, fml, paired = paired, var.equal = isTRUE(resolved$var_equal))
@@ -164,4 +165,22 @@ recipe_two_group_compare <- function(df, spec) {
        methods = methods, build_script = build_script,
        df_used = df, clean_steps = cl$steps,
        qc = list(quantity = "group values", panels = by_group))
+}
+
+# A t-test divides by a variance: the two-sample test by the variance of both
+# groups, the paired test by the variance of the differences. When that variance
+# is zero the statistic is infinite, so the run stops and names the samples. The
+# Python engine has the same rule.
+.tg_check_variance <- function(resolved, by_group, lvls) {
+  if (resolved$family != "t") return(invisible(NULL))
+  a <- by_group[[lvls[1]]]; b <- by_group[[lvls[2]]]
+  if (isTRUE(resolved$paired)) {
+    if (length(a) == length(b) && is_zero_variance(a - b)) {
+      stop(zero_variance_message(resolved$label, "the within-pair differences have",
+                                 "use --test wilcoxon"))
+    }
+  } else if (length(zero_variance_groups(by_group)) == 2) {
+    stop(zero_variance_message(resolved$label, zero_variance_subject(lvls), "use --test wilcoxon"))
+  }
+  invisible(NULL)
 }

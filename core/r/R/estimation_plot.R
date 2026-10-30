@@ -132,8 +132,24 @@
   (mean(g) - mean(r)) / s * j
 }
 
+# The t-test of a comparison divides by the variance of both groups (paired: of
+# the differences). When that variance is zero the run stops and names the
+# samples. The Python engine has the same rule.
+.est_check_variance <- function(r, g, paired, ref_name, grp_name) {
+  hint <- "the estimation plot needs values that vary"
+  if (paired && is_zero_variance(g - r)) {
+    stop(zero_variance_message("paired t-test", "the within-subject differences have", hint))
+  }
+  if (!paired && is_zero_variance(r) && is_zero_variance(g)) {
+    stop(zero_variance_message("Welch two-sample t-test",
+                               zero_variance_subject(c(ref_name, grp_name)), hint))
+  }
+  invisible(NULL)
+}
+
 # One comparison: the group against the reference.
 .est_compare <- function(r, g, paired, ref_name, grp_name) {
+  .est_check_variance(r, g, paired, ref_name, grp_name)
   est <- sum(g) / length(g) - sum(r) / length(r)
   boot <- .est_boot_diffs(r, g, paired)
   ci <- .est_bca(boot, est, .est_jackknife(r, g, paired), max(abs(c(r, g))))
