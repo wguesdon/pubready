@@ -178,3 +178,9 @@ def test_report_table_writes_a_category_with_na():
     df = pd.DataFrame({"group": pd.Categorical(["a", None, "b|c"])})
     assert dataframe_markdown(df).splitlines() == [
         "| group |", "| --- |", "| a |", "|  |", "| b\\|c |"]
+
+
+def test_report_table_writes_whole_numbers_as_r_does():
+    df = pd.DataFrame({"n": [1.0, np.nan, 3.0], "p": [0.5, np.inf, np.nan]})
+    assert dataframe_markdown(df).splitlines() == [
+        "| n | p |", "| --- | --- |", "| 1 | 0.5 |", "|  | Inf |", "| 3 |  |"]

@@ -370,7 +370,7 @@ reproduce_md <- function(container, git_commit, script_name) {
 # the missing values become "", because a factor has no "" level. A "|" becomes
 # "\|", as in the Python engine.
 report_escape_column <- function(column) {
-  column <- as.character(column)
+  column <- as.character(nan_to_na(column))
   column[is.na(column)] <- ""
   gsub("|", "\\|", column, fixed = TRUE)
 }

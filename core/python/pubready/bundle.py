@@ -229,7 +229,7 @@ def dataframe_markdown(frame, limit=100):
     Returns:
         A Markdown table.
     """
-    shown = frame.head(limit)
+    shown = integer_columns(frame.head(limit))
     headers = [_markdown_value(column) for column in shown.columns]
     lines = [
         "| " + " | ".join(headers) + " |",

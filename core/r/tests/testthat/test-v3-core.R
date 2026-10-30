@@ -142,3 +142,9 @@ test_that("the report table writes a factor with NA and no warning (F120)", {
   expect_equal(strsplit(txt, "\n")[[1]],
                c("| group | n |", "| --- | --- |", "| a | 1 |", "|  |  |", "| b\\|c | 3 |"))
 })
+
+test_that("the report table writes whole numbers as Python does (F126)", {
+  df <- data.frame(n = c(1, NA, 3), p = c(0.5, Inf, NaN))
+  expect_equal(strsplit(report_markdown_table(df), "\n")[[1]],
+               c("| n | p |", "| --- | --- |", "| 1 | 0.5 |", "|  | Inf |", "| 3 |  |"))
+})
