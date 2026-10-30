@@ -44,7 +44,7 @@ podman run --rm --security-opt label=disable -v "$PWD":/work -w /work localhost/
 | `lung_cox` | `lung.csv` | `cox_forest` | `survival::coxph`, `survival::cox.zph` |
 | `mtcars_correlation` | `mtcars.csv` | `correlation --test pearson` | `stats::cor.test` |
 | `mtcars_correlation_heatmap` | `mtcars.csv` | `correlation_heatmap` | `stats::cor` |
-| `mtcars_heatmap` | `mtcars_matrix.csv`, `mtcars_annotation.csv` | `heatmap` | `stats::t.test` for each feature |
+| `mtcars_heatmap` | `mtcars_matrix.csv`, `mtcars_annotation.csv` | `heatmap --test welch_t` | `stats::t.test` for each feature |
 | `airquality_spearman` | `airquality.csv` | `correlation --test spearman` | `stats::cor.test(method = "spearman")` |
 | `iris_pca` | `iris.csv` | `pca` | `stats::prcomp(scale. = TRUE)` |
 | `titanic_proportions` | `titanic.csv` | `proportions --test chisq` | `stats::chisq.test` |
@@ -58,7 +58,7 @@ podman run --rm --security-opt label=disable -v "$PWD":/work -w /work localhost/
 | `chick_weight_timecourse` | `chick_weight.csv` | `timecourse` | `stats::aov` with `Error()`, `car::Anova(idesign)` |
 | `aml_swimmer` | `aml.csv` | `swimmer` | `stats::median` and the count of censored courses for each arm |
 | `airway_volcano` | `airway_de.csv` | `volcano --y padj` | the DESeq2 genes at padj of 0.05 or less and an absolute log2FC of 1 or more |
-| `airway_heatmap` | `airway_heatmap.csv`, `airway_annotation.csv` | `heatmap` | `stats::t.test` for each gene |
+| `airway_heatmap` | `airway_heatmap.csv`, `airway_annotation.csv` | `heatmap --test welch_t` | `stats::t.test` for each gene |
 | `airway_pca` | `airway_pca.csv` | `pca --group dex` | `stats::prcomp(scale. = TRUE)` |
 | `airway_enrichment` | `airway_enrichment.csv` | `enrichment_dot` | `stats::phyper`, `stats::p.adjust(method = "BH")` |
 | `airway_upset` | `airway_upset.csv` | `upset` | `base::table` of the membership patterns |
@@ -86,6 +86,38 @@ podman run --rm --security-opt label=disable -v "$PWD":/work -w /work localhost/
 | `chickwts_welch` | `chickwts.csv` | `multi_group_compare --test welch` | `stats::oneway.test(var.equal = FALSE)` |
 | `sleep_wilcoxon` | `sleep.csv` | `paired_compare --test wilcoxon` | `stats::wilcox.test(paired = TRUE)` |
 | `normand_meta` | `normand_stroke.csv` | `forest_meta --se se --measure difference` | `metafor::rma(sei = )` with `method = "DL"` and `"FE"` |
+| `cats_student` | `cats.csv` | `two_group_compare --x Sex --y Hwt --test student_t` | `stats::t.test(var.equal = TRUE)`, pooled-SD Cohen's d |
+| `cats_mann_whitney` | `cats.csv` | `two_group_compare --x Sex --y Hwt --test wilcoxon` | `stats::wilcox.test(exact = FALSE, correct = TRUE)` |
+| `cats_feature_panel` | `cats.csv` | `feature_panel --x Sex --test welch_t` | `stats::t.test(var.equal = FALSE)` for each feature, `stats::p.adjust(method = "BH")` |
+| `plant_growth_mw_exact` | `plant_growth_ctrl_trt2.csv` | `two_group_compare --x group --y weight --test wilcoxon` | `stats::wilcox.test(exact = TRUE)` |
+| `plant_growth_tukey` | `plant_growth.csv` | `multi_group_compare --x group --y weight --test anova` | `stats::TukeyHSD`, SS_group / SS_total |
+| `sleep_two_group_paired` | `sleep.csv` | `two_group_compare --x group --y extra --paired --test t` | `stats::t.test(paired = TRUE)`, mean(d) / sd(d) |
+| `sleep_two_group_paired_auto` | `sleep.csv` | `two_group_compare --x group --y extra --paired` | `stats::shapiro.test` of the differences, `stats::wilcox.test(paired = TRUE)` |
+| `sleep_paired_effect` | `sleep.csv` | `paired_compare --x group --y extra --id ID --test t` | mean(d) / sd(d) |
+| `nitrofen_multi` | `nitrofen.csv` | `multi_group_compare --x conc --y total --test anova` | `stats::anova(lm())`, `stats::TukeyHSD` |
+| `nitrofen_two_group` | `nitrofen_80_160.csv` | `two_group_compare --x conc --y total --test welch_t` | `stats::t.test(var.equal = FALSE)` |
+| `cars93_origin` | `cars93.csv` | `two_group_compare --x Origin --y MPG.highway --test wilcoxon` | `stats::wilcox.test(correct = TRUE)` |
+| `chickwts_games_howell` | `chickwts.csv` | `multi_group_compare --x feed --y weight --test welch` | the Games-Howell definition with `stats::ptukey` |
+| `insect_sprays_dunn` | `insect_sprays.csv` | `multi_group_compare --x spray --y count --test kruskal` | Dunn's z with the tie correction, `stats::p.adjust(method = "BH")` |
+| `quine_threeway_anova` | `quine.csv` | `factorial_anova --x Eth --fill Sex --facet Lrn --y Days --test anova` | `car::Anova(type = 2)` |
+| `quine_threeway_art` | `quine.csv` | `factorial_anova --x Eth --fill Sex --facet Lrn --y Days --test art` (R only) | `ARTool::art`, `anova` |
+| `quine_threeway_auto` | `quine.csv` | `factorial_anova --x Eth --fill Sex --facet Lrn --y Days` | `stats::shapiro.test` of the ANOVA residuals |
+| `higgins_art` | `higgins1990_table1.csv` | `factorial_anova --x Row --fill Column --y Response --test art` (R only) | `ARTool::art`, `anova` |
+| `shoes_paired_estimation` | `shoes.csv` | `estimation_plot --x material --y wear --paired --id boy --ref A` | `stats::t.test(paired = TRUE)`, the paired Hedges' g of DABEST |
+| `oxboys_rm` | `oxboys.csv` | `timecourse --x Occasion --y height --id Subject` | `stats::aov` with `Error()`, `car::Anova(idesign)` |
+| `veteran_trt_km` | `veteran.csv` | `survival_km --time time --event status --x trt` | `survival::survfit`, `survival::survdiff` |
+| `colon_cox` | `colon_death.csv` | `cox_forest --time time --event status --covariates "rx,sex,age"` | `survival::coxph`, `survival::cox.zph` |
+| `cgd_cox` | `cgd_first.csv` | `cox_forest --time time --event status --covariates "treat,inherit,age"` | `survival::coxph`, `survival::cox.zph` |
+| `birthwt_roc` | `birthwt.csv` | `roc_curve --y low --x lwt --positive 1` | `pROC::roc`, `pROC::ci.auc`, `pROC::coords(best.method = "youden")` |
+| `davis_bland_altman` | `davis.csv` | `bland_altman --x weight --y repwt` | the mean and SD of the differences, the SE of Bland and Altman (1999), `stats::lm(diff ~ mean)` |
+| `nitrendipene_ic50` | `nitrendipene.csv` | `dose_response --x NIF --y activity --group Tissue` | `stats::nls` with `SSfpl`, extra sum of squares |
+| `dnase_ec50_ci` | `dnase_run1.csv` | `dose_response --x conc --y density` | `stats::nls` with `SSfpl`, the CI of log10 EC50 |
+| `formaldehyde_linear` | `formaldehyde_standard_curve.csv` | `standard_curve --x carb --y optden --id sample --test linear` | `stats::lm` and its inverse |
+| `housing_kruskal` | `housing.csv` | `composition --id sample --x Sat --y Freq --group Infl` | `stats::kruskal.test`, `stats::p.adjust(method = "BH")` |
+| `airway_pca_permanova` | `airway_pca.csv` | `pca --group dex` | the pseudo-F of Anderson (2001), complete enumeration of the 70 splits |
+| `iris_pca_permanova` | `iris.csv` | `pca --group Species` | the pseudo-F of Anderson (2001) |
+| `mtcars_pearson_ci` | `mtcars.csv` | `correlation --x wt --y mpg --test pearson` | `stats::cor.test` |
+| `puromycin_ci` | `puromycin.csv` | `enzyme_kinetics --x conc --y rate --group state` | `stats::nls`, estimate plus or minus t SE |
 
 ## Tolerances
 
@@ -101,6 +133,17 @@ wider, and the reason follows:
 - **The interpolated concentrations of `dnase_standard_curve`.** Each value is
   read off a 4PL fit, so it carries the 1e-4 of the `dnase_4pl` parameters. The
   counts of the unknowns in range, below range and above range stay at 1e-6.
+- **The 4PL values of `nitrendipene_ic50` and `dnase_ec50_ci`.** They carry 1e-4,
+  as the `dnase_4pl` parameters do. The IC50 CI of tissue 2 carries 1e-3: its Hill
+  slope is -0.23 and the SE of its log10 IC50 is 2.04, so a change of 1e-5 in the
+  SE moves each end of the CI by about 1e-4.
+- **The Games-Howell P values below 1e-4 of `chickwts_games_howell`.** They carry
+  1e-5, because R's `ptukey` has a relative error of about 3e-6 in the far tail.
+
+Two groups of reference values wait for a recipe change. The Dunn z of
+`insect_sprays_dunn` has no column in either engine, and the Python
+`survival_km` table has no CI of the median of `veteran_trt_km`. The R suite
+skips these checks, and the Python suite marks them as expected failures.
 
 ## Data preparation
 
@@ -207,6 +250,48 @@ below make a dataset readable by a recipe. Each change is in
   length of hospital stay and its standard error with `metafor::escalc(measure
   = "MD")` for the nine studies of `metadat::dat.normand1999`. The case pools
   the studies from the standard errors, not from confidence intervals.
+- **`cats.csv`.** The file holds `Sex`, `Bwt` and `Hwt` of `MASS::cats`. The
+  groups hold 47 and 97 cats, so the pooled SD and the average of the two
+  variances give two values of Cohen's d. The cases check the pooled form.
+- **`plant_growth_ctrl_trt2.csv`.** This file holds the ctrl and trt2 rows of
+  `plant_growth.csv`. The 20 values hold no tie, so R uses the exact
+  distribution of the Mann-Whitney U.
+- **`nitrofen.csv` and `nitrofen_80_160.csv`.** These files hold the dose and the
+  total brood of the 50 animals of `boot::nitrofen`, and the rows at 80 and 160.
+  The doses are numbers, so both engines must sort the groups as numbers.
+- **`cars93.csv`.** This file holds the model, the origin and the highway MPG of
+  `MASS::Cars93`. "USA" sorts before "non-USA" in code-point order, so USA is
+  group 1 in both engines.
+- **`quine.csv`.** This file holds `MASS::quine` without `Age`. The 2 x 2 x 2
+  design is unbalanced, with 10 to 22 pupils in a cell.
+- **`higgins1990_table1.csv`.** This file is `ARTool::Higgins1990Table1`, a 3 x 3
+  design with 4 subjects in each cell.
+- **`shoes.csv`.** This file holds `MASS::shoes` in long form: the boy, the
+  material and the wear.
+- **`oxboys.csv`.** This file holds `nlme::Oxboys`: 26 boys at 9 occasions, with
+  no group. Mauchly's test rejects sphericity, so the GG correction applies.
+- **`veteran.csv` for `veteran_trt_km`.** S(t) of the test arm is exactly 0.5
+  from day 52 to day 53, so `survival::survfit` takes 52.5 as the median.
+- **`colon_death.csv`.** This file holds the death rows of `survival::colon`,
+  where `etype` is 2. `rx` has three levels.
+- **`cgd_first.csv`.** This file holds the first infection of each patient of
+  `survival::cgd`, where `enum` is 1. "X-linked" sorts before "autosomal" in
+  code-point order, so X-linked is the reference level of `inherit`.
+- **`birthwt.csv`.** This file holds the id, `low` and `lwt` of `MASS::birthwt`.
+  A low weight of the mother marks the case, so the curve reads in the direction
+  ">".
+- **`davis.csv`.** This file holds `carData::Davis`. `repwt` holds 17 missing
+  values, so the case also checks the drop of incomplete pairs; 183 pairs remain.
+- **`nitrendipene.csv`.** This file holds `nlme::Nitrendipene` with the tissue as
+  text. The 15 rows at a dose of 0 stay in the file, and the recipe drops them.
+- **`formaldehyde_standard_curve.csv`.** The six rows of `datasets::Formaldehyde`
+  are the standards. The six optical densities again, with an empty
+  concentration, are the unknowns, and the lowest one falls below the range of
+  the curve.
+- **The other new cases.** `plant_growth_tukey`, `chickwts_games_howell`,
+  `insect_sprays_dunn`, `housing_kruskal`, `airway_pca_permanova`,
+  `iris_pca_permanova`, `mtcars_pearson_ci`, `puromycin_ci`, `dnase_ec50_ci` and
+  the `sleep` cases read the files of the earlier cases.
 
 ## Sources
 
@@ -248,4 +333,18 @@ license of that package applies to the data.
 | `mtcars_fisher.csv` | datasets | Henderson and Velleman (1981) Building multiple regression models interactively. Biometrics 37, 391-411. |
 | `infert.csv` | datasets | Trichopoulos, D. et al. (1976) Induced abortion and secondary infertility. British Journal of Obstetrics and Gynaecology 83, 645-650. |
 | `swiss.csv` | datasets | Mosteller, F. and Tukey, J. W. (1977) Data Analysis and Regression: A Second Course in Statistics. Addison-Wesley. |
+| `cats.csv` | MASS | Fisher, R. A. (1947) The analysis of covariance method for the relation between a part and the whole. Biometrics 3, 65-68. |
+| `plant_growth_ctrl_trt2.csv` | datasets | Dobson, A. J. (1983) An Introduction to Statistical Modelling. London: Chapman and Hall. |
+| `nitrofen.csv`, `nitrofen_80_160.csv` | boot | Bailer, A. J. and Oris, J. T. (1994) Assessing toxicity of pollutants in aquatic systems. In Case Studies in Biometry, Wiley, 25-40. |
+| `cars93.csv` | MASS | Lock, R. H. (1993) 1993 New Car Data. Journal of Statistics Education 1(1). |
+| `quine.csv` | MASS | Quine, S., quoted in Aitkin, M. (1978) The analysis of unbalanced cross classifications. Journal of the Royal Statistical Society A 141, 195-223. |
+| `higgins1990_table1.csv` | ARTool | Higgins, J. J., Blair, R. C. and Tashtoush, S. (1990) The aligned rank transform procedure. Proceedings of the Conference on Applied Statistics in Agriculture, 185-195. |
+| `shoes.csv` | MASS | Box, G. E. P., Hunter, J. S. and Hunter, W. G. (1978) Statistics for Experimenters. Wiley, p. 100. |
+| `oxboys.csv` | nlme | Goldstein, H. (1987) Multilevel Models in Educational and Social Research. Oxford University Press. |
+| `colon_death.csv` | survival | Moertel, C. G. et al. (1990) Levamisole and fluorouracil for adjuvant therapy of resected colon carcinoma. New England Journal of Medicine 322, 352-358. |
+| `cgd_first.csv` | survival | Fleming, T. R. and Harrington, D. P. (1991) Counting Processes and Survival Analysis. Wiley, appendix D.2. |
+| `birthwt.csv` | MASS | Hosmer, D. W. and Lemeshow, S. (1989) Applied Logistic Regression. Wiley. |
+| `davis.csv` | carData | The help page of `carData::Davis` gives the source. |
+| `nitrendipene.csv` | nlme | The help page of `nlme::Nitrendipene` gives the source. |
+| `formaldehyde_standard_curve.csv` | datasets | Bennett, N. A. and Franklin, N. L. (1954) Statistical Analysis in Chemistry and the Chemical Industry. Wiley. |
 | `normand_stroke.csv` | metadat | Normand, S. T. (1999) Meta-analysis: formulating, evaluating, combining, and reporting. Statistics in Medicine 18(3), 321-359. |
