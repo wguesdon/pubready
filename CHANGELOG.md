@@ -45,6 +45,10 @@ tag move together.
   The groups follow the level order of the other recipes (F87).
 - The `heatmap` annotation tracks continue the palette from one track to the
   next, so two tracks no longer share colours (F121).
+- `pca` leaves the `--id` and `--label` columns out of the features, reads
+  `--features` for an explicit list, and names each feature and each dropped
+  feature in the data log, so a numeric sample id that becomes a feature is
+  visible (F47).
 
 ## [3.0.0] - 2026-10-29
 

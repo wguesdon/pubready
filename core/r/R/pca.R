@@ -62,16 +62,58 @@
        permutations = nperm)
 }
 
+# Column names in quotes, the first 20 and a count of the rest. The Python
+# engine writes the same list.
+.pca_name_list <- function(cols, max_n = 20) {
+  q <- sprintf("'%s'", utils::head(cols, max_n))
+  if (length(cols) > max_n) q <- c(q, sprintf("and %d more", length(cols) - max_n))
+  paste(q, collapse = ", ")
+}
+
+# The feature columns of the PCA. With --features, the listed columns, each of
+# which must exist and be numeric. Else every numeric column other than the
+# group and the --id and --label columns. Returns the features and the steps
+# that name the columns left out.
+.pca_feature_columns <- function(df, grp_col, skip, features) {
+  steps <- character(0)
+  if (length(features) > 0) {
+    absent <- setdiff(features, names(df))
+    if (length(absent) > 0) {
+      stop(sprintf("pca: --features names column(s) not found in data: %s",
+                   paste(sprintf("'%s'", absent), collapse = ", ")))
+    }
+    text <- features[!vapply(df[features], is.numeric, logical(1))]
+    if (length(text) > 0) {
+      stop(sprintf("pca: --features names column(s) that are not numeric: %s",
+                   paste(sprintf("'%s'", text), collapse = ", ")))
+    }
+    return(list(features = features, steps = steps))
+  }
+  skip <- intersect(skip[nzchar(skip)], names(df))
+  cand <- setdiff(names(df), c(grp_col, skip))
+  num <- cand[vapply(df[cand], is.numeric, logical(1))]
+  if (length(skip) > 0) {
+    steps <- c(steps, sprintf("Left out the --id and --label column(s) %s.",
+                              paste(sprintf("'%s'", skip), collapse = ", ")))
+  }
+  list(features = num, steps = steps)
+}
+
 recipe_pca <- function(df, spec) {
   grp_col <- spec$data$group %||% spec$data$fill %||% spec$data$x
   if (is.null(grp_col) || !nzchar(grp_col)) stop("pca needs --group (the grouping column)")
   if (!grp_col %in% names(df)) stop(sprintf("column '%s' not found in data", grp_col))
   lab_col <- spec$data$label
+  id_col <- spec$data$id
 
-  feat_cols <- setdiff(names(df)[vapply(df, is.numeric, logical(1))], c(grp_col, lab_col))
+  # The features: the --features list, else every numeric column other than the
+  # group, --id and --label. The data log names each feature, so a numeric
+  # sample id that slipped in is visible (F47).
+  sel <- .pca_feature_columns(df, grp_col, c(id_col, lab_col), spec$data$features)
+  feat_cols <- sel$features
   if (length(feat_cols) < 2) stop("pca needs at least 2 numeric feature columns")
   mat <- as.matrix(df[, feat_cols, drop = FALSE])
-  keepc <- apply(mat, 2, function(v) stats::sd(v, na.rm = TRUE) > 0)
+  keepc <- (apply(mat, 2, stats::sd, na.rm = TRUE) > 0) %in% TRUE
   mat <- mat[, keepc, drop = FALSE]
   keepr <- stats::complete.cases(mat)
   mat <- mat[keepr, , drop = FALSE]
@@ -80,9 +122,13 @@ recipe_pca <- function(df, spec) {
   if (nlevels(grp) < 2) stop("pca needs at least 2 groups")
   labs <- if (!is.null(lab_col) && nzchar(lab_col)) as.character(df[[lab_col]])[keepr] else NULL
   clean_steps <- c(
-    sprintf("Used %d samples and %d numeric features.", nrow(mat), ncol(mat)),
-    if (sum(!keepc) > 0) sprintf("Dropped %d zero-variance feature(s).", sum(!keepc)) else NULL,
+    sprintf("Used %d samples and %d numeric features: %s.", nrow(mat), ncol(mat),
+            .pca_name_list(colnames(mat))),
+    sel$steps,
+    if (sum(!keepc) > 0) sprintf("Dropped %d zero-variance feature(s): %s.", sum(!keepc),
+                                 .pca_name_list(feat_cols[!keepc])) else NULL,
     if (sum(!keepr) > 0) sprintf("Dropped %d sample(s) with missing values.", sum(!keepr)) else NULL)
+  feat_cols <- colnames(mat)
   df_used <- df[keepr, , drop = FALSE]
 
   pc <- stats::prcomp(mat, center = TRUE, scale. = TRUE)
@@ -158,9 +204,14 @@ recipe_pca <- function(df, spec) {
     "suppressPackageStartupMessages(library(ggplot2))",
     "",
     sprintf('raw <- read.csv("%s", check.names = FALSE)', in_name),
-    'num <- raw[, sapply(raw, is.numeric), drop = FALSE]',
-    sprintf('grp <- factor(raw[["%s"]])', grp_col),
-    "num <- num[, apply(num, 2, function(v) sd(v) > 0), drop = FALSE]",
+    "# The features of the figure; a cell that does not read as a number is NA,",
+    "# and a sample with a missing feature or group is dropped, as in the figure.",
+    sprintf("feats <- %s", paste(deparse(feat_cols, width.cutoff = 500L), collapse = "")),
+    "num <- raw[feats]",
+    "for (f in feats) num[[f]] <- suppressWarnings(as.numeric(as.character(num[[f]])))",
+    sprintf('g <- as.character(raw[["%s"]])', grp_col),
+    'keep <- complete.cases(num) & !is.na(g) & trimws(g) != ""',
+    "num <- num[keep, , drop = FALSE]; grp <- factor(g[keep])",
     "pc <- prcomp(num, center = TRUE, scale. = TRUE)",
     "ve <- pc$sdev^2 / sum(pc$sdev^2) * 100",
     "d <- data.frame(PC1 = pc$x[,1], PC2 = pc$x[,2], group = grp)",

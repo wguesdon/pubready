@@ -2,6 +2,7 @@
 the R recipe: rows are samples, numeric columns are features, --group colors the
 points. Features are centered and scaled, PC1 vs PC2 is drawn with per-group
 ellipses, and a seeded one-way PERMANOVA tests group separation."""
+import functools
 import itertools
 import math
 import os
@@ -122,6 +123,73 @@ def _ellipse(ax, x, y, color, level=0.95):
                          fill=False, edgecolor=color, lw=1.0))
 
 
+def name_list(cols, max_n=20):
+    """Column names in quotes, the first 20 and a count of the rest, as in R.
+
+    Args:
+        cols: The column names.
+        max_n: The count of names to write.
+
+    Returns:
+        str: The list.
+    """
+    q = [f"'{c}'" for c in list(cols)[:max_n]]
+    if len(cols) > max_n:
+        q.append(f"and {len(cols) - max_n} more")
+    return ", ".join(q)
+
+
+def feature_columns(df, grp_col, skip, features):
+    """The feature columns of the PCA, as .pca_feature_columns() in R.
+
+    With --features, the listed columns, each of which must exist and be
+    numeric. Else every numeric column other than the group and the --id and
+    --label columns.
+
+    Args:
+        df: The table.
+        grp_col: The group column.
+        skip: The --id and --label columns, None when not given.
+        features: The --features list, or None.
+
+    Returns:
+        tuple: The feature columns and the steps that name the columns left out.
+
+    Raises:
+        ValueError: If a listed feature is absent or not numeric.
+    """
+    steps = []
+    if features:
+        absent = [c for c in features if c not in df.columns]
+        if absent:
+            raise ValueError("pca: --features names column(s) not found in data: "
+                             + ", ".join(f"'{c}'" for c in absent))
+        text = [c for c in features if not is_numeric_column(df[c])]
+        if text:
+            raise ValueError("pca: --features names column(s) that are not numeric: "
+                             + ", ".join(f"'{c}'" for c in text))
+        return list(features), steps
+    skip = [c for c in skip if c and c in df.columns]
+    cand = [c for c in df.columns if c != grp_col and c not in skip]
+    num = [c for c in cand if is_numeric_column(df[c])]
+    if skip:
+        steps.append("Left out the --id and --label column(s) "
+                     + ", ".join(f"'{c}'" for c in skip) + ".")
+    return num, steps
+
+
+def is_numeric_column(s):
+    """Whether a column is numeric, as R is.numeric(): a boolean column is not.
+
+    Args:
+        s: The column.
+
+    Returns:
+        bool: True for a numeric column.
+    """
+    return pd.api.types.is_numeric_dtype(s) and not pd.api.types.is_bool_dtype(s)
+
+
 def recipe_pca(df, spec):
     grp_col = spec["data"].get("group") or spec["data"].get("fill") or spec["data"].get("x")
     if not grp_col:
@@ -129,9 +197,12 @@ def recipe_pca(df, spec):
     if grp_col not in df.columns:
         raise ValueError(f"column '{grp_col}' not found in data")
     lab_col = spec["data"].get("label")
+    id_col = spec["data"].get("id")
 
-    num = df.select_dtypes(include="number")
-    feat = [c for c in num.columns if c not in (grp_col, lab_col)]
+    # The features: the --features list, else every numeric column other than
+    # the group, --id and --label. The data log names each feature, so a numeric
+    # sample id that slipped in is visible (F47).
+    feat, sel_steps = feature_columns(df, grp_col, [id_col, lab_col], spec["data"].get("features"))
     if len(feat) < 2:
         raise ValueError("pca needs at least 2 numeric feature columns")
     X = df[feat].to_numpy(dtype=float)
@@ -143,7 +214,15 @@ def recipe_pca(df, spec):
     if len(pd.unique(groups)) < 2:
         raise ValueError("pca needs at least 2 groups")
     labs = df[lab_col].astype(str).to_numpy()[keepr] if lab_col else None
-    steps = [f"Used {X.shape[0]} samples and {X.shape[1]} numeric features."]
+    kept = [c for c, k in zip(feat, keepc) if k]
+    steps = [f"Used {X.shape[0]} samples and {X.shape[1]} numeric features: {name_list(kept)}."]
+    steps += sel_steps
+    if (~keepc).any():
+        steps.append(f"Dropped {int((~keepc).sum())} zero-variance feature(s): "
+                     f"{name_list([c for c, k in zip(feat, keepc) if not k])}.")
+    if (~keepr).any():
+        steps.append(f"Dropped {int((~keepr).sum())} sample(s) with missing values.")
+    feat = kept
 
     Xs = _scale(X)
     U, S, Vt = np.linalg.svd(Xs, full_matrices=False)
@@ -192,7 +271,7 @@ def recipe_pca(df, spec):
         "df_used": df[keepr].reset_index(drop=True), "clean_steps": steps,
         "label": slugify(os.path.splitext(spec["data"]["file"])[0]),
         "width": w, "height": h,
-        "build_script": lambda in_name, fig_stub: _script(grp_col, in_name, fig_stub),
+        "build_script": functools.partial(_script, grp_col, feat),
     }
 
 
@@ -224,7 +303,18 @@ def _methods(n_samp, n_feat, ve, fstat, pval, pm_method, pm_count):
     )
 
 
-def _script(grp_col, in_name, fig_stub):
+def _script(grp_col, feat, in_name, fig_stub):
+    """Write the standalone script that redraws the PCA scatter.
+
+    Args:
+        grp_col: The group column.
+        feat: The feature columns of the figure.
+        in_name: The bundled input file name.
+        fig_stub: The figure file stem.
+
+    Returns:
+        str: The script text.
+    """
     return f'''#!/usr/bin/env python3
 # Standalone reproduction. Run inside the pinned pubready container.
 import matplotlib
@@ -233,9 +323,14 @@ import matplotlib.pyplot as plt
 import numpy as np, pandas as pd
 
 raw = pd.read_csv("{in_name}")
-grp = raw["{grp_col}"].astype(str).to_numpy()
-num = raw.select_dtypes(include="number")
-X = num.to_numpy(float); X = X[:, X.std(0, ddof=1) > 0]
+# The features of the figure; a cell that does not read as a number is NaN,
+# and a sample with a missing feature or group is dropped, as in the figure.
+feats = {list(feat)!r}
+num = raw[feats].apply(pd.to_numeric, errors="coerce")
+g = raw["{grp_col}"]
+keep = (num.notna().all(axis=1) & g.notna() & (g.astype(str).str.strip() != "")).to_numpy()
+grp = g.astype(str).to_numpy()[keep]
+X = num.to_numpy(float)[keep]
 Xs = (X - X.mean(0)) / X.std(0, ddof=1)
 U, S, Vt = np.linalg.svd(Xs, full_matrices=False)
 sc = U * S; ve = S**2 / np.sum(S**2) * 100
