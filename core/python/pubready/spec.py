@@ -25,6 +25,47 @@ def default_appearance():
     }
 
 
+#: The text options of figkit plot and figkit diagnose, in the order of the R
+#: list (spec.R plot_option_list).
+PLOT_TEXT_OPTIONS = ("x", "y", "fill", "facet", "time", "event", "covariates", "annotation",
+                     "id", "group", "label", "scale", "cluster")
+#: The other options with a value, and their types.
+PLOT_VALUE_OPTIONS = (("fc_cutoff", float), ("p_cutoff", float), ("top_n", int),
+                      ("pd_threshold", float), ("pr_threshold", float), ("positive", str),
+                      ("se", str), ("ci_low", str), ("ci_high", str), ("measure", str),
+                      ("markers", str), ("ref", str), ("cause", str), ("levels", str),
+                      ("visit_levels", str), ("features", str), ("test", str),
+                      ("p_adjust", str), ("geom", str), ("theme", str), ("xlab", str),
+                      ("ylab", str), ("title", str), ("palette", str), ("sheet", str),
+                      ("stamp", str))
+
+
+def add_plot_arguments(p):
+    """Add the options of figkit plot and figkit diagnose to a parser.
+
+    One list serves both commands, so diagnose accepts every option that plot
+    accepts. An option that the user does not give stays None, and
+    spec_from_args() fills its default. The R engine (spec.R) defines the same
+    options.
+
+    Args:
+        p: An argparse.ArgumentParser.
+
+    Returns:
+        argparse.ArgumentParser: The parser.
+    """
+    p.add_argument("--recipe", required=True)
+    p.add_argument("--data", required=True)
+    for name in PLOT_TEXT_OPTIONS:
+        p.add_argument(f"--{name}")
+    for name, kind in PLOT_VALUE_OPTIONS:
+        p.add_argument(f"--{name}", type=kind)
+    p.add_argument("--paired", action="store_true")
+    p.add_argument("--engine")  # consumed by the figkit dispatcher; ignored here
+    p.add_argument("--out", default="pubready_output")
+    return p
+
+
 def split_list_option(x):
     """Split a list option such as --levels into its items.
 

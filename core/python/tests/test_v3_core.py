@@ -1,6 +1,7 @@
 """Tests of the area B fixes of the v3 findings: the read rule, the bundle, the
 spec and the inspect report. The R suite (tests/testthat/test-v3-core.R) holds
 the same cases with the same expected values."""
+import argparse
 import json
 import sys
 from types import SimpleNamespace
@@ -15,7 +16,7 @@ from pubready.bundle import (_markdown_value, dataframe_markdown, manifest_argum
 from pubready.io import read_tidy, read_tidy_logged
 from pubready.qc import qc_layout, qc_normality
 from pubready.run import inspect_data, print_inspect, run_entry
-from pubready.spec import spec_from_args
+from pubready.spec import add_plot_arguments, spec_from_args
 
 
 def write_tmp_csv(tmp_path, lines):
@@ -233,3 +234,24 @@ def test_inspect_gives_level_counts_numeric_codes_and_a_subject_id(tmp_path, cap
                                       "complete": True}]
     assert info["group_candidates"] == ["group", "ID", "sex"]
     assert info["outcome_candidates"] == ["extra"]
+
+
+#: The options of figkit plot and figkit diagnose, the same set in both engines (F73).
+PLOT_OPTION_NAMES = [
+    "annotation", "ci_high", "ci_low", "cause", "cluster", "covariates", "data", "engine",
+    "event", "facet", "fc_cutoff", "features", "fill", "geom", "group", "id", "label",
+    "levels", "markers", "measure", "out", "p_adjust", "p_cutoff", "paired", "palette",
+    "pd_threshold", "positive", "pr_threshold", "recipe", "ref", "scale", "se", "sheet",
+    "stamp", "test", "theme", "time", "title", "top_n", "visit_levels", "x", "xlab", "y",
+    "ylab"]
+
+
+def test_diagnose_and_plot_accept_the_same_full_option_list():
+    p = add_plot_arguments(argparse.ArgumentParser())
+    flags = [s[2:] for act in p._actions for s in act.option_strings
+             if s.startswith("--") and s != "--help"]
+    assert sorted(flags) == sorted(PLOT_OPTION_NAMES)
+    a = p.parse_args(["--recipe", "survival_km", "--data", "d.csv", "--time", "t",
+                      "--ref", "vehicle"])
+    assert a.time == "t" and a.ref == "vehicle" and a.test is None
+    assert spec_from_args(a)["test"]["method"] == "auto"

@@ -14,7 +14,7 @@ from pubready.io import read_tidy          # noqa: E402
 from pubready.qc import qc_normality       # noqa: E402
 from pubready.recipes import get_recipe    # noqa: E402
 from pubready.run import run_entry         # noqa: E402
-from pubready.spec import spec_from_args   # noqa: E402
+from pubready.spec import add_plot_arguments, spec_from_args   # noqa: E402
 
 
 def _fmt(x, g=False):
@@ -24,17 +24,8 @@ def _fmt(x, g=False):
 
 
 def main():
-    p = argparse.ArgumentParser()
-    p.add_argument("--recipe", required=True)
-    p.add_argument("--data", required=True)
-    p.add_argument("--x"); p.add_argument("--y")
-    p.add_argument("--fill"); p.add_argument("--facet")
-    p.add_argument("--id"); p.add_argument("--group")
-    p.add_argument("--test", default="auto")
-    p.add_argument("--paired", action="store_true")
-    p.add_argument("--sheet"); p.add_argument("--stamp")
-    p.add_argument("--engine")  # consumed by the figkit dispatcher; ignored here
-    p.add_argument("--out", default="pubready_output")
+    # diagnose accepts every option of figkit plot, so the recipe sees the same spec.
+    p = add_plot_arguments(argparse.ArgumentParser())
     a, _ = p.parse_known_args()
 
     spec = spec_from_args(a)

@@ -70,6 +70,9 @@ tag move together.
 - The Python engine prints a data error as one line, "Error: " and the
   message, and exits with status 1, as R does. Before, it printed a full
   traceback. Other exceptions keep their traceback (F70).
+- `figkit diagnose` accepts every option of `figkit plot`, from one option list
+  that both commands share in each engine. Before, it accepted 11 options: R
+  stopped on `--time`, and Python dropped `--ref` with no message (F73).
 
 ## [3.0.0] - 2026-10-29
 

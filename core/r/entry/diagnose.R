@@ -5,26 +5,11 @@
 # does not draw the final figure; run `figkit plot` once the test is agreed.
 suppressPackageStartupMessages(library(optparse))
 
-opts <- list(
-  make_option("--recipe", type = "character"),
-  make_option("--data",   type = "character"),
-  make_option("--x",      type = "character", default = NULL),
-  make_option("--y",      type = "character", default = NULL),
-  make_option("--fill",   type = "character", default = NULL),
-  make_option("--facet",  type = "character", default = NULL),
-  make_option("--id",     type = "character", default = NULL),
-  make_option("--group",  type = "character", default = NULL),
-  make_option("--test",   type = "character", default = "auto"),
-  make_option("--paired", action = "store_true", default = FALSE),
-  make_option("--sheet",  type = "character", default = NULL),
-  make_option("--stamp",  type = "character", default = NULL),
-  make_option("--engine", type = "character", default = NULL),  # routing only; ignored here
-  make_option("--out",    type = "character", default = "pubready_output")
-)
-opt <- parse_args(OptionParser(option_list = opts))
-for (req in c("recipe", "data")) if (is.null(opt[[req]])) stop(sprintf("missing required --%s", req))
-
 source(file.path(Sys.getenv("PUBREADY_CORE", "/opt/pubready/core"), "r", "bootstrap.R"))
+
+# diagnose accepts every option of figkit plot, so the recipe sees the same spec.
+opt <- parse_args(OptionParser(option_list = plot_option_list()))
+for (req in c("recipe", "data")) if (is.null(opt[[req]])) stop(sprintf("missing required --%s", req))
 
 spec <- spec_from_opt(opt)
 df   <- read_tidy(opt$data, opt$sheet)

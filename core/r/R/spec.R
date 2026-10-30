@@ -22,6 +22,48 @@ default_appearance <- function() {
   )
 }
 
+# The options of figkit plot and figkit diagnose, one list for both commands, so
+# diagnose accepts every option that plot accepts. An option that the user does
+# not give stays NULL, and spec_from_opt() fills its default. The Python engine
+# (spec.add_plot_arguments) defines the same options.
+plot_option_list <- function() {
+  chr <- c("recipe", "data", "x", "y", "fill", "facet", "time", "event", "covariates",
+           "annotation", "id", "group", "label", "scale", "cluster")
+  opts <- lapply(paste0("--", chr), optparse::make_option, type = "character", default = NULL)
+  c(opts, list(
+    optparse::make_option("--fc_cutoff", type = "double",   default = NULL),
+    optparse::make_option("--p_cutoff",  type = "double",   default = NULL),
+    optparse::make_option("--top_n",     type = "integer",  default = NULL),
+    optparse::make_option("--pd_threshold", type = "double", default = NULL),
+    optparse::make_option("--pr_threshold", type = "double", default = NULL),
+    optparse::make_option("--positive", type = "character", default = NULL),
+    optparse::make_option("--se",       type = "character", default = NULL),
+    optparse::make_option("--ci_low",   type = "character", default = NULL),
+    optparse::make_option("--ci_high",  type = "character", default = NULL),
+    optparse::make_option("--measure",  type = "character", default = NULL),
+    optparse::make_option("--markers",  type = "character", default = NULL),
+    optparse::make_option("--ref",      type = "character", default = NULL),
+    optparse::make_option("--cause",    type = "character", default = NULL),
+    optparse::make_option("--levels",   type = "character", default = NULL),
+    optparse::make_option("--visit_levels", type = "character", default = NULL),
+    optparse::make_option("--features", type = "character", default = NULL),
+    optparse::make_option("--test",     type = "character", default = NULL),
+    optparse::make_option("--paired",   action = "store_true", default = FALSE),
+    optparse::make_option("--p_adjust", type = "character", default = NULL),
+    optparse::make_option("--geom",     type = "character", default = NULL),
+    optparse::make_option("--theme",    type = "character", default = NULL),
+    optparse::make_option("--xlab",     type = "character", default = NULL),
+    optparse::make_option("--ylab",     type = "character", default = NULL),
+    optparse::make_option("--title",    type = "character", default = NULL),
+    optparse::make_option("--palette",  type = "character", default = NULL),
+    optparse::make_option("--sheet",    type = "character", default = NULL),
+    optparse::make_option("--stamp",    type = "character", default = NULL),
+    # Read by the figkit dispatcher for routing; ignored here.
+    optparse::make_option("--engine",   type = "character", default = NULL),
+    optparse::make_option("--out",      type = "character", default = "pubready_output")
+  ))
+}
+
 # Split a list option such as --levels into its items. The items are split on
 # "|" when the value holds one, so an item can hold a comma, for example
 # --levels "edema, no diuretics|edema despite diuretics". Else they are split on

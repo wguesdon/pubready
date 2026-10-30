@@ -174,3 +174,25 @@ test_that("inspect gives level counts, numeric codes and a subject id (F72)", {
   expect_equal(unlist(info$group_candidates), c("group", "ID", "sex"))
   expect_equal(unlist(info$outcome_candidates), "extra")
 })
+
+# The options of figkit plot and figkit diagnose, the same set in both engines (F73).
+plot_option_names <- c(
+  "annotation", "ci_high", "ci_low", "cause", "cluster", "covariates", "data", "engine",
+  "event", "facet", "fc_cutoff", "features", "fill", "geom", "group", "id", "label",
+  "levels", "markers", "measure", "out", "p_adjust", "p_cutoff", "paired", "palette",
+  "pd_threshold", "positive", "pr_threshold", "recipe", "ref", "scale", "se", "sheet",
+  "stamp", "test", "theme", "time", "title", "top_n", "visit_levels", "x", "xlab", "y",
+  "ylab")
+
+test_that("diagnose and plot accept the same full option list (F73)", {
+  opts <- plot_option_list()
+  flags <- vapply(opts, methods::slot, character(1), "long_flag")
+  expect_equal(sort(sub("^--", "", flags), method = "radix"), sort(plot_option_names, method = "radix"))
+  opt <- optparse::parse_args(optparse::OptionParser(option_list = opts),
+                    args = c("--recipe", "survival_km", "--data", "d.csv", "--time", "t",
+                             "--ref", "vehicle"))
+  expect_equal(opt$time, "t")
+  expect_equal(opt$ref, "vehicle")
+  expect_null(opt$test)
+  expect_equal(spec_from_opt(opt)$test$method, "auto")
+})
