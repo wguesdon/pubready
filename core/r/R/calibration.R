@@ -16,6 +16,7 @@
 
 .cal_g <- 10L
 .cal_clip <- 1e-8
+.cal_min_distinct <- 3L
 
 .cal_levels <- function(v) sort(unique(v), method = "radix")
 
@@ -66,20 +67,30 @@
   lp <- stats::qlogis(pmin(pmax(p, .cal_clip), 1 - .cal_clip))
   dd <- data.frame(y = y, lp = lp)
   ctl <- stats::glm.control(epsilon = 1e-12, maxit = 100)
+  # Below 3 distinct predictions the data cannot identify a slope, and the
+  # Hosmer-Lemeshow test has no degree of freedom: both are reported as not
+  # estimable (F78). The Python engine has the same rule.
+  estimable <- length(unique(p)) >= .cal_min_distinct
   fit_int <- stats::glm(y ~ 1 + offset(lp), family = stats::binomial(), data = dd, control = ctl)
-  fit_slope <- stats::glm(y ~ lp, family = stats::binomial(), data = dd, control = ctl)
   # A second fit that starts at the estimate reads the standard error at the
   # estimate itself, not at the last but one iteration, as the Python engine does.
   fit_int <- stats::glm(y ~ 1 + offset(lp), family = stats::binomial(), data = dd, control = ctl,
                         start = stats::coef(fit_int))
-  fit_slope <- stats::glm(y ~ lp, family = stats::binomial(), data = dd, control = ctl,
-                          start = stats::coef(fit_slope))
   int <- .cal_wald(fit_int, "(Intercept)")
-  slope <- .cal_wald(fit_slope, "lp")
+  slope <- list(estimate = NA_real_, se = NA_real_, ci_low = NA_real_, ci_high = NA_real_)
+  if (estimable) {
+    fit_slope <- stats::glm(y ~ lp, family = stats::binomial(), data = dd, control = ctl)
+    fit_slope <- stats::glm(y ~ lp, family = stats::binomial(), data = dd, control = ctl,
+                            start = stats::coef(fit_slope))
+    slope <- .cal_wald(fit_slope, "lp")
+  }
   tab <- .cal_group_table(p, y, .cal_g)
-  hl <- .cal_hosmer_lemeshow(tab)
+  hl <- if (estimable) .cal_hosmer_lemeshow(tab) else {
+    list(statistic = NA_real_, df = NA_integer_, p_value = NA_real_, groups = nrow(tab))
+  }
   sm <- stats::lowess(p, y, f = 2 / 3, iter = 0, delta = 0.01 * diff(range(p)))
   list(model = m, n = length(y), n_events = sum(y), brier = mean((p - y)^2),
+       estimable = estimable,
        intercept = int, slope = slope, hl = hl, oe_ratio = sum(y) / sum(p),
        groups = tab, smooth = data.frame(x = sm$x, y = pmin(pmax(sm$y, 0), 1)),
        p = p, y = y)
@@ -105,8 +116,10 @@
 # line, so the legend stays within the figure width.
 .cal_wrap <- 62
 
+# The slope reads "n.e." (not estimable) below 3 distinct predictions (F78).
 .cal_legend_label <- function(r) {
-  st <- sprintf("slope %.2f, intercept %.2f, Brier %.3f, HL P %s", r$slope$estimate,
+  slope <- if (r$estimable) sprintf("%.2f", r$slope$estimate) else "n.e."
+  st <- sprintf("slope %s, intercept %.2f, Brier %.3f, HL P %s", slope,
                 r$intercept$estimate, r$brier, .cal_p_text(r$hl$p_value))
   one <- sprintf("%s: %s", r$model, st)
   if (nchar(one) > .cal_wrap) sprintf("%s\n%s", r$model, st) else one
@@ -267,7 +280,7 @@ recipe_calibration <- function(df, spec) {
 .cal_groups_frame <- function(r) cbind(model = r$model, r$groups, stringsAsFactors = FALSE)
 
 .cal_meta <- function(r) {
-  list(n = r$n, n_events = r$n_events, brier = r$brier,
+  list(n = r$n, n_events = r$n_events, brier = r$brier, slope_estimable = r$estimable,
        intercept = r$intercept$estimate, slope = r$slope$estimate,
        hosmer_lemeshow = list(statistic = r$hl$statistic, df = r$hl$df, p_value = r$hl$p_value,
                               groups = r$hl$groups),
@@ -302,6 +315,11 @@ recipe_calibration <- function(df, spec) {
 }
 
 .cal_model_text <- function(r) {
+  if (!r$estimable) {
+    return(sprintf("%s: Brier score %.3f, calibration intercept %.2f (95%% CI %.2f to %.2f), slope and Hosmer-Lemeshow test not estimable, because the predictions take fewer than %d distinct values, observed/expected %.2f",
+                   r$model, r$brier, r$intercept$estimate, r$intercept$ci_low, r$intercept$ci_high,
+                   .cal_min_distinct, r$oe_ratio))
+  }
   sprintf("%s: Brier score %.3f, calibration intercept %.2f (95%% CI %.2f to %.2f), slope %.2f (95%% CI %.2f to %.2f), Hosmer-Lemeshow chi-square(%d) = %.2f, P %s, observed/expected %.2f",
           r$model, r$brier, r$intercept$estimate, r$intercept$ci_low, r$intercept$ci_high,
           r$slope$estimate, r$slope$ci_low, r$slope$ci_high, as.integer(r$hl$df),

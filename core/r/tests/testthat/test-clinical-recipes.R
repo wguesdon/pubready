@@ -161,3 +161,15 @@ test_that("sankey needs one row per patient and visit", {
   expect_error(recipe_sankey(d, clin_spec("sankey", id = "id", x = "visit", y = "state")),
                "one row per patient and visit")
 })
+
+# Constant predictions: the slope and the Hosmer-Lemeshow test are not
+# estimable, and the run does not stop (F78). The Python suite expects the same.
+test_that("calibration reports the slope as not estimable for constant predictions", {
+  y <- rep(c(1, 0, 0), 20)
+  res <- recipe_calibration(data.frame(y = y, p = 0.3), clin_spec("calibration", y = "y", x = "p"))
+  expect_true(is.na(res$stats$slope))
+  expect_true(is.na(res$stats$hl_p))
+  expect_false(res$test_meta$models$p$slope_estimable)
+  expect_match(res$methods, "slope and Hosmer-Lemeshow test not estimable", fixed = TRUE)
+  expect_equal(res$stats$intercept, stats::qlogis(1 / 3) - stats::qlogis(0.3), tolerance = 1e-6)
+})

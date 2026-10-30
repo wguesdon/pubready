@@ -199,3 +199,15 @@ def test_sankey_levels_stop_when_a_state_of_the_data_is_not_listed():
         recipe_sankey(sk_visits(), clin_spec("sankey", id="pid", x="visit", y="state",
                                              levels="CR,PR,SD"))
     assert str(err.value) == "--levels does not list the state(s) 'PD' of the data"
+
+
+def test_calibration_reports_the_slope_as_not_estimable_for_constant_predictions():
+    """Constant predictions: slope and HL test not estimable, as in R (F78)."""
+    from scipy.special import logit
+    y = np.array([1, 0, 0] * 20)
+    res = recipe_calibration(pd.DataFrame({"y": y, "p": 0.3}), clin_spec("calibration", y="y", x="p"))
+    st = res["stats"]
+    assert np.isnan(st["slope"].iloc[0]) and np.isnan(st["hl_p"].iloc[0])
+    assert res["test_meta"]["models"]["p"]["slope_estimable"] is False
+    assert "slope and Hosmer-Lemeshow test not estimable" in res["methods"]
+    assert st["intercept"].iloc[0] == pytest.approx(logit(1 / 3) - logit(0.3), rel=1e-6)
