@@ -53,4 +53,32 @@ check 0 two_group_compare deterministic_a --data example/tumor_volume.csv --x gr
 check 0 two_group_compare deterministic_b --data example/tumor_volume.csv --x group --y volume \
   --answer aim=compare --answer design=independent
 cmp "$out/deterministic_a.json" "$out/deterministic_b.json"
+
+# Keep every current engine note in the operating guide for each client.
+check 0 factorial_anova note_factorial --engine python \
+  --data benchmarks/data/tooth_growth.csv --x dose --y len --fill supp \
+  --answer aim=compare --answer design=independent
+check 0 proportions note_proportions --engine python \
+  --data benchmarks/data/titanic.csv --x Class --y Survived \
+  --answer aim=compare --answer category_design=independent
+check 0 pca note_pca --engine python \
+  --data example/pca_samples.csv --group group \
+  --answer aim=describe --answer describe_kind=pca
+for adapter in skills/claude-code/SKILL.md skills/codex/AGENTS.md skills/opencode/AGENTS.md; do
+  sed -n '/^## Engine limits/,/^## Read more/p' "$adapter" |
+    tr '\n' ' ' | tr -s '[:space:]' ' ' > "$out/engine_limits.txt"
+  for result in note_factorial note_proportions note_pca survival_python; do
+    note=$(jq -er '.notes[0] | select(type == "string" and length > 0)' "$out/$result.json")
+    grep -Fq -- "$note" "$out/engine_limits.txt"
+  done
+done
+echo "PASS: engine notes match all three adapters"
+
+# The tree contract already equates its leaves with recipe_options.txt.
+./cli/figkit --help | sed -n '/^Recipes:/,$p' | sed 's/^Recipes://' |
+  tr ', ' '\n' | sed '/^$/d' | sort > "$out/help_recipes.txt"
+awk '!/^#/ && NF && $1 != "always" {print $1}' core/recipe_options.txt |
+  sort > "$out/option_recipes.txt"
+cmp "$out/help_recipes.txt" "$out/option_recipes.txt"
+echo "PASS: help lists every tree recipe"
 echo "All advise checks passed."

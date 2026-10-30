@@ -28,6 +28,11 @@ def test_tree_and_docs():
     assert set(LEAVES) == set(table) - {"always"}
     doc = Path("/opt/pubready/reference/decision_tree.md").read_text()
     headings = set(re.findall(r"^#+ (.+)$", doc, re.M))
+    heading_recipes = {name for heading in headings
+                       for name in re.findall(r"`([a-z_]+)`", heading)}
+    assert heading_recipes <= set(LEAVES)
+    parts = re.split(r"^#+ (.+)$", doc, flags=re.M)
+    sections = dict(zip(parts[1::2], parts[2::2]))
     for node in TREE["nodes"].values():
         content = node.get("leaf", node)
         assert content["doc_heading"] in headings
@@ -36,7 +41,9 @@ def test_tree_and_docs():
         assert f"`{name}`" in doc
         if leaf.get("test", {}).get("allowed"):
             values = [v for v in leaf["test"]["allowed"] if v != "auto"]
-            assert f"--test {' | '.join(values)}" in doc
+            section = sections[leaf["doc_heading"]]
+            forced = re.findall(r"Force with\s+`--test ([^`]+)`", section)
+            assert forced == [" | ".join(values)], name
     assert set(FIXTURES) == {n for n, leaf in LEAVES.items() if leaf.get("test")}
 
 

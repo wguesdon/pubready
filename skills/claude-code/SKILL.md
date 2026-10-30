@@ -228,22 +228,21 @@ test, and the smoke test asserts it. The public benchmarks in `benchmarks/` hold
 32 of the 34 recipes in both engines to an independent reference value. No
 public dataset in the image fits `spider_response` or `waterfall`, so only the
 smoke test checks those two. Five gaps remain.
-The aligned rank transform for non-parametric factorial ANOVA is R only, so
-`--test art --engine python` stops and routes you to R. Under `--test auto`, when
-the model residuals fail Shapiro-Wilk, R runs the aligned rank transform and
-Python stops with the same route, so the two engines never report two tests.
-The Python `survival_km` table has no confidence interval for the median survival.
+The aligned rank transform is R only. Under auto Python stops and routes to R
+when residuals fail Shapiro-Wilk. A forced `--test art` also requires R.
+For `survival_km`, the following restriction applies.
+The Python table has no confidence interval for median survival.
 In `multi_group_compare` a Tukey or Games-Howell P value below about 1e-5 can
 differ between the engines in the fourth digit or later, because R's `ptukey`
 loses relative precision in the far tail. Both engines write a P value below 1e-12
 as "< 1e-12". The `pca`
 PERMANOVA is exact, and identical in both engines, when the design has 5000
-labelings or fewer. A larger design uses 999 seeded permutations, and the two
-engines draw different permutations, so the two P values differ by the Monte Carlo
-error.
+labelings or fewer. Above 5000 labelings the engines use different seeded
+permutations for PERMANOVA. Each engine uses 999 permutations, so the P values
+differ by the Monte Carlo error.
 For a table larger than 2 x 2, the Python Fisher's exact test enumerates every
-table with the observed margins. Above one million tables it stops and routes you
-to `--test chisq` or to the R engine, which uses the network algorithm.
+table with the observed margins. Fisher enumeration above one million tables
+stops and routes to the R network algorithm or chisq.
 
 ## Read more
 
