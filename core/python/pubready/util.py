@@ -256,6 +256,67 @@ def wilcoxon_signed_rank_r(d):
     return v, float(res.pvalue)
 
 
+def rank_test_min_p(sizes, test):
+    """The smallest P that a rank test can reach at the given group sizes.
+
+    The same test function runs on data with no tie and complete separation.
+    Independent groups take the ranks 1 to N in group order ("mann_whitney" for
+    two groups, "kruskal" for the Kruskal-Wallis test); paired data take n
+    distinct positive differences ("signed_rank"). The R engine has the same
+    rule (rank_test_min_p).
+
+    Args:
+        sizes: The size of each group, or the count of pairs.
+        test: "mann_whitney", "signed_rank" or "kruskal".
+
+    Returns:
+        float: The P value, or NaN when a group is empty.
+    """
+    sizes = [int(s) for s in sizes]
+    if not sizes or min(sizes) < 1:
+        return np.nan
+    if test == "signed_rank":
+        return wilcoxon_signed_rank_r(np.arange(1, sizes[0] + 1, dtype=float))[1]
+    if len(sizes) < 2:
+        return np.nan
+    groups = np.split(np.arange(1, sum(sizes) + 1, dtype=float), np.cumsum(sizes)[:-1])
+    if test == "mann_whitney":
+        return mann_whitney_r(groups[0], groups[1])[1]
+    return float(stats.kruskal(*groups).pvalue)
+
+
+def rank_test_cannot_reach(min_p):
+    """Whether the rank test cannot reach P < 0.05.
+
+    Then --test auto keeps the parametric test after a failed normality check.
+
+    Args:
+        min_p: The smallest attainable P of the rank test.
+
+    Returns:
+        bool: True when the attainable P is above 0.05.
+    """
+    return bool(min_p is not None and np.isfinite(min_p) and min_p > 0.05)
+
+
+def rank_floor_text(min_p, kept):
+    """The sentence of a methods text on the attainable P of the rank test.
+
+    Args:
+        min_p: The smallest attainable P of the rank test.
+        kept: Whether the parametric test was kept for this reason.
+
+    Returns:
+        str: The sentence, or "" when the rank test can reach P < 0.05. The R
+        engine writes the same words.
+    """
+    if not rank_test_cannot_reach(min_p):
+        return ""
+    txt = ("The rank test cannot reach P < 0.05 at these group sizes (smallest attainable "
+           f"P = {sig_text(min_p, 2)})")
+    return txt + (", so the parametric test was kept." if kept else ".")
+
+
 def cohens_d_r(a, b, paired=False):
     """Signed Cohen's d with the formulas of rstatix::cohens_d.
 

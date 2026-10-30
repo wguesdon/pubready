@@ -10,7 +10,8 @@ from scipy import stats as ss
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette, plain_number_axis, wrap_labels
-from ..util import (cap_first, is_zero_variance, p_stars, rank_biserial_paired, shapiro_normal,
+from ..util import (cap_first, is_zero_variance, p_stars, rank_biserial_paired, rank_floor_text,
+                    rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
                     wilcoxon_signed_rank_r, zero_variance_message)
 
 
@@ -45,8 +46,13 @@ def recipe_paired_compare(df, spec):
     diffs = (m["v2"] - m["v1"]).to_numpy()
     pdiff, dnorm = shapiro_normal(diffs)
     method = (spec["test"].get("method") or "auto").lower()
+    # When the differences fail the normality check but the signed-rank test
+    # cannot reach P < 0.05 with this count of pairs, auto keeps the paired t-test.
+    rank_min_p = rank_test_min_p([len(m)], "signed_rank")
+    kept = (method in ("auto", "") and not dnorm and rank_test_cannot_reach(rank_min_p)
+            and not is_zero_variance(diffs))
     if method in ("auto", ""):
-        family = "t" if dnorm else "wilcoxon"
+        family = "t" if (dnorm or kept) else "wilcoxon"
     elif method in ("t", "t_test", "paired_t", "student_t"):
         family = "t"
     elif method in ("wilcoxon", "wilcox", "signed_rank", "mwu"):
@@ -106,8 +112,10 @@ def recipe_paired_compare(df, spec):
         "mean_difference": float(np.mean(diffs)),
         "effect_size": {"name": eff_name, "value": eff},
         "assumptions": {"normality_of_differences": {"test": "shapiro-wilk", "p": pdiff}},
+        "rank_test_attainable_p": rank_min_p,
     }
-    methods = _methods(label, lv, len(m), eff_name, eff, spec)
+    floor_txt = rank_floor_text(rank_min_p, kept) if (kept or family == "wilcoxon") else ""
+    methods = _methods(label, lv, len(m), eff_name, eff, spec, floor_txt)
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": m, "clean_steps": steps, "label": slugify(y),
@@ -117,7 +125,7 @@ def recipe_paired_compare(df, spec):
     }
 
 
-def _methods(label, lv, n, eff_name, eff, spec):
+def _methods(label, lv, n, eff_name, eff, spec, floor_txt=""):
     from importlib.metadata import version as v
     import platform
     y_lab = spec["appearance"].get("y_label") or spec["data"]["y"]
@@ -126,6 +134,8 @@ def _methods(label, lv, n, eff_name, eff, spec):
                   "within-subject differences. ")
     else:
         choice = "The test was set by the user. "
+    if floor_txt:
+        choice += floor_txt + " "
     return (
         f"{cap_first(y_lab)} was compared between {lv[0]} and {lv[1]} within each subject with a "
         f"{label} (n = {n} pairs). {choice}"

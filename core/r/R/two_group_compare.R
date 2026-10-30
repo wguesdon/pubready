@@ -30,7 +30,9 @@ recipe_two_group_compare <- function(df, spec) {
   )
   equal_var <- is.na(var_p) || var_p > 0.05
 
-  resolved <- resolve_two_group_method(spec$test$method, all_normal, equal_var, paired)
+  rank_min_p <- .tg_rank_min_p(by_group, lvls, paired)
+  resolved <- resolve_two_group_method(spec$test$method, all_normal, equal_var, paired,
+                                       rank_min_p, .tg_t_can_run(by_group, lvls, paired))
   .tg_check_variance(resolved, by_group, lvls)
 
   if (resolved$family == "t") {
@@ -157,6 +159,7 @@ recipe_two_group_compare <- function(df, spec) {
       equal_variance = list(test = "Levene", p = var_p)
     )
   )
+  test_meta$rank_test_attainable_p <- rank_min_p
 
   methods <- .tg_methods(resolved, stats_df, test_meta, spec)
   build_script <- list(fn = .tg_emit_script, args = list(spec = spec, resolved = resolved))
@@ -172,17 +175,23 @@ recipe_two_group_compare <- function(df, spec) {
 # is zero the statistic is infinite, so the run stops and names the samples. The
 # Python engine has the same rule.
 .tg_check_variance <- function(resolved, by_group, lvls) {
-  if (resolved$family != "t") return(invisible(NULL))
+  paired <- isTRUE(resolved$paired)
+  if (resolved$family != "t" || .tg_t_can_run(by_group, lvls, paired)) return(invisible(NULL))
+  subject <- if (paired) "the within-pair differences have" else zero_variance_subject(lvls)
+  stop(zero_variance_message(resolved$label, subject, "use --test wilcoxon"))
+}
+
+# Whether the t-test can run: the variance that it divides by is not zero.
+.tg_t_can_run <- function(by_group, lvls, paired) {
   a <- by_group[[lvls[1]]]; b <- by_group[[lvls[2]]]
-  if (isTRUE(resolved$paired)) {
-    if (length(a) == length(b) && is_zero_variance(a - b)) {
-      stop(zero_variance_message(resolved$label, "the within-pair differences have",
-                                 "use --test wilcoxon"))
-    }
-  } else if (length(zero_variance_groups(by_group)) == 2) {
-    stop(zero_variance_message(resolved$label, zero_variance_subject(lvls), "use --test wilcoxon"))
-  }
-  invisible(NULL)
+  if (paired) return(!(length(a) == length(b) && is_zero_variance(a - b)))
+  length(zero_variance_groups(by_group)) < 2
+}
+
+# The smallest P that the rank test can reach at the group sizes (F61).
+.tg_rank_min_p <- function(by_group, lvls, paired) {
+  n <- lengths(by_group[lvls])
+  if (paired) rank_test_min_p(min(n), "signed_rank") else rank_test_min_p(n, "mann_whitney")
 }
 
 # The methods paragraph. The Python engine writes the same sentences
@@ -199,6 +208,10 @@ recipe_two_group_compare <- function(df, spec) {
   } else " A non-parametric test was used because the normality assumption was not met."
   if (tolower(spec$test$method %||% "auto") != "auto") {
     var_txt <- paste0(if (resolved$family == "t") var_txt else "", " The test was set by the user.")
+  }
+  if (isTRUE(resolved$kept_parametric) || resolved$family == "wilcoxon") {
+    floor_txt <- rank_floor_text(resolved$rank_min_p, resolved$kept_parametric)
+    if (nzchar(floor_txt)) var_txt <- paste0(var_txt, " ", floor_txt)
   }
   eff_txt <- if (!is.null(test_meta$effect_size)) {
     # The value is given, not only the name, so the paragraph can be read on its

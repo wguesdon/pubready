@@ -22,7 +22,7 @@ from scipy import stats
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
 from ..util import (cap_first, is_zero_variance, mann_whitney_r, rank_biserial_unpaired,
-                    shapiro_normal)
+                    rank_floor_text, rank_test_cannot_reach, rank_test_min_p, shapiro_normal)
 
 MAX_FEATURES = 36
 MAX_QC_PANELS = 48
@@ -336,8 +336,15 @@ def recipe_feature_panel(df, spec):
     sw = [bool(shapiro_normal(v)[1]) for v in samples.values()]
     all_normal = all(sw)
     method = spec["test"].get("method") or "auto"
-    test = resolve_test(method, len(glv), all_normal)
     forced = method.lower() != "auto"
+    # When the normality check fails but the rank test cannot reach P < 0.05 at
+    # the group sizes of the panel, auto keeps the parametric family.
+    tested = [f for f, c in zip(feats, const) if not c]
+    sizes = [max([int(((d["feature"] == f) & (d["group"] == g)).sum()) for f in tested], default=0)
+             for g in glv]
+    rank_min_p = rank_test_min_p(sizes, "mann_whitney" if len(glv) == 2 else "kruskal")
+    kept = not forced and not all_normal and rank_test_cannot_reach(rank_min_p)
+    test = resolve_test(method, len(glv), all_normal or kept)
 
     res = np.array([test_feature(d, f, glv, test) for f in feats], dtype=float).reshape(len(feats), 5)
     res[const, :] = np.nan
@@ -417,6 +424,7 @@ def recipe_feature_panel(df, spec):
         "name": LABELS[test], "test": test, "p_adjust": "BH", "n_features": len(feats),
         "n_groups": len(glv), "groups": glv, "n_significant": n_sig, "n_untested": n_untested,
         "n_constant": int(const.sum()), "n_tested": n_tested, "forced": forced,
+        "kept_parametric": kept, "rank_test_attainable_p": rank_min_p,
         "assumptions": {"normality": {"test": "shapiro-wilk", "all_normal": all_normal,
                                       "n_checked": len(keys), "n_non_normal": int(len(sw) - sum(sw))}},
     }
@@ -446,7 +454,17 @@ def _methods(tm, stats_df, glv, y_lab, x):
     import platform
     nc = tm["assumptions"]["normality"]["n_checked"]
     if tm["forced"]:
-        choice = f"The {tm['name']} was set for every feature by the user. "
+        floor_txt = (rank_floor_text(tm["rank_test_attainable_p"], False)
+                     if tm["test"] in ("wilcoxon", "kruskal") else "")
+        choice = (f"The {tm['name']} was set for every feature by the user. "
+                  + (floor_txt + " " if floor_txt else ""))
+    elif tm["kept_parametric"]:
+        choice = ("One test family was chosen for the whole panel: the Shapiro-Wilk test was run on "
+                  f"each of the {nc} feature-by-group samples, and "
+                  f"{tm['assumptions']['normality']['n_non_normal']} of them departed from normality "
+                  "(P <= 0.05, or fewer than 3 values). "
+                  f"{rank_floor_text(tm['rank_test_attainable_p'], True)} The {tm['name']} was used "
+                  "for every feature. ")
     elif tm["assumptions"]["normality"]["all_normal"]:
         choice = ("One test family was chosen for the whole panel: the Shapiro-Wilk test was run on "
                   f"each of the {nc} feature-by-group samples, and because none departed from "

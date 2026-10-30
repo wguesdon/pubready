@@ -14,7 +14,7 @@ from pubready.recipes.multi_group_compare import recipe_multi_group_compare
 from pubready.recipes.paired_compare import recipe_paired_compare
 from pubready.recipes.two_group_compare import recipe_two_group_compare
 from pubready.spec import spec_from_args
-from pubready.util import shapiro_normal
+from pubready.util import rank_test_min_p, shapiro_normal
 
 
 def v3_spec(recipe, **kw):
@@ -80,3 +80,55 @@ def test_feature_panel_reports_a_constant_feature_as_not_tested():
     assert res["test_meta"]["n_constant"] == 1
     assert res["test_meta"]["assumptions"]["normality"]["n_checked"] == 2
     assert "1 feature(s) were constant" in res["methods"]
+
+
+# F61: --test auto keeps the parametric test when the rank test cannot reach
+# P < 0.05 at the group sizes, and the methods text gives the attainable P.
+def test_rank_test_min_p_gives_the_smallest_attainable_p_of_each_rank_test():
+    assert rank_test_min_p([3, 3], "mann_whitney") == pytest.approx(0.1)
+    assert rank_test_min_p([5], "signed_rank") == pytest.approx(0.0625)
+    assert rank_test_min_p([3, 3, 3], "kruskal") < 0.05
+    assert np.isnan(rank_test_min_p([3, 0], "mann_whitney"))
+
+
+def test_auto_keeps_welch_t_when_the_rank_test_cannot_reach_005():
+    df = pd.DataFrame({"condition": ["control"] * 3 + ["treated"] * 3,
+                       "ct": [5, 5, 6.2, 7.1, 7.4, 7.6]})
+    res = recipe_two_group_compare(df, v3_spec("two_group_compare", x="condition", y="ct"))
+    assert res["stats"]["test"].iloc[0] == "Welch two-sample t-test"
+    assert res["test_meta"]["rank_test_attainable_p"] == pytest.approx(0.1)
+    assert "smallest attainable P = 0.10), so the parametric test was kept" in res["methods"]
+    forced = recipe_two_group_compare(df, v3_spec("two_group_compare", x="condition", y="ct",
+                                                  test="wilcoxon"))
+    assert forced["stats"]["test"].iloc[0] == "Mann-Whitney U test"
+    assert "smallest attainable P = 0.10)." in forced["methods"]
+
+
+def test_paired_compare_keeps_the_paired_t_test_at_5_pairs():
+    pre = [1, 2, 3, 4, 5]
+    post = [v + d for v, d in zip(pre, [1, 1, 1, 1.2, 5])]
+    df = pd.DataFrame({"subject": list(range(1, 6)) * 2, "condition": ["pre"] * 5 + ["post"] * 5,
+                       "value": pre + post})
+    res = recipe_paired_compare(df, v3_spec("paired_compare", x="condition", y="value",
+                                            id="subject"))
+    assert res["stats"]["test"].iloc[0] == "paired t-test"
+    assert res["test_meta"]["rank_test_attainable_p"] == pytest.approx(0.0625)
+    assert "so the parametric test was kept" in res["methods"]
+
+
+def test_multi_group_compare_keeps_the_anova_at_2_values_per_group():
+    df = pd.DataFrame({"group": ["a", "a", "b", "b", "c", "c"],
+                       "value": [1, 2, 5, 6, 9, 10.5]})
+    res = recipe_multi_group_compare(df, v3_spec("multi_group_compare", x="group", y="value"))
+    assert res["test_meta"]["name"] in ("one-way ANOVA", "Welch's one-way ANOVA")
+    assert res["test_meta"]["rank_test_attainable_p"] > 0.05
+    assert "so the parametric test was kept" in res["methods"]
+
+
+def test_feature_panel_keeps_the_parametric_family_at_3_against_3():
+    df = pd.DataFrame({"group": ["a"] * 3 + ["b"] * 3,
+                       "f1": [5, 5, 6.2, 7.1, 7.4, 7.6], "f2": [1, 2, 3, 2, 3, 4.5]})
+    res = recipe_feature_panel(df, v3_spec("feature_panel", x="group"))
+    assert res["test_meta"]["test"] == "welch_t"
+    assert res["test_meta"]["kept_parametric"] is True
+    assert "so the parametric test was kept" in res["methods"]

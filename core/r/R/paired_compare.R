@@ -36,8 +36,13 @@ recipe_paired_compare <- function(df, spec) {
   diffs <- m$v2 - m$v1
   norm  <- shapiro_safe(diffs)
   method <- tolower(spec$test$method %||% "auto")
+  # When the differences fail the normality check but the signed-rank test
+  # cannot reach P < 0.05 with this count of pairs, auto keeps the paired t-test.
+  rank_min_p <- rank_test_min_p(nrow(m), "signed_rank")
+  kept <- method %in% c("auto", "") && !isTRUE(norm$normal) &&
+    rank_test_cannot_reach(rank_min_p) && !is_zero_variance(diffs)
   family <- if (method %in% c("auto", "")) {
-    if (isTRUE(norm$normal)) "t" else "wilcoxon"
+    if (isTRUE(norm$normal) || kept) "t" else "wilcoxon"
   } else if (method %in% c("t", "t_test", "paired_t", "student_t")) "t"
     else if (method %in% c("wilcoxon", "wilcox", "signed_rank", "mwu")) "wilcoxon"
     else stop(sprintf("unknown paired test '%s' (use t or wilcoxon)", method))
@@ -97,10 +102,12 @@ recipe_paired_compare <- function(df, spec) {
     name = label, statistic = stat, p_value = pval,
     n_pairs = nrow(m), mean_difference = mean(diffs),
     effect_size = list(name = eff_name, value = eff),
-    assumptions = list(normality_of_differences = list(test = "shapiro-wilk", p = norm$p)))
+    assumptions = list(normality_of_differences = list(test = "shapiro-wilk", p = norm$p)),
+    rank_test_attainable_p = rank_min_p)
 
   resolved <- list(family = family, label = label)
-  methods  <- .paired_methods(label, lv, nrow(m), pval, eff_name, eff, spec)
+  floor_txt <- if (kept || family == "wilcoxon") rank_floor_text(rank_min_p, kept) else ""
+  methods  <- .paired_methods(label, lv, nrow(m), pval, eff_name, eff, spec, floor_txt)
   build_script <- list(fn = .paired_emit_script, args = list(spec = spec, family = family, lv = lv))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
@@ -111,7 +118,7 @@ recipe_paired_compare <- function(df, spec) {
        width = 3.8, height = 4.2)
 }
 
-.paired_methods <- function(label, lv, n, pval, eff_name, eff, spec) {
+.paired_methods <- function(label, lv, n, pval, eff_name, eff, spec, floor_txt = "") {
   v    <- pkg_versions(c("ggplot2", "ggpubr"))
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   y_lab <- spec$appearance$y_label %||% spec$data$y
@@ -121,6 +128,7 @@ recipe_paired_compare <- function(df, spec) {
     if (tolower(spec$test$method %||% "auto") == "auto") {
       "The test was chosen from the Shapiro-Wilk normality of the within-subject differences. "
     } else "The test was set by the user. ",
+    if (nzchar(floor_txt)) paste0(floor_txt, " ") else "",
     sprintf("Effect size is reported as %s = %s (%s minus %s). Significance was set at P < 0.05. ",
             eff_name, formatC(eff, format = "f", digits = 2), lv[2], lv[1]),
     sprintf("Drawn in R %s with ggplot2 %s and ggpubr %s.", rver, v$ggplot2, v$ggpubr))

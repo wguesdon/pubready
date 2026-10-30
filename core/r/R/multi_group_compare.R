@@ -3,12 +3,18 @@
 # checks, runs the matching post-hoc test, and brackets only the comparisons
 # that reach significance (adjusted P < 0.05). The full pairwise table is saved.
 
-resolve_multi_group_method <- function(method, all_normal, equal_var) {
+# When the normality check fails but the Kruskal-Wallis test cannot reach
+# P < 0.05 at the group sizes (rank_min_p), --test auto keeps the parametric
+# test that Levene's test picks, when that test can run (can_run, a named
+# logical with the entries anova and welch).
+resolve_multi_group_method <- function(method, all_normal, equal_var, rank_min_p = NA_real_,
+                                       can_run = c(anova = TRUE, welch = TRUE)) {
   method <- tolower(method %||% "auto")
+  para <- if (equal_var) "anova" else "welch"
+  kept <- method == "auto" && !all_normal && rank_test_cannot_reach(rank_min_p) &&
+    isTRUE(can_run[[para]])
   fam <- if (method == "auto") {
-    if (all_normal && equal_var) "anova"
-    else if (all_normal && !equal_var) "welch"
-    else "kruskal"
+    if (all_normal || kept) para else "kruskal"
   } else if (method %in% c("anova", "aov")) "anova"
   else if (method %in% c("welch", "welch_anova")) "welch"
   else if (method %in% c("kruskal", "kruskal_wallis", "kw")) "kruskal"
@@ -23,7 +29,9 @@ resolve_multi_group_method <- function(method, all_normal, equal_var) {
     posthoc       = switch(fam, anova = "tukey", welch = "games_howell", kruskal = "dunn"),
     posthoc_label = switch(fam, anova = "Tukey's HSD",
                                  welch = "the Games-Howell test",
-                                 kruskal = "Dunn's test with Benjamini-Hochberg adjustment")
+                                 kruskal = "Dunn's test with Benjamini-Hochberg adjustment"),
+    kept_parametric = kept,
+    rank_min_p    = rank_min_p
   )
 }
 
@@ -82,7 +90,11 @@ recipe_multi_group_compare <- function(df, spec) {
   lev_p <- tryCatch(rstatix::levene_test(df, fml)$p[1], error = na_on_error)
   equal_var <- is.na(lev_p) || lev_p > 0.05
 
-  resolved <- resolve_multi_group_method(spec$test$method, all_normal, equal_var)
+  rank_min_p <- rank_test_min_p(lengths(by_group), "kruskal")
+  zv <- zero_variance_groups(by_group)
+  resolved <- resolve_multi_group_method(spec$test$method, all_normal, equal_var, rank_min_p,
+                                         c(anova = length(zv) < length(by_group),
+                                           welch = length(zv) == 0))
   .mg_check_variance(resolved, by_group)
 
   # Omnibus test and matching post-hoc. The base R functions give full precision;
@@ -205,7 +217,8 @@ recipe_multi_group_compare <- function(df, spec) {
     assumptions = list(
       normality      = list(test = "shapiro-wilk", all_normal = all_normal),
       equal_variance = list(test = "Levene", p = lev_p)
-    )
+    ),
+    rank_test_attainable_p = rank_min_p
   )
 
   n_by_group <- vapply(by_group, length, integer(1))
@@ -277,6 +290,10 @@ recipe_multi_group_compare <- function(df, spec) {
   eff <- if (!is.null(omnibus$effect_size)) {
     sprintf(" The effect size was %s = %.2f.", omnibus$effect_size$name, omnibus$effect_size$value)
   } else ""
+  if (isTRUE(resolved$kept_parametric) || resolved$family == "kruskal") {
+    floor_txt <- rank_floor_text(resolved$rank_min_p, resolved$kept_parametric)
+    if (nzchar(floor_txt)) eff <- paste0(" ", floor_txt, eff)
+  }
   ph_txt <- if (identical(display, "compact letter display")) {
     sprintf(" Pairwise comparisons used %s. Because %d pairs differed (adjusted P < 0.05), the figure shows a compact letter display (the insert-and-absorb algorithm of Piepho, 2004) instead of brackets: groups that share a letter do not differ significantly.",
             resolved$posthoc_label, n_sig)

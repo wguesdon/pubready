@@ -16,6 +16,13 @@ tag move together.
 ### Added
 
 ### Changed
+- Before `--test auto` takes a rank test because the normality check failed,
+  `two_group_compare`, `paired_compare`, `multi_group_compare` and
+  `feature_panel` compute the smallest P that the rank test can reach at the
+  group sizes. When that P is above 0.05, the recipe keeps the parametric test,
+  and the methods text gives the attainable P. A forced rank test still runs,
+  and the text gives the attainable P. `test_meta` records it as
+  `rank_test_attainable_p` (F61).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of

@@ -94,6 +94,15 @@
 
 .fp_is_constant <- function(f, d) is_zero_variance(d$value[d$feature == f])
 
+# The group sizes of the panel: the largest count of each group over the
+# tested features, for the attainable P of the rank test.
+.fp_design_sizes <- function(d, feats, glv) {
+  if (length(feats) == 0) return(rep(0L, length(glv)))
+  counts <- matrix(vapply(feats, .fp_counts, numeric(length(glv)), d = d, glv = glv),
+                   nrow = length(glv))
+  apply(counts, 1, max)
+}
+
 .fp_cohens_d <- function(a, b) {
   na <- length(a); nb <- length(b)
   sp <- sqrt(((na - 1) * stats::var(a) + (nb - 1) * stats::var(b)) / (na + nb - 2))
@@ -168,8 +177,13 @@ recipe_feature_panel <- function(df, spec) {
   sw <- vapply(split(d$value, factor(paste(d$feature, d$group, sep = ": "), levels = keys)),
                .fp_shapiro_normal, logical(1))
   all_normal <- all(sw)
-  test <- .fp_resolve(spec$test$method, length(glv), all_normal)
   forced <- !identical(tolower(spec$test$method %||% "auto"), "auto")
+  # When the normality check fails but the rank test cannot reach P < 0.05 at
+  # the group sizes of the panel, auto keeps the parametric family.
+  rank_min_p <- rank_test_min_p(.fp_design_sizes(d, feats[!const], glv),
+                                if (length(glv) == 2) "mann_whitney" else "kruskal")
+  kept <- !forced && !all_normal && rank_test_cannot_reach(rank_min_p)
+  test <- .fp_resolve(spec$test$method, length(glv), all_normal || kept)
 
   res <- vapply(feats, .fp_test_feature, numeric(5), d = d, glv = glv, test = test)
   res <- matrix(res, nrow = 5)
@@ -230,6 +244,7 @@ recipe_feature_panel <- function(df, spec) {
     name = .fp_labels[[test]], test = test, p_adjust = "BH", n_features = length(feats),
     n_groups = length(glv), groups = glv, n_significant = n_sig, n_untested = n_untested,
     n_constant = sum(const), n_tested = n_tested, forced = forced,
+    kept_parametric = kept, rank_test_attainable_p = rank_min_p,
     assumptions = list(normality = list(test = "shapiro-wilk", all_normal = all_normal,
                                         n_checked = length(keys), n_non_normal = sum(!sw))))
   resolved <- list(family = "feature_panel", label = .fp_labels[[test]])
@@ -247,7 +262,13 @@ recipe_feature_panel <- function(df, spec) {
   v <- pkg_versions("ggplot2")
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   choice <- if (isTRUE(tm$forced)) {
-    sprintf("The %s was set for every feature by the user. ", tm$name)
+    floor_txt <- if (tm$test %in% c("wilcoxon", "kruskal")) rank_floor_text(tm$rank_test_attainable_p, FALSE) else ""
+    sprintf("The %s was set for every feature by the user. %s", tm$name,
+            if (nzchar(floor_txt)) paste0(floor_txt, " ") else "")
+  } else if (isTRUE(tm$kept_parametric)) {
+    sprintf("One test family was chosen for the whole panel: the Shapiro-Wilk test was run on each of the %d feature-by-group samples, and %d of them departed from normality (P <= 0.05, or fewer than 3 values). %s The %s was used for every feature. ",
+            tm$assumptions$normality$n_checked, tm$assumptions$normality$n_non_normal,
+            rank_floor_text(tm$rank_test_attainable_p, TRUE), tm$name)
   } else if (isTRUE(tm$assumptions$normality$all_normal)) {
     sprintf("One test family was chosen for the whole panel: the Shapiro-Wilk test was run on each of the %d feature-by-group samples, and because none departed from normality (P > 0.05) the parametric %s was used for every feature. ",
             tm$assumptions$normality$n_checked, tm$name)

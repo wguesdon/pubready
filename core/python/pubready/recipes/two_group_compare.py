@@ -14,16 +14,43 @@ from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, new_fig, palette, plain_number_axis,
                      script_geom_code, wrap_labels)
 from ..util import (cap_first, cohens_d_r, is_zero_variance, mann_whitney_r, p_stars,
-                    rank_biserial_paired, rank_biserial_unpaired, shapiro_normal,
+                    rank_biserial_paired, rank_biserial_unpaired, rank_floor_text,
+                    rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
                     wilcoxon_signed_rank_r, zero_variance_groups, zero_variance_message,
                     zero_variance_subject)
 
 
-def _resolve(method, all_normal, equal_var, paired):
+def _resolve(method, all_normal, equal_var, paired, rank_min_p=np.nan, t_can_run=True):
+    """Resolve the test from the request and the assumption checks.
+
+    When the normality check fails but the rank test cannot reach P < 0.05 at
+    the group sizes, --test auto keeps the parametric test, unless the t-test
+    cannot run, as resolve_two_group_method() of the R engine does.
+
+    Args:
+        method: The --test value.
+        all_normal: Whether the normality check passed.
+        equal_var: Whether Levene's test found equal variances.
+        paired: Whether the groups are paired.
+        rank_min_p: The smallest P that the rank test can reach.
+        t_can_run: Whether the variance of the t-test is not zero.
+
+    Returns:
+        dict: The family, var_equal, label, paired, kept_parametric and
+        rank_min_p.
+
+    Raises:
+        ValueError: If the test is unknown.
+    """
     method = (method or "auto").lower()
+    kept = False
     if method == "auto":
-        family = "t" if all_normal else "wilcoxon"
-        var_equal = equal_var if family == "t" else None
+        if all_normal:
+            family, var_equal = "t", equal_var
+        elif rank_test_cannot_reach(rank_min_p) and t_can_run:
+            family, var_equal, kept = "t", False, True
+        else:
+            family, var_equal = "wilcoxon", None
     elif method in ("t", "t_test", "student_t", "welch_t"):
         family = "t"
         var_equal = True if method == "student_t" else (False if method == "welch_t" else equal_var)
@@ -36,7 +63,8 @@ def _resolve(method, all_normal, equal_var, paired):
                  "Student's two-sample t-test" if var_equal else "Welch two-sample t-test")
     else:
         label = "Wilcoxon signed-rank test" if paired else "Mann-Whitney U test"
-    return dict(family=family, var_equal=var_equal, label=label, paired=paired)
+    return dict(family=family, var_equal=var_equal, label=label, paired=paired,
+                kept_parametric=kept, rank_min_p=rank_min_p)
 
 
 def recipe_two_group_compare(df, spec):
@@ -58,7 +86,10 @@ def recipe_two_group_compare(df, spec):
         var_p = np.nan
     equal_var = np.isnan(var_p) or var_p > 0.05
 
-    r = _resolve(spec["test"].get("method"), all_normal, equal_var, paired)
+    rank_min_p = (rank_test_min_p([min(len(a), len(b))], "signed_rank") if paired
+                  else rank_test_min_p([len(a), len(b)], "mann_whitney"))
+    r = _resolve(spec["test"].get("method"), all_normal, equal_var, paired, rank_min_p,
+                 _t_can_run(a, b, paired))
     _check_variance(r, a, b, lv)
 
     if r["family"] == "t":
@@ -121,6 +152,7 @@ def recipe_two_group_compare(df, spec):
             "equal_variance": {"test": "Levene", "p": var_p},
         },
     }
+    test_meta["rank_test_attainable_p"] = rank_min_p
 
     methods = _methods(r, stats_df, eff_name, eff, spec)
     return {
@@ -148,15 +180,26 @@ def _check_variance(r, a, b, lv):
     Raises:
         ValueError: If the variance of the test is zero.
     """
-    if r["family"] != "t":
+    if r["family"] != "t" or _t_can_run(a, b, r["paired"]):
         return
-    if r["paired"]:
-        if len(a) == len(b) and is_zero_variance(np.asarray(a) - np.asarray(b)):
-            raise ValueError(zero_variance_message(r["label"], "the within-pair differences have",
-                                                   "use --test wilcoxon"))
-    elif len(zero_variance_groups({lv[0]: a, lv[1]: b})) == 2:
-        raise ValueError(zero_variance_message(r["label"], zero_variance_subject(lv),
-                                               "use --test wilcoxon"))
+    subject = "the within-pair differences have" if r["paired"] else zero_variance_subject(lv)
+    raise ValueError(zero_variance_message(r["label"], subject, "use --test wilcoxon"))
+
+
+def _t_can_run(a, b, paired):
+    """Whether the t-test can run: the variance that it divides by is not zero.
+
+    Args:
+        a: The values of the first group.
+        b: The values of the second group.
+        paired: Whether the groups are paired.
+
+    Returns:
+        bool: True when the t-test can run.
+    """
+    if paired:
+        return not (len(a) == len(b) and is_zero_variance(np.asarray(a) - np.asarray(b)))
+    return len(zero_variance_groups({"a": a, "b": b})) < 2
 
 
 def _methods(r, stats_df, eff_name, eff_value, spec):
@@ -170,6 +213,10 @@ def _methods(r, stats_df, eff_name, eff_value, spec):
         var_txt = " A non-parametric test was used because the normality assumption was not met."
     if (spec["test"].get("method") or "auto").lower() != "auto":
         var_txt = (var_txt if r["family"] == "t" else "") + " The test was set by the user."
+    if r["kept_parametric"] or r["family"] == "wilcoxon":
+        floor_txt = rank_floor_text(r["rank_min_p"], r["kept_parametric"])
+        if floor_txt:
+            var_txt += " " + floor_txt
     n1, n2 =int(stats_df["n1"].iloc[0]), int(stats_df["n2"].iloc[0])
     # The value is given, not only the name, so the paragraph can be read on
     # its own. The R engine writes the same sentence.

@@ -77,12 +77,54 @@ rank_biserial_paired <- function(d) {
   (sum(rk[d > 0]) - sum(rk[d < 0])) / sum(rk)
 }
 
+# The smallest P that a rank test can reach at the given group sizes: the same
+# test function on data with no tie and complete separation. Independent groups
+# take the ranks 1 to N in group order ("mann_whitney" for two groups, "kruskal"
+# for the Kruskal-Wallis test); paired data take n distinct positive
+# differences ("signed_rank"). NA when a group is empty. The Python engine has
+# the same rule (util.rank_test_min_p).
+rank_test_min_p <- function(sizes, test) {
+  sizes <- as.integer(sizes)
+  if (length(sizes) == 0 || any(is.na(sizes)) || any(sizes < 1)) return(NA_real_)
+  if (test == "signed_rank") {
+    return(suppressWarnings(stats::wilcox.test(as.numeric(seq_len(sizes[1])))$p.value))
+  }
+  if (length(sizes) < 2) return(NA_real_)
+  v <- as.numeric(seq_len(sum(sizes)))
+  g <- rep(seq_along(sizes), sizes)
+  if (test == "mann_whitney") {
+    return(suppressWarnings(stats::wilcox.test(v[g == 1], v[g == 2])$p.value))
+  }
+  stats::kruskal.test(v, factor(g))$p.value
+}
+
+# Whether the rank test cannot reach P < 0.05: then --test auto keeps the
+# parametric test after a failed normality check.
+rank_test_cannot_reach <- function(min_p) isTRUE(min_p > 0.05)
+
+# The sentence of a methods text on the attainable P of the rank test, empty
+# when the rank test can reach P < 0.05. `kept` says that the parametric test
+# was kept for this reason. The Python engine writes the same words.
+rank_floor_text <- function(min_p, kept) {
+  if (!rank_test_cannot_reach(min_p)) return("")
+  txt <- sprintf("The rank test cannot reach P < 0.05 at these group sizes (smallest attainable P = %s)",
+                 sig_text(min_p, 2))
+  if (isTRUE(kept)) paste0(txt, ", so the parametric test was kept.") else paste0(txt, ".")
+}
+
 # Resolve which two-group test to run from the request and the assumption checks.
-resolve_two_group_method <- function(method, all_normal, equal_var, paired) {
+# When the normality check fails but the rank test cannot reach P < 0.05 at the
+# group sizes (rank_min_p), --test auto keeps the parametric test, unless the
+# t-test cannot run (t_can_run, a variance of zero).
+resolve_two_group_method <- function(method, all_normal, equal_var, paired,
+                                     rank_min_p = NA_real_, t_can_run = TRUE) {
   method <- tolower(method %||% "auto")
+  kept <- FALSE
   if (method == "auto") {
     if (isTRUE(all_normal)) {
       family <- "t"; var_equal <- isTRUE(equal_var)
+    } else if (rank_test_cannot_reach(rank_min_p) && isTRUE(t_can_run)) {
+      family <- "t"; var_equal <- FALSE; kept <- TRUE
     } else {
       family <- "wilcoxon"; var_equal <- NA
     }
@@ -103,7 +145,8 @@ resolve_two_group_method <- function(method, all_normal, equal_var, paired) {
   } else {
     if (paired) "Wilcoxon signed-rank test" else "Mann-Whitney U test"
   }
-  list(family = family, var_equal = var_equal, label = label, paired = paired)
+  list(family = family, var_equal = var_equal, label = label, paired = paired,
+       kept_parametric = kept, rank_min_p = rank_min_p)
 }
 
 # Installed versions of the named packages, as a named list of strings.
