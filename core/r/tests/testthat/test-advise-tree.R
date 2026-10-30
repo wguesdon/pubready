@@ -31,7 +31,9 @@ test_that("every advise leaf exists in R and its advertised tests report a liste
     outcomes <- vapply(leaf$test$outcomes, `[[`, character(1), "test")
     for (method in leaf$test$allowed) {
       fixture <- advise_fixture(recipe, method)
-      result <- fn(fixture$data, fixture$spec)
+      result <- NULL
+      expect_no_error(result <- fn(fixture$data, fixture$spec))
+      if (is.null(result)) next
       expect_true(result$test_meta$name %in% outcomes,
                   info = paste(recipe, method, result$test_meta$name))
     }

@@ -12,7 +12,7 @@ import yaml
 
 from .io import read_tidy
 from .run import inspect_column, inspect_id_candidate, inspect_labels
-from .spec import check_recipe_options, read_recipe_options, split_list_option
+from .spec import PLOT_VALUE_OPTIONS, check_recipe_options, read_recipe_options, split_list_option
 from .util import level_order, time_level_order
 
 REFERENCE = Path(os.environ.get("PUBREADY_REFERENCE", "/opt/pubready/reference"))
@@ -209,6 +209,8 @@ def merge_answers(tree, options, entries=(), filename=None):
     for key, value in options.items():
         if key in tree["questions"] or key in answers:
             add_answer(answers, key, value)
+    if options.get("paired") or answers.get("paired") == "true":
+        add_answer(answers, "design", "paired")
     for key, value in answers.items():
         q = tree["questions"].get(key, {})
         if "answers" in q and value not in q["answers"]:
@@ -493,6 +495,8 @@ def finish_leaf(tree, node_id, df, options, answers, facts, result):
         value = ask_question(key, tree, answers, facts, result, node_id)
         if value is not None:
             options[key] = value
+    if recipe == "paired_compare":
+        options.pop("paired", None)
     for key in leaf["flags"]["required"]:
         if not options.get(key):
             need_flag(key, result)
@@ -565,6 +569,16 @@ def advise(options, entries=(), filename=None, tree_path=None, frame=None):
         for key, value in answers.items():
             if key not in tree["questions"] or tree["questions"][key].get("flag"):
                 options[key] = value
+        for key, kind in PLOT_VALUE_OPTIONS:
+            if key in options:
+                try:
+                    options[key] = kind(options[key])
+                except (ValueError, TypeError) as error:
+                    raise AdviceError(f"Invalid value for --{key}.") from error
+        if isinstance(options.get("paired"), str):
+            if options["paired"] not in ("true", "false"):
+                raise AdviceError("The paired answer must be true or false.")
+            options["paired"] = options["paired"] == "true"
         if options.get("engine", "r") not in ("r", "python"):
             raise AdviceError("The engine must be r or python.")
         if not options.get("data") and frame is None:

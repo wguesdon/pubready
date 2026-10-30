@@ -121,3 +121,23 @@ def test_every_descriptive_route(recipe):
     result = advise(dict(data=str(BENCH / "data/iris.csv")), ["aim=describe", f"describe_kind={recipe}"])
     assert result["recipe"] == recipe
     assert result["exit_code"] in (0, 3)
+
+
+def test_paired_flag_cannot_emit_row_order_pairing():
+    """An explicit paired flag uses the subject-id route and rejects a conflict."""
+    flags = dict(data=str(BENCH / "data/sleep.csv"), x="group", y="extra", paired=True)
+    result = advise(flags, ["aim=compare"])
+    assert result["recipe"] == "paired_compare"
+    assert "--paired" not in result["command"]
+    assert advise(flags, ["aim=compare", "design=independent"])["exit_code"] == 2
+
+
+def test_binary_event_normalization_and_prediction_range():
+    """Normalize logical events and reject impossible predicted probabilities."""
+    df = pd.DataFrame({"time": range(8), "event": [True, False] * 4,
+                       "group": ["a", "b"] * 4, "prediction": [1.2] * 8})
+    result = advise(dict(time="time", event="event", x="group"),
+                    ["aim=time_to_event", "tte_aim=compare_groups"], frame=df)
+    assert result["exit_code"] == 0
+    bad = advise(dict(x="prediction", y="event", positive="TRUE"), ["aim=calibration"], frame=df)
+    assert bad["exit_code"] == 4

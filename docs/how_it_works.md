@@ -877,3 +877,6 @@ Never answer a scientist question from column names alone. Unsupported designs
 include strata, covariate adjustment, rates of change and control-only comparisons.
 The command checks structure; a complete result does not guarantee a successful
 model fit. The recipe performs the statistical checks.
+
+The end-to-end advice test uses `jq` to read command arrays and passes them
+through `xargs -0`. This test dependency is not needed to run figkit.
