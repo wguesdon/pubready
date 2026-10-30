@@ -49,6 +49,29 @@
   out
 }
 
+# The status holds 0 for a censored subject and a positive number for each
+# cause. A text code such as "censored" or a negative code such as -1 would
+# become a competing event, so it stops the run, and the message lists the
+# codes. The Python engine has the same rule.
+.cif_check_status <- function(status, ecol) {
+  s <- status[!is.na(status)]
+  num <- suppressWarnings(as.numeric(s))
+  bad <- unique(s[!is.finite(num) | num < 0])
+  if (length(bad) > 0) {
+    stop(sprintf("column '%s' must hold 0 for a censored subject and a positive number for each cause, but it holds %s; recode the status, for example 0 = censored, 1 = relapse, 2 = death",
+                 ecol, .km_value_list(level_order(bad))))
+  }
+  invisible(NULL)
+}
+
+# Group labels by the rule that both engines share (level_labels): a whole number
+# reads "80", not "80.0".
+.cif_group_labels <- function(v) {
+  out <- trimws(level_labels(v))
+  out[is.na(v)] <- NA_character_
+  out
+}
+
 # The CIF of one curve at time t, as cmprsk::timepoints reads it: the value of
 # the right-continuous step function, or NA past the last follow-up time of the
 # group.
@@ -207,8 +230,9 @@ recipe_cumulative_incidence <- function(df, spec) {
   n0 <- nrow(df)
   d <- data.frame(time = suppressWarnings(as.numeric(df[[tcol]])),
                   status = .cif_codes(df[[ecol]]),
-                  group = if (has_group) .cif_codes(df[[gcol]]) else "all",
+                  group = if (has_group) .cif_group_labels(df[[gcol]]) else "all",
                   stringsAsFactors = FALSE)
+  .cif_check_status(d$status, ecol)
   keep <- is.finite(d$time) & d$time >= 0 & !is.na(d$status) & !is.na(d$group)
   d <- d[keep, , drop = FALSE]
   if (nrow(d) < 2) stop("cumulative_incidence needs at least 2 subjects with a time and a status")
@@ -232,7 +256,9 @@ recipe_cumulative_incidence <- function(df, spec) {
       cause))
   }
   causes <- c(cause, setdiff(causes, cause))
-  lv <- sort(unique(d$group), method = "radix")
+  # The groups sort as numbers when every label is a number, else in code-point
+  # order, by the level rule that both engines share (level_order).
+  lv <- level_order(d$group)
   d$group <- factor(d$group, levels = lv)
   clean_steps <- c(
     if (sum(!keep) > 0) sprintf("Dropped %d row(s) with a missing or negative time, a missing status or a missing group.",
@@ -287,7 +313,7 @@ recipe_cumulative_incidence <- function(df, spec) {
        methods = .cif_methods(fits, d, causes, tps, tcol, ecol, gcol, has_group),
        build_script = list(fn = .cif_emit_script,
                            args = list(spec = spec, has_group = has_group, tps = tps,
-                                       causes = causes, dims = dims)),
+                                       causes = causes, dims = dims, lv = lv)),
        label = slugify(ecol), df_used = d, clean_steps = clean_steps,
        curves = do.call(rbind, lapply(fits, .cif_get_curves)),
        width = dims$width, height = dims$height)
@@ -355,7 +381,7 @@ recipe_cumulative_incidence <- function(df, spec) {
   paste(paste(x[-length(x)], collapse = ", "), "and", x[length(x)])
 }
 
-.cif_emit_script <- function(spec, has_group, tps, causes, dims, in_name, fig_stub) {
+.cif_emit_script <- function(spec, has_group, tps, causes, dims, lv, in_name, fig_stub) {
   tcol <- spec$data$time; ecol <- spec$data$event; gcol <- spec$data$x
   c(
     "#!/usr/bin/env Rscript",
@@ -368,7 +394,8 @@ recipe_cumulative_incidence <- function(df, spec) {
     sprintf('status <- trimws(as.character(raw[["%s"]]))', ecol),
     if (has_group) sprintf('grp <- trimws(as.character(raw[["%s"]]))', gcol) else 'grp <- rep("all", nrow(raw))',
     "ok <- is.finite(tm) & tm >= 0 & !is.na(status) & !is.na(grp)",
-    "tm <- tm[ok]; status <- status[ok]; grp <- factor(grp[ok], levels = sort(unique(grp[ok]), method = \"radix\"))",
+    "tm <- tm[ok]; status <- status[ok]",
+    sprintf("grp <- factor(grp[ok], levels = c(%s))", paste(sprintf("\"%s\"", lv), collapse = ", ")),
     'fit <- cuminc(tm, status, grp, cencode = "0")',
     "if (!is.null(fit$Tests)) print(fit$Tests)",
     sprintf("print(timepoints(fit, c(%s)))", paste(sprintf("%g", tps), collapse = ", ")),

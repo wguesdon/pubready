@@ -15,9 +15,47 @@ import pandas as pd
 from matplotlib.patches import Patch
 
 from ..bundle import slugify
-from ..theme import apply_pub_style, new_fig, palette
-from .spider_response import CATEGORIES, categorise
+from ..theme import apply_pub_style, legend_width, new_fig, palette, wrap_label, wrap_labels
+from .spider_response import (CATEGORIES, categorise, check_numeric_time,
+                              check_one_row_per_time, late_baseline_step)
 
+
+#: The legend labels wrap at this many characters, as in the R engine.
+LEGEND_WRAP = 24
+
+
+def waterfall_width(n, legend_labels, title):
+    """The figure width, as waterfall_width() of the R engine.
+
+    0.16 in per bar between 5 and 9 in, wider when the legend needs more than
+    2 in, so a long label widens the figure instead of squeezing the panel.
+
+    Args:
+        n: The count of bars.
+        legend_labels: The legend labels.
+        title: The legend title.
+
+    Returns:
+        float: The width in inches.
+    """
+    return (max(5.0, min(9.0, 3.2 + 0.16 * n))
+            + max(0.0, legend_width(wrap_labels(legend_labels, LEGEND_WRAP), title) - 2.0))
+
+
+def waterfall_height(patients):
+    """The figure height, as waterfall_height() of the R engine.
+
+    4.4 in, taller when the patient labels under the bars (drawn up to 30
+    patients) need more than 0.5 in at 0.055 in per character.
+
+    Args:
+        patients: The patient labels.
+
+    Returns:
+        float: The height in inches.
+    """
+    chars = max([len(str(p)) for p in patients] + [0]) if len(patients) <= 30 else 0
+    return 4.4 + max(0.0, 0.055 * chars - 0.5)
 
 def from_visits(d):
     """Best and worst change from baseline per patient from one row per visit.
@@ -71,6 +109,8 @@ def recipe_waterfall(df, spec):
     pd_cut = 20.0 if ap.get("pd_threshold") is None else float(ap["pd_threshold"])
     pr_cut = -30.0 if ap.get("pr_threshold") is None else float(ap["pr_threshold"])
 
+    if has_time:
+        check_numeric_time(df[x], x)
     n0 = len(df)
     d = pd.DataFrame({"id": df[idc].astype(str).where(df[idc].notna()),
                       "time": pd.to_numeric(df[x], errors="coerce") if has_time else 0.0,
@@ -80,6 +120,10 @@ def recipe_waterfall(df, spec):
     n_missing = n0 - len(d)
     extra = []
     if has_time:
+        check_one_row_per_time(d["id"], d["time"], "waterfall", x)
+        late_step = late_baseline_step(d["id"], d["time"], x)
+        if late_step:
+            extra.append(late_step)
         per, dropped_zero, no_follow = from_visits(d)
         per["category"] = [categorise(b, w, pr_cut, pd_cut)
                            for b, w in zip(per["best_change_pct"], per["worst_change_pct"])]
@@ -112,7 +156,7 @@ def recipe_waterfall(df, spec):
     colour = {lv: pal[i] for i, lv in enumerate(levels)}
     n_pr = int((per["category"] == "partial response").sum())
 
-    w, h = max(5.0, min(9.0, 3.2 + 0.16 * len(per))), 4.4
+    w, h = waterfall_width(len(per), levels, legend_title), waterfall_height(list(per["patient"]))
     fig, ax = new_fig(w, h)
     ax.bar(per["rank"], per["best_change_pct"], width=0.8,
            color=[colour[v] for v in fill_of])
@@ -125,7 +169,7 @@ def recipe_waterfall(df, spec):
     else:
         ax.set_xticks([])
     ax.set_xlim(0.4, len(per) + 0.6)
-    handles = [Patch(facecolor=colour[lv], label=lv) for lv in levels]
+    handles = [Patch(facecolor=colour[lv], label=wrap_label(lv, LEGEND_WRAP)) for lv in levels]
     ax.legend(handles=handles, title=legend_title, loc="center left",
               bbox_to_anchor=(1.02, 0.5), frameon=False)
     ax.set_title(f"{len(per)} patients; {n_pr} ({100 * n_pr / len(per):.0f}%) reach the "

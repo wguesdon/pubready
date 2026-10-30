@@ -1,11 +1,12 @@
 """Recipe: Sankey (alluvial) diagram of patient state transitions across visits.
 
 Mirrors the R recipe. Input is one row per patient visit: --id, --x (the visit)
-and --y (the state). Visits are sorted numerically when every visit is a number,
-else in code-point order; states in the order of --levels when it is given, else
-numerically when every state is a number, else by first appearance in the data.
-A patient missing at a visit takes no part in
-the transitions into or out of that visit.
+and --y (the state). Visits follow --visit_levels when it is given, else they
+sort numerically when every visit is a number, else by the one number that each
+visit holds ("week 8", "M12"), else by first appearance. States are in the order
+of --levels when it is given, else numerically when every state is a number,
+else by first appearance in the data. A patient missing at a visit takes no part
+in the transitions into or out of that visit.
 
 The layout (stacked nodes with small gaps, cubic ribbons coloured by the state
 of origin, labels where they fit) restates the arithmetic of the R engine. With
@@ -15,6 +16,7 @@ present at both visits, with statsmodels' SquareTable.
 """
 import functools
 import math
+import re
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,7 +26,8 @@ from scipy import stats
 from statsmodels.stats.contingency_tables import SquareTable
 
 from ..bundle import slugify
-from ..theme import apply_pub_style, palette
+from ..theme import apply_pub_style, longest_line, palette, wrap_labels
+from ..util import _level_number, level_order
 
 #: Half width of a node, in visit units.
 HW = 0.045
@@ -32,6 +35,20 @@ HW = 0.045
 GAP_FRAC = 0.03
 #: Labels in one column stay at least this far apart, in inches.
 LABEL_IN = 0.17
+#: State labels wrap at this many characters.
+WRAP = 24
+
+
+def max_lines(labels):
+    """The count of lines of the longest wrapped label.
+
+    Args:
+        labels: The wrapped labels.
+
+    Returns:
+        int: The count, at least 1.
+    """
+    return max([s.count("\n") + 1 for s in labels] + [1])
 
 
 def fmt_value(v):
@@ -62,20 +79,72 @@ def labels_of(s):
     return s.map(fmt_value)
 
 
-def visit_order(v):
-    """Visit order: numeric when every value is a number, else code-point order.
+#: One number in a time label: digits with an optional decimal part.
+NUMBER = re.compile(r"[0-9]+(?:\.[0-9]+)?")
+
+
+def one_number(s):
+    """The one number that a time label holds, as .time_one_number() in R.
+
+    A minus sign counts when it starts the label or follows a space ("Day -7").
 
     Args:
-        v: The visit labels.
+        s: The label.
 
     Returns:
-        list: The visits in order.
+        float or None: The number, or None when the label holds none or more
+        than one.
     """
-    u = list(pd.unique(v))
-    num = pd.to_numeric(pd.Series(u), errors="coerce")
-    if num.notna().all():
-        return [u[i] for i in np.lexsort((np.array(u, dtype=object).astype(str), num.to_numpy()))]
-    return sorted(u)
+    found = list(NUMBER.finditer(s))
+    if len(found) != 1:
+        return None
+    v = float(found[0].group())
+    i = found[0].start()
+    if i >= 1 and s[i - 1] == "-" and (i == 1 or s[i - 2] == " "):
+        v = -v
+    return v
+
+
+def time_level_order(labels, levels=None, what="visit", option="--visit_levels"):
+    """The order of a time column, one rule for sankey and timecourse.
+
+    The listed order of --visit_levels (sankey) or --levels (timecourse) comes
+    first; a value that the list does not name stops the run. Else the values
+    sort as numbers when every value is a number; else by the one number that
+    each value holds, as in "week 8" and "M12", with a tie in code-point order;
+    else they keep the order of their first appearance. The R engine has the
+    same rule (time_level_order).
+
+    Args:
+        labels: The time labels, in row order.
+        levels: The listed order, or None.
+        what: The word for one time value, for the messages.
+        option: The option that lists the order, for the rule text.
+
+    Returns:
+        dict: The levels in order and the rule in words.
+
+    Raises:
+        ValueError: If a value of the data is missing from levels.
+    """
+    u = [v for v in dict.fromkeys(labels) if isinstance(v, str)]
+    if levels:
+        listed = [str(s).strip() for s in levels]
+        miss = [v for v in u if v not in listed]
+        if miss:
+            raise ValueError(f"{option} does not list the {what}(s) "
+                             + ", ".join(f"'{m}'" for m in miss) + " of the data")
+        return {"levels": level_order(u, levels, what),
+                "rule": f"the order that {option} gives"}
+    if u and all(_level_number(v) is not None for v in u):
+        return {"levels": level_order(u), "rule": "numeric order"}
+    nums = [one_number(v) for v in u]
+    if u and all(n is not None for n in nums):
+        return {"levels": [v for _, v in sorted(zip(nums, u))],
+                "rule": f"the order of the number that each {what} holds"}
+    return {"levels": u,
+            "rule": f"the order of first appearance, because the {what}s do not each hold "
+                    "one number"}
 
 
 def state_order(s, levels=None):
@@ -316,7 +385,7 @@ def figure_dims(nodes, visits, states, ncol_leg):
     """The figure size and the label room, matched to the R engine.
 
     Args:
-        nodes: The node table.
+        nodes: The node table, with the wrapped labels.
         visits: The visits in order.
         states: The states in order.
         ncol_leg: The legend columns.
@@ -325,14 +394,14 @@ def figure_dims(nodes, visits, states, ncol_leg):
         dict: The width, the height, the panel height, the x limits and the
         inches per visit.
     """
-    chars = max(len(f"{s} ({n})") for s, n in zip(nodes["state"], nodes["n"]))
+    chars = max(longest_line(s) for s in nodes["label"])
     label_in = 0.075 * chars + 0.25
     nv = len(visits)
     # Visits sit far enough apart for their axis labels, and for the node labels
     # of a middle visit, which sit between two columns.
     unit_in = max(2.0, 0.09 * max(len(v) for v in visits) + 0.4, label_in + 0.6 if nv > 2 else 0)
     legend_rows = math.ceil(len(states) / ncol_leg)
-    legend_h = 0.3 + 0.25 * legend_rows
+    legend_h = 0.3 + 0.25 * legend_rows * max_lines(wrap_labels(states, WRAP))
     height = max(4.2, 2.4 + 0.32 * len(states)) + legend_h
     pad = HW + 0.03 + label_in / unit_in
     return {"width": unit_in * (nv - 1) + 2 * (HW * unit_in + 0.03 * unit_in + label_in) + 0.6,
@@ -350,7 +419,7 @@ def legend_ncol(states, width):
     Returns:
         int: The count of columns.
     """
-    per = 0.085 * max(len(s) for s in states) + 0.6
+    per = 0.085 * max(longest_line(s) for s in wrap_labels(states, WRAP)) + 0.6
     ncol = min(len(states), max(1, math.floor((width - 0.5) / per)))
     return int(math.ceil(len(states) / math.ceil(len(states) / ncol)))
 
@@ -411,7 +480,8 @@ def recipe_sankey(df, spec):
     if d.duplicated(["id", "visit"]).any():
         raise ValueError("sankey needs one row per patient and visit; some patients have two "
                          "rows at the same visit")
-    visits = visit_order(d["visit"])
+    vord = time_level_order(list(d["visit"]), dat.get("visit_levels"), "visit", "--visit_levels")
+    visits = vord["levels"]
     if len(visits) < 2:
         raise ValueError("sankey needs at least 2 visits")
     levels = dat.get("levels") or []
@@ -425,10 +495,15 @@ def recipe_sankey(df, spec):
         steps.append(f"Dropped {int((~keep).sum())} row(s) with a missing patient, visit or state.")
     steps.append(f"Kept {len(d)} row(s) of {n0}: {n_pat} patient(s), {len(visits)} visit(s) "
                  f"({', '.join(visits)}), {len(states)} state(s) ({', '.join(states)}).")
+    steps.append(f"The visits of '{x}' are in {vord['rule']}: {', '.join(visits)}.")
     steps.append(f"{n_partial} patient(s) are missing at one visit or more and take no part in "
                  "the transitions into or out of that visit.")
 
     nodes, hmax, _ = layout_nodes(d, visits, states)
+    # A long state wraps at WRAP characters in the node labels and the legend, so
+    # the figure grows by lines and not by one long line.
+    nodes["label"] = wrap_labels([f"{s} ({n})" for s, n in zip(nodes["state"], nodes["n"])],
+                                 WRAP)
     width0 = figure_dims(nodes, visits, states, len(states))["width"]
     ncol_leg = legend_ncol(states, width0)
     dims = figure_dims(nodes, visits, states, ncol_leg)
@@ -459,7 +534,7 @@ def recipe_sankey(df, spec):
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
         "methods": _methods(test, trans, visits, n_pat, idc, x, y,
-                            states if levels else None),
+                            states if levels else None, vord["rule"]),
         "df_used": d, "clean_steps": steps, "label": slugify(y),
         "width": dims["width"], "height": dims["height"],
         "build_script": functools.partial(_script, spec, visits, dims),
@@ -499,10 +574,10 @@ def draw_figure(trans, nodes, hmax, visits, states, pal, dims, ap, x, y, ncol_le
             continue
         ymid = (r.ytop + r.ybot) / 2
         if r.vi == 0:
-            ax.text(r.vi - HW - 0.03, ymid, f"{r.state} ({r.n})", ha="right", va="center",
+            ax.text(r.vi - HW - 0.03, ymid, r.label, ha="right", va="center",
                     fontsize=9, bbox=box, clip_on=False)
         else:
-            ax.text(r.vi + HW + 0.03, ymid, f"{r.state} ({r.n})", ha="left", va="center",
+            ax.text(r.vi + HW + 0.03, ymid, r.label, ha="left", va="center",
                     fontsize=9, bbox=box, clip_on=False)
     ax.set_xlim(*dims["xlim"])
     ax.set_ylim(-0.02 * hmax, 1.02 * hmax)
@@ -516,7 +591,8 @@ def draw_figure(trans, nodes, hmax, visits, states, pal, dims, ap, x, y, ncol_le
     ax.set_xlabel(ap.get("x_label") or x)
     ax.set_title(sub, fontsize=10, color="#4d4d4d")
     handles = [Patch(facecolor=pal[s], edgecolor="none") for s in states]
-    fig.legend(handles, states, title=y, loc="outside lower center", ncol=ncol_leg,
+    fig.legend(handles, wrap_labels(states, WRAP), title=y, loc="outside lower center",
+               ncol=ncol_leg,
                frameon=False, fontsize=10, title_fontsize=11, handlelength=1.1,
                handleheight=1.1)
     if ap.get("title"):
@@ -524,7 +600,8 @@ def draw_figure(trans, nodes, hmax, visits, states, pal, dims, ap, x, y, ncol_le
     return fig
 
 
-def _methods(test, trans, visits, n_pat, idc, x, y, set_states=None):
+def _methods(test, trans, visits, n_pat, idc, x, y, set_states=None,
+             visit_rule="numeric order"):
     """Write the methods paragraph.
 
     Args:
@@ -536,6 +613,7 @@ def _methods(test, trans, visits, n_pat, idc, x, y, set_states=None):
         x: The visit column.
         y: The state column.
         set_states: The states in the order that --levels set, or None.
+        visit_rule: The rule that ordered the visits, in words.
 
     Returns:
         str: The paragraph.
@@ -547,8 +625,8 @@ def _methods(test, trans, visits, n_pat, idc, x, y, set_states=None):
                  "states numerically when every state is a number, else by their first "
                  "appearance in the data. ")
     txt = (f"The state {y} of {n_pat} patients ({idc}) was followed across {len(visits)} visits "
-           f"of {x} ({', '.join(visits)}). Visits are ordered numerically when every visit is a "
-           f"number, else alphabetically, and {state_txt}The diagram shows "
+           f"of {x} ({', '.join(visits)}). Visits are in {visit_rule}, and {state_txt}"
+           "The diagram shows "
            f"{int(trans['n'].sum())} transitions between consecutive visits; a patient missing at "
            "a visit takes no part in the transitions into or out of it, and the transitions table "
            "gives every count. ")
@@ -613,11 +691,12 @@ def label_fit(nodes, in_per_unit):
     """Which nodes show their label, matched to the R engine.
 
     From the top down, a node shows its label when the label centre is at least
-    LABEL_IN below the last label shown in the same column, so labels never
-    overlap.
+    LABEL_IN below the last label shown in the same column, times the mean line
+    count of the two labels, so labels never overlap.
 
     Args:
-        nodes: The node table, in column and stacking order.
+        nodes: The node table, in column and stacking order, with the wrapped
+            labels.
         in_per_unit: Inches per patient on the count axis.
 
     Returns:
@@ -627,7 +706,9 @@ def label_fit(nodes, in_per_unit):
     last = {}
     for i, r in enumerate(nodes.itertuples()):
         y_in = (r.ytop + r.ybot) / 2 * in_per_unit
-        if last.get(r.vi, math.inf) - y_in >= LABEL_IN:
+        lines = r.label.count("\n") + 1
+        prev_y, prev_lines = last.get(r.vi, (math.inf, 1))
+        if prev_y - y_in >= LABEL_IN * (prev_lines + lines) / 2:
             show[i] = True
-            last[r.vi] = y_in
+            last[r.vi] = (y_in, lines)
     return show

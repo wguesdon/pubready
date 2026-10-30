@@ -26,21 +26,23 @@ recipe_spider_response <- function(df, spec) {
   }
 
   d <- df[, cols, drop = FALSE]
+  check_numeric_time(d[[x]], x)
   d[[x]] <- suppressWarnings(as.numeric(d[[x]]))
   d[[y]] <- suppressWarnings(as.numeric(d[[y]]))
-  if (all(is.na(d[[x]]))) {
-    stop(sprintf("column '%s' holds no number, and the time has to be numeric", x))
-  }
   n_rows0 <- nrow(d)
   d <- d[stats::complete.cases(d), , drop = FALSE]
+  n_missing <- n_rows0 - nrow(d)
   d[[idc]] <- as.character(d[[idc]])
+  check_one_row_per_time(d[[idc]], d[[x]], "spider_response", x)
+  late_step <- late_baseline_step(d[[idc]], d[[x]], x)
   d <- d[order(d[[idc]], d[[x]]), , drop = FALSE]
 
   baseline <- stats::aggregate(d[[y]], by = list(id = d[[idc]]),
-                               FUN = function(v) v[1])
+                               FUN = .sp_first)
   names(baseline) <- c("id", "baseline")
   usable <- baseline$id[is.finite(baseline$baseline) & baseline$baseline != 0]
   dropped <- setdiff(baseline$id, usable)
+  rows_zero <- sum(!d[[idc]] %in% usable)
   d <- d[d[[idc]] %in% usable, , drop = FALSE]
   baseline <- baseline[baseline$id %in% usable, , drop = FALSE]
   if (nrow(d) < 2) {
@@ -58,6 +60,7 @@ recipe_spider_response <- function(df, spec) {
   # carry a best change of zero rather than the smallest growth they reached.
   post <- d[duplicated(d[[idc]]), , drop = FALSE]
   no_follow_up <- setdiff(unique(d[[idc]]), unique(post[[idc]]))
+  rows_no_follow <- sum(d[[idc]] %in% no_follow_up)
   if (length(no_follow_up) > 0) {
     d <- d[!d[[idc]] %in% no_follow_up, , drop = FALSE]
     post <- post[!post[[idc]] %in% no_follow_up, , drop = FALSE]
@@ -69,7 +72,7 @@ recipe_spider_response <- function(df, spec) {
   best  <- stats::aggregate(post$change, by = list(id = post[[idc]]), FUN = min)
   worst <- stats::aggregate(post$change, by = list(id = post[[idc]]), FUN = max)
   last  <- stats::aggregate(post$change, by = list(id = post[[idc]]),
-                            FUN = function(v) v[length(v)])
+                            FUN = .sp_last)
   visits <- stats::aggregate(d$change, by = list(id = d[[idc]]), FUN = length)
   names(best) <- c("id", "best"); names(worst) <- c("id", "worst")
   names(last) <- c("id", "last"); names(visits) <- c("id", "visits")
@@ -83,17 +86,20 @@ recipe_spider_response <- function(df, spec) {
   clean_steps <- c(
     sprintf("Kept %d patient(s) across %d measurement(s).",
             nrow(best), nrow(d)),
-    if (n_rows0 > nrow(d)) {
-      sprintf("Dropped %d row(s) with a missing time, value or patient.",
-              n_rows0 - nrow(d))
+    # Each reason is counted on its own: rows with a missing cell, then the
+    # patients (and their rows) with a zero baseline or with no later visit.
+    if (n_missing > 0) {
+      sprintf("Dropped %d row(s) with a missing %s.", n_missing,
+              if (!is.null(grp) && nzchar(grp)) "patient, time, value or group" else "patient, time or value")
     } else NULL,
+    late_step,
     if (length(dropped) > 0) {
-      sprintf("Dropped %d patient(s) whose baseline was zero or absent, because a percentage change needs a non-zero baseline.",
-              length(dropped))
+      sprintf("Dropped %d patient(s) (%d row(s)) whose baseline was zero, because a percentage change needs a non-zero baseline.",
+              length(dropped), rows_zero)
     } else NULL,
     if (length(no_follow_up) > 0) {
-      sprintf("Dropped %d patient(s) with no visit after the baseline, because a response needs a second measurement.",
-              length(no_follow_up))
+      sprintf("Dropped %d patient(s) (%d row(s)) with no visit after the baseline, because a response needs a second measurement.",
+              length(no_follow_up), rows_no_follow)
     } else NULL)
 
   plotdf <- data.frame(id = d[[idc]], time = d[[x]], change = d$change,
@@ -126,7 +132,7 @@ recipe_spider_response <- function(df, spec) {
                         colour = "grey55", linewidth = 0.4) +
     ggplot2::geom_line(linewidth = 0.6, alpha = 0.9) +
     ggplot2::geom_point(size = 1.8, alpha = 0.9) +
-    ggplot2::scale_colour_manual(values = pal) +
+    ggplot2::scale_colour_manual(values = pal, labels = wrap_labels(levels_seen, .sp_wrap)) +
     ggplot2::labs(x = spec$appearance$x_label %||% x,
                   y = spec$appearance$y_label %||% "Change from baseline (%)",
                   colour = legend_title,
@@ -164,15 +170,76 @@ recipe_spider_response <- function(df, spec) {
 
   resolved <- list(family = "spider", label = "Spider plot")
   methods  <- .spider_methods(nrow(best), nrow(d), pd_cut, pr_cut, counts, spec)
-  build_script <- function(in_name, fig_stub) {
-    .spider_emit_script(spec, in_name, fig_stub, pd_cut, pr_cut)
-  }
+  build_script <- list(fn = .spider_emit_script,
+                       args = list(spec = spec, pd_cut = pd_cut, pr_cut = pr_cut))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
        label = slugify(y), df_used = d, clean_steps = clean_steps,
-       width = 5.8, height = 4.2)
+       width = spider_width(levels_seen, legend_title), height = 4.2)
 }
+
+# Stop when a patient has two rows or more at one time point, and name the
+# patients and the times. A second baseline row would else become a later visit.
+# spider_response and waterfall share it, and the Python engine has the same
+# rule.
+check_one_row_per_time <- function(id, time, recipe, xcol) {
+  tt <- level_labels(time)
+  dup <- duplicated(paste(id, tt, sep = "\r"))
+  if (!any(dup)) return(invisible(NULL))
+  first <- !duplicated(id[dup])
+  items <- sprintf("'%s' at %s = %s", id[dup][first], xcol, tt[dup][first])
+  shown <- paste(utils::head(items, 6), collapse = ", ")
+  if (length(items) > 6) shown <- sprintf("%s and %d more", shown, length(items) - 6)
+  stop(sprintf("%s needs one row per patient and time point, and %d patient(s) have two rows or more at one time: %s; average or remove the extra rows first",
+               recipe, length(items), shown))
+}
+
+# A data log step for the patients with no row at the first time point of the
+# data, whose baseline is then a later visit; NULL when every patient has one.
+# spider_response and waterfall share it, and the Python engine has the same
+# rule.
+late_baseline_step <- function(id, time, xcol) {
+  if (length(time) == 0) return(NULL)
+  t0 <- min(time)
+  first <- tapply(time, id, min)
+  late <- names(first)[first > t0]
+  late <- unique(id[id %in% late])
+  if (length(late) == 0) return(NULL)
+  items <- sprintf("'%s' (%s = %s)", late, xcol, level_labels(unname(first[late])))
+  shown <- paste(utils::head(items, 6), collapse = ", ")
+  if (length(items) > 6) shown <- sprintf("%s and %d more", shown, length(items) - 6)
+  sprintf("%d patient(s) have no row at the first time point (%s = %s), so their baseline is their first later visit: %s.",
+          length(late), xcol, level_labels(t0), shown)
+}
+
+# Stop when the time column holds no number, and say how many of its values are
+# text, for example "week 0". spider_response and waterfall share it, and the
+# Python engine has the same rule.
+check_numeric_time <- function(v, col) {
+  num <- suppressWarnings(as.numeric(as.character(v)))
+  if (any(!is.na(num))) return(invisible(NULL))
+  txt <- trimws(as.character(v))
+  text <- !is.na(v) & !is.na(txt) & txt != ""
+  if (any(text)) {
+    stop(sprintf("column '%s' holds no number (%d of %d values are text, for example '%s'), and the time has to be numeric",
+                 col, sum(text), length(v), txt[text][1]))
+  }
+  stop(sprintf("column '%s' holds no number, and the time has to be numeric", col))
+}
+
+# The legend labels wrap at this many characters, as in the Python engine.
+.sp_wrap <- 24
+
+# The figure width: 5.8 in, wider when the legend needs more than 2 in, so a long
+# label widens the figure instead of squeezing the panel. The Python engine uses
+# the same formula.
+spider_width <- function(legend_labels, title) {
+  5.8 + max(0, legend_width(wrap_labels(legend_labels, .sp_wrap), title) - 2.0)
+}
+
+.sp_first <- function(v) v[1]
+.sp_last <- function(v) v[length(v)]
 
 .spider_methods <- function(n_patients, n_rows, pd_cut, pr_cut, counts, spec) {
   v    <- pkg_versions("ggplot2")

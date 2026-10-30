@@ -67,8 +67,13 @@
 # term of stats::mauchly.test reads 3 * (p + 1), the number of time points, at one
 # position, and it is kept here so that the P value matches R and car exactly.
 .tc_mauchly <- function(M, p, df) {
-  if (p < 2) return(list(W = 1, statistic = 0, df = 0, p_value = 1))
-  logW <- log(det(M)) - p * log(sum(diag(M)) / p)
+  if (p < 2) return(list(W = 1, statistic = 0, df = 0, p_value = 1, available = TRUE))
+  # The test needs as many error degrees of freedom (subjects - groups) as
+  # contrasts; with fewer, M is singular and W is 0, so the test is not available.
+  na <- list(W = NA_real_, statistic = NA_real_, df = NA_real_, p_value = NA_real_, available = FALSE)
+  if (df < p) return(na)
+  logW <- suppressWarnings(log(det(M))) - p * log(sum(diag(M)) / p)
+  if (!is.finite(logW)) return(na)
   rho <- 1 - (2 * p^2 + p + 2) / (6 * p * df)
   w2 <- (p + 2) * (p - 1) * (p - 2) * (2 * p^3 + 6 * p^2 + 3 * (p + 1) + 2) /
     (288 * (df * p * rho)^2)
@@ -76,7 +81,7 @@
   f <- p * (p + 1) / 2 - 1
   pr1 <- stats::pchisq(z, f, lower.tail = FALSE)
   pr2 <- stats::pchisq(z, f + 4, lower.tail = FALSE)
-  list(W = exp(logW), statistic = z, df = f, p_value = pr1 + w2 * (pr2 - pr1))
+  list(W = exp(logW), statistic = z, df = f, p_value = pr1 + w2 * (pr2 - pr1), available = TRUE)
 }
 
 .tc_effect_row <- function(r, eps, use_gg, labels) {
@@ -115,10 +120,15 @@ recipe_timecourse <- function(df, spec) {
   if (any(tapply(d$group, d$id, .tc_n_distinct) > 1)) {
     stop("each subject must belong to one group only")
   }
-  time_numeric <- is.numeric(d$time)
-  t_lv <- if (time_numeric) sort(unique(d$time)) else unique(as.character(d$time))
-  d$time_key <- as.character(d$time)
-  t_key <- as.character(t_lv)
+  # The time points follow --levels, else numeric order, else the number that each
+  # label holds ("day 10"), else first appearance (time_level_order, in sankey.R).
+  # A numeric time keeps its spacing on the axis unless --levels sets the order.
+  d$time_key <- level_labels(d$time)
+  t_levels <- unlist(spec$data$levels)
+  tord <- time_level_order(d$time_key, t_levels, "time point", "--levels")
+  t_key <- tord$levels
+  time_numeric <- is.numeric(d$time) && length(t_levels) == 0
+  t_lv <- if (time_numeric) as.numeric(t_key) else t_key
   counts <- table(d$id)
   complete_ids <- names(counts)[counts == length(t_key)]
   incomplete <- setdiff(unique(d$id), complete_ids)
@@ -128,9 +138,21 @@ recipe_timecourse <- function(df, spec) {
     if (n_missing > 0) sprintf("Dropped %d row(s) with a missing subject, time, value or group.", n_missing),
     if (length(incomplete) > 0) sprintf("Dropped %d subject(s) without a value at every one of the %d time points, because the repeated-measures ANOVA needs complete subjects.",
                                         length(incomplete), length(t_key)),
-    sprintf("Kept %d subject(s) at %d time points (%d values).", length(complete_ids), length(t_key), nrow(d)))
+    sprintf("Kept %d subject(s) at %d time points (%d values).", length(complete_ids), length(t_key), nrow(d)),
+    sprintf("The time points of '%s' are in %s: %s.", x, tord$rule, paste(t_key, collapse = ", ")))
   if (length(t_key) < 2) stop("timecourse needs at least 2 time points")
-  if (length(complete_ids) - length(g_lv) < 1) stop("timecourse needs more complete subjects than groups")
+  if (length(complete_ids) == 0) {
+    stop(sprintf("timecourse needs complete subjects, and none of the %d subject(s) of '%s' has a value at every one of the %d time points of '%s' (%s)",
+                 length(counts), idc, length(t_key), x, paste(t_key, collapse = ", ")))
+  }
+  if (length(complete_ids) - length(g_lv) < 1) {
+    stop(sprintf("timecourse needs more complete subjects than groups, and it has %d complete subject(s) of '%s' in %d group(s)",
+                 length(complete_ids), idc, length(g_lv)))
+  }
+  if (length(unique(d$y)) < 2) {
+    stop(sprintf("the outcome '%s' has zero variance: every value of the %d complete subject(s) is %s, so the ANOVA has no variation to test",
+                 y, length(complete_ids), level_labels(d$y[1])))
+  }
 
   ids <- sort(complete_ids, method = "radix")
   Y <- matrix(NA_real_, length(ids), length(t_key))
@@ -143,7 +165,8 @@ recipe_timecourse <- function(df, spec) {
     stop(sprintf("unknown timecourse test '%s' (use auto, gg or uncorrected)", method))
   }
   use_gg <- switch(method, gg = TRUE, uncorrected = FALSE,
-                   auto = length(t_key) > 2 && res$mauchly$p_value < 0.05)
+                   auto = length(t_key) > 2 &&
+                     (!res$mauchly$available || res$mauchly$p_value < 0.05))
   labels <- list(group = grp %||% "group", time = x,
                  interaction = sprintf("%s:%s", grp %||% "group", x))
   stats_df <- do.call(rbind, lapply(res$rows, .tc_effect_row, eps = res$eps, use_gg = use_gg,
@@ -157,7 +180,8 @@ recipe_timecourse <- function(df, spec) {
     name = if (has_group) "mixed ANOVA (group between, time within)" else "one-way repeated-measures ANOVA",
     n_subjects = length(ids), n_times = length(t_key), n_dropped_subjects = length(incomplete),
     sphericity = list(test = "Mauchly", W = res$mauchly$W, statistic = res$mauchly$statistic,
-                      df = res$mauchly$df, p_value = res$mauchly$p_value),
+                      df = res$mauchly$df, p_value = res$mauchly$p_value,
+                      available = res$mauchly$available),
     gg_epsilon = res$eps, correction_applied = use_gg,
     effects = stats::setNames(lapply(seq_len(nrow(stats_df)), .tc_meta_row, rows = stats_df),
                               stats_df$effect))
@@ -234,7 +258,11 @@ recipe_timecourse <- function(df, spec) {
     "a mixed ANOVA with the group as a between-subjects factor and time as a within-subjects factor"
   } else "a one-way repeated-measures ANOVA over time"
   drop_txt <- if (n_drop > 0) sprintf(" %d subject(s) without a value at every time point were excluded.", n_drop) else ""
-  corr_txt <- if (method == "auto") {
+  n_grp <- nrow(res$cells)
+  corr_txt <- if (method == "auto" && !res$mauchly$available) {
+    sprintf(" Mauchly's test was not available, because it needs at least %d complete subjects (%d subject(s) in %d group(s) at %d time points); the within-subject effects carry the Greenhouse-Geisser correction (epsilon = %.3f).",
+            n_grp + n_time - 1, n_subj, n_grp, n_time, res$eps)
+  } else if (method == "auto") {
     sprintf(" Sphericity was assessed with Mauchly's test (W = %.3f, P = %s); %s",
             res$mauchly$W, sig_text(res$mauchly$p_value, 2),
             if (use_gg) sprintf("because it was rejected, the within-subject effects carry the Greenhouse-Geisser correction (epsilon = %.3f).", res$eps)

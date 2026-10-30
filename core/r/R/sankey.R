@@ -1,10 +1,11 @@
 # Recipe: Sankey (alluvial) diagram of patient state transitions across visits,
 # for example the response category at each assessment.
 # Input is one row per patient visit: the patient (--id), the visit (--x) and the
-# state (--y). Visits are sorted numerically when every visit is a number, else
-# in code-point order. States follow --levels when it is given, else they are
-# sorted numerically when every state is a number, else they keep the order of
-# their first appearance in the data. A
+# state (--y). Visits follow --visit_levels when it is given, else they sort
+# numerically when every visit is a number, else by the one number that each
+# visit holds ("week 8", "M12"), else by first appearance. States follow --levels
+# when it is given, else they are sorted numerically when every state is a
+# number, else they keep the order of their first appearance in the data. A
 # patient who is missing at a visit takes no part in the transitions into or out
 # of that visit, so the node of that visit holds only the patients present.
 #
@@ -23,6 +24,10 @@
 .sk_hw <- 0.045          # half width of a node, in visit units
 .sk_gap_frac <- 0.03     # gap between nodes, as a fraction of the largest visit
 .sk_label_in <- 0.17     # labels in one column stay at least this far apart (in)
+.sk_wrap <- 24           # state labels wrap at this many characters
+
+# The count of lines of the longest wrapped label.
+.sk_max_lines <- function(labels) max(lengths(strsplit(labels, "\n", fixed = TRUE)), 1L)
 
 .sk_labels <- function(v) {
   out <- trimws(as.character(v))
@@ -30,11 +35,47 @@
   out
 }
 
-# Visit order: numeric when every value is a number, else code-point order.
-.sk_visit_order <- function(v) {
-  u <- unique(v)
-  num <- suppressWarnings(as.numeric(u))
-  if (all(!is.na(num))) u[order(num, u, method = "radix")] else sort(u, method = "radix")
+# The order of a time column, one rule for the sankey visits and the timecourse
+# time points, in both engines. The listed order of --visit_levels (sankey) or
+# --levels (timecourse) comes first; a value that the list does not name stops
+# the run. Else the values sort as numbers when every value is a number; else by
+# the one number that each value holds, as in "week 8" and "M12", with a tie in
+# code-point order; else they keep the order of their first appearance. Returns
+# the order and the rule in words, for the data log and the methods text.
+time_level_order <- function(labels, levels = NULL, what = "visit", option = "--visit_levels") {
+  labels <- as.character(labels)
+  u <- unique(labels[!is.na(labels)])
+  if (length(levels) > 0) {
+    miss <- setdiff(u, trimws(as.character(levels)))
+    if (length(miss) > 0) {
+      stop(sprintf("%s does not list the %s(s) %s of the data", option, what,
+                   paste(sprintf("'%s'", miss), collapse = ", ")))
+    }
+    return(list(levels = level_order(u, levels, what),
+                rule = sprintf("the order that %s gives", option)))
+  }
+  if (length(u) > 0 && !anyNA(suppressWarnings(as.numeric(u)))) {
+    return(list(levels = level_order(u), rule = "numeric order"))
+  }
+  num <- vapply(u, .time_one_number, numeric(1), USE.NAMES = FALSE)
+  if (length(u) > 0 && !anyNA(num)) {
+    return(list(levels = u[order(num, u, method = "radix")],
+                rule = sprintf("the order of the number that each %s holds", what)))
+  }
+  list(levels = u,
+       rule = sprintf("the order of first appearance, because the %ss do not each hold one number", what))
+}
+
+# The one number that a label holds, or NA when it holds none or more than one.
+# A minus sign counts when it starts the label or follows a space ("Day -7").
+.time_one_number <- function(s) {
+  m <- gregexpr("[0-9]+(\\.[0-9]+)?", s)[[1]]
+  if (m[1] == -1 || length(m) != 1) return(NA_real_)
+  start <- m[1]
+  v <- as.numeric(substr(s, start, start + attr(m, "match.length")[1] - 1))
+  if (start > 1 && substr(s, start - 1, start - 1) == "-" &&
+      (start == 2 || substr(s, start - 2, start - 2) == " ")) v <- -v
+  v
 }
 
 # State order: the order of --levels when it is given, else numeric when every
@@ -182,14 +223,14 @@
 
 # Figure size and label room, matched to the Python engine.
 .sk_dims <- function(nodes, visits, states, ncol_leg) {
-  chars <- max(nchar(sprintf("%s (%d)", nodes$state, nodes$n)))
+  chars <- max(vapply(nodes$label, longest_line, integer(1)))
   label_in <- 0.075 * chars + 0.25
   nv <- length(visits)
   # Visits sit far enough apart for their axis labels, and for the node labels
   # of a middle visit, which sit between two columns.
   unit_in <- max(2.0, 0.09 * max(nchar(visits)) + 0.4, if (nv > 2) label_in + 0.6 else 0)
   legend_rows <- ceiling(length(states) / ncol_leg)
-  legend_h <- 0.3 + 0.25 * legend_rows
+  legend_h <- 0.3 + 0.25 * legend_rows * .sk_max_lines(wrap_labels(states, .sk_wrap))
   height <- max(4.2, 2.4 + 0.32 * length(states)) + legend_h
   pad <- .sk_hw + 0.03 + label_in / unit_in
   list(width = unit_in * (nv - 1) + 2 * (.sk_hw * unit_in + 0.03 * unit_in + label_in) + 0.6,
@@ -198,7 +239,7 @@
 }
 
 .sk_legend_ncol <- function(states, width) {
-  per <- 0.085 * max(nchar(states)) + 0.6
+  per <- 0.085 * max(vapply(wrap_labels(states, .sk_wrap), longest_line, integer(1))) + 0.6
   ncol <- min(length(states), max(1, floor((width - 0.5) / per)))
   as.integer(ceiling(length(states) / ceiling(length(states) / ncol)))
 }
@@ -231,7 +272,8 @@ recipe_sankey <- function(df, spec) {
   if (anyDuplicated(d[, c("id", "visit")])) {
     stop("sankey needs one row per patient and visit; some patients have two rows at the same visit")
   }
-  visits <- .sk_visit_order(d$visit)
+  vord <- time_level_order(d$visit, unlist(spec$data$visit_levels), "visit", "--visit_levels")
+  visits <- vord$levels
   if (length(visits) < 2) stop("sankey needs at least 2 visits")
   levels <- unlist(spec$data$levels)
   states <- .sk_state_order(d$state, levels)
@@ -248,11 +290,15 @@ recipe_sankey <- function(df, spec) {
     sprintf("Kept %d row(s) of %d: %d patient(s), %d visit(s) (%s), %d state(s) (%s).",
             nrow(d), n0, n_pat, length(visits), paste(visits, collapse = ", "),
             length(states), paste(states, collapse = ", ")),
+    sprintf("The visits of '%s' are in %s: %s.", x, vord$rule, paste(visits, collapse = ", ")),
     sprintf("%d patient(s) are missing at one visit or more and take no part in the transitions into or out of that visit.",
             sum(table(d$id) < length(visits))))
 
   lay <- .sk_nodes(d, visits, states)
   nodes <- lay$nodes
+  # A long state wraps at .sk_wrap characters in the node labels and the legend,
+  # so the figure grows by lines and not by one long line.
+  nodes$label <- wrap_labels(sprintf("%s (%d)", nodes$state, nodes$n), .sk_wrap)
   pal <- stats::setNames(pub_palette(length(states), spec$appearance$palette), states)
   width0 <- .sk_dims(nodes, visits, states, length(states))$width
   ncol_leg <- .sk_legend_ncol(states, width0)
@@ -260,7 +306,6 @@ recipe_sankey <- function(df, spec) {
   sub <- .sk_subtitle(test, n_pat, length(visits), dims$width)
   if (grepl("\n", sub, fixed = TRUE)) dims$height <- dims$height + 0.2
   rib <- .sk_ribbons(trans, nodes, states)
-  nodes$label <- sprintf("%s (%d)", nodes$state, nodes$n)
   nodes$ymid <- (nodes$ytop + nodes$ybot) / 2
   nodes$show <- .sk_label_fit(nodes, dims$panel_h / (1.04 * lay$hmax))
   left <- nodes[nodes$show & nodes$vi == 0, , drop = FALSE]
@@ -283,7 +328,8 @@ recipe_sankey <- function(df, spec) {
     ggplot2::geom_label(data = right, ggplot2::aes(x = vi + .sk_hw + 0.03, y = ymid, label = label),
                         hjust = 0, size = 3.2, label.size = 0, label.padding = ggplot2::unit(0.08, "lines"),
                         fill = grDevices::adjustcolor("white", alpha.f = 0.75)) +
-    ggplot2::scale_fill_manual(values = pal, breaks = states, drop = FALSE) +
+    ggplot2::scale_fill_manual(values = pal, breaks = states, labels = wrap_labels(states, .sk_wrap),
+                               drop = FALSE) +
     ggplot2::scale_x_continuous(breaks = seq_along(visits) - 1, labels = visits,
                                 limits = dims$xlim, expand = ggplot2::expansion(0)) +
     ggplot2::scale_y_continuous(limits = c(-0.02 * lay$hmax, 1.02 * lay$hmax),
@@ -330,7 +376,7 @@ recipe_sankey <- function(df, spec) {
   resolved <- list(family = "sankey", label = test_meta$name)
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = .sk_methods(test, trans, visits, states, n_pat, idc, x, y,
-                             levels_given = length(levels) > 0),
+                             levels_given = length(levels) > 0, visit_rule = vord$rule),
        build_script = list(fn = .sk_emit_script, args = list(spec = spec, visits = visits,
                                                              states = states, dims = dims)),
        label = slugify(y), df_used = d, clean_steps = clean_steps,
@@ -341,7 +387,8 @@ recipe_sankey <- function(df, spec) {
   stats::setNames(as.list(as.integer(tab[i, ])), states)
 }
 
-.sk_methods <- function(test, trans, visits, states, n_pat, idc, x, y, levels_given = FALSE) {
+.sk_methods <- function(test, trans, visits, states, n_pat, idc, x, y, levels_given = FALSE,
+                        visit_rule = "numeric order") {
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   v <- pkg_versions("ggplot2")
   state_txt <- if (levels_given) {
@@ -352,7 +399,7 @@ recipe_sankey <- function(df, spec) {
   txt <- paste0(
     sprintf("The state %s of %d patients (%s) was followed across %d visits of %s (%s). ",
             y, n_pat, idc, length(visits), x, paste(visits, collapse = ", ")),
-    "Visits are ordered numerically when every visit is a number, else alphabetically, and ",
+    sprintf("Visits are in %s, and ", visit_rule),
     state_txt,
     sprintf("The diagram shows %d transitions between consecutive visits; a patient missing at a visit takes no part in the transitions into or out of it, and the transitions table gives every count. ",
             sum(trans$n)))
@@ -401,17 +448,21 @@ recipe_sankey <- function(df, spec) {
 }
 
 # A node shows its label when the label centre is at least .sk_label_in below
-# the last label shown in the same column, from the top down, so labels never
-# overlap. in_per_unit converts the count axis to inches.
+# the last label shown in the same column, times the mean line count of the two
+# labels, from the top down, so labels never overlap. in_per_unit converts the
+# count axis to inches.
 .sk_label_fit <- function(nodes, in_per_unit) {
   show <- logical(nrow(nodes))
+  lines <- lengths(strsplit(nodes$label, "\n", fixed = TRUE))
   for (v in unique(nodes$vi)) {
     last <- Inf
+    last_lines <- 1
     for (i in which(nodes$vi == v)) {
       y_in <- nodes$ymid[i] * in_per_unit
-      if (last - y_in >= .sk_label_in) {
+      if (last - y_in >= .sk_label_in * (last_lines + lines[i]) / 2) {
         show[i] <- TRUE
         last <- y_in
+        last_lines <- lines[i]
       }
     }
   }

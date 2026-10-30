@@ -118,7 +118,8 @@ test_that("sankey runs Bowker's test and drops the empty pairs of cells", {
   d <- data.frame(id = rep(seq_along(from), 2), visit = rep(c("pre", "post"), each = length(from)),
                   state = c(from, to))
   res <- recipe_sankey(d, clin_spec("sankey", id = "id", x = "visit", y = "state"))
-  expect_equal(unlist(res$test_meta$visits), c("post", "pre"))
+  # Visits that hold no number keep the order of their first appearance (F39).
+  expect_equal(unlist(res$test_meta$visits), c("pre", "post"))
   expect_equal(res$test_meta$name, "Bowker's test of symmetry")
   # The pairs a-b and a-c hold patients who changed state; no patient moved
   # between b and c in either direction, so that pair is empty.

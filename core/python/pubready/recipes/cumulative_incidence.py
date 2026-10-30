@@ -24,7 +24,9 @@ from scipy import stats
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, palette
+from ..util import level_labels, level_order
 from .roc_curve import level_strings
+from .survival_km import value_list
 
 #: A group label longer than this is shown in the legend only, and the risk
 #: table marks its row with a short line in the group colour.
@@ -451,6 +453,47 @@ def figure_dims(width, lv, legend_rows):
     return {"width": width, "height": legend_h + 4.4 + 0.24 * len(lv), "legend_h": legend_h}
 
 
+def _status_number(s):
+    """Read one status code as a number, or NaN when it is not one.
+
+    Args:
+        s: The code as text.
+
+    Returns:
+        float: The number.
+    """
+    try:
+        return float(s)
+    except ValueError:
+        return float("nan")
+
+
+def check_status(status, ecol):
+    """Stop on a status code that is text or negative, as .cif_check_status() in R.
+
+    The status holds 0 for a censored subject and a positive number for each
+    cause. A text code such as "censored" or a negative code such as -1 would
+    become a competing event, so it stops the run, and the message lists the
+    codes.
+
+    Args:
+        status: The status codes as text, with NaN for a missing value.
+        ecol: The status column, for the message.
+
+    Raises:
+        ValueError: If a code is not a finite number of 0 or more.
+    """
+    bad = []
+    for s in status.dropna():
+        v = _status_number(s)
+        if (not math.isfinite(v) or v < 0) and s not in bad:
+            bad.append(s)
+    if bad:
+        raise ValueError(f"column '{ecol}' must hold 0 for a censored subject and a positive "
+                         f"number for each cause, but it holds {value_list(level_order(bad))}; "
+                         "recode the status, for example 0 = censored, 1 = relapse, 2 = death")
+
+
 def recipe_cumulative_incidence(df, spec):
     """Draw the cumulative incidence of each cause with Gray's test.
 
@@ -479,8 +522,9 @@ def recipe_cumulative_incidence(df, spec):
     d = pd.DataFrame({
         "time": pd.to_numeric(df[tcol], errors="coerce"),
         "status": level_strings(df[ecol]).str.strip(),
-        "group": level_strings(df[gcol]).str.strip() if has_group else "all",
+        "group": level_labels(df[gcol]).str.strip() if has_group else "all",
     })
+    check_status(d["status"], ecol)
     keep = np.isfinite(d["time"]) & (d["time"] >= 0) & d["status"].notna() & d["group"].notna()
     d = d[keep].reset_index(drop=True)
     if len(d) < 2:
@@ -503,7 +547,9 @@ def recipe_cumulative_incidence(df, spec):
         note.append("No --cause was given and no event has code 1, so the cause of interest "
                     f"is the first code in sorted order, {cause}.")
     causes = [cause] + [c for c in causes if c != cause]
-    lv = sorted(d["group"].unique())
+    # The groups sort as numbers when every label is a number, else in code-point
+    # order, by the level rule that both engines share (level_order).
+    lv = level_order(d["group"])
     d = d.iloc[np.argsort(d["time"].to_numpy(), kind="stable")].reset_index(drop=True)
     n_drop = int((~keep).sum())
     counts = ", ".join([f"{int((d['status'] == '0').sum())} censored"] +
@@ -552,7 +598,7 @@ def recipe_cumulative_incidence(df, spec):
         "methods": _methods(fits, d, lv, causes, tps, tcol, ecol, gcol, has_group),
         "df_used": d, "clean_steps": clean_steps, "label": slugify(ecol),
         "width": dims["width"], "height": dims["height"], "curves": curves,
-        "build_script": functools.partial(_script, spec, has_group, tps, dims),
+        "build_script": functools.partial(_script, spec, has_group, tps, dims, lv),
     }
 
 
@@ -707,7 +753,7 @@ def _test_text(f, ecol):
             f"P {p}")
 
 
-def _script(spec, has_group, tps, dims, in_name, fig_stub):
+def _script(spec, has_group, tps, dims, lv, in_name, fig_stub):
     """Write the standalone script that recomputes the curves and Gray's test.
 
     Args:
@@ -715,6 +761,7 @@ def _script(spec, has_group, tps, dims, in_name, fig_stub):
         has_group: Whether a grouping column was given.
         tps: The tabulated time points.
         dims: The figure size.
+        lv: The group levels, in order.
         in_name: The name of the input copy inside the bundle.
         fig_stub: The name of the figure file, without its extension.
 
@@ -725,7 +772,8 @@ def _script(spec, has_group, tps, dims, in_name, fig_stub):
     tcol, ecol, gcol = dat["time"], dat["event"], dat.get("x")
     helpers = "\n\n".join(inspect.getsource(fn) for fn in
                           (cif_curve, gray_test, _gray_step, gray_statistic))
-    grp_line = (f'raw["{gcol}"].astype(str).str.strip()' if has_group
+    grp_line = (f'raw["{gcol}"].astype(str).str.replace(r"\\.0$", "", regex=True).str.strip()'
+                if has_group
                 else '"all"')
     return f'''#!/usr/bin/env python3
 # Standalone reproduction. Run inside the pinned pubready container. The
@@ -743,7 +791,7 @@ st = raw["{ecol}"].astype(str).str.replace(r"\\.0$", "", regex=True).str.strip()
 d = pd.DataFrame({{"time": pd.to_numeric(raw["{tcol}"], errors="coerce"), "status": st,
                    "group": {grp_line}}}).dropna()
 d = d[d["time"] >= 0].sort_values("time", kind="stable").reset_index(drop=True)
-lv = sorted(d["group"].unique())
+lv = {lv!r}
 causes = sorted(d.loc[d["status"] != "0", "status"].unique())
 fig, axes = plt.subplots(1, len(causes), figsize=({dims["width"]:.2f}, {dims["height"]:.2f}), squeeze=False)
 for ax, cause in zip(axes[0], causes):

@@ -127,6 +127,85 @@ tag move together.
   The `two_group_compare` stats table loses its `p_adjust_method` column, the
   manifest loses `p_adjust`, and a config that holds `test: p_adjust` drops the
   key (F75).
+- The R `survival_km` reads a time, event or group column whose name holds a
+  space, for example "follow up months". The model reads syntactic copies of
+  the columns, and the figure and the tables keep the names (F44).
+- `survival_km`, `cox_forest` and `swimmer` check the event column before any
+  conversion. A value other than 0, 1 or a logical, for example "dead" or 1.5,
+  stops the run, and the message lists those values. Before, a text column
+  passed the check and stopped later with an unclear error, and R read 1.5 as
+  1 (F56).
+- The Python `survival_km` reports the median survival by the rule of
+  `survival::survfit`: when the curve sits at exactly 0.5 on a step, the median
+  is the midpoint between the start of the step and the next drop. A median of
+  52 in Python and 52.5 in R is now 52.5 in both engines (F67).
+- `survival_km` stops with a clear message when the group column holds one
+  group, and it draws follow-up times above 5e6. Before, R stopped with
+  "There is only 1 group", Python wrote "chi-square(0) = 0.00, P = NA", and a
+  time above 5e6 stopped both engines with an error that did not say why (F92).
+- `survival_km`, `cox_forest` and `cumulative_incidence` order their groups
+  and factor levels with the level rule that both engines share: numeric order
+  when every label is a number, else code-point order. The first level is the
+  Cox reference. Before, Python sorted doses as text (0, 160, 80) and R sorted
+  text in the locale order, so the `cgd` reference level of `inherit` differed
+  between the engines (F64).
+- `cox_forest` reads a covariate whose cells read as numbers for 80% or more as
+  numeric. Each other cell, for example "45 y", becomes missing, and the data
+  log names the column, the count and the first such value. Before, one such
+  cell made `age` a factor of 36 levels with a hazard ratio of 8,952,453 (F42).
+- `cox_forest` checks the data before the fit and stops with a message that
+  names the problem: no event among the subjects kept, a covariate that holds
+  one value, or a covariate that is a linear combination of the covariates
+  before it. Before, R stopped with a contrasts error or wrote NA rows, and
+  Python dropped the covariate with no message or printed a convergence
+  traceback (F91).
+- `cox_forest` marks a term "not estimable, separation" when the covariate
+  separates the events, so that the hazard ratio has no finite estimate. The
+  stats table has a new `note` column, the term has no HR, CI or P, the figure
+  writes the mark in the HR column, and the methods text explains it. Before,
+  such a term read HR = 4e8, CI 0 to infinity and P = 1 with no warning (F57).
+- `cumulative_incidence` stops when the status holds text or a negative code,
+  and the message lists those codes. Before, each status other than "0" was a
+  cause, so a "censored" or -1 code became a competing event, and the text
+  could name "status = censored" as the event of interest (F58).
+- The `sankey` visits and the `timecourse` time points share one order rule:
+  the list of `--visit_levels` (`sankey`) or `--levels` (`timecourse`) when it
+  is given, else numeric order, else the order of the one number that each
+  value holds ("week 8", "M12", "Day -7"), else the order of first appearance.
+  The data log records the order and the rule, and the `sankey` methods text
+  names the rule. Before, "week 8" came after "week 24" in `sankey`, and
+  `timecourse` kept the order of first appearance (F39).
+- `timecourse` stops with "the outcome has zero variance" when every value of
+  the complete subjects is the same. Before, R stopped with an unclear error,
+  and Python wrote F = nan or F values from rounding noise (F90).
+- `timecourse` reports Mauchly's test as not available when the complete
+  subjects are fewer than the groups plus the time points minus one, and
+  `--test auto` then applies the Greenhouse-Geisser correction. The methods
+  text says why, and `test_meta` records `available: false`. Before, Python
+  wrote W = 0 and P = 1, and R stopped with an unclear error (F95).
+- `waterfall` and `spider_response` stop with a message that names the time
+  column and the count of text values, for example "week 0", when the time
+  holds no number. `timecourse` names the subject and time columns and the
+  counts when no subject, or too few, has a value at every time point. Before,
+  these inputs stopped with "waterfall needs at least one patient with a
+  response" or "timecourse needs more complete subjects than groups" (F92).
+- `waterfall` and `spider_response` stop when a patient has two rows at one
+  time point, and the message names each such patient and time, as
+  `timecourse` does. Before, a second baseline row became a later visit, and a
+  patient whose lesion grew by 25.9% read "partial response" (F59).
+- The data logs of `spider_response` and `swimmer` count each drop reason on
+  its own: rows with a missing cell, patients with a zero baseline or with no
+  later visit (with their row counts), and rows with a negative duration.
+  Before, these drops read as rows with a missing value (F124).
+- The data log of `swimmer` lists each marker time after the end of the bar
+  or below 0, and the data logs of `waterfall` and `spider_response` list each
+  patient with no row at the first time point, whose baseline is then a later
+  visit. Before, both cases ran with no record (F94).
+- The `swimmer`, `waterfall`, `spider_response` and `sankey` figures grow with
+  their longest label, and the legend and state labels wrap at 24 characters,
+  in both engines with one formula. Before, the R figures had a fixed width,
+  so a label of 60 characters shrank the panel to nothing, and a long state
+  made the `sankey` figure 28 in wide (F81).
 
 ## [3.0.0] - 2026-10-29
 

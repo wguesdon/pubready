@@ -16,8 +16,10 @@ from lifelines import CoxPHFitter
 from matplotlib import transforms
 from matplotlib.ticker import NullLocator
 
+from ..clean import coerce_numeric_columns
 from ..theme import apply_pub_style, palette, plain_log_axis
-from ..util import format_p, p_phrase
+from ..util import format_p, level_labels, level_order, p_phrase
+from .survival_km import event_codes
 
 # Tick sequences of the hazard-ratio axis, from coarse to fine (mantissas per decade).
 TICK_SETS = [(1, 2, 5), (1, 1.5, 2, 3, 5, 7), (1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8)]
@@ -206,9 +208,10 @@ def cox_zph_global(times, events, X, beta):
 def design_and_rows(df, t, e, covs):
     """Build the numeric design matrix and the display rows of the forest plot.
 
-    A categorical covariate is one-hot encoded with its first sorted level as the
-    reference, and gives a "reference" row plus one row per other level. A
-    numeric covariate gives one row.
+    A categorical covariate is one-hot encoded with its first level, by the
+    level rule that both engines share (level_order), as the reference. It
+    gives a "reference" row plus one row per other level. A numeric covariate
+    gives one row.
 
     Args:
         df: The cleaned data.
@@ -218,22 +221,156 @@ def design_and_rows(df, t, e, covs):
 
     Returns:
         tuple: The design data frame and a list of row dicts with the keys
-        ``label`` and ``term`` (None for a reference row).
+        ``label``, ``term`` (None for a reference row) and ``covariate``.
     """
     design = df[[t, e]].copy()
     rows = []
     for c in covs:
         s = df[c]
         if s.dtype == object or str(s.dtype).startswith("category") or not np.issubdtype(s.dtype, np.number):
-            cats = sorted(s.astype(str).unique())
-            rows.append({"label": f"{c}: {cats[0]}", "term": None})
+            cats = level_order(s.astype(str))
+            rows.append({"label": f"{c}: {cats[0]}", "term": None, "covariate": c})
             for lvl in cats[1:]:
                 design[f"{c}{lvl}"] = (s.astype(str) == lvl).astype(int)
-                rows.append({"label": f"{c}: {lvl}", "term": f"{c}{lvl}"})
+                rows.append({"label": f"{c}: {lvl}", "term": f"{c}{lvl}", "covariate": c})
         else:
             design[c] = pd.to_numeric(s, errors="coerce")
-            rows.append({"label": c, "term": c})
+            rows.append({"label": c, "term": c, "covariate": c})
     return design, rows
+
+
+def check_covariates(df, e, covs):
+    """Check the data before the fit, with the rules and messages of the R engine.
+
+    Args:
+        df: The cleaned data.
+        e: The event column.
+        covs: The covariate columns.
+
+    Raises:
+        ValueError: If no row is left, if no event happened, or if a covariate
+            holds one value.
+    """
+    if df.empty:
+        raise ValueError("cox_forest found no row with a time, an event and a value of every "
+                         "covariate")
+    if df[e].sum() == 0:
+        raise ValueError(f"cox_forest needs at least one event, and column '{e}' holds no 1 "
+                         f"among the {len(df)} subject(s) kept")
+    for c in covs:
+        s = df[c]
+        numeric = pd.api.types.is_numeric_dtype(s) and not pd.api.types.is_bool_dtype(s)
+        u = list(pd.unique(level_labels(s) if numeric else s.astype(str)))
+        if len(u) < 2:
+            raise ValueError(f"covariate '{c}' holds one value ('{u[0]}') in the {len(df)} "
+                             "subject(s) kept, so the Cox model cannot estimate its effect; "
+                             "leave it out of --covariates")
+
+
+def collinear_columns(x, tol=1e-8):
+    """The model columns that are a linear combination of a constant and earlier columns.
+
+    Each centred column is reduced against the orthonormal basis of the columns
+    kept so far (modified Gram-Schmidt, two passes); a remainder below 1e-8 of
+    its length marks it. The R engine runs the same arithmetic.
+
+    Args:
+        x: The model matrix, one column per term, without an intercept.
+        tol: The largest remainder that marks a column.
+
+    Returns:
+        list: The 0-based indices of the marked columns.
+    """
+    x = np.asarray(x, dtype=float)
+    hits, basis = [], []
+    for j in range(x.shape[1]):
+        v = x[:, j] - x[:, j].mean()
+        nv = np.sqrt(np.sum(v ** 2))
+        if nv == 0:
+            hits.append(j)
+            continue
+        v = v / nv
+        for _ in range(2):
+            for q in basis:
+                v = v - q * np.sum(q * v)
+        r = np.sqrt(np.sum(v ** 2))
+        if r < tol:
+            hits.append(j)
+        else:
+            basis.append(v / r)
+    return hits
+
+
+def check_collinear(design, rows):
+    """Stop when a model column is collinear with the columns before it.
+
+    Args:
+        design: The design data frame from design_and_rows.
+        rows: The display rows from design_and_rows.
+
+    Raises:
+        ValueError: If a covariate is a linear combination of the ones before it.
+    """
+    terms = [r for r in rows if r["term"] is not None]
+    hit = collinear_columns(design[[r["term"] for r in terms]].to_numpy(float))
+    if hit:
+        raise ValueError(f"covariate '{terms[hit[0]]['covariate']}' is collinear with the "
+                         "covariates before it in --covariates (a linear combination of them), "
+                         "so the Cox model cannot estimate its effect; leave it or one of them out")
+
+
+def cox_separation(time, event, x):
+    """The model columns that separate the events, as cox_separation() in R.
+
+    The partial likelihood of such a column grows without bound, so its hazard
+    ratio has no finite estimate. A column separates upward when, at every event
+    time, each subject with an event holds the highest value of the risk set
+    (the subjects whose time is that time or later), and the risk set holds a
+    lower value at one event time at least; downward with the lowest value.
+
+    Args:
+        time: The follow-up times.
+        event: 1 for an event, 0 for a censored subject.
+        x: The model matrix, one column per term.
+
+    Returns:
+        numpy.ndarray: 1, -1 or 0 for each column.
+    """
+    x = np.asarray(x, dtype=float)
+    event_times = np.unique(time[event == 1])
+    out = np.zeros(x.shape[1], dtype=int)
+    for j in range(x.shape[1]):
+        at_max, at_min, spread = True, True, False
+        for t in event_times:
+            r = x[time >= t, j]
+            d = x[(time == t) & (event == 1), j]
+            if np.any(d < r.max()):
+                at_max = False
+            if np.any(d > r.min()):
+                at_min = False
+            if r.min() < r.max():
+                spread = True
+        if spread:
+            out[j] = 1 if at_max else (-1 if at_min else 0)
+    return out
+
+
+def separation_text(terms, sep):
+    """One sentence for each term that separates the events, as in the R engine.
+
+    Args:
+        terms: The model terms.
+        sep: The separation direction of each term, 1, -1 or 0.
+
+    Returns:
+        str: The sentences, or an empty string.
+    """
+    return "".join(
+        f" The term {tt} was not estimable because it separates the events: at every event "
+        f"time, the subjects with an event held the {'highest' if s > 0 else 'lowest'} value of "
+        f"{tt} in the risk set, so the hazard ratio has no finite estimate. The term stays in the "
+        "model, and the figure and the stats table give no estimate for it."
+        for tt, s in zip(terms, sep) if s != 0)
 
 
 def row_texts(row, stats):
@@ -249,6 +386,8 @@ def row_texts(row, stats):
     if row["term"] is None:
         return "reference", ""
     r = stats.loc[row["term"]]
+    if r.get("note", "estimated") != "estimated":
+        return "not estimable, separation", ""
     star = forest_stars(r["p_value"])
     p_txt = format_p(r["p_value"]) + (" " + star if star else "")
     return f"{r['HR']:.2f} ({r['ci_low']:.2f}–{r['ci_high']:.2f})", p_txt
@@ -364,18 +503,23 @@ def recipe_cox_forest(df, spec):
 
     df = df.copy()
     df[t] = pd.to_numeric(df[t], errors="coerce")
-    ev = pd.to_numeric(df[e], errors="coerce")
-    if not ev.dropna().isin([0, 1]).all():
-        raise ValueError(f"event column '{e}' must be coded 1 = event, 0 = censored")
-    df[e] = ev
+    df[e] = event_codes(df[e], e)
+    # A covariate whose cells read as numbers for 80% or more is numeric, and each
+    # other cell, for example "45 y", becomes NaN and is logged.
+    df, _, _, clean_steps = coerce_numeric_columns(df, covs)
     n0 = len(df)
     df = df.dropna(subset=[t, e] + covs)
-    df = df[df[t] >= 0].reset_index(drop=True)
-    clean_steps = (f"Dropped {n0 - len(df)} row(s) with missing/invalid values ({n0} -> {len(df)} rows)."
-                   if len(df) < n0 else "No cleaning applied; input used as-is.")
+    df = df[np.isfinite(df[t]) & (df[t] >= 0)].reset_index(drop=True)
+    if len(df) < n0:
+        clean_steps.append(f"Dropped {n0 - len(df)} row(s) with missing/invalid values "
+                           f"({n0} -> {len(df)} rows).")
+    if not clean_steps:
+        clean_steps = ["No cleaning applied; input used as-is."]
 
+    check_covariates(df, e, covs)
     # Build a numeric design matrix; one-hot encode categoricals (drop first = reference).
     design, rows = design_and_rows(df, t, e, covs)
+    check_collinear(design, rows)
 
     cph = CoxPHFitter()
     # A tight precision makes lifelines converge to the estimate of survival::coxph;
@@ -399,6 +543,13 @@ def recipe_cox_forest(df, spec):
 
     stats_df = pd.DataFrame({"term": terms, "HR": hr, "ci_low": lo, "ci_high": hi,
                              "z": summ["z"].to_numpy(), "p_value": pv})
+    # A term that separates the events has no finite estimate. Its numbers are the
+    # last step of the iteration, so the table, the figure and the text show none.
+    sep = cox_separation(design[t].to_numpy(float), design[e].to_numpy(float),
+                         design[terms].to_numpy(float))
+    stats_df["note"] = np.where(sep != 0, "not estimable, separation", "estimated")
+    stats_df.loc[sep != 0, ["HR", "ci_low", "ci_high", "z", "p_value"]] = np.nan
+    hr, lo, hi, pv = (stats_df[k].to_numpy() for k in ("HR", "ci_low", "ci_high", "p_value"))
     n_subj, n_events = int(len(df)), int(df[e].sum())
     fp = forest_plot(rows, stats_df, spec, n_subj, n_events, ph_p)
 
@@ -407,10 +558,11 @@ def recipe_cox_forest(df, spec):
         "n": n_subj, "events": n_events, "covariates": covs,
         "proportional_hazards": {"test": "cox.zph global", "p_value": ph_p},
         "hazard_ratios": [{"term": tt, "HR": float(h_), "ci_low": float(l_),
-                           "ci_high": float(u_), "p_value": float(p_)}
-                          for tt, h_, l_, u_, p_ in zip(terms, hr, lo, hi, pv)],
+                           "ci_high": float(u_), "p_value": float(p_), "note": n_}
+                          for tt, h_, l_, u_, p_, n_ in zip(terms, hr, lo, hi, pv,
+                                                            stats_df["note"])],
     }
-    methods = _methods(stats_df, ph_p, covs, n_subj, n_events)
+    methods = _methods(stats_df, ph_p, covs, n_subj, n_events, sep)
     return {
         "fig": fp["fig"], "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": df, "clean_steps": clean_steps, "label": "hazard_ratios",
@@ -420,7 +572,20 @@ def recipe_cox_forest(df, spec):
     }
 
 
-def _methods(stats_df, ph_p, covs, n, events):
+def _methods(stats_df, ph_p, covs, n, events, sep):
+    """Write the methods paragraph, with the same sentences as the R engine.
+
+    Args:
+        stats_df: The stats table.
+        ph_p: The P value of the global cox.zph test, or NaN.
+        covs: The covariates.
+        n: The number of subjects.
+        events: The number of events.
+        sep: The separation direction of each term, 1, -1 or 0.
+
+    Returns:
+        str: The paragraph.
+    """
     from importlib.metadata import version as v
     import platform
     sig = stats_df[stats_df["p_value"] < 0.05]
@@ -435,7 +600,8 @@ def _methods(stats_df, ph_p, covs, n, events):
         f" (global cox.zph {p_phrase(ph_p)}).")
     return (
         f"Hazard ratios were estimated with a Cox proportional-hazards model ({n} subjects, {events} events) "
-        f"including {', '.join(covs)}." + sig_txt + ph_txt +
+        f"including {', '.join(covs)}." + sig_txt + separation_text(list(stats_df["term"]), sep)
+        + ph_txt +
         f" Analyses were performed in Python {platform.python_version()} with lifelines {v('lifelines')}"
         f", and the forest plot was drawn with matplotlib {v('matplotlib')}."
     )

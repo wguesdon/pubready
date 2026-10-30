@@ -11,7 +11,7 @@ from lifelines.statistics import multivariate_logrank_test
 from matplotlib.lines import Line2D
 
 from ..theme import apply_pub_style, longest_line, palette, wrap_labels
-from ..util import p_phrase
+from ..util import _level_label, level_labels, level_order, p_phrase
 
 LEGEND_WRAP = 24
 """The legend labels wrap at this many characters, as in the R engine."""
@@ -29,7 +29,8 @@ def km_break_step(tmax):
     """
     if not np.isfinite(tmax) or tmax <= 0:
         return 1.0
-    cand = sorted(m * 10.0 ** k for k in range(-3, 7) for m in (1, 2, 5))
+    top = max(1, int(np.ceil(np.log10(tmax))) + 1)
+    cand = sorted(m * 10.0 ** k for k in range(-3, top + 1) for m in (1, 2, 5))
     return next(c for c in cand if tmax / c <= 6 + 1e-9)
 
 
@@ -65,6 +66,99 @@ def km_at_risk(time, group, levels, breaks):
     time = np.asarray(time, dtype=float)
     group = np.asarray(group).astype(str)
     return np.array([[int(np.sum((group == g) & (time >= b))) for b in breaks] for g in levels])
+
+
+def _event_code(v):
+    """Read one value of an event column as event_codes() does.
+
+    Args:
+        v: One value of the column.
+
+    Returns:
+        tuple: The code (0.0, 1.0 or NaN) and the label of a value that is not
+        0 or 1, else None.
+    """
+    if v is None or (isinstance(v, (float, np.floating)) and np.isnan(v)):
+        return np.nan, None
+    if isinstance(v, (bool, np.bool_)):
+        return float(v), None
+    if isinstance(v, (int, float, np.integer, np.floating)):
+        return (float(v), None) if v in (0, 1) else (np.nan, _level_label(v))
+    s = str(v).strip()
+    if s == "":
+        return np.nan, None
+    try:
+        num = float(s)
+    except ValueError:
+        return np.nan, s
+    return (num, None) if num in (0.0, 1.0) else (np.nan, s)
+
+
+def value_list(vals):
+    """Quote the first six values of a list for a message, and count the rest.
+
+    Args:
+        vals: The values, in order.
+
+    Returns:
+        str: The quoted values.
+    """
+    shown = ", ".join(f"'{v}'" for v in vals[:6])
+    return f"{shown} and {len(vals) - 6} more" if len(vals) > 6 else shown
+
+
+def event_codes(values, col, meaning="1 = event, 0 = censored"):
+    """Check an event or status column before any conversion.
+
+    One rule in both engines, shared by survival_km, cox_forest and swimmer. A
+    present value is accepted when it is a logical, a number equal to 0 or 1, or
+    a text that reads as such a number. Any other value, for example "dead", 2
+    or 1.5, stops the run, and the message lists the values that are not 0 or 1.
+    The R engine has the same rule.
+
+    Args:
+        values: The column.
+        col: The column name, for the message.
+        meaning: What the codes mean, for the message.
+
+    Returns:
+        pandas.Series: The codes as floats 0, 1 and NaN.
+
+    Raises:
+        ValueError: If a value is not 0 or 1.
+    """
+    read = [_event_code(v) for v in values]
+    bad = [lab for _, lab in read if lab is not None]
+    if bad:
+        raise ValueError(f"event column '{col}' must be coded {meaning}, but it holds "
+                         f"{value_list(level_order(bad))}")
+    return pd.Series([c for c, _ in read], index=values.index, dtype=float)
+
+
+def km_median(time, surv):
+    """The median survival time by the rule of survival::survfit in R.
+
+    The median is the first time at which the curve is at or below 0.5. When the
+    curve sits at exactly 0.5 on a step, it is the midpoint between the start of
+    that step and the time of the next drop, as print.survfit and
+    quantile.survfit report it. lifelines takes the start of the step instead.
+
+    Args:
+        time: The times of the curve, in increasing order.
+        surv: The survival at each time.
+
+    Returns:
+        float: The median, or NaN when the curve stays above 0.5.
+    """
+    tol = np.sqrt(np.finfo(float).eps)
+    keep = surv < 0.5 + tol
+    if not keep.any():
+        return float("nan")
+    x, y = time[keep], surv[keep]
+    lower = y < y[0]
+    if abs(y[0] - 0.5) < tol and lower.any():
+        return float((x[0] + x[np.argmax(lower)]) / 2)
+    return float(x[0])
 
 
 def km_width(leg_labs, title):
@@ -146,17 +240,22 @@ def recipe_survival_km(df, spec):
 
     df = df.copy()
     df[t] = pd.to_numeric(df[t], errors="coerce")
-    ev = pd.to_numeric(df[e], errors="coerce")
-    if not ev.dropna().isin([0, 1]).all():
-        raise ValueError(f"event column '{e}' must be coded 1 = event, 0 = censored")
-    df[e] = ev
+    df[e] = event_codes(df[e], e)
     n0 = len(df)
     df = df.dropna(subset=[t, e, g])
-    df = df[df[t] >= 0].reset_index(drop=True)
+    df = df[np.isfinite(df[t]) & (df[t] >= 0)].reset_index(drop=True)
     clean_steps = (f"Dropped {n0 - len(df)} row(s) with missing/invalid values ({n0} -> {len(df)} rows)."
                    if len(df) < n0 else "No cleaning applied; input used as-is.")
-    df[g] = df[g].astype(str)
-    lv = sorted(df[g].unique())
+    if df.empty:
+        raise ValueError(f"survival_km found no row with a time, an event and a group in "
+                         f"'{t}', '{e}' and '{g}'")
+    # The groups sort as numbers when every label is a number, else in code-point
+    # order, by the level rule that both engines share (level_order).
+    df[g] = level_labels(df[g])
+    lv = level_order(df[g])
+    if len(lv) < 2:
+        raise ValueError(f"survival_km compares groups, and column '{g}' holds 1 group "
+                         f"('{lv[0]}', n = {len(df)}); the log-rank test needs 2 or more")
     pal = palette(len(lv), spec["appearance"].get("palette"))
 
     # The x axis runs to the last time, so the last event is on the figure, with
@@ -182,7 +281,8 @@ def recipe_survival_km(df, spec):
         kmf.fit(sub[t], sub[e], label=grp)
         kmf.plot_survival_function(ax=ax, ci_show=False, color=pal[i],
                                    show_censors=True, censor_styles={"marker": "|", "ms": 6})
-        med = float(kmf.median_survival_time_)
+        sf = kmf.survival_function_
+        med = km_median(sf.index.to_numpy(float), sf.iloc[:, 0].to_numpy(float))
         rows.append({"group": grp, "n": int(len(sub)), "events": int(sub[e].sum()),
                      "median_survival": med if np.isfinite(med) else float("nan")})
 
@@ -290,7 +390,9 @@ import pandas as pd
 from lifelines import KaplanMeierFitter
 from lifelines.statistics import multivariate_logrank_test
 
-df = pd.read_csv("{in_name}"); df["{g}"] = df["{g}"].astype(str)
+df = pd.read_csv("{in_name}")
+# The group labels as the recipe writes them: a whole number with no ".0".
+df["{g}"] = df["{g}"].astype(str).str.replace(r"\\.0$", "", regex=True)
 order, pal = {lv}, {pal}
 tmax = df["{t}"].max()
 breaks = [{step!r} * k for k in range(int(np.floor(tmax / {step!r} + 1e-9)) + 1)]

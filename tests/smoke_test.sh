@@ -622,6 +622,18 @@ for engine in r python; do
   fi
 done
 
+# Area C: the clinical recipes.
+echo
+echo "[C1] survival_km reads column names that hold a space, in both engines"
+sed '1s/.*/"follow up months","death event","treatment arm","age","sex","stage"/' \
+  example/survival_trial.csv > "$OUT/km_space_names.csv"
+for eng in r python; do
+  ./cli/figkit plot --engine "$eng" --recipe survival_km --data "$OUT/km_space_names.csv" \
+    --time "follow up months" --event "death event" --x "treatment arm" \
+    --out "$OUT/km_space_$eng" > /dev/null 2>&1
+  check_bundle "$OUT/km_space_$eng" "survival_km with spaced names ($eng)"
+done
+
 echo
 if [ "$fail" -eq 0 ]; then
   echo "ALL SMOKE TESTS PASSED"

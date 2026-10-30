@@ -15,10 +15,37 @@ import pandas as pd
 from matplotlib.lines import Line2D
 
 from ..bundle import slugify
-from ..theme import apply_pub_style, new_fig, palette
+from ..theme import apply_pub_style, legend_width, new_fig, palette, wrap_label, wrap_labels
+from ..util import level_labels
+from .survival_km import event_codes
 
 #: The marker shapes, in the order of --markers, matched to the R engine.
 SHAPES = ("o", "^", "D", "s", "v")
+
+#: The legend labels wrap at this many characters, as in the R engine.
+LEGEND_WRAP = 24
+
+
+def swimmer_width(patients, arms, markers, title):
+    """The figure width, as swimmer_width() of the R engine.
+
+    3.8 in for the panel, the patient labels (when they are drawn, up to 40
+    patients) at 0.055 in per character, and the legend of the arms and the
+    markers, and never less than 6.4 in. A long label widens the figure instead
+    of squeezing the panel.
+
+    Args:
+        patients: The patient labels.
+        arms: The arms of the legend, or an empty list.
+        markers: The marker columns.
+        title: The legend title.
+
+    Returns:
+        float: The width in inches.
+    """
+    ychars = max([len(str(p)) for p in patients] + [0]) if len(patients) <= 40 else 0
+    leg = wrap_labels(list(arms) + list(markers), LEGEND_WRAP)
+    return max(6.4, 3.8 + 0.5 + 0.055 * ychars + legend_width(leg, title))
 
 
 def arm_summary(d, g):
@@ -34,6 +61,31 @@ def arm_summary(d, g):
     s = d[d["group"] == g]
     return {"n": int(len(s)), "median_duration": float(s["duration"].median()),
             "ongoing": int(s["ongoing"].sum())}
+
+
+def marker_step(d, m):
+    """A data log step for the values of one marker that fall outside the bar.
+
+    A value after the end of the bar or below 0 is logged. The symbols stay
+    where the data puts them. The R engine writes the same step.
+
+    Args:
+        d: The per-patient table.
+        m: The marker column.
+
+    Returns:
+        str or None: The step, or None when every value is inside its bar.
+    """
+    v = d[m]
+    out = (np.isfinite(v) & ((v > d["duration"]) | (v < 0))).to_numpy()
+    if not out.any():
+        return None
+    vals = level_labels(v[out].reset_index(drop=True))
+    bars = level_labels(d["duration"][out].reset_index(drop=True))
+    items = [f"'{p}' ({a}, bar {b})" for p, a, b in zip(d["patient"][out], vals, bars)]
+    shown = ", ".join(items[:6]) + (f" and {len(items) - 6} more" if len(items) > 6 else "")
+    return (f"{int(out.sum())} value(s) of '{m}' fall after the end of the bar or below 0, and "
+            f"the symbols are drawn where the data puts them: {shown}.")
 
 
 def recipe_swimmer(df, spec):
@@ -63,9 +115,8 @@ def recipe_swimmer(df, spec):
             raise ValueError(f"column '{c}' not found in data")
 
     n0 = len(df)
-    status = pd.to_numeric(df[ev], errors="coerce") if has_event else pd.Series(1.0, index=df.index)
-    if not status.dropna().isin([0, 1]).all():
-        raise ValueError(f"event column '{ev}' must be coded 1 = the course ended, 0 = ongoing")
+    status = (event_codes(df[ev], ev, "1 = the course ended, 0 = ongoing") if has_event
+              else pd.Series(1.0, index=df.index))
     d = pd.DataFrame({
         "patient": df[idc].astype(str).where(df[idc].notna()),
         "duration": pd.to_numeric(df[tcol], errors="coerce"),
@@ -74,16 +125,26 @@ def recipe_swimmer(df, spec):
     })
     for m in markers:
         d[m] = pd.to_numeric(df[m], errors="coerce")
-    keep = (d["patient"].notna() & np.isfinite(d["duration"]) & (d["duration"] >= 0)
-            & d["group"].notna() & d["ongoing"].notna())
+    # A row with a missing cell and a row with a negative duration are counted
+    # on their own, so the data log gives the right reason for each drop.
+    missing = (d["patient"].isna() | ~np.isfinite(d["duration"]) | d["group"].isna()
+               | d["ongoing"].isna())
+    negative = ~missing & (d["duration"] < 0)
+    keep = ~missing & ~negative
     d = d[keep].reset_index(drop=True)
     d["ongoing"] = d["ongoing"].astype(bool)
     if d["patient"].duplicated().any():
         raise ValueError("swimmer needs one row per patient")
     if d.empty:
         raise ValueError("swimmer needs at least one patient with a duration")
-    steps = ([f"Dropped {int((~keep).sum())} row(s) with a missing patient, duration, status or "
-              "arm."] if int((~keep).sum()) else []) + [f"Kept {len(d)} of {n0} patient(s)."]
+    steps = []
+    if missing.any():
+        steps.append(f"Dropped {int(missing.sum())} row(s) with a missing patient, duration, "
+                     "status or arm.")
+    if negative.any():
+        steps.append(f"Dropped {int(negative.sum())} row(s) with a negative duration.")
+    steps.append(f"Kept {len(d)} of {n0} patient(s).")
+    steps += [s for s in (marker_step(d, m) for m in markers) if s]
 
     # The arms are sorted, as the other recipes sort their groups; R sorts them
     # in the same C-locale order.
@@ -95,20 +156,24 @@ def recipe_swimmer(df, spec):
     colour = {g: pal[i] for i, g in enumerate(g_lv)}
     span = float(d["duration"].max()) or 1.0
 
-    w, h = 6.4, max(3.6, min(10.0, 1.6 + 0.18 * len(d)))
+    w = swimmer_width(list(d["patient"]), g_lv if has_group else [], markers,
+                      grp if has_group else "")
+    h = max(3.6, min(10.0, 1.6 + 0.18 * len(d)))
     fig, ax = new_fig(w, h)
     ax.barh(d["rank"], d["duration"], height=0.6, color=[colour[g] for g in d["group"]])
     for _, r in d[d["ongoing"]].iterrows():
         ax.annotate("", xy=(r["duration"] + 0.04 * span, r["rank"]), xytext=(r["duration"], r["rank"]),
                     arrowprops={"arrowstyle": "-|>", "color": "0.12", "lw": 0.8})
-    handles = [Line2D([0], [0], color=colour[g], lw=6, label=g) for g in g_lv] if has_group else []
+    handles = ([Line2D([0], [0], color=colour[g], lw=6, label=wrap_label(g, LEGEND_WRAP))
+                for g in g_lv] if has_group else [])
     for i, m in enumerate(markers):
         sel = np.isfinite(d[m])
         if sel.any():
             ax.scatter(d.loc[sel, m], d.loc[sel, "rank"], marker=SHAPES[i % len(SHAPES)], s=30,
                        facecolor="white", edgecolor="black", linewidths=0.9, zorder=3)
         handles.append(Line2D([0], [0], marker=SHAPES[i % len(SHAPES)], ls="", markersize=6,
-                              markerfacecolor="white", markeredgecolor="black", label=m))
+                              markerfacecolor="white", markeredgecolor="black",
+                              label=wrap_label(m, LEGEND_WRAP)))
     if len(d) <= 40:
         ax.set_yticks(d["rank"])
         ax.set_yticklabels(d["patient"])
@@ -142,7 +207,7 @@ def recipe_swimmer(df, spec):
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
         "methods": _methods(d, g_lv, markers, tcol, has_event),
         "df_used": d, "clean_steps": steps, "label": slugify(tcol), "width": w, "height": h,
-        "build_script": functools.partial(_script, spec, has_event, has_group),
+        "build_script": functools.partial(_script, spec, has_event, has_group, w),
     }
 
 
@@ -179,13 +244,14 @@ def _methods(d, g_lv, markers, tcol, has_event):
     )
 
 
-def _script(spec, has_event, has_group, in_name, fig_stub):
+def _script(spec, has_event, has_group, w, in_name, fig_stub):
     """Write the standalone script that redraws the bars.
 
     Args:
         spec: The figure specification.
         has_event: Whether the input carries a status column.
         has_group: Whether the input carries an arm column.
+        w: The figure width in inches.
         in_name: The name of the input copy inside the bundle.
         fig_stub: The name of the figure file, without its extension.
 
@@ -206,7 +272,7 @@ import numpy as np, pandas as pd
 raw = pd.read_csv("{in_name}").sort_values("{tcol}").reset_index(drop=True)
 raw["ongoing"] = {ongoing}
 raw["colour"] = {colour}
-fig, ax = plt.subplots(figsize=(6.4, max(3.6, min(10, 1.6 + 0.18 * len(raw)))))
+fig, ax = plt.subplots(figsize=({w:.2f}, max(3.6, min(10, 1.6 + 0.18 * len(raw)))))
 ax.barh(np.arange(1, len(raw) + 1), raw["{tcol}"], color=plt.cm.tab10(raw["colour"]))
 ongoing = raw[raw["ongoing"]]
 ax.scatter(ongoing["{tcol}"], ongoing.index + 1, marker=">", color="black")

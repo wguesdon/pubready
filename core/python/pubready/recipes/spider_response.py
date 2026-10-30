@@ -14,15 +14,36 @@ baseline itself. That categorisation reads the change from baseline alone, so
 the column is named for what it measures: a full RECIST 1.1 assessment also
 reads the nadir, the non-target lesions and any new lesion.
 """
+import functools
+
 import numpy as np
 import pandas as pd
 
 from ..bundle import slugify
-from ..theme import apply_pub_style, new_fig, palette
-from ..util import cap_first
+from ..theme import apply_pub_style, legend_width, new_fig, palette, wrap_label, wrap_labels
+from ..util import cap_first, level_labels
 
 #: The order a response legend reads in, from the best outcome to the worst.
 CATEGORIES = ("partial response", "stable disease", "progressive disease")
+
+#: The legend labels wrap at this many characters, as in the R engine.
+LEGEND_WRAP = 24
+
+
+def spider_width(legend_labels, title):
+    """The figure width, as spider_width() of the R engine.
+
+    5.8 in, wider when the legend needs more than 2 in, so a long label widens
+    the figure instead of squeezing the panel.
+
+    Args:
+        legend_labels: The legend labels.
+        title: The legend title.
+
+    Returns:
+        float: The width in inches.
+    """
+    return 5.8 + max(0.0, legend_width(wrap_labels(legend_labels, LEGEND_WRAP), title) - 2.0)
 
 
 def categorise(best, worst, pr_cut, pd_cut):
@@ -43,6 +64,96 @@ def categorise(best, worst, pr_cut, pd_cut):
     if worst >= pd_cut:
         return "progressive disease"
     return "stable disease"
+
+
+def check_one_row_per_time(ids, times, recipe, xcol):
+    """Stop when a patient has two rows or more at one time point.
+
+    A second baseline row would else become a later visit. The message names
+    the patients and the times. spider_response and waterfall share it, and the
+    R engine has the same rule.
+
+    Args:
+        ids: The patient of each row.
+        times: The time of each row.
+        recipe: The recipe name, for the message.
+        xcol: The time column, for the message.
+
+    Raises:
+        ValueError: If a patient has two rows at one time.
+    """
+    tt = level_labels(pd.Series(list(times)))
+    keys = pd.Series([f"{i}\r{t}" for i, t in zip(ids, tt)])
+    dup = keys.duplicated().to_numpy()
+    if not dup.any():
+        return
+    dup_ids = [i for i, flag in zip(ids, dup) if flag]
+    dup_tt = [t for t, flag in zip(tt, dup) if flag]
+    items, seen = [], set()
+    for i, t in zip(dup_ids, dup_tt):
+        if i not in seen:
+            seen.add(i)
+            items.append(f"'{i}' at {xcol} = {t}")
+    shown = ", ".join(items[:6]) + (f" and {len(items) - 6} more" if len(items) > 6 else "")
+    raise ValueError(f"{recipe} needs one row per patient and time point, and {len(items)} "
+                     f"patient(s) have two rows or more at one time: {shown}; average or remove "
+                     "the extra rows first")
+
+
+def late_baseline_step(ids, times, xcol):
+    """A data log step for the patients with no row at the first time point.
+
+    The baseline of such a patient is a later visit. spider_response and
+    waterfall share it, and the R engine has the same rule.
+
+    Args:
+        ids: The patient of each row.
+        times: The time of each row.
+        xcol: The time column, for the message.
+
+    Returns:
+        str or None: The step, or None when every patient has a row at the
+        first time point.
+    """
+    t = pd.Series(list(times), dtype=float)
+    if t.empty:
+        return None
+    t0 = t.min()
+    first = t.groupby(pd.Series(list(ids))).min()
+    late = [i for i in dict.fromkeys(ids) if first[i] > t0]
+    if not late:
+        return None
+    labels = level_labels(pd.Series([first[i] for i in late], dtype=float))
+    items = [f"'{i}' ({xcol} = {lab})" for i, lab in zip(late, labels)]
+    shown = ", ".join(items[:6]) + (f" and {len(items) - 6} more" if len(items) > 6 else "")
+    return (f"{len(late)} patient(s) have no row at the first time point ({xcol} = "
+            f"{level_labels(pd.Series([t0]))[0]}), so their baseline is their first later "
+            f"visit: {shown}.")
+
+
+def check_numeric_time(values, col):
+    """Stop when the time column holds no number, as check_numeric_time() in R.
+
+    The message says how many of the values are text, for example "week 0".
+    spider_response and waterfall share it.
+
+    Args:
+        values: The time column.
+        col: The column name, for the message.
+
+    Raises:
+        ValueError: If no value of the column reads as a number.
+    """
+    num = pd.to_numeric(values, errors="coerce")
+    if num.notna().any():
+        return
+    txt = values.astype(str).str.strip()
+    text = values.notna() & (txt != "")
+    if text.any():
+        raise ValueError(f"column '{col}' holds no number ({int(text.sum())} of {len(values)} "
+                         f"values are text, for example '{txt[text].iloc[0]}'), and the time "
+                         "has to be numeric")
+    raise ValueError(f"column '{col}' holds no number, and the time has to be numeric")
 
 
 def recipe_spider_response(df, spec):
@@ -72,18 +183,21 @@ def recipe_spider_response(df, spec):
             raise ValueError(f"column '{c}' not found in data")
 
     d = df[cols].copy()
+    check_numeric_time(d[x], x)
     d[x] = pd.to_numeric(d[x], errors="coerce")
     d[y] = pd.to_numeric(d[y], errors="coerce")
-    if d[x].isna().all():
-        raise ValueError(f"column '{x}' holds no number, and the time has to be numeric")
     n_rows0 = len(d)
     d = d.dropna()
+    n_missing = n_rows0 - len(d)
     d[idc] = d[idc].astype(str)
+    check_one_row_per_time(d[idc], d[x], "spider_response", x)
+    late_step = late_baseline_step(d[idc], d[x], x)
     d = d.sort_values([idc, x], kind="mergesort").reset_index(drop=True)
 
     baseline = d.groupby(idc, sort=False)[y].first()
     usable = baseline[(baseline != 0) & np.isfinite(baseline)].index
     dropped = len(baseline) - len(usable)
+    rows_zero = int((~d[idc].isin(usable)).sum())
     d = d[d[idc].isin(usable)].reset_index(drop=True)
     if len(d) < 2:
         raise ValueError("spider_response needs at least one patient with a non-zero baseline")
@@ -100,6 +214,7 @@ def recipe_spider_response(df, spec):
     # carry a best change of zero rather than the smallest growth they reached.
     post = d[d[idc].duplicated()]
     no_follow_up = sorted(set(d[idc]) - set(post[idc]))
+    rows_no_follow = int(d[idc].isin(no_follow_up).sum())
     if no_follow_up:
         d = d[~d[idc].isin(no_follow_up)].reset_index(drop=True)
         post = post[~post[idc].isin(no_follow_up)]
@@ -118,15 +233,20 @@ def recipe_spider_response(df, spec):
         for row in per.itertuples()]
 
     steps = [f"Kept {len(per)} patient(s) across {len(d)} measurement(s)."]
-    if n_rows0 > len(d):
-        steps.append(f"Dropped {n_rows0 - len(d)} row(s) with a missing time, "
-                     "value or patient.")
+    # Each reason is counted on its own: rows with a missing cell, then the
+    # patients (and their rows) with a zero baseline or with no later visit.
+    if n_missing:
+        what = "patient, time, value or group" if grp else "patient, time or value"
+        steps.append(f"Dropped {n_missing} row(s) with a missing {what}.")
+    if late_step:
+        steps.append(late_step)
     if dropped:
-        steps.append(f"Dropped {dropped} patient(s) whose baseline was zero or "
-                     "absent, because a percentage change needs a non-zero baseline.")
+        steps.append(f"Dropped {dropped} patient(s) ({rows_zero} row(s)) whose baseline was "
+                     "zero, because a percentage change needs a non-zero baseline.")
     if no_follow_up:
-        steps.append(f"Dropped {len(no_follow_up)} patient(s) with no visit after "
-                     "the baseline, because a response needs a second measurement.")
+        steps.append(f"Dropped {len(no_follow_up)} patient(s) ({rows_no_follow} row(s)) with no "
+                     "visit after the baseline, because a response needs a second "
+                     "measurement.")
 
     if grp:
         colour_of = d[[idc, grp]].drop_duplicates(idc).set_index(idc)[grp].astype(str)
@@ -140,7 +260,7 @@ def recipe_spider_response(df, spec):
     pal = palette(len(levels), ap.get("palette"))
     colour_index = {name: pal[i] for i, name in enumerate(levels)}
 
-    w, h = 5.8, 4.2
+    w, h = spider_width(levels, legend_title), 4.2
     fig, ax = new_fig(w, h)
     ax.axhline(0, color="grey", lw=0.8)
     ax.axhline(pd_cut, color="grey", lw=0.8, ls="--")
@@ -149,7 +269,8 @@ def recipe_spider_response(df, spec):
         colour = colour_index[colour_of.loc[patient]]
         ax.plot(rows[x], rows["change"], color=colour, lw=1.1, alpha=0.9, zorder=2)
         ax.scatter(rows[x], rows["change"], color=colour, s=14, alpha=0.9, zorder=3)
-    handles = [ax.plot([], [], color=colour_index[name], lw=1.6, label=name)[0]
+    handles = [ax.plot([], [], color=colour_index[name], lw=1.6,
+                       label=wrap_label(name, LEGEND_WRAP))[0]
                for name in levels]
     ax.legend(handles=handles, title=legend_title, loc="center left",
               bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=9)
@@ -184,8 +305,7 @@ def recipe_spider_response(df, spec):
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": d, "clean_steps": steps, "label": slugify(y),
         "width": w, "height": h,
-        "build_script": lambda in_name, fig_stub: _script(spec, in_name, fig_stub,
-                                                          pd_cut, pr_cut),
+        "build_script": functools.partial(_script, spec, pd_cut=pd_cut, pr_cut=pr_cut),
     }
 
 

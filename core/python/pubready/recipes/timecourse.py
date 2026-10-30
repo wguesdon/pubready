@@ -21,7 +21,8 @@ from scipy import linalg, stats
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
-from ..util import cap_first, sig_text
+from ..util import _level_label, cap_first, level_labels, sig_text
+from .sankey import time_level_order
 
 
 def p_label(p):
@@ -42,17 +43,30 @@ def mauchly(m, p, df):
     The correction term of R reads 3 * (p + 1), the number of time points, at one
     position, and it is kept so that the P value matches R exactly.
 
+    The test needs as many error degrees of freedom (subjects - groups) as
+    contrasts. With fewer, the matrix is singular and W is 0, so the test is
+    reported as not available, as in the R engine.
+
     Args:
         m: The contrast-space sums of squares and products matrix.
         p: The number of contrasts (time points - 1).
         df: The error degrees of freedom (subjects - groups).
 
     Returns:
-        dict: W, the chi-square statistic, its df and the P value.
+        dict: W, the chi-square statistic, its df, the P value and whether the
+        test was available.
     """
     if p < 2:
-        return {"W": 1.0, "statistic": 0.0, "df": 0, "p_value": 1.0}
-    log_w = np.log(np.linalg.det(m)) - p * np.log(np.trace(m) / p)
+        return {"W": 1.0, "statistic": 0.0, "df": 0, "p_value": 1.0, "available": True}
+    na = {"W": np.nan, "statistic": np.nan, "df": np.nan, "p_value": np.nan, "available": False}
+    if df < p:
+        return na
+    det = np.linalg.det(m)
+    if not det > 0:
+        return na
+    log_w = np.log(det) - p * np.log(np.trace(m) / p)
+    if not np.isfinite(log_w):
+        return na
     rho = 1 - (2 * p ** 2 + p + 2) / (6 * p * df)
     w2 = ((p + 2) * (p - 1) * (p - 2) * (2 * p ** 3 + 6 * p ** 2 + 3 * (p + 1) + 2) /
           (288 * (df * p * rho) ** 2))
@@ -60,7 +74,7 @@ def mauchly(m, p, df):
     f = p * (p + 1) / 2 - 1
     pr1, pr2 = stats.chi2.sf(z, f), stats.chi2.sf(z, f + 4)
     return {"W": float(np.exp(log_w)), "statistic": float(z), "df": int(f),
-            "p_value": float(pr1 + w2 * (pr2 - pr1))}
+            "p_value": float(pr1 + w2 * (pr2 - pr1)), "available": True}
 
 
 def mixed_anova(y, g, levels):
@@ -162,9 +176,15 @@ def recipe_timecourse(df, spec):
                          "replicates first")
     if (d.groupby("id")["group"].nunique() > 1).any():
         raise ValueError("each subject must belong to one group only")
-    time_numeric = pd.api.types.is_numeric_dtype(d["time"])
-    t_lv = sorted(d["time"].unique()) if time_numeric else list(pd.unique(d["time"].astype(str)))
-    d["time_key"] = d["time"] if time_numeric else d["time"].astype(str)
+    # The time points follow --levels, else numeric order, else the number that each
+    # label holds ("day 10"), else first appearance (time_level_order, in sankey).
+    # A numeric time keeps its spacing on the axis unless --levels sets the order.
+    d["time_key"] = level_labels(d["time"])
+    t_levels = dat.get("levels") or []
+    tord = time_level_order(list(d["time_key"]), t_levels, "time point", "--levels")
+    t_key = tord["levels"]
+    time_numeric = pd.api.types.is_numeric_dtype(d["time"]) and not t_levels
+    t_lv = [float(k) for k in t_key] if time_numeric else t_key
     counts = d.groupby("id").size()
     complete = sorted(counts.index[counts == len(t_lv)])
     incomplete = int((counts != len(t_lv)).sum())
@@ -178,12 +198,22 @@ def recipe_timecourse(df, spec):
                      f"{len(t_lv)} time points, because the repeated-measures ANOVA needs "
                      "complete subjects.")
     steps.append(f"Kept {len(complete)} subject(s) at {len(t_lv)} time points ({len(d)} values).")
+    steps.append(f"The time points of '{x}' are in {tord['rule']}: {', '.join(t_key)}.")
     if len(t_lv) < 2:
         raise ValueError("timecourse needs at least 2 time points")
+    if not complete:
+        raise ValueError(f"timecourse needs complete subjects, and none of the {len(counts)} "
+                         f"subject(s) of '{idc}' has a value at every one of the {len(t_key)} "
+                         f"time points of '{x}' ({', '.join(t_key)})")
     if len(complete) - len(g_lv) < 1:
-        raise ValueError("timecourse needs more complete subjects than groups")
+        raise ValueError(f"timecourse needs more complete subjects than groups, and it has "
+                         f"{len(complete)} complete subject(s) of '{idc}' in {len(g_lv)} group(s)")
+    if d["y"].nunique() < 2:
+        raise ValueError(f"the outcome '{y}' has zero variance: every value of the "
+                         f"{len(complete)} complete subject(s) is {_level_label(d['y'].iloc[0])}, "
+                         "so the ANOVA has no variation to test")
 
-    wide = d.pivot(index="id", columns="time_key", values="y").loc[complete, t_lv]
+    wide = d.pivot(index="id", columns="time_key", values="y").loc[complete, t_key]
     ymat = wide.to_numpy(float)
     g = d.drop_duplicates("id").set_index("id").loc[complete, "group"].to_numpy()
     res = mixed_anova(ymat, g, g_lv)
@@ -191,7 +221,8 @@ def recipe_timecourse(df, spec):
     if method not in ("auto", "gg", "uncorrected"):
         raise ValueError(f"unknown timecourse test '{method}' (use auto, gg or uncorrected)")
     use_gg = {"gg": True, "uncorrected": False,
-              "auto": len(t_lv) > 2 and res["mauchly"]["p_value"] < 0.05}[method]
+              "auto": len(t_lv) > 2 and (not res["mauchly"]["available"]
+                                         or res["mauchly"]["p_value"] < 0.05)}[method]
     labels = {"group": grp or "group", "time": x, "interaction": f"{grp or 'group'}:{x}"}
     stats_df = pd.DataFrame([effect_row(r, res["eps"], use_gg, labels) for r in res["rows"]])
 
@@ -315,7 +346,13 @@ def _methods(rows, res, use_gg, method, n_subj, n_time, n_drop, has_group, spec,
     drop_txt = (f" {n_drop} subject(s) without a value at every time point were excluded."
                 if n_drop else "")
     mt = res["mauchly"]
-    if method == "auto":
+    n_grp = len(res["cells"])
+    if method == "auto" and not mt["available"]:
+        corr_txt = (f" Mauchly's test was not available, because it needs at least "
+                    f"{n_grp + n_time - 1} complete subjects ({n_subj} subject(s) in {n_grp} "
+                    f"group(s) at {n_time} time points); the within-subject effects carry the "
+                    f"Greenhouse-Geisser correction (epsilon = {res['eps']:.3f}).")
+    elif method == "auto":
         corr_txt = (f" Sphericity was assessed with Mauchly's test (W = {mt['W']:.3f}, "
                     f"P = {sig_text(mt['p_value'], 2)}); " +
                     (f"because it was rejected, the within-subject effects carry the "

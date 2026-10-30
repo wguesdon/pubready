@@ -149,7 +149,8 @@ def test_sankey_runs_bowker_and_drops_the_empty_pairs():
     d = pd.DataFrame({"id": list(range(24)) * 2, "visit": ["pre"] * 24 + ["post"] * 24,
                       "state": frm + to})
     meta = recipe_sankey(d, clin_spec("sankey", id="id", x="visit", y="state"))["test_meta"]
-    assert meta["visits"] == ["post", "pre"]
+    # Visits that hold no number keep the order of their first appearance (F39).
+    assert meta["visits"] == ["pre", "post"]
     assert meta["name"] == "Bowker's test of symmetry"
     assert meta["empty_pairs"] == 1 and meta["df"] == 2
     stat = (2 - 4) ** 2 / 6 + (0 - 1) ** 2 / 1

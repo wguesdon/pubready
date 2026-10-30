@@ -1,0 +1,375 @@
+"""The v3 fixes of the clinical recipes. The R suite (test-v3-clinical.R) runs
+the same cases and expects the same results."""
+from types import SimpleNamespace
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from pubready.recipes.cox_forest import collinear_columns, cox_separation, recipe_cox_forest
+from pubready.recipes.cumulative_incidence import recipe_cumulative_incidence
+from pubready.recipes.survival_km import (event_codes, km_break_step, km_median,
+                                          recipe_survival_km)
+from pubready.recipes.sankey import recipe_sankey, time_level_order
+from pubready.recipes.swimmer import recipe_swimmer, swimmer_width
+from pubready.recipes.spider_response import recipe_spider_response, spider_width
+from pubready.recipes.timecourse import recipe_timecourse
+from pubready.recipes.waterfall import recipe_waterfall, waterfall_height, waterfall_width
+from pubready.spec import spec_from_args
+
+
+def v3c_spec(recipe, **kw):
+    """Build a figure spec as the plot entry does.
+
+    Args:
+        recipe: The recipe name.
+        **kw: The command-line options.
+
+    Returns:
+        dict: The spec.
+    """
+    base = {"recipe": recipe, "data": "d.csv", "x": None, "y": None, "test": "auto"}
+    base.update(kw)
+    return spec_from_args(SimpleNamespace(**base))
+
+
+def km_space():
+    """Two arms whose column names hold a space.
+
+    Returns:
+        pandas.DataFrame: One row per subject.
+    """
+    return pd.DataFrame({
+        "follow up months": [2, 5, 5, 8, 10, 10, 14, 18, 21.8, 3, 6, 10, 12, 15, 17, 19, 20, 20],
+        "death event": [1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1],
+        "treatment arm": ["A"] * 9 + ["B"] * 9,
+    })
+
+
+def test_survival_km_reads_columns_whose_names_hold_a_space():
+    """F44: the R engine stopped on such names; both engines draw them."""
+    res = recipe_survival_km(km_space(), v3c_spec("survival_km", time="follow up months",
+                                                  event="death event", x="treatment arm"))
+    assert list(res["stats"]["group"]) == ["A", "B"]
+    assert list(res["stats"]["events"]) == [7, 6]
+    plain = km_space().set_axis(["t", "e", "g"], axis=1)
+    ref = recipe_survival_km(plain, v3c_spec("survival_km", time="t", event="e", x="g"))
+    assert res["test_meta"]["log_rank"]["chisq"] == pytest.approx(
+        ref["test_meta"]["log_rank"]["chisq"], rel=1e-12)
+    assert "groups of treatment arm" in res["methods"]
+
+
+def test_an_event_column_holds_0_1_or_a_logical_else_the_message_lists_its_values():
+    """F56: a text or a decimal event code stops the run and names the values."""
+    assert list(event_codes(pd.Series([True, False, np.nan], dtype=object), "e").fillna(-1)) == [1, 0, -1]
+    assert list(event_codes(pd.Series(["1", " 0", np.nan, ""]), "e").fillna(-1)) == [1, 0, -1, -1]
+    assert list(event_codes(pd.Series([1.0, 0.0, 1.0, np.nan]), "e").fillna(-1)) == [1, 0, 1, -1]
+    with pytest.raises(ValueError, match="event column 'status' must be coded 1 = event, "
+                                         "0 = censored, but it holds 'alive', 'dead'"):
+        event_codes(pd.Series(["dead", "alive", "dead"]), "status")
+    with pytest.raises(ValueError, match="but it holds '1.5', '2', '10'"):
+        event_codes(pd.Series([1, 1.5, 0, 2, 10]), "e")
+    with pytest.raises(ValueError, match="'6', '7' and 2 more"):
+        event_codes(pd.Series([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), "e")
+    d = pd.DataFrame({"time": [3, 5, 8, 9], "event": ["dead", "alive", "dead", "alive"],
+                      "arm": ["a", "a", "b", "b"]})
+    with pytest.raises(ValueError, match="holds 'alive', 'dead'"):
+        recipe_survival_km(d, v3c_spec("survival_km", time="time", event="event", x="arm"))
+    with pytest.raises(ValueError, match="holds 'alive', 'dead'"):
+        recipe_cox_forest(d, v3c_spec("cox_forest", time="time", event="event", covariates="arm"))
+    s = pd.DataFrame({"patient": ["P1", "P2"], "months": [4, 7], "ended": ["yes", "no"]})
+    with pytest.raises(ValueError, match="must be coded 1 = the course ended, 0 = ongoing, "
+                                         "but it holds 'no', 'yes'"):
+        recipe_swimmer(s, v3c_spec("swimmer", id="patient", time="months", event="ended"))
+
+
+def test_the_median_survival_takes_the_midpoint_of_a_step_at_exactly_one_half():
+    """F67: lifelines took the start of the step; survfit takes the midpoint."""
+    d = pd.DataFrame({"time": list(range(1, 11)) + list(range(2, 21, 2)) + [1, 2, 2.5, 3],
+                      "event": [1] * 20 + [1, 1, 0, 1],
+                      "arm": ["a"] * 10 + ["b"] * 10 + ["c"] * 4})
+    res = recipe_survival_km(d, v3c_spec("survival_km", time="time", event="event", x="arm"))
+    # The medians that survival::survfit reports (see test-v3-clinical.R).
+    assert list(res["stats"]["median_survival"]) == pytest.approx([5.5, 11, 2.5])
+    assert np.isnan(km_median(np.array([0.0, 1, 2, 3]), np.array([1.0, 0.8, 0.6, 0.55])))
+    assert km_median(np.array([0.0, 1, 2]), np.array([1.0, 0.75, 0.5])) == 2
+
+
+def test_survival_km_names_one_group_and_draws_times_above_5e6():
+    """F92: one group gave chi-square(0) in Python; times above 5e6 stopped both engines."""
+    d = pd.DataFrame({"time": [3, 5, 8, 9], "event": [1, 0, 1, 1], "arm": ["control"] * 4})
+    with pytest.raises(ValueError, match=r"column 'arm' holds 1 group \('control', n = 4\)"):
+        recipe_survival_km(d, v3c_spec("survival_km", time="time", event="event", x="arm"))
+    assert km_break_step(1.038e8) == 2e7
+    assert km_break_step(5.5e12) == 1e12
+    d2 = pd.DataFrame({"time": [v * 1e7 for v in (1, 3, 5, 8, 9, 10)],
+                       "event": [1, 0, 1, 1, 1, 0], "arm": ["a"] * 3 + ["b"] * 3})
+    res = recipe_survival_km(d2, v3c_spec("survival_km", time="time", event="event", x="arm"))
+    assert res["test_meta"]["at_risk"]["times"] == pytest.approx([v * 1e7 for v in (0, 2, 4, 6, 8, 10)])
+
+
+def test_survival_cox_and_cumulative_incidence_share_one_level_order():
+    """F64: numeric groups sort as numbers and text levels in code-point order."""
+    d = pd.DataFrame({"time": [5, 8, 12, 3, 9, 14, 7, 10, 15, 4, 6, 11],
+                      "event": [1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0],
+                      "dose": [80] * 4 + [160] * 4 + [235] * 4,
+                      "inherit": ["X-linked", "autosomal"] * 6,
+                      "status": [1, 2, 0, 1, 1, 0, 2, 1, 0, 1, 2, 1]})
+    km = recipe_survival_km(d, v3c_spec("survival_km", time="time", event="event", x="dose"))
+    assert list(km["stats"]["group"]) == ["80", "160", "235"]
+    cx = recipe_cox_forest(d, v3c_spec("cox_forest", time="time", event="event",
+                                       covariates="inherit"))
+    assert list(cx["stats"]["term"]) == ["inheritautosomal"]
+    ci = recipe_cumulative_incidence(d, v3c_spec("cumulative_incidence", time="time",
+                                                 event="status", x="dose"))
+    assert ci["test_meta"]["groups"] == ["80", "160", "235"]
+    assert list(pd.unique(ci["stats"]["group"])) == ["80", "160", "235"]
+
+
+def cox_data():
+    """Sixteen subjects with an arm and an age.
+
+    Returns:
+        pandas.DataFrame: One row per subject.
+    """
+    return pd.DataFrame({
+        "time": [5, 8, 12, 3, 9, 14, 7, 10, 15, 4, 6, 11, 13, 2, 16, 9],
+        "event": [1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1],
+        "arm": ["control", "treated"] * 8,
+        "age": [61, 55, 70, 48, 66, 59, 52, 73, 45, 68, 57, 63, 50, 71, 58, 64]})
+
+
+def test_a_text_cell_in_a_numeric_cox_covariate_becomes_nan_and_is_logged():
+    """F42: one "45 y" made age a factor of many levels."""
+    d = cox_data()
+    d["age"] = d["age"].astype(str)
+    d.loc[2, "age"] = "45 y"
+    res = recipe_cox_forest(d, v3c_spec("cox_forest", time="time", event="event",
+                                        covariates="arm,age"))
+    assert list(res["stats"]["term"]) == ["armtreated", "age"]
+    assert res["test_meta"]["n"] == 15
+    assert res["clean_steps"][0] == ("Coerced column 'age' to numeric; 1 value(s) became NA, "
+                                     "for example '45 y'.")
+    assert res["clean_steps"][1].startswith("Dropped 1 row")
+
+
+def cox_run(data, covs):
+    """Run cox_forest on the time and event columns of cox_data.
+
+    Args:
+        data: The table.
+        covs: The covariates, comma separated.
+
+    Returns:
+        dict: The bundle payload.
+    """
+    return recipe_cox_forest(data, v3c_spec("cox_forest", time="time", event="event",
+                                            covariates=covs))
+
+
+def test_cox_forest_names_a_constant_or_collinear_covariate_and_no_event():
+    """F91: these inputs stopped R, gave NA rows or a traceback in Python."""
+    d = cox_data()
+    d["site"] = "A"
+    d["dose"] = 10
+    d["age_copy"] = 2 * d["age"] + 1
+    d["arm2"] = d["arm"]
+    with pytest.raises(ValueError, match=r"covariate 'site' holds one value \('A'\) in the 16 "
+                                         r"subject\(s\) kept"):
+        cox_run(d, "arm,age,site")
+    with pytest.raises(ValueError, match=r"covariate 'dose' holds one value \('10'\)"):
+        cox_run(d, "arm,dose")
+    with pytest.raises(ValueError, match="covariate 'age_copy' is collinear with the covariates "
+                                         "before it"):
+        cox_run(d, "arm,age,age_copy")
+    with pytest.raises(ValueError, match="covariate 'arm2' is collinear"):
+        cox_run(d, "arm,age,arm2")
+    d["event"] = 0
+    with pytest.raises(ValueError, match=r"column 'event' holds no 1 among the 16 subject\(s\) kept"):
+        cox_run(d, "arm,age")
+    x = np.array([[1, 2], [2, 1], [3, 4], [5, 4]], dtype=float)
+    assert collinear_columns(np.column_stack([x, x[:, 0] + 2 * x[:, 1]])) == [2]
+    assert collinear_columns(np.column_stack([x[:, 0], 3 - x[:, 0], x[:, 1]])) == [1]
+    assert collinear_columns(x) == []
+
+
+def test_a_covariate_that_separates_the_events_is_marked_not_estimable():
+    """F57: the term reported HR of about 4e8 and P = 1 with no warning."""
+    d = cox_data()
+    d["marker"] = np.where(d["event"] == 1, "pos", "neg")
+    res = cox_run(d, "arm,age,marker")
+    assert list(res["stats"]["note"]) == ["estimated", "estimated", "not estimable, separation"]
+    assert res["stats"].iloc[2][["HR", "ci_low", "ci_high", "z", "p_value"]].isna().all()
+    assert np.isfinite(res["stats"]["HR"].iloc[0])
+    assert "The term markerpos was not estimable because it separates the events" in res["methods"]
+    assert "held the highest value of markerpos" in res["methods"]
+    time = np.array([1.0, 2, 3, 4, 5, 6])
+    event = np.array([1.0, 1, 0, 1, 0, 0])
+    x = np.column_stack([[1, 1, 0, 1, 0, 0], [0, 0, 1, 0, 1, 1], [1, 0, 1, 0, 1, 0]])
+    assert list(cox_separation(time, event, x)) == [1, -1, 0]
+    ok = cox_run(cox_data(), "arm,age")
+    assert list(ok["stats"]["note"]) == ["estimated", "estimated"]
+
+
+def test_cumulative_incidence_stops_on_a_text_or_a_negative_status_code():
+    """F58: "censored" or -1 became a competing event, even the cause of interest."""
+    d = pd.DataFrame({"time": [2, 3, 5, 6, 8, 9], "arm": ["a", "b"] * 3,
+                      "status": ["relapse", "censored", "death", "relapse", "censored", "death"]})
+    sp = v3c_spec("cumulative_incidence", time="time", event="status", x="arm")
+    with pytest.raises(ValueError, match="column 'status' must hold 0 for a censored subject and a "
+                                         "positive number for each cause, but it holds "
+                                         "'censored', 'death', 'relapse'"):
+        recipe_cumulative_incidence(d, sp)
+    d["status"] = [1, -1, 2, 1, -1, 2]
+    with pytest.raises(ValueError, match="but it holds '-1'"):
+        recipe_cumulative_incidence(d, sp)
+    d["status"] = [1, 0, 2, 1, 0, 2]
+    assert recipe_cumulative_incidence(d, sp)["test_meta"]["causes"] == ["1", "2"]
+
+
+def test_sankey_visits_and_timecourse_time_points_share_one_time_order():
+    """F39: text visits sorted in code-point order or by first appearance."""
+    assert time_level_order(["week 8", "week 24", "week 16"])["levels"] == \
+        ["week 8", "week 16", "week 24"]
+    assert time_level_order(["M0", "M12", "M3"])["rule"] == \
+        "the order of the number that each visit holds"
+    assert time_level_order(["Day 14", "Day -7", "Day 0"])["levels"] == ["Day -7", "Day 0", "Day 14"]
+    assert time_level_order(["week-8", "week-2"])["levels"] == ["week-2", "week-8"]
+    o = time_level_order(["10", "2", "1"])
+    assert o["levels"] == ["1", "2", "10"] and o["rule"] == "numeric order"
+    o = time_level_order(["week 4", "baseline", "C1D8"], what="time point")
+    assert o["levels"] == ["week 4", "baseline", "C1D8"]
+    assert o["rule"] == ("the order of first appearance, because the time points do not each hold "
+                         "one number")
+    assert time_level_order(["b1", "a1", "c0"])["levels"] == ["c0", "a1", "b1"]
+    o = time_level_order(["M0", "M3"], ["M3", "M0", "M6"])
+    assert o["levels"] == ["M3", "M0"] and o["rule"] == "the order that --visit_levels gives"
+    with pytest.raises(ValueError, match=r"--visit_levels does not list the visit\(s\) 'M3'"):
+        time_level_order(["M0", "M3"], ["M0"])
+    d = pd.DataFrame({"patient": [f"P{i}" for i in range(1, 5) for _ in range(3)],
+                      "visit": ["week 8", "week 24", "week 16"] * 4,
+                      "response": ["PR", "CR", "CR", "SD", "PR", "PR", "PD", "PD", "SD", "PR",
+                                   "PR", "CR"]})
+    res = recipe_sankey(d, v3c_spec("sankey", id="patient", x="visit", y="response"))
+    assert res["test_meta"]["visits"] == ["week 8", "week 16", "week 24"]
+    assert ("The visits of 'visit' are in the order of the number that each visit holds: week 8, "
+            "week 16, week 24.") in res["clean_steps"]
+    tc = pd.DataFrame({"id": [f"m{i}" for i in range(1, 7) for _ in range(3)],
+                       "day": ["day 10", "day 2", "day 1"] * 6,
+                       "y": [5, 3, 1, 6, 3, 2, 7, 4, 1, 6, 2, 2, 8, 4, 2, 5, 3, 1]})
+    res = recipe_timecourse(tc, v3c_spec("timecourse", x="day", y="y", id="id"))
+    assert ("The time points of 'day' are in the order of the number that each time point holds: "
+            "day 1, day 2, day 10.") in res["clean_steps"]
+    res = recipe_timecourse(tc, v3c_spec("timecourse", x="day", y="y", id="id",
+                                         levels="day 10,day 2,day 1"))
+    assert ("The time points of 'day' are in the order that --levels gives: day 10, day 2, "
+            "day 1.") in res["clean_steps"]
+
+
+def test_timecourse_stops_on_an_outcome_with_zero_variance():
+    """F90: Python wrote F = nan or F values from rounding noise."""
+    tc = pd.DataFrame({"id": [f"m{i}" for i in range(1, 7) for _ in range(3)],
+                       "day": [0, 7, 14] * 6, "arm": ["a"] * 9 + ["b"] * 9, "y": [100.0] * 18})
+    with pytest.raises(ValueError, match=r"the outcome 'y' has zero variance: every value of the 6 "
+                                         r"complete subject\(s\) is 100"):
+        recipe_timecourse(tc, v3c_spec("timecourse", x="day", y="y", id="id", group="arm"))
+
+
+def test_mauchly_is_not_available_with_too_few_subjects_and_gg_applies():
+    """F95: Python wrote W = 0 and P = 1; R stopped with an unclear error."""
+    tc = pd.DataFrame({"id": [f"m{i}" for i in range(1, 5) for _ in range(4)],
+                       "day": [0, 7, 14, 21] * 4, "arm": ["a"] * 8 + ["b"] * 8,
+                       "y": [10, 14, 19, 25, 11, 13, 20, 27, 9, 12, 14, 15, 10, 11, 15, 17]})
+    res = recipe_timecourse(tc, v3c_spec("timecourse", x="day", y="y", id="id", group="arm"))
+    assert res["test_meta"]["sphericity"]["available"] is False
+    assert np.isnan(res["test_meta"]["sphericity"]["p_value"])
+    assert res["test_meta"]["correction_applied"] is True
+    assert list(res["stats"]["correction"]) == ["none", "Greenhouse-Geisser", "Greenhouse-Geisser"]
+    assert ("Mauchly's test was not available, because it needs at least 5 complete subjects "
+            "(4 subject(s) in 2 group(s) at 4 time points)") in res["methods"]
+
+
+def test_waterfall_names_a_text_time_and_timecourse_a_set_with_no_complete_subject():
+    """F92: both inputs stopped with an error that did not say what was wrong."""
+    wf = pd.DataFrame({"patient": ["P1", "P1", "P2", "P2"], "week": ["week 0", "week 8"] * 2,
+                       "lesion": [50, 40, 30, 36]})
+    with pytest.raises(ValueError, match=r"column 'week' holds no number \(4 of 4 values are text, "
+                                         r"for example 'week 0'\)"):
+        recipe_waterfall(wf, v3c_spec("waterfall", x="week", y="lesion", id="patient"))
+    with pytest.raises(ValueError, match=r"column 'week' holds no number \(4 of 4 values are text"):
+        recipe_spider_response(wf, v3c_spec("spider_response", x="week", y="lesion", id="patient"))
+    tc = pd.DataFrame({"id": ["a", "a", "b", "b", "c", "c"], "day": [0, 7, 7, 14, 0, 14],
+                       "y": [1, 2, 3, 4, 5, 6]})
+    with pytest.raises(ValueError, match=r"none of the 3 subject\(s\) of 'id' has a value at every one "
+                                         r"of the 3 time points of 'day' \(0, 7, 14\)"):
+        recipe_timecourse(tc, v3c_spec("timecourse", x="day", y="y", id="id"))
+
+
+def test_waterfall_and_spider_name_a_patient_with_two_rows_at_one_time():
+    """F59: a second baseline row became a later visit."""
+    d = pd.DataFrame({"patient": ["P1", "P1", "P1", "P2", "P2", "P3", "P3", "P3"],
+                      "week": [0, 0, 8, 0, 8, 0, 8, 8],
+                      "lesion": [50, 52, 40, 30, 36, 20, 21, 22]})
+    msg = (r"needs one row per patient and time point, and 2 patient\(s\) have two rows or more at "
+           r"one time: 'P1' at week = 0, 'P3' at week = 8")
+    with pytest.raises(ValueError, match="waterfall " + msg):
+        recipe_waterfall(d, v3c_spec("waterfall", x="week", y="lesion", id="patient"))
+    with pytest.raises(ValueError, match="spider_response " + msg):
+        recipe_spider_response(d, v3c_spec("spider_response", x="week", y="lesion", id="patient"))
+
+
+def test_the_spider_and_swimmer_data_logs_count_each_drop_reason_on_its_own():
+    """F124: the patient drops were logged as rows with a missing value."""
+    d = pd.DataFrame({"patient": ["P1", "P1", "P2", "P2", "P3", "P4", "P4", "P5"],
+                      "week": [0, 8, 0, 8, 0, 0, 8, np.nan],
+                      "lesion": [50, 40, 0, 10, 30, 20, 25, 33]})
+    res = recipe_spider_response(d, v3c_spec("spider_response", x="week", y="lesion", id="patient"))
+    assert res["clean_steps"] == [
+        "Kept 2 patient(s) across 4 measurement(s).",
+        "Dropped 1 row(s) with a missing patient, time or value.",
+        "Dropped 1 patient(s) (2 row(s)) whose baseline was zero, because a percentage change "
+        "needs a non-zero baseline.",
+        "Dropped 1 patient(s) (1 row(s)) with no visit after the baseline, because a response "
+        "needs a second measurement."]
+    s = pd.DataFrame({"patient": ["P1", "P2", "P3", "P4"], "months": [4, -2, np.nan, 7]})
+    res = recipe_swimmer(s, v3c_spec("swimmer", id="patient", time="months"))
+    assert res["clean_steps"] == ["Dropped 1 row(s) with a missing patient, duration, status or arm.",
+                                  "Dropped 1 row(s) with a negative duration.",
+                                  "Kept 2 of 4 patient(s)."]
+
+
+def test_swimmer_logs_a_marker_outside_the_bar_and_spider_a_late_baseline():
+    """F94: both cases ran with no step in the data log."""
+    s = pd.DataFrame({"patient": ["P1", "P2", "P3"], "months": [10, 6, 8], "resp": [12, -1, 3]})
+    res = recipe_swimmer(s, v3c_spec("swimmer", id="patient", time="months", markers="resp"))
+    assert ("2 value(s) of 'resp' fall after the end of the bar or below 0, and the symbols are "
+            "drawn where the data puts them: 'P1' (12, bar 10), 'P2' (-1, bar 6).") in res["clean_steps"]
+    d = pd.DataFrame({"patient": ["P1", "P1", "P2", "P2", "P2"], "week": [8, 16, 0, 8, 16],
+                      "lesion": [50, 40, 30, 36, 33]})
+    step = ("1 patient(s) have no row at the first time point (week = 0), so their baseline is "
+            "their first later visit: 'P1' (week = 8).")
+    res = recipe_spider_response(d, v3c_spec("spider_response", x="week", y="lesion", id="patient"))
+    assert step in res["clean_steps"]
+    res = recipe_waterfall(d, v3c_spec("waterfall", x="week", y="lesion", id="patient"))
+    assert step in res["clean_steps"]
+
+
+def test_a_long_label_widens_the_swimmer_waterfall_spider_and_sankey_figures():
+    """F81: the R figures had a fixed width, so a long label squeezed the panel."""
+    long = "Wild-type littermate controls from the second breeding cohort 2026"
+    assert swimmer_width(["PT-01"], ["control", "treated"],
+                         ["response_month", "progression_month"], "arm") == pytest.approx(6.4)
+    assert swimmer_width(["x" * 60], ["A"], [], "arm") == pytest.approx(
+        3.8 + 0.5 + 0.055 * 60 + 0.55 + 0.075 * 3)
+    assert waterfall_width(16, ["control", "treated"], "arm") == pytest.approx(5.76)
+    assert waterfall_width(16, [long], "arm") == pytest.approx(5.76 + 0.55 + 0.075 * 24 - 2.0)
+    assert waterfall_height(["PT-01", "x" * 60]) == pytest.approx(4.4 + 0.055 * 60 - 0.5)
+    assert spider_width(["partial response", "stable disease", "progressive disease"],
+                        "Response") == pytest.approx(5.8)
+    d = pd.DataFrame({"patient": [f"R{i}" for i in range(1, 5) for _ in range(2)],
+                      "week": [0, 8] * 4,
+                      "response": [long, "PD", "PD", long, long, long, "PD", "PD"]})
+    res = recipe_sankey(d, v3c_spec("sankey", id="patient", x="week", y="response"))
+    # The same width and height as the R engine (see test-v3-clinical.R).
+    assert res["width"] == pytest.approx(7.0, rel=1e-9)
+    assert res["height"] == pytest.approx(5.25, rel=1e-9)

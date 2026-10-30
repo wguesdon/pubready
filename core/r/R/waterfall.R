@@ -14,6 +14,24 @@
 # The plot is descriptive, so there is no hypothesis test. The stats table holds
 # one row per patient, and the metadata counts the categories per group.
 
+# The legend labels wrap at this many characters, as in the Python engine.
+.wf_wrap <- 24
+
+# The figure width: 0.16 in per bar between 5 and 9 in, wider when the legend
+# needs more than 2 in, so a long label widens the figure instead of squeezing
+# the panel. The Python engine uses the same formula.
+waterfall_width <- function(n, legend_labels, title) {
+  max(5.0, min(9.0, 3.2 + 0.16 * n)) +
+    max(0, legend_width(wrap_labels(legend_labels, .wf_wrap), title) - 2.0)
+}
+
+# The figure height: 4.4 in, taller when the patient labels under the bars
+# (drawn up to 30 patients) need more than 0.5 in at 0.055 in per character.
+waterfall_height <- function(patients) {
+  chars <- if (length(patients) <= 30) max(nchar(patients), 0L) else 0L
+  4.4 + max(0, 0.055 * chars - 0.5)
+}
+
 .wf_first <- function(v) v[1]
 .wf_last <- function(v) v[length(v)]
 
@@ -52,6 +70,7 @@ recipe_waterfall <- function(df, spec) {
   pd_cut <- spec$appearance$pd_threshold %||% 20
   pr_cut <- spec$appearance$pr_threshold %||% -30
 
+  if (has_time) check_numeric_time(df[[x]], x)
   n0 <- nrow(df)
   d <- data.frame(id = as.character(df[[idc]]),
                   time = if (has_time) suppressWarnings(as.numeric(df[[x]])) else 0,
@@ -61,10 +80,13 @@ recipe_waterfall <- function(df, spec) {
   d <- d[stats::complete.cases(d), , drop = FALSE]
   n_missing <- n0 - nrow(d)
   if (has_time) {
+    check_one_row_per_time(d$id, d$time, "waterfall", x)
+    late_step <- late_baseline_step(d$id, d$time, x)
     fv <- .wf_from_visits(d)
     per <- fv$per
     per$category <- .wf_category(per$best_change_pct, per$worst_change_pct, pr_cut, pd_cut)
     extra <- c(
+      late_step,
       if (fv$dropped_zero > 0) sprintf("Dropped %d patient(s) whose baseline was zero, because a percentage change needs a non-zero baseline.", fv$dropped_zero),
       if (fv$no_follow > 0) sprintf("Dropped %d patient(s) with no visit after the baseline.", fv$no_follow))
   } else {
@@ -103,7 +125,7 @@ recipe_waterfall <- function(df, spec) {
     ggplot2::geom_hline(yintercept = 0, colour = "grey20", linewidth = 0.4) +
     ggplot2::geom_hline(yintercept = c(pd_cut, pr_cut), linetype = "dashed", colour = "grey45",
                         linewidth = 0.4) +
-    ggplot2::scale_fill_manual(values = pal) +
+    ggplot2::scale_fill_manual(values = pal, labels = wrap_labels(levels(fill_var), .wf_wrap)) +
     ggplot2::scale_x_continuous(breaks = if (nrow(per) <= 30) per$rank else NULL,
                                 labels = if (nrow(per) <= 30) per$patient else NULL,
                                 expand = ggplot2::expansion(add = 0.6)) +
@@ -133,7 +155,8 @@ recipe_waterfall <- function(df, spec) {
                            args = list(spec = spec, has_time = has_time, pd_cut = pd_cut,
                                        pr_cut = pr_cut)),
        label = slugify(y), df_used = d, clean_steps = clean_steps,
-       width = max(5.0, min(9.0, 3.2 + 0.16 * nrow(per))), height = 4.4)
+       width = waterfall_width(nrow(per), levels(fill_var), legend_title),
+       height = waterfall_height(per$patient))
 }
 
 .wf_count_group <- function(gl, per, cats) {
