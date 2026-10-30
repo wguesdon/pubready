@@ -100,3 +100,16 @@ def test_values_near_1e300_or_1e_minus_300_stop_the_run():
     spec = spec_from_args(SimpleNamespace(recipe="correlation_heatmap", data="v.csv", x=None, y=None))
     with pytest.raises(ValueError, match="correlation_heatmap: the variance of column 'big'"):
         recipe_correlation_heatmap(df, spec)
+
+
+def test_a_group_with_no_spread_gets_no_density_curve():
+    """A group with no spread gets no density and no bandwidth, as in R (F125)."""
+    from pubready.recipes.distribution import _curves
+    df = pd.DataFrame({"condition": ["ctrl"] * 6 + ["pair"] * 2,
+                       "value": [11.4, 13.1, 12.2, 10.9, 12.8, 11.7, 12.0, 12.0]})
+    res = recipe_distribution(df, dist_spec(y="value", x="condition"))
+    st = res["stats"].set_index("group")
+    assert np.isnan(st.loc["pair", "bandwidth"])
+    assert np.isfinite(st.loc["ctrl", "bandwidth"])
+    assert "The group(s) pair have no spread" in res["methods"]
+    assert _curves(np.array([12.0, 12.0]), fd_bins(df["value"].to_numpy())) is None

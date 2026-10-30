@@ -70,7 +70,9 @@
   b[abs(b - round(b)) < 1e-9]
 }
 
-.dist_bandwidth <- function(v) if (length(v) >= 2) stats::bw.nrd0(v) else NA_real_
+# The bandwidth of the density, or NA for a group with no density: fewer than two
+# values, or no spread (F125).
+.dist_bandwidth <- function(v) if (length(v) >= 2 && stats::sd(v) > 0) stats::bw.nrd0(v) else NA_real_
 
 # The Gaussian kernel density at one grid point.
 .dist_kde_point <- function(g, v, bw) sum(stats::dnorm((g - v) / bw)) / (length(v) * bw)
@@ -109,7 +111,9 @@
 .dist_group_curves <- function(gl, d, bins) {
   v <- d$value[d$group == gl]
   n <- length(v)
-  if (n < 2) return(NULL)
+  # A group with no spread has no density: bw.nrd0 falls back to a width from the
+  # value itself, which draws a wide curve that stretches the shared axis (F125).
+  if (n < 2 || stats::sd(v) == 0) return(NULL)
   bw <- stats::bw.nrd0(v)
   grid <- seq(min(v) - 3 * bw, max(v) + 3 * bw, length.out = .dist_grid_n)
   to_count <- n * bins$width
@@ -286,6 +290,13 @@ recipe_distribution <- function(df, spec) {
   cmp_txt <- if (has_group) {
     " No test compared the groups; use two_group_compare or multi_group_compare to test a difference in location."
   } else ""
+  flat <- stats_df$group[!is.na(stats_df$sd) & stats_df$sd == 0]
+  flat_txt <- if (length(flat) > 0 && has_group) {
+    sprintf(" The group(s) %s have no spread, so no density curve or normal fit is drawn for them.",
+            paste(flat, collapse = ", "))
+  } else if (length(flat) > 0) {
+    " The values have no spread, so no density curve or normal fit is drawn."
+  } else ""
   paste0(
     sprintf("The distribution of %s was described %s.", y_lab, scope),
     sprintf(" The histogram uses a bin width of %s from %s, with bins anchored at a multiple of the width.",
@@ -293,6 +304,7 @@ recipe_distribution <- function(df, spec) {
     cap_txt,
     " The solid curve is a Gaussian kernel density with the bandwidth of Silverman's rule of thumb (stats::bw.nrd0),",
     " and the dashed curve is a normal distribution with the sample mean and SD; both are scaled to counts.",
+    flat_txt,
     sw_txt,
     " Skewness and excess kurtosis are the moment estimates on standardised values (sum(z^3) / n and sum(z^4) / n - 3, with z scaled by the SD).",
     cmp_txt,
@@ -327,7 +339,7 @@ recipe_distribution <- function(df, spec) {
     "  idx <- pmin(pmax(floor((vg - start) / w) + 1, 1), nb)",
     "  bars <- rbind(bars, data.frame(group = g, xmin = start + (seq_len(nb) - 1) * w,",
     "                                 xmax = start + seq_len(nb) * w, count = tabulate(idx, nb)))",
-    "  if (length(vg) < 2) next",
+    "  if (length(vg) < 2 || sd(vg) == 0) next",
     "  bw <- bw.nrd0(vg)",
     "  grid <- seq(min(vg) - 3 * bw, max(vg) + 3 * bw, length.out = 512)",
     "  dens <- rowSums(dnorm(outer(grid, vg, \"-\") / bw)) / (length(vg) * bw)",

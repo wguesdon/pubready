@@ -60,3 +60,17 @@ test_that("values near 1e300 or 1e-300 stop distribution and correlation_heatmap
                                                                  data = "v.csv"))),
                "correlation_heatmap: the variance of column 'big'")
 })
+
+# A group with no spread gets no density curve and no bandwidth, so it does not
+# stretch the shared x axis (F125).
+test_that("a group with no spread gets no density curve", {
+  df <- data.frame(condition = c(rep("ctrl", 6), "pair", "pair"),
+                   value = c(11.4, 13.1, 12.2, 10.9, 12.8, 11.7, 12.0, 12.0))
+  res <- recipe_distribution(df, dist_spec(y = "value", x = "condition"))
+  st <- res$stats
+  expect_true(is.na(st$bandwidth[st$group == "pair"]))
+  expect_false(is.na(st$bandwidth[st$group == "ctrl"]))
+  expect_match(res$methods, "The group(s) pair have no spread", fixed = TRUE)
+  expect_null(.dist_group_curves("pair", data.frame(group = df$condition, value = df$value),
+                                 .dist_bins(df$value)))
+})

@@ -221,7 +221,8 @@ def group_row(gl, values, bins):
             "median": q7(v, 0.5), "q1": q7(v, 0.25), "q3": q7(v, 0.75),
             "min": float(v.min()), "max": float(v.max()),
             "skewness": mom["skewness"], "excess_kurtosis": mom["kurtosis"],
-            "shapiro_w": w, "shapiro_p": p, "bin_width": bins["width"], "bandwidth": bw_nrd0(v)}
+            "shapiro_w": w, "shapiro_p": p, "bin_width": bins["width"],
+            "bandwidth": bw_nrd0(v) if n >= 2 and np.std(v) > 0 else float("nan")}
 
 
 def strip_label(row, width):
@@ -331,10 +332,13 @@ def _curves(v, bins):
         bins: The shared bins.
 
     Returns:
-        tuple: The grid, the density and the normal curve (None when the SD is
-        zero), or None for fewer than two values.
+        tuple: The grid, the density and the normal curve, or None for fewer
+        than two values or no spread.
     """
-    if len(v) < 2:
+    # A group with no spread has no density: bw_nrd0 falls back to a width from
+    # the value itself, which draws a wide curve that stretches the shared axis
+    # (F125).
+    if len(v) < 2 or np.std(v) == 0:
         return None
     bw = bw_nrd0(v)
     grid = np.linspace(v.min() - 3 * bw, v.max() + 3 * bw, GRID_N)
@@ -495,13 +499,21 @@ def _methods(stats_df, bins, has_group, spec, x, y):
                   "not all equal.")
     cmp_txt = (" No test compared the groups; use two_group_compare or multi_group_compare to test "
                "a difference in location." if has_group else "")
+    flat = stats_df.loc[stats_df["sd"].astype(float) == 0, "group"].tolist()
+    if flat and has_group:
+        flat_txt = (f" The group(s) {', '.join(str(g) for g in flat)} have no spread, so no density "
+                    "curve or normal fit is drawn for them.")
+    elif flat:
+        flat_txt = " The values have no spread, so no density curve or normal fit is drawn."
+    else:
+        flat_txt = ""
     return (
         f"The distribution of {y_lab} was described {scope}."
         f" The histogram uses a bin width of {bins['width']:.4g} from {bin_txt}, with bins anchored "
         "at a multiple of the width." + cap_txt +
         " The solid curve is a Gaussian kernel density with the bandwidth of Silverman's rule of "
         "thumb (stats::bw.nrd0), and the dashed curve is a normal distribution with the sample mean "
-        "and SD; both are scaled to counts." + sw_txt +
+        "and SD; both are scaled to counts." + flat_txt + sw_txt +
         " Skewness and excess kurtosis are the moment estimates on standardised values (sum(z^3) / n "
         "and sum(z^4) / n - 3, with z scaled by the SD)." + cmp_txt +
         f" Computed in Python {platform.python_version()} with scipy {v('scipy')} and drawn with "
@@ -548,7 +560,7 @@ for ax, g in zip(axes[:, 0], groups):
     vg = d.loc[d["group"] == g, "value"].to_numpy()
     idx = np.clip(np.floor((vg - start) / w).astype(int), 0, nb - 1)
     ax.bar(start + w * np.arange(nb), np.bincount(idx, minlength=nb), width=w, align="edge", alpha=0.65, edgecolor="white")
-    if len(vg) >= 2:
+    if len(vg) >= 2 and vg.std() > 0:
         sd = vg.std(ddof=1); iq = np.quantile(vg, 0.75) - np.quantile(vg, 0.25)
         bw = 0.9 * (min(sd, iq / 1.34) or sd or 1.0) * len(vg) ** -0.2
         grid = np.linspace(vg.min() - 3 * bw, vg.max() + 3 * bw, 512)

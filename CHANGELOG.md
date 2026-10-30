@@ -66,6 +66,9 @@ tag move together.
   correlation, so the clustering stopped with an unclear error, and the two
   engines tested it differently, which changed the Benjamini-Hochberg count
   (F79, F87).
+- `distribution` draws no density curve and reports no bandwidth for a group
+  with no spread, so a group of equal values no longer stretches the shared x
+  axis. The methods text names the group (F125).
 
 ## [3.0.0] - 2026-10-29
 
