@@ -37,11 +37,13 @@ recipe_survival_km <- function(df, spec) {
 
   # Bind Surv into the formula's environment so surv_fit/survdiff resolve it;
   # surv_fit (not survfit) stores the formula so ggsurvplot can recover the data.
+  # The model reads syntactic copies of the columns, because survival::strata
+  # cannot find a column whose name holds a space; the labels keep the names.
   Surv <- survival::Surv
-  fml <- stats::as.formula(sprintf("Surv(`%s`, `%s`) ~ `%s`",
-                                   time_col, event_col, group_col))
-  fit <- survminer::surv_fit(fml, data = df)
-  sd  <- survival::survdiff(fml, data = df)
+  fd <- .km_fit_frame(df, time_col, event_col, group_col)
+  fml <- stats::as.formula("Surv(.time, .event) ~ .group")
+  fit <- survminer::surv_fit(fml, data = fd)
+  sd  <- survival::survdiff(fml, data = fd)
   lr_df <- length(sd$n) - 1
   lr_p  <- stats::pchisq(sd$chisq, lr_df, lower.tail = FALSE)
 
@@ -61,7 +63,7 @@ recipe_survival_km <- function(df, spec) {
   leg_labs <- wrap_labels(lvls, width = .km_legend_wrap())
 
   g <- survminer::ggsurvplot(
-    fit, data = df, pval = FALSE, risk.table = FALSE, conf.int = FALSE,
+    fit, data = fd, pval = FALSE, risk.table = FALSE, conf.int = FALSE,
     censor = TRUE, palette = pal[seq_along(lvls)],
     legend = "right", legend.title = group_col, legend.labs = leg_labs,
     xlab = xlab, ylab = ylab, xlim = c(0, tmax), break.time.by = step,
@@ -121,6 +123,14 @@ recipe_survival_km <- function(df, spec) {
 }
 
 .km_col <- function(tb, nm) if (nm %in% colnames(tb)) tb[, nm] else rep(NA_real_, nrow(tb))
+
+# The time, the event and the group under the syntactic names .time, .event and
+# .group, for the model formula. A column name with a space or a bracket stays
+# out of the formula, so it cannot break the strata lookup of survfit.
+.km_fit_frame <- function(df, time_col, event_col, group_col) {
+  data.frame(.time = df[[time_col]], .event = df[[event_col]], .group = df[[group_col]],
+             stringsAsFactors = FALSE)
+}
 
 .km_group_meta <- function(i, stats_df) {
   list(group = stats_df$group[i], n = stats_df$n[i], events = stats_df$events[i],
@@ -232,12 +242,15 @@ km_width <- function(leg_labs, title) {
     "})",
     "",
     sprintf('df <- as.data.frame(read_csv("%s", show_col_types = FALSE))', in_name),
-    sprintf('df[["%s"]] <- factor(df[["%s"]])', group_col, group_col),
-    sprintf('fit <- surv_fit(Surv(`%s`, `%s`) ~ `%s`, data = df)', time_col, event_col, group_col),
+    "# Syntactic copies of the columns: survival cannot find a strata column whose",
+    "# name holds a space.",
+    sprintf('df <- data.frame(.time = df[["%s"]], .event = df[["%s"]],', time_col, event_col),
+    sprintf('                 .group = factor(df[["%s"]], levels = %s))', group_col, lvls_str),
+    'fit <- surv_fit(Surv(.time, .event) ~ .group, data = df)',
     "",
-    sprintf('sd <- survdiff(Surv(`%s`, `%s`) ~ `%s`, data = df)', time_col, event_col, group_col),
+    'sd <- survdiff(Surv(.time, .event) ~ .group, data = df)',
     "p_lr <- pchisq(sd$chisq, length(sd$n) - 1, lower.tail = FALSE)",
-    sprintf('tmax <- max(df[["%s"]])', time_col),
+    'tmax <- max(df$.time)',
     "# The risk table of survminer counts the subjects with a time at or after each break.",
     'g <- ggsurvplot(fit, data = df, pval = FALSE, risk.table = TRUE, conf.int = FALSE,',
     sprintf('                censor = TRUE, palette = %s, legend = "right", legend.title = "%s",',

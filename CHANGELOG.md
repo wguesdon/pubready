@@ -22,6 +22,9 @@ tag move together.
   the items, so an item can hold a comma, for example
   `--levels "none|edema, no diuretics"`. A value with no "|" splits on commas
   as before (F96).
+- The R `survival_km` reads a time, event or group column whose name holds a
+  space, for example "follow up months". The model reads syntactic copies of
+  the columns, and the figure and the tables keep the names (F44).
 
 ## [3.0.0] - 2026-10-29
 
