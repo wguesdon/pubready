@@ -301,12 +301,23 @@ def output_checksums(bdir, names):
     return records
 
 
-def write_data_log(path, raw, in_name, sums, df_used, steps):
+#: The read rule of io.py, as the data log states it. The R engine writes the
+#: same text.
+READ_RULE_TEXT = (
+    "Each cell was read as text, and the spaces around each value were removed. "
+    "Only an empty cell or \"NA\" was read as missing. A column was read as numeric "
+    "when each present cell is a number with \".\" as the decimal mark, and as "
+    "logical when each present cell is TRUE or FALSE."
+)
+
+
+def write_data_log(path, raw, in_name, sums, df_used, steps, read_steps=None):
     types = "\n".join(f"- `{c}`: {df_used[c].dtype}" for c in df_used.columns)
     if isinstance(steps, (list, tuple)):
         steps = "\n".join(f"- {s}" for s in steps)
     else:
         steps = f"- {steps}"
+    read_txt = "\n".join(f"- {s}" for s in (read_steps or ["No value changed at read."]))
     txt = (
         "# Data provenance log\n\n"
         f"- Original file: `{os.path.basename(raw)}`\n"
@@ -315,6 +326,9 @@ def write_data_log(path, raw, in_name, sums, df_used, steps):
         f"- sha256: `{sums['sha256']}`\n"
         f"- Analyzed rows: {len(df_used)}\n"
         f"- Columns: {df_used.shape[1]}\n\n"
+        "## Read rule\n\n"
+        f"{READ_RULE_TEXT}\n\n"
+        f"{read_txt}\n\n"
         "## Column types (analyzed data)\n\n"
         f"{types}\n\n"
         "## Cleaning steps\n\n"
@@ -439,7 +453,8 @@ def reproduce_md(container, git_commit, script_name):
     )
 
 
-def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp=None):
+def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp=None,
+                 read_steps=None):
     ts = _ts(stamp)
     created = _created()
     base = slugify(result.get("label") or spec["data"].get("y") or
@@ -474,7 +489,7 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
             shutil.copyfile(ex, os.path.join(bdir, os.path.basename(ex)))
 
     write_data_log(os.path.join(bdir, "data_log.md"), raw_input, in_name, sums,
-                   result["df_used"], result["clean_steps"])
+                   result["df_used"], result["clean_steps"], read_steps)
 
     cfg = copy.deepcopy(spec)
     cfg["data"]["file"] = in_name

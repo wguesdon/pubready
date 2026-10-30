@@ -22,6 +22,19 @@ tag move together.
   the items, so an item can hold a comma, for example
   `--levels "none|edema, no diuretics"`. A value with no "|" splits on commas
   as before (F96).
+- Both engines read a CSV file with one rule. A cell that is a number with a
+  comma, such as "85,45" or "4,380", stops the run with a message that names
+  the column. Before, R read "85,45" as 8545 with no log entry, and Python
+  stopped with an error that did not name the column (F40).
+- Only an empty cell or "NA" reads as missing, and the spaces around each value
+  and each column name are removed, in both engines. Before, pandas read
+  "None", "N/A", "NULL" and "nan" as missing and kept the spaces, so a response
+  "None" gave P = 0.011 in R and P = 1.0 in Python. The data log has a new
+  "Read rule" section that states the rule and counts each value that the read
+  changed (F41).
+- R reads a number below the smallest normal double, such as p = 1e-320, with
+  its value, as Python does. Both engines now read every number with one
+  pattern and the standard parser of the language (F128).
 
 ## [3.0.0] - 2026-10-29
 

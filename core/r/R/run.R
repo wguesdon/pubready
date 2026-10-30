@@ -10,7 +10,8 @@ container_info <- function() {
 }
 
 run_recipe <- function(spec, raw_input, out_root, sheet = NULL, stamp = NULL) {
-  df <- read_tidy(raw_input, sheet)
+  rd <- read_tidy_logged(raw_input, sheet)
+  df <- rd$df
 
   fn_name <- paste0("recipe_", spec$recipe)
   if (!exists(fn_name, mode = "function")) {
@@ -41,7 +42,8 @@ run_recipe <- function(spec, raw_input, out_root, sheet = NULL, stamp = NULL) {
     fig_width      = res$width %||% 3.8,
     fig_height     = res$height %||% 4.0,
     qc             = res$qc,
-    stamp          = stamp
+    stamp          = stamp,
+    read_steps     = rd$steps
   )
   cat(sprintf("Wrote bundle: %s\n", bdir))
   invisible(bdir)

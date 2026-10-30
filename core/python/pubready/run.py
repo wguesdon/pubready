@@ -2,7 +2,7 @@
 import os
 
 from . import bundle
-from .io import read_tidy
+from .io import read_tidy_logged
 from .recipes import get_recipe
 
 
@@ -16,11 +16,12 @@ def container_info():
 
 
 def run_recipe(spec, raw_input, out_root, sheet=None, stamp=None):
-    df = read_tidy(raw_input, sheet)
+    df, read_steps = read_tidy_logged(raw_input, sheet)
     fn = get_recipe(spec["recipe"])
     result = fn(df, spec)
     bdir = bundle.write_bundle(spec, result, raw_input, out_root, container_info(),
-                               os.environ.get("PUBREADY_GIT_COMMIT", "unknown"), stamp)
+                               os.environ.get("PUBREADY_GIT_COMMIT", "unknown"), stamp,
+                               read_steps=read_steps)
     print(f"Wrote bundle: {bdir}")
     return bdir
 

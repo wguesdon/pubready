@@ -76,8 +76,18 @@ save_figure <- function(plot, dir, stub, width = 3.8, height = 4.0, draw = NULL)
                   width = width, height = height)
 }
 
-write_data_log <- function(path, raw_path, in_name, sums, df_used, steps) {
+# The read rule of io.R, as the data log states it. The Python engine writes the
+# same text.
+READ_RULE_TEXT <- paste(
+  "Each cell was read as text, and the spaces around each value were removed.",
+  "Only an empty cell or \"NA\" was read as missing. A column was read as numeric",
+  "when each present cell is a number with \".\" as the decimal mark, and as",
+  "logical when each present cell is TRUE or FALSE.")
+
+write_data_log <- function(path, raw_path, in_name, sums, df_used, steps,
+                           read_steps = character(0)) {
   types <- vapply(df_used, function(v) class(v)[1], character(1))
+  if (length(read_steps) == 0) read_steps <- "No value changed at read."
   lines <- c(
     "# Data provenance log",
     "",
@@ -87,6 +97,12 @@ write_data_log <- function(path, raw_path, in_name, sums, df_used, steps) {
     sprintf("- sha256: `%s`", sums$sha256),
     sprintf("- Analyzed rows: %d", nrow(df_used)),
     sprintf("- Columns: %d", ncol(df_used)),
+    "",
+    "## Read rule",
+    "",
+    READ_RULE_TEXT,
+    "",
+    paste0("- ", read_steps),
     "",
     "## Column types (analyzed data)",
     "",
@@ -450,7 +466,8 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
                          test_meta, data_log_steps, out_root, container,
                          git_commit, methods_text, build_script, base_label,
                          draw = NULL, extra_inputs = NULL,
-                         fig_width = 3.8, fig_height = 4.0, qc = NULL, stamp = NULL) {
+                         fig_width = 3.8, fig_height = 4.0, qc = NULL, stamp = NULL,
+                         read_steps = character(0)) {
   # A fixed --stamp gives deterministic bundle and file names (used for the
   # committed reference outputs); otherwise names carry a real UTC timestamp.
   ts      <- if (!is.null(stamp) && nzchar(stamp)) stamp else timestamp_utc()
@@ -491,7 +508,7 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
   }
 
   write_data_log(file.path(bdir, "data_log.md"),
-                 raw_input_path, in_name, sums, df_used, data_log_steps)
+                 raw_input_path, in_name, sums, df_used, data_log_steps, read_steps)
 
   cfg <- spec
   cfg$data$file <- in_name
