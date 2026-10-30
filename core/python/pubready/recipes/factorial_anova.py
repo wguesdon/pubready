@@ -18,7 +18,7 @@ from matplotlib.lines import Line2D
 from matplotlib.ticker import MaxNLocator
 
 from ..theme import apply_pub_style, palette, rain_offsets
-from ..util import SCRIPT_LABEL_FN, cap_first, level_labels, level_order
+from ..util import SCRIPT_LABEL_FN, cap_first, check_test_method, level_labels, level_order
 
 # The dodge width of the interaction plot, as position_dodge(0.25) in R.
 INT_DODGE = 0.25
@@ -26,6 +26,10 @@ INT_DODGE = 0.25
 BAR_DODGE = 0.8
 # The dodge width of the box geom: seaborn dodges the boxes over their width of 0.7.
 BOX_DODGE = 0.7
+
+
+TESTS = ("auto", "anova", "aov", "art", "aligned_rank")
+"""The --test values that factorial_anova knows (F63)."""
 
 
 def _plab(p):
@@ -218,6 +222,7 @@ def recipe_factorial_anova(df, spec):
     Returns:
         dict: The recipe result for the bundle writer.
     """
+    check_test_method("factorial_anova", spec["test"].get("method"), TESTS)
     y = spec["data"]["y"]
     f1, f2, f3 = spec["data"]["x"], spec["data"]["fill"], spec["data"].get("facet")
     if not f2:

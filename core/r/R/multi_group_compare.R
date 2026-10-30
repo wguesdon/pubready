@@ -71,7 +71,12 @@ resolve_multi_group_method <- function(method, all_normal, equal_var, rank_min_p
              p.adj = res[2, ], p.adj.signif = .mg_signif(res[2, ]), stringsAsFactors = FALSE)
 }
 
+# The --test values that multi_group_compare knows (F63).
+.multi_group_compare_tests <- c("auto", "anova", "aov", "welch", "welch_anova", "kruskal",
+                                "kruskal_wallis", "kw")
+
 recipe_multi_group_compare <- function(df, spec) {
+  check_test_method("multi_group_compare", spec$test$method, .multi_group_compare_tests)
   cl <- clean_tidy(df, spec)
   df <- cl$df
   x <- spec$data$x

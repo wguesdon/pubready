@@ -70,6 +70,11 @@ tag move together.
   `factorial_anova`, also with `--test art`, accepts a column name with a space
   or a symbol. The tests and the emitted scripts run on a copy with syntactic
   names, and the tables keep the original names (F44).
+- `two_group_compare`, `multi_group_compare`, `paired_compare`,
+  `factorial_anova`, `estimation_plot`, `feature_panel`, `correlation` and
+  `proportions` stop on a `--test` value that they do not know, with a message
+  that lists the values that they know. `proportions` and `factorial_anova` ran
+  their default test before (F63).
 
 ## [3.0.0] - 2026-10-29
 

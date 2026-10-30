@@ -29,7 +29,11 @@ cor_label <- function(method_label, estimate_name, estimate, p) {
   sprintf("%s, %s = %.2f, P = %s", method_label, estimate_name, estimate, sprintf("%.2g", p))
 }
 
+# The --test values that correlation knows (F63).
+.correlation_tests <- c("auto", "pearson", "spearman", "kendall")
+
 recipe_correlation <- function(df, spec) {
+  check_test_method("correlation", spec$test$method, .correlation_tests)
   x <- spec$data$x
   y <- spec$data$y
   if (is.null(x) || is.null(y)) {

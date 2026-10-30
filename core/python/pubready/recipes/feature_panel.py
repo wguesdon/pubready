@@ -21,9 +21,9 @@ from scipy import stats
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
-from ..util import (SCRIPT_LABEL_FN, cap_first, is_zero_variance, level_labels, level_order, mann_whitney_r,
-                    rank_biserial_unpaired,
-                    rank_floor_text, rank_test_cannot_reach, rank_test_min_p, shapiro_normal)
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_test_method, is_zero_variance, level_labels,
+                    level_order, mann_whitney_r, rank_biserial_unpaired, rank_floor_text,
+                    rank_test_cannot_reach, rank_test_min_p, shapiro_normal)
 
 MAX_FEATURES = 36
 MAX_QC_PANELS = 48
@@ -34,6 +34,11 @@ EFFECTS = {"welch_t": "Cohen's d", "wilcoxon": "rank-biserial r",
            "anova": "eta squared", "kruskal": "eta-squared (H)"}
 ALIASES = {"mann_whitney": "wilcoxon", "mwu": "wilcoxon", "wilcox": "wilcoxon",
            "kw": "kruskal", "kruskal_wallis": "kruskal"}
+
+
+TESTS = ("auto", "welch_t", "wilcoxon", "anova", "kruskal", "mann_whitney", "mwu", "wilcox",
+         "kw", "kruskal_wallis")
+"""The --test values that feature_panel knows (F63)."""
 
 
 def signif_stars(p):
@@ -293,6 +298,7 @@ def recipe_feature_panel(df, spec):
         ValueError: If a column is missing, there are too many features or
             fewer than two groups.
     """
+    check_test_method("feature_panel", spec["test"].get("method"), TESTS)
     lg = long_table(df, spec)
     d, feats, glv = lg["d"], lg["features"], lg["groups"]
     if len(feats) > MAX_FEATURES:

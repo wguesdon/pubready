@@ -3,7 +3,12 @@
 # forces a test), draws a box or violin plot, and puts the significance bracket
 # on top. Returns the plot, a tidy stats table, and test metadata.
 
+# The --test values that two_group_compare knows (F63).
+.two_group_compare_tests <- c("auto", "t", "t_test", "student_t", "welch_t", "wilcoxon",
+                              "mann_whitney", "wilcox", "mwu")
+
 recipe_two_group_compare <- function(df, spec) {
+  check_test_method("two_group_compare", spec$test$method, .two_group_compare_tests)
   cl <- clean_tidy(df, spec)
   df <- cl$df
   x <- spec$data$x

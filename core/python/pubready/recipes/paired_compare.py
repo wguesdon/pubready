@@ -10,13 +10,18 @@ from scipy import stats as ss
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette, plain_number_axis, wrap_labels
-from ..util import (SCRIPT_LABEL_FN, cap_first, is_zero_variance, level_labels,
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_test_method, is_zero_variance, level_labels,
                     level_order, p_stars, rank_biserial_paired, rank_floor_text,
                     rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
                     wilcoxon_signed_rank_r, zero_variance_message)
 
 
+TESTS = ("auto", "t", "t_test", "paired_t", "student_t", "wilcoxon", "wilcox", "signed_rank", "mwu")
+"""The --test values that paired_compare knows (F63)."""
+
+
 def recipe_paired_compare(df, spec):
+    check_test_method("paired_compare", spec["test"].get("method"), TESTS)
     x, y, idc = spec["data"]["x"], spec["data"]["y"], spec["data"].get("id")
     if not x or not y:
         raise ValueError("paired_compare needs --x (condition) and --y (value)")

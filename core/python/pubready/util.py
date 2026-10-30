@@ -157,6 +157,27 @@ def zero_variance_groups(groups):
     return [str(g) for g, v in groups.items() if is_zero_variance(v)]
 
 
+def check_test_method(recipe, method, allowed):
+    """Stop on a --test value that a recipe does not know.
+
+    Args:
+        recipe: The recipe name.
+        method: The --test value.
+        allowed: The values that the recipe knows.
+
+    Returns:
+        str: The value in lower case.
+
+    Raises:
+        ValueError: If the recipe does not know the value. The message lists the
+            known values, in the words of the R engine.
+    """
+    m = (method if method is not None else "auto").lower()
+    if m and m not in allowed:
+        raise ValueError(f"{recipe} does not know --test '{m}'; use one of: {', '.join(allowed)}")
+    return m
+
+
 def quote_join(names):
     """The quoted names of a list, joined as text, as quote_join() of the R engine.
 

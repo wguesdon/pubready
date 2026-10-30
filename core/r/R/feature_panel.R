@@ -157,7 +157,12 @@
 
 .fp_title_name <- function(s) vapply(s, .fp_title_one, character(1), USE.NAMES = FALSE)
 
+# The --test values that feature_panel knows (F63).
+.feature_panel_tests <- c("auto", "welch_t", "wilcoxon", "anova", "kruskal", "mann_whitney",
+                          "mwu", "wilcox", "kw", "kruskal_wallis")
+
 recipe_feature_panel <- function(df, spec) {
+  check_test_method("feature_panel", spec$test$method, .feature_panel_tests)
   lg <- .fp_long(df, spec)
   d <- lg$d; feats <- lg$features; glv <- lg$groups
   if (length(feats) > .fp_max_features) {

@@ -35,14 +35,18 @@ from scipy import special, stats
 from ..bundle import slugify
 from ..clean import clean_xy
 from ..theme import apply_pub_style, palette
-from ..util import (SCRIPT_LABEL_FN, cap_first, is_zero_variance, level_labels, level_order,
-                    sig_text, zero_variance_message, zero_variance_subject)
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_test_method, is_zero_variance, level_labels,
+                    level_order, sig_text, zero_variance_message, zero_variance_subject)
 
 SEED = 20261029
 MODULUS = 2147483647
 MULTIPLIER = 48271
 N_BOOT = 5000
 BLOCK = 4096
+
+
+TESTS = ("auto", "welch_t", "t")
+"""The --test values that estimation_plot knows (F63)."""
 
 
 def block_multipliers(b):
@@ -459,6 +463,7 @@ def recipe_estimation_plot(df, spec):
         ValueError: If a column is missing, if a group is too small, or if the
             reference level is not in the data.
     """
+    check_test_method("estimation_plot", spec["test"].get("method"), TESTS)
     x, y = spec["data"].get("x"), spec["data"].get("y")
     if not x or not y:
         raise ValueError("estimation_plot needs --x (the group column) and --y (the value column)")

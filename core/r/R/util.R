@@ -37,6 +37,17 @@ zero_variance_groups <- function(groups) {
   names(groups)[vapply(groups, is_zero_variance, logical(1))]
 }
 
+# Stop on a --test value that a recipe does not know, and list the values that
+# it knows. The Python engine writes the same message (util.check_test_method).
+check_test_method <- function(recipe, method, allowed) {
+  m <- tolower(method %||% "auto")
+  if (nzchar(m) && !m %in% allowed) {
+    stop(sprintf("%s does not know --test '%s'; use one of: %s", recipe, m,
+                 paste(allowed, collapse = ", ")))
+  }
+  invisible(m)
+}
+
 # The quoted names of a list, joined as text: 'a'; 'a' and 'b'; 'a', 'b' and 'c'.
 quote_join <- function(x) {
   q <- sprintf("'%s'", x)

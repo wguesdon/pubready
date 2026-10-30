@@ -295,7 +295,11 @@
 
 .est_fmt_p <- function(p) if (p < 0.001) "P < 0.001" else paste("P =", sig_text(p, 2))
 
+# The --test values that estimation_plot knows (F63).
+.estimation_plot_tests <- c("auto", "welch_t", "t")
+
 recipe_estimation_plot <- function(df, spec) {
+  check_test_method("estimation_plot", spec$test$method, .estimation_plot_tests)
   x <- spec$data$x; y <- spec$data$y
   if (is.null(x) || is.null(y)) {
     stop("estimation_plot needs --x (the group column) and --y (the value column)")

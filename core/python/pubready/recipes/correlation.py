@@ -12,7 +12,11 @@ from scipy import stats
 
 from ..bundle import slugify
 from ..theme import R_POINT_PT, apply_pub_style, new_fig, palette
-from ..util import is_zero_variance, quote_join, shapiro_normal
+from ..util import check_test_method, is_zero_variance, quote_join, shapiro_normal
+
+
+TESTS = ("auto", "pearson", "spearman", "kendall")
+"""The --test values that correlation knows (F63)."""
 
 
 def fisher_ci(r, n):
@@ -144,6 +148,7 @@ def _resolve(method, x_normal, y_normal):
 
 
 def recipe_correlation(df, spec):
+    check_test_method("correlation", spec["test"].get("method"), TESTS)
     x, y = spec["data"]["x"], spec["data"]["y"]
     if not x or not y:
         raise ValueError("correlation needs --x and --y (two numeric columns)")

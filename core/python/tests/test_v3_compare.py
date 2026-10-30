@@ -220,3 +220,20 @@ def test_paired_compare_takes_the_level_rule_not_the_row_order():
                                             id="subject", test="t", levels="pre,post"))
     assert res["stats"]["condition1"].iloc[0] == "pre"
     assert res["stats"]["contrast"].iloc[0] == "post - pre"
+
+
+# F63: each recipe rejects a --test value that it does not know and lists the
+# values that it knows.
+def test_an_unknown_test_value_stops_the_comparison_recipes():
+    from pubready.recipes.factorial_anova import recipe_factorial_anova
+    from pubready.recipes.proportions import recipe_proportions
+    pr = pd.DataFrame({"arm": ["a"] * 10 + ["b"] * 10, "response": ["yes", "no"] * 10})
+    with pytest.raises(ValueError, match="proportions does not know --test 'bogus'; use one of: "
+                                         "auto, chisq"):
+        recipe_proportions(pr, v3_spec("proportions", x="arm", y="response", test="bogus"))
+    fa = pd.DataFrame({"g": ["wt"] * 8 + ["ko"] * 8, "t": ["v", "d"] * 8, "y": range(1, 17)})
+    with pytest.raises(ValueError, match="factorial_anova does not know --test 'bogus'; use one "
+                                         "of: auto, anova, aov, art"):
+        recipe_factorial_anova(fa, v3_spec("factorial_anova", x="g", fill="t", y="y", test="bogus"))
+    with pytest.raises(ValueError, match="multi_group_compare does not know --test 'welch_t'"):
+        recipe_multi_group_compare(fa, v3_spec("multi_group_compare", x="g", y="y", test="welch_t"))

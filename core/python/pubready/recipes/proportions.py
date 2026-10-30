@@ -17,7 +17,11 @@ from .. import fisher as fisher_module
 from ..bundle import slugify
 from ..fisher import fisher_2x2, fisher_rxc_p
 from ..theme import apply_pub_style, category_width, legend_width, palette, wrap_labels
-from ..util import SCRIPT_LABEL_FN, level_labels
+from ..util import SCRIPT_LABEL_FN, check_test_method, level_labels
+
+
+TESTS = ("auto", "chisq", "chi", "chi_square", "chisquare", "fisher", "fisher_exact")
+"""The --test values that proportions knows (F63)."""
 
 
 def group_order(g, levels=None):
@@ -46,6 +50,7 @@ def group_order(g, levels=None):
 
 
 def recipe_proportions(df, spec):
+    check_test_method("proportions", spec["test"].get("method"), TESTS)
     x, y = spec["data"]["x"], spec["data"]["y"]
     if not x or not y:
         raise ValueError("proportions needs --x (group) and --y (outcome)")

@@ -4,7 +4,11 @@
 # below 5 (or when forced). For a 2x2 table an odds ratio is reported. The figure
 # is a 100% stacked bar of the outcome proportions within each group.
 
+# The --test values that proportions knows (F63).
+.proportions_tests <- c("auto", "chisq", "chi", "chi_square", "chisquare", "fisher", "fisher_exact")
+
 recipe_proportions <- function(df, spec) {
+  check_test_method("proportions", spec$test$method, .proportions_tests)
   x <- spec$data$x; y <- spec$data$y
   if (is.null(x) || is.null(y)) stop("proportions needs --x (group) and --y (outcome)")
   for (cn in c(x, y)) if (!cn %in% names(df)) stop(sprintf("column '%s' not found in data", cn))

@@ -13,7 +13,11 @@
   else paste0("P = ", formatC(p, format = "g", digits = 2))
 }
 
+# The --test values that factorial_anova knows (F63).
+.factorial_anova_tests <- c("auto", "anova", "aov", "art", "aligned_rank")
+
 recipe_factorial_anova <- function(df, spec) {
+  check_test_method("factorial_anova", spec$test$method, .factorial_anova_tests)
   y  <- spec$data$y
   f1 <- spec$data$x
   f2 <- spec$data$fill

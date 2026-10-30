@@ -13,13 +13,11 @@ from statannotations.Annotator import Annotator
 from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, new_fig, palette, plain_number_axis,
                      script_geom_code, wrap_labels)
-from ..util import (SCRIPT_LABEL_FN, cap_first, cohens_d_r, is_zero_variance, level_labels,
-                    level_order,
-                    mann_whitney_r, p_stars,
-                    rank_biserial_paired, rank_biserial_unpaired, rank_floor_text,
-                    rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
-                    wilcoxon_signed_rank_r, zero_variance_groups, zero_variance_message,
-                    zero_variance_subject)
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_test_method, cohens_d_r, is_zero_variance,
+                    level_labels, level_order, mann_whitney_r, p_stars, rank_biserial_paired,
+                    rank_biserial_unpaired, rank_floor_text, rank_test_cannot_reach,
+                    rank_test_min_p, shapiro_normal, wilcoxon_signed_rank_r, zero_variance_groups,
+                    zero_variance_message, zero_variance_subject)
 
 
 EFFECT_DEFINITIONS = {
@@ -28,6 +26,10 @@ EFFECT_DEFINITIONS = {
                    " deviation."),
 }
 """The sentence that defines a Cohen's d of the methods text, as in the R engine."""
+
+
+TESTS = ("auto", "t", "t_test", "student_t", "welch_t", "wilcoxon", "mann_whitney", "wilcox", "mwu")
+"""The --test values that two_group_compare knows (F63)."""
 
 
 def _resolve(method, all_normal, equal_var, paired, rank_min_p=np.nan, t_can_run=True):
@@ -82,6 +84,7 @@ def _resolve(method, all_normal, equal_var, paired, rank_min_p=np.nan, t_can_run
 
 
 def recipe_two_group_compare(df, spec):
+    check_test_method("two_group_compare", spec["test"].get("method"), TESTS)
     x, y = spec["data"]["x"], spec["data"]["y"]
     df, steps = clean_xy(df, x, y)
     # One level rule in both engines: the --levels order, else numeric order when

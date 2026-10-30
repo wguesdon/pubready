@@ -3,7 +3,12 @@
 # t-test or the Wilcoxon signed-rank test is chosen from the normality of the
 # within-subject differences, unless forced with --test.
 
+# The --test values that paired_compare knows (F63).
+.paired_compare_tests <- c("auto", "t", "t_test", "paired_t", "student_t", "wilcoxon", "wilcox",
+                           "signed_rank", "mwu")
+
 recipe_paired_compare <- function(df, spec) {
+  check_test_method("paired_compare", spec$test$method, .paired_compare_tests)
   x <- spec$data$x; y <- spec$data$y; idc <- spec$data$id
   if (is.null(x) || is.null(y)) stop("paired_compare needs --x (condition) and --y (value)")
   if (is.null(idc) || !nzchar(idc)) stop("paired_compare needs --id (the subject column)")

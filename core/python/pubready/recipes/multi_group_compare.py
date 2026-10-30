@@ -14,13 +14,17 @@ from scipy import stats
 from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, category_width, geom_top, new_fig, palette,
                      plain_number_axis, script_geom_code, wrap_labels)
-from ..util import (SCRIPT_LABEL_FN, cap_first, cld_letters, df_text, level_labels, level_order,
-                    p_stars, rank_floor_text,
-                    rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
-                    zero_variance_groups, zero_variance_message, zero_variance_subject)
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_test_method, cld_letters, df_text,
+                    level_labels, level_order, p_stars, rank_floor_text, rank_test_cannot_reach,
+                    rank_test_min_p, shapiro_normal, zero_variance_groups, zero_variance_message,
+                    zero_variance_subject)
 
 MAX_BRACKETS = 6
 """More significant pairs than this switch the figure to a compact letter display."""
+
+
+TESTS = ("auto", "anova", "aov", "welch", "welch_anova", "kruskal", "kruskal_wallis", "kw")
+"""The --test values that multi_group_compare knows (F63)."""
 
 
 def _resolve(method, all_normal, equal_var, rank_min_p=np.nan, can_run=None):
@@ -68,6 +72,7 @@ def _resolve(method, all_normal, equal_var, rank_min_p=np.nan, can_run=None):
 
 
 def recipe_multi_group_compare(df, spec):
+    check_test_method("multi_group_compare", spec["test"].get("method"), TESTS)
     x, y = spec["data"]["x"], spec["data"]["y"]
     df, steps = clean_xy(df, x, y)
     # One level rule in both engines: the --levels order, else numeric order when

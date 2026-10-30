@@ -257,3 +257,19 @@ test_that("the emitted scripts run on names with a space (F44)", {
   expect_null(run$status, info = run$out)
   expect_true(run$pdf)
 })
+
+# F63: each recipe rejects a --test value that it does not know and lists the
+# values that it knows.
+test_that("an unknown --test value stops the comparison recipes", {
+  pr <- data.frame(arm = rep(c("a", "b"), each = 10), response = rep(c("yes", "no"), 10))
+  expect_error(recipe_proportions(pr, v3_spec("proportions", x = "arm", y = "response",
+                                              test = "bogus")),
+               "proportions does not know --test 'bogus'; use one of: auto, chisq")
+  fa <- data.frame(g = rep(c("wt", "ko"), each = 8), t = rep(c("v", "d"), 8), y = 1:16)
+  expect_error(recipe_factorial_anova(fa, v3_spec("factorial_anova", x = "g", fill = "t", y = "y",
+                                                  test = "bogus")),
+               "factorial_anova does not know --test 'bogus'; use one of: auto, anova, aov, art")
+  expect_error(recipe_multi_group_compare(fa, v3_spec("multi_group_compare", x = "g", y = "y",
+                                                      test = "welch_t")),
+               "multi_group_compare does not know --test 'welch_t'")
+})
