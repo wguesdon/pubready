@@ -14,10 +14,10 @@ from scipy import stats
 from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, category_width, geom_top, new_fig, palette,
                      plain_number_axis, script_geom_code, wrap_labels)
-from ..util import (SCRIPT_LABEL_FN, cap_first, check_test_method, cld_letters, df_text,
-                    level_labels, level_order, p_stars, rank_floor_text, rank_test_cannot_reach,
-                    rank_test_min_p, shapiro_normal, zero_variance_groups, zero_variance_message,
-                    zero_variance_subject)
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, cld_letters,
+                    df_text, level_labels, level_order, p_stars, rank_floor_text,
+                    rank_test_cannot_reach, rank_test_min_p, shapiro_normal, zero_variance_groups,
+                    zero_variance_message, zero_variance_subject)
 
 MAX_BRACKETS = 6
 """More significant pairs than this switch the figure to a compact letter display."""
@@ -81,6 +81,7 @@ def recipe_multi_group_compare(df, spec):
     lv = level_order(df[x], spec["data"].get("levels"), "group")
     if len(lv) < 2:
         raise ValueError(f"multi_group_compare needs 2+ groups in '{x}'")
+    check_spread(df[y], "multi_group_compare", f"the outcome '{y}'")
 
     groups = [df.loc[df[x] == g, y].to_numpy() for g in lv]
     all_normal = all(bool(shapiro_normal(g)[1]) for g in groups)

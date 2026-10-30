@@ -10,9 +10,9 @@ from scipy import stats as ss
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette, plain_number_axis, wrap_labels
-from ..util import (SCRIPT_LABEL_FN, cap_first, check_test_method, is_zero_variance, level_labels,
-                    level_order, p_stars, quote_join, rank_biserial_paired, rank_floor_text,
-                    rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, is_zero_variance,
+                    level_labels, level_order, p_stars, quote_join, rank_biserial_paired,
+                    rank_floor_text, rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
                     wilcoxon_signed_rank_r, zero_variance_message)
 
 
@@ -57,6 +57,7 @@ def recipe_paired_compare(df, spec):
     lv = level_order(d[x], spec["data"].get("levels"), "condition")
     if len(lv) != 2:
         raise ValueError(f"paired_compare needs exactly 2 conditions in '{x}'; found {len(lv)}")
+    check_spread(d[y], "paired_compare", f"the outcome '{y}'")
 
     # One value per subject and condition: a second row would make the result
     # depend on the row order, so the run stops and names the subjects.

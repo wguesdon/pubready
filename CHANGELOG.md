@@ -78,6 +78,10 @@ tag move together.
 - `paired_compare` stops and names the subjects when a subject has two rows in
   one condition, as `estimation_plot --paired` does. It kept the first row
   before, so the result depended on the row order (F55).
+- `two_group_compare`, `multi_group_compare`, `paired_compare`,
+  `estimation_plot` and `factorial_anova` stop with "the outcome has zero
+  variance" when every value of the outcome is the same. R stopped with an
+  unclear error, and Python wrote "nan" or F values from rounding noise (F90).
 
 ## [3.0.0] - 2026-10-29
 

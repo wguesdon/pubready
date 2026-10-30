@@ -18,7 +18,8 @@ from matplotlib.lines import Line2D
 from matplotlib.ticker import MaxNLocator
 
 from ..theme import apply_pub_style, palette, rain_offsets
-from ..util import SCRIPT_LABEL_FN, cap_first, check_test_method, level_labels, level_order
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, level_labels,
+                    level_order)
 
 # The dodge width of the interaction plot, as position_dodge(0.25) in R.
 INT_DODGE = 0.25
@@ -243,6 +244,7 @@ def recipe_factorial_anova(df, spec):
     df = df.dropna(subset=[y] + factors).reset_index(drop=True)
     clean_steps = (f"Dropped {n0 - len(df)} row(s) with missing values ({n0} -> {len(df)} rows)."
                    if len(df) < n0 else "No cleaning applied; input used as-is.")
+    check_spread(df[y], "factorial_anova", f"the outcome '{y}'")
 
     ren = {y: "_y_"}
     ren.update({f: f"_f{i}_" for i, f in enumerate(factors)})

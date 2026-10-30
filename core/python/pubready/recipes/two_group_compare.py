@@ -13,11 +13,12 @@ from statannotations.Annotator import Annotator
 from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, new_fig, palette, plain_number_axis,
                      script_geom_code, wrap_labels)
-from ..util import (SCRIPT_LABEL_FN, cap_first, check_test_method, cohens_d_r, is_zero_variance,
-                    level_labels, level_order, mann_whitney_r, p_stars, rank_biserial_paired,
-                    rank_biserial_unpaired, rank_floor_text, rank_test_cannot_reach,
-                    rank_test_min_p, shapiro_normal, wilcoxon_signed_rank_r, zero_variance_groups,
-                    zero_variance_message, zero_variance_subject)
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, cohens_d_r,
+                    is_zero_variance, level_labels, level_order, mann_whitney_r, p_stars,
+                    rank_biserial_paired, rank_biserial_unpaired, rank_floor_text,
+                    rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
+                    wilcoxon_signed_rank_r, zero_variance_groups, zero_variance_message,
+                    zero_variance_subject)
 
 
 EFFECT_DEFINITIONS = {
@@ -93,6 +94,7 @@ def recipe_two_group_compare(df, spec):
     lv = level_order(df[x], spec["data"].get("levels"), "group")
     if len(lv) != 2:
         raise ValueError(f"two_group_compare needs exactly 2 groups in '{x}'; found {len(lv)}")
+    check_spread(df[y], "two_group_compare", f"the outcome '{y}'")
     paired = bool(spec["test"].get("paired"))
 
     a = df.loc[df[x] == lv[0], y].to_numpy()

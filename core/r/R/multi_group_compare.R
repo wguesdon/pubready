@@ -90,6 +90,7 @@ recipe_multi_group_compare <- function(df, spec) {
   if (length(lvls) < 2) {
     stop(sprintf("multi_group_compare needs 2 or more groups in '%s'; found %d", x, length(lvls)))
   }
+  check_spread(df[[y]], "multi_group_compare", sprintf("the outcome '%s'", y))
 
   # The tests run on a copy with syntactic column names (.x, .y), so a column
   # name with a space or a symbol cannot break a formula. The labels and the

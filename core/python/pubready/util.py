@@ -145,6 +145,22 @@ def is_zero_variance(v):
     return bool(len(v) >= 2 and v.max() == v.min())
 
 
+def check_spread(v, recipe, what):
+    """Stop when a variable cannot carry a test because every value is the same.
+
+    Args:
+        v: The values.
+        recipe: The recipe name.
+        what: The variable, for example "the outcome 'value'".
+
+    Raises:
+        ValueError: If every value is the same, in the words of the R engine.
+    """
+    if is_zero_variance(v):
+        raise ValueError(f"{recipe} cannot run because {what} has zero variance (all values are "
+                         "equal)")
+
+
 def zero_variance_groups(groups):
     """The names of the groups that have zero variance.
 

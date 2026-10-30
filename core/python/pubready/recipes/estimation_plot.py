@@ -35,8 +35,9 @@ from scipy import special, stats
 from ..bundle import slugify
 from ..clean import clean_xy
 from ..theme import apply_pub_style, palette
-from ..util import (SCRIPT_LABEL_FN, cap_first, check_test_method, is_zero_variance, level_labels,
-                    level_order, sig_text, zero_variance_message, zero_variance_subject)
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, is_zero_variance,
+                    level_labels, level_order, sig_text, zero_variance_message,
+                    zero_variance_subject)
 
 SEED = 20261029
 MODULUS = 2147483647
@@ -501,6 +502,7 @@ def recipe_estimation_plot(df, spec):
     lv = [ref] + [g for g in lv_sorted if g != ref]
     if len(lv) < 2:
         raise ValueError(f"estimation_plot needs at least 2 groups in '{x}'")
+    check_spread(d["y"], "estimation_plot", f"the outcome '{y}'")
 
     rows, boots = [], []
     for g in lv[1:]:

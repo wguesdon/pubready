@@ -283,3 +283,13 @@ test_that("paired_compare stops on a subject with two rows in one condition", {
                                                  id = "subject")),
                "'subject' repeats the subject 'S02' within a condition")
 })
+
+# F90: a constant outcome stops with a message that names it.
+test_that("a constant outcome stops the comparison recipes and factorial_anova", {
+  df <- data.frame(group = rep(c("a", "b"), each = 6), value = rep(50, 12))
+  expect_error(recipe_two_group_compare(df, v3_spec("two_group_compare", x = "group", y = "value")),
+               "the outcome 'value' has zero variance")
+  fa <- data.frame(g = rep(c("wt", "ko"), each = 8), t = rep(c("v", "d"), 8), y = rep(3, 16))
+  expect_error(recipe_factorial_anova(fa, v3_spec("factorial_anova", x = "g", fill = "t", y = "y")),
+               "factorial_anova cannot run because the outcome 'y' has zero variance")
+})

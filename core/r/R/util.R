@@ -32,6 +32,16 @@ is_zero_variance <- function(v) {
   length(v) >= 2 && max(v) == min(v)
 }
 
+# Stop when a variable cannot carry a test because every value is the same.
+# `what` names it, for example "the outcome 'value'". The Python engine writes
+# the same words (util.check_spread).
+check_spread <- function(v, recipe, what) {
+  if (is_zero_variance(v)) {
+    stop(sprintf("%s cannot run because %s has zero variance (all values are equal)", recipe, what))
+  }
+  invisible(NULL)
+}
+
 # The names of the groups of a named list that have zero variance.
 zero_variance_groups <- function(groups) {
   names(groups)[vapply(groups, is_zero_variance, logical(1))]

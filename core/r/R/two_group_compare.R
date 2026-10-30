@@ -23,6 +23,7 @@ recipe_two_group_compare <- function(df, spec) {
     stop(sprintf("two_group_compare needs exactly 2 groups in '%s'; found %d (%s)",
                  x, length(lvls), paste(lvls, collapse = ", ")))
   }
+  check_spread(df[[y]], "two_group_compare", sprintf("the outcome '%s'", y))
 
   paired <- isTRUE(spec$test$paired)
 

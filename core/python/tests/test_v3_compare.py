@@ -246,3 +246,15 @@ def test_paired_compare_stops_on_a_subject_with_two_rows_in_one_condition():
                        "value": [1, 2, 3, 4, 2, 3, 5, 6, 250]})
     with pytest.raises(ValueError, match="'subject' repeats the subject 'S02' within a condition"):
         recipe_paired_compare(df, v3_spec("paired_compare", x="condition", y="value", id="subject"))
+
+
+# F90: a constant outcome stops with a message that names it.
+def test_a_constant_outcome_stops_the_comparison_recipes_and_factorial_anova():
+    from pubready.recipes.factorial_anova import recipe_factorial_anova
+    df = pd.DataFrame({"group": ["a"] * 6 + ["b"] * 6, "value": [50.0] * 12})
+    with pytest.raises(ValueError, match="the outcome 'value' has zero variance"):
+        recipe_two_group_compare(df, v3_spec("two_group_compare", x="group", y="value"))
+    fa = pd.DataFrame({"g": ["wt"] * 8 + ["ko"] * 8, "t": ["v", "d"] * 8, "y": [3.0] * 16})
+    with pytest.raises(ValueError, match="factorial_anova cannot run because the outcome 'y' has "
+                                         "zero variance"):
+        recipe_factorial_anova(fa, v3_spec("factorial_anova", x="g", fill="t", y="y"))

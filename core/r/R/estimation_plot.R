@@ -344,6 +344,7 @@ recipe_estimation_plot <- function(df, spec) {
   }
   lv <- c(ref, setdiff(lv_sorted, ref))
   if (length(lv) < 2) stop(sprintf("estimation_plot needs at least 2 groups in '%s'", x))
+  check_spread(d$y, "estimation_plot", sprintf("the outcome '%s'", y))
 
   comps <- list()
   for (g in lv[-1]) {

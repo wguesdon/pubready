@@ -28,6 +28,7 @@ recipe_paired_compare <- function(df, spec) {
     stop(sprintf("paired_compare needs exactly 2 conditions in '%s'; found %d (%s)",
                  x, length(lv), paste(lv, collapse = ", ")))
   }
+  check_spread(df[[y]], "paired_compare", sprintf("the outcome '%s'", y))
 
   # One value per subject and condition: a second row would make the result
   # depend on the row order, so the run stops and names the subjects.

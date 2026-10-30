@@ -41,6 +41,7 @@ recipe_factorial_anova <- function(df, spec) {
     sprintf("Dropped %d row(s) with missing values in %s (%d -> %d rows).",
             n0 - nrow(df), paste(c(y, factors), collapse = ", "), n0, nrow(df))
   } else "No cleaning applied; input used as-is."
+  check_spread(df[[y]], "factorial_anova", sprintf("the outcome '%s'", y))
 
   # The models run on a copy with syntactic column names (.y, .f1, .f2, .f3),
   # so a column name with a space or a symbol cannot break a formula, also in
