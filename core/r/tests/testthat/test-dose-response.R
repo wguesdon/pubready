@@ -92,3 +92,12 @@ test_that("the dose_response stats table names the midpoint columns", {
   expect_false(any(grepl("ec50", names(res$stats))))
   expect_equal(res$stats$midpoint_type[1], "IC50")
 })
+
+# The methods text counts the rows with a dose of zero or below (F76).
+test_that("the dose_response methods count the rows with a zero dose", {
+  df <- drc_three_curves()
+  df <- rbind(df, data.frame(compound = c("active A", "active B"), dose = 0, response = 100))
+  res <- recipe_dose_response(df, drc_spec(x = "dose", y = "response", group = "compound"))
+  expect_match(res$methods, "2 row(s) with a dose of zero or below were left out of the fit",
+               fixed = TRUE)
+})

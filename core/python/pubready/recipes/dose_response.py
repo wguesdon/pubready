@@ -502,7 +502,8 @@ def recipe_dose_response(df, spec):
     df_used = pd.DataFrame({"group": d["group"], "dose": d["dose"], "response": d["y"]})
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
-        "methods": _methods(stats_df, shared, len(d), spec, x, y, replicated),
+        "methods": _methods(stats_df, shared, len(d), spec, x, y, replicated,
+                            int(nonpos.sum())),
         "df_used": df_used, "clean_steps": steps, "label": slugify(y),
         "width": w, "height": h,
         "build_script": functools.partial(_script, spec, starts, methods, has_group),
@@ -561,6 +562,21 @@ def _subtitle(rows, shared, mid_name, has_group):
     return f"{first}\n{second}"
 
 
+def _nonpos_text(n):
+    """Say how many rows with a dose of zero or below were left out (F76).
+
+    Args:
+        n: The count of such rows.
+
+    Returns:
+        str: The sentence with a trailing space, or "" when no row was left out.
+    """
+    if n > 0:
+        return (f"{n} row(s) with a dose of zero or below were left out of the fit and the "
+                "figure, because the dose axis is logarithmic. ")
+    return ""
+
+
 def _points_text(replicated):
     """Say what each point of the figure shows.
 
@@ -577,7 +593,7 @@ def _points_text(replicated):
     return "Each point is the single response at its dose. "
 
 
-def _methods(rows, shared, n_points, spec, x, y, replicated):
+def _methods(rows, shared, n_points, spec, x, y, replicated, n_nonpos=0):
     """Write the methods paragraph.
 
     Args:
@@ -588,6 +604,7 @@ def _methods(rows, shared, n_points, spec, x, y, replicated):
         x: The dose column.
         y: The response column.
         replicated: True when a dose of a curve has more than one response.
+        n_nonpos: The count of rows dropped for a dose of zero or below.
 
     Returns:
         str: The paragraph.
@@ -630,7 +647,8 @@ def _methods(rows, shared, n_points, spec, x, y, replicated):
         "curve (variable Hill slope) fitted by nonlinear least squares on log10 dose "
         f"(n = {n_points} points, {len(rows)} curve(s)). The 95% confidence interval of the "
         "midpoint was computed on the log10 scale from the standard error of the fit and "
-        f"back-transformed. {_points_text(replicated)}A curve whose mean responses varied by "
+        f"back-transformed. {_points_text(replicated)}{_nonpos_text(n_nonpos)}A curve whose mean "
+        "responses varied by "
         "less than 10% of the range "
         "of the mean responses of all curves, or whose responses did not differ between the "
         "doses in a one-way ANOVA (P >= 0.05), was not fitted, and its midpoint was reported as "

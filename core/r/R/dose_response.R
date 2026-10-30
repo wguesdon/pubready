@@ -360,7 +360,7 @@ recipe_dose_response <- function(df, spec) {
     curves = stats::setNames(lapply(seq_len(nrow(stats_df)), .drc_meta_row, rows = stats_df), g_lv),
     shared_ec50_test = shared)
   resolved <- list(family = "dose_response", label = test_meta$name)
-  methods <- .drc_methods(stats_df, shared, d, spec, x, y, replicated)
+  methods <- .drc_methods(stats_df, shared, d, spec, x, y, replicated, sum(nonpos))
   build_script <- list(fn = .drc_emit_script,
                        args = list(spec = spec, starts = starts, algos = algos,
                                    has_group = has_group))
@@ -413,7 +413,7 @@ recipe_dose_response <- function(df, spec) {
        hill = r$hill, bottom = r$bottom, top = r$top, r_squared = r$r_squared)
 }
 
-.drc_methods <- function(rows, shared, d, spec, x, y, replicated) {
+.drc_methods <- function(rows, shared, d, spec, x, y, replicated, n_nonpos = 0) {
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   v <- pkg_versions("ggplot2")
   y_lab <- spec$appearance$y_label %||% y
@@ -452,6 +452,7 @@ recipe_dose_response <- function(df, spec) {
             cap_first(y_lab), x_lab, nrow(d), nrow(rows)),
     "The 95% confidence interval of the midpoint was computed on the log10 scale from the standard error of the fit and back-transformed. ",
     .drc_points_text(replicated),
+    .drc_nonpos_text(n_nonpos),
     "A curve whose mean responses varied by less than 10% of the range of the mean responses of all curves, or whose responses did not differ between the doses in a one-way ANOVA (P >= 0.05), was not fitted, and its midpoint was reported as not determined. ",
     "A midpoint was also reported as not determined when the fit did not converge, when the fitted span (top minus bottom) was below 10% of the range of the mean responses, when the midpoint lay outside the tested doses, or when its 95% CI was not finite. ",
     fits, nd_txt, shared_txt,
@@ -510,4 +511,12 @@ recipe_dose_response <- function(df, spec) {
 .drc_points_text <- function(replicated) {
   if (replicated) "Points show the mean +/- SEM of the replicates at each dose. "
   else "Each point is the single response at its dose. "
+}
+
+# The rows with a dose of zero or below have no place on the log dose axis. The
+# methods text gives their count, as the data log does (F76).
+.drc_nonpos_text <- function(n) {
+  if (n > 0) {
+    sprintf("%d row(s) with a dose of zero or below were left out of the fit and the figure, because the dose axis is logarithmic. ", n)
+  } else ""
 }

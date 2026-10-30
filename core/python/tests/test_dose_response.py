@@ -125,3 +125,12 @@ def test_dose_response_stats_name_the_midpoint_columns():
             "midpoint_ci_low", "midpoint_ci_high"} <= cols
     assert not any("ec50" in c for c in cols)
     assert res["stats"]["midpoint_type"].iloc[0] == "IC50"
+
+
+def test_the_dose_response_methods_count_the_rows_with_a_zero_dose():
+    """The methods text counts the rows with a dose of zero or below (F76)."""
+    df = drc_three_curves()
+    df = pd.concat([df, pd.DataFrame({"compound": ["active A", "active B"], "dose": [0.0, 0.0],
+                                      "response": [100.0, 100.0]})], ignore_index=True)
+    res = recipe_dose_response(df, drc_spec(x="dose", y="response", group="compound"))
+    assert "2 row(s) with a dose of zero or below were left out of the fit" in res["methods"]

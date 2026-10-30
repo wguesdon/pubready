@@ -69,6 +69,8 @@ tag move together.
 - `distribution` draws no density curve and reports no bandwidth for a group
   with no spread, so a group of equal values no longer stretches the shared x
   axis. The methods text names the group (F125).
+- The `dose_response` methods text gives the count of rows with a dose of zero
+  or below that the recipe left out, as the data log does (F76).
 - `enrichment_dot` keeps a term with an adjusted p of 0: the p is set to the
   smallest positive double and the term is drawn as a triangle at the top of
   the colour scale. The data log records the replacement and each dropped row
