@@ -144,3 +144,22 @@ test_that("cox_forest names a constant or collinear covariate and a data set wit
   expect_equal(cox_collinear_columns(cbind(x[, 1], 3 - x[, 1], x[, 2])), 2L)
   expect_equal(cox_collinear_columns(x), integer(0))
 })
+
+test_that("a covariate that separates the events is marked not estimable (F57)", {
+  d <- v3c_cox_data()
+  d$marker <- ifelse(d$event == 1, "pos", "neg")
+  # coxph warns that the coefficient may be infinite; the recipe marks the term.
+  res <- suppressWarnings(recipe_cox_forest(d, v3c_cox_spec("arm,age,marker")))
+  expect_equal(res$stats$note, c("estimated", "estimated", "not estimable, separation"))
+  expect_true(all(is.na(unlist(res$stats[3, c("HR", "ci_low", "ci_high", "z", "p_value")]))))
+  expect_true(is.finite(res$stats$HR[1]))
+  expect_match(res$methods, "The term markerpos was not estimable because it separates the events",
+               fixed = TRUE)
+  expect_match(res$methods, "held the highest value of markerpos", fixed = TRUE)
+  time <- c(1, 2, 3, 4, 5, 6)
+  event <- c(1, 1, 0, 1, 0, 0)
+  x <- cbind(up = c(1, 1, 0, 1, 0, 0), down = c(0, 0, 1, 0, 1, 1), mixed = c(1, 0, 1, 0, 1, 0))
+  expect_equal(cox_separation(time, event, x), c(1L, -1L, 0L))
+  ok <- recipe_cox_forest(v3c_cox_data(), v3c_cox_spec("arm,age"))
+  expect_equal(ok$stats$note, c("estimated", "estimated"))
+})

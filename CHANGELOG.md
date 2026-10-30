@@ -54,6 +54,11 @@ tag move together.
   before it. Before, R stopped with a contrasts error or wrote NA rows, and
   Python dropped the covariate with no message or printed a convergence
   traceback (F91).
+- `cox_forest` marks a term "not estimable, separation" when the covariate
+  separates the events, so that the hazard ratio has no finite estimate. The
+  stats table has a new `note` column, the term has no HR, CI or P, the figure
+  writes the mark in the HR column, and the methods text explains it. Before,
+  such a term read HR = 4e8, CI 0 to infinity and P = 1 with no warning (F57).
 
 ## [3.0.0] - 2026-10-29
 

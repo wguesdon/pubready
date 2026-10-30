@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pubready.recipes.cox_forest import collinear_columns, recipe_cox_forest
+from pubready.recipes.cox_forest import collinear_columns, cox_separation, recipe_cox_forest
 from pubready.recipes.cumulative_incidence import recipe_cumulative_incidence
 from pubready.recipes.survival_km import (event_codes, km_break_step, km_median,
                                           recipe_survival_km)
@@ -187,3 +187,21 @@ def test_cox_forest_names_a_constant_or_collinear_covariate_and_no_event():
     assert collinear_columns(np.column_stack([x, x[:, 0] + 2 * x[:, 1]])) == [2]
     assert collinear_columns(np.column_stack([x[:, 0], 3 - x[:, 0], x[:, 1]])) == [1]
     assert collinear_columns(x) == []
+
+
+def test_a_covariate_that_separates_the_events_is_marked_not_estimable():
+    """F57: the term reported HR of about 4e8 and P = 1 with no warning."""
+    d = cox_data()
+    d["marker"] = np.where(d["event"] == 1, "pos", "neg")
+    res = cox_run(d, "arm,age,marker")
+    assert list(res["stats"]["note"]) == ["estimated", "estimated", "not estimable, separation"]
+    assert res["stats"].iloc[2][["HR", "ci_low", "ci_high", "z", "p_value"]].isna().all()
+    assert np.isfinite(res["stats"]["HR"].iloc[0])
+    assert "The term markerpos was not estimable because it separates the events" in res["methods"]
+    assert "held the highest value of markerpos" in res["methods"]
+    time = np.array([1.0, 2, 3, 4, 5, 6])
+    event = np.array([1.0, 1, 0, 1, 0, 0])
+    x = np.column_stack([[1, 1, 0, 1, 0, 0], [0, 0, 1, 0, 1, 1], [1, 0, 1, 0, 1, 0]])
+    assert list(cox_separation(time, event, x)) == [1, -1, 0]
+    ok = cox_run(cox_data(), "arm,age")
+    assert list(ok["stats"]["note"]) == ["estimated", "estimated"]

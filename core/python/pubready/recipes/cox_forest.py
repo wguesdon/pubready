@@ -319,6 +319,60 @@ def check_collinear(design, rows):
                          "so the Cox model cannot estimate its effect; leave it or one of them out")
 
 
+def cox_separation(time, event, x):
+    """The model columns that separate the events, as cox_separation() in R.
+
+    The partial likelihood of such a column grows without bound, so its hazard
+    ratio has no finite estimate. A column separates upward when, at every event
+    time, each subject with an event holds the highest value of the risk set
+    (the subjects whose time is that time or later), and the risk set holds a
+    lower value at one event time at least; downward with the lowest value.
+
+    Args:
+        time: The follow-up times.
+        event: 1 for an event, 0 for a censored subject.
+        x: The model matrix, one column per term.
+
+    Returns:
+        numpy.ndarray: 1, -1 or 0 for each column.
+    """
+    x = np.asarray(x, dtype=float)
+    event_times = np.unique(time[event == 1])
+    out = np.zeros(x.shape[1], dtype=int)
+    for j in range(x.shape[1]):
+        at_max, at_min, spread = True, True, False
+        for t in event_times:
+            r = x[time >= t, j]
+            d = x[(time == t) & (event == 1), j]
+            if np.any(d < r.max()):
+                at_max = False
+            if np.any(d > r.min()):
+                at_min = False
+            if r.min() < r.max():
+                spread = True
+        if spread:
+            out[j] = 1 if at_max else (-1 if at_min else 0)
+    return out
+
+
+def separation_text(terms, sep):
+    """One sentence for each term that separates the events, as in the R engine.
+
+    Args:
+        terms: The model terms.
+        sep: The separation direction of each term, 1, -1 or 0.
+
+    Returns:
+        str: The sentences, or an empty string.
+    """
+    return "".join(
+        f" The term {tt} was not estimable because it separates the events: at every event "
+        f"time, the subjects with an event held the {'highest' if s > 0 else 'lowest'} value of "
+        f"{tt} in the risk set, so the hazard ratio has no finite estimate. The term stays in the "
+        "model, and the figure and the stats table give no estimate for it."
+        for tt, s in zip(terms, sep) if s != 0)
+
+
 def row_texts(row, stats):
     """The "HR (95% CI)" and "P" texts of one display row.
 
@@ -332,6 +386,8 @@ def row_texts(row, stats):
     if row["term"] is None:
         return "reference", ""
     r = stats.loc[row["term"]]
+    if r.get("note", "estimated") != "estimated":
+        return "not estimable, separation", ""
     star = forest_stars(r["p_value"])
     p_txt = format_p(r["p_value"]) + (" " + star if star else "")
     return f"{r['HR']:.2f} ({r['ci_low']:.2f}–{r['ci_high']:.2f})", p_txt
@@ -487,6 +543,13 @@ def recipe_cox_forest(df, spec):
 
     stats_df = pd.DataFrame({"term": terms, "HR": hr, "ci_low": lo, "ci_high": hi,
                              "z": summ["z"].to_numpy(), "p_value": pv})
+    # A term that separates the events has no finite estimate. Its numbers are the
+    # last step of the iteration, so the table, the figure and the text show none.
+    sep = cox_separation(design[t].to_numpy(float), design[e].to_numpy(float),
+                         design[terms].to_numpy(float))
+    stats_df["note"] = np.where(sep != 0, "not estimable, separation", "estimated")
+    stats_df.loc[sep != 0, ["HR", "ci_low", "ci_high", "z", "p_value"]] = np.nan
+    hr, lo, hi, pv = (stats_df[k].to_numpy() for k in ("HR", "ci_low", "ci_high", "p_value"))
     n_subj, n_events = int(len(df)), int(df[e].sum())
     fp = forest_plot(rows, stats_df, spec, n_subj, n_events, ph_p)
 
@@ -495,10 +558,11 @@ def recipe_cox_forest(df, spec):
         "n": n_subj, "events": n_events, "covariates": covs,
         "proportional_hazards": {"test": "cox.zph global", "p_value": ph_p},
         "hazard_ratios": [{"term": tt, "HR": float(h_), "ci_low": float(l_),
-                           "ci_high": float(u_), "p_value": float(p_)}
-                          for tt, h_, l_, u_, p_ in zip(terms, hr, lo, hi, pv)],
+                           "ci_high": float(u_), "p_value": float(p_), "note": n_}
+                          for tt, h_, l_, u_, p_, n_ in zip(terms, hr, lo, hi, pv,
+                                                            stats_df["note"])],
     }
-    methods = _methods(stats_df, ph_p, covs, n_subj, n_events)
+    methods = _methods(stats_df, ph_p, covs, n_subj, n_events, sep)
     return {
         "fig": fp["fig"], "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": df, "clean_steps": clean_steps, "label": "hazard_ratios",
@@ -508,7 +572,20 @@ def recipe_cox_forest(df, spec):
     }
 
 
-def _methods(stats_df, ph_p, covs, n, events):
+def _methods(stats_df, ph_p, covs, n, events, sep):
+    """Write the methods paragraph, with the same sentences as the R engine.
+
+    Args:
+        stats_df: The stats table.
+        ph_p: The P value of the global cox.zph test, or NaN.
+        covs: The covariates.
+        n: The number of subjects.
+        events: The number of events.
+        sep: The separation direction of each term, 1, -1 or 0.
+
+    Returns:
+        str: The paragraph.
+    """
     from importlib.metadata import version as v
     import platform
     sig = stats_df[stats_df["p_value"] < 0.05]
@@ -523,7 +600,8 @@ def _methods(stats_df, ph_p, covs, n, events):
         f" (global cox.zph {p_phrase(ph_p)}).")
     return (
         f"Hazard ratios were estimated with a Cox proportional-hazards model ({n} subjects, {events} events) "
-        f"including {', '.join(covs)}." + sig_txt + ph_txt +
+        f"including {', '.join(covs)}." + sig_txt + separation_text(list(stats_df["term"]), sep)
+        + ph_txt +
         f" Analyses were performed in Python {platform.python_version()} with lifelines {v('lifelines')}"
         f", and the forest plot was drawn with matplotlib {v('matplotlib')}."
     )

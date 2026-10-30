@@ -61,6 +61,12 @@ recipe_cox_forest <- function(df, spec) {
     p_value = tid$p.value,
     stringsAsFactors = FALSE
   )
+  # A term that separates the events has no finite estimate. Its numbers are the
+  # last step of the iteration, so the table, the figure and the text show none.
+  X <- stats::model.matrix(stats::as.formula(paste("~", rhs)), data = df)[, -1, drop = FALSE]
+  sep <- cox_separation(df[[time_col]], df[[event_col]], X)
+  stats_df$note <- ifelse(sep != 0, "not estimable, separation", "estimated")
+  stats_df[sep != 0, c("HR", "ci_low", "ci_high", "z", "p_value")] <- NA_real_
 
   n_subj <- nrow(df)
   n_events <- sum(df[[event_col]])
@@ -76,7 +82,7 @@ recipe_cox_forest <- function(df, spec) {
   )
 
   resolved <- list(family = "cox", label = "Cox proportional hazards", covariates = covs)
-  methods  <- .cox_methods(stats_df, ph_p, covs, n_subj, n_events)
+  methods  <- .cox_methods(stats_df, ph_p, covs, n_subj, n_events, sep)
   build_script <- list(fn = .cox_emit_script,
                        args = list(spec = spec, time_col = time_col, event_col = event_col,
                                    covs = covs, ticks = fp$ticks, label_in = fp$label_in,
@@ -142,10 +148,39 @@ cox_collinear_columns <- function(X, tol = 1e-8) {
   hits
 }
 
+# The model columns that separate the events, so that the partial likelihood
+# grows without bound and the hazard ratio has no finite estimate. A column
+# separates upward when, at every event time, each subject with an event holds
+# the highest value of the risk set (the subjects whose time is that time or
+# later), and the risk set holds a lower value at one event time at least;
+# downward with the lowest value. Returns 1, -1 or 0 per column. The Python
+# engine has the same rule.
+cox_separation <- function(time, event, X) {
+  X <- as.matrix(X)
+  et <- sort(unique(time[event == 1]))
+  vapply(seq_len(ncol(X)), .cox_separation_column, integer(1), time = time, event = event,
+         mm = X, et = et)
+}
+
+.cox_separation_column <- function(j, time, event, mm, et) {
+  at_max <- TRUE
+  at_min <- TRUE
+  spread <- FALSE
+  for (t in et) {
+    r <- mm[time >= t, j]
+    d <- mm[time == t & event == 1, j]
+    if (any(d < max(r))) at_max <- FALSE
+    if (any(d > min(r))) at_min <- FALSE
+    if (min(r) < max(r)) spread <- TRUE
+  }
+  if (!spread) return(0L)
+  if (at_max) 1L else if (at_min) -1L else 0L
+}
+
 .cox_hr_entry <- function(i, stats_df) {
   list(term = stats_df$term[i], HR = stats_df$HR[i],
        ci_low = stats_df$ci_low[i], ci_high = stats_df$ci_high[i],
-       p_value = stats_df$p_value[i])
+       p_value = stats_df$p_value[i], note = stats_df$note[i])
 }
 
 # The significance stars of the forest plot: at most three, as
@@ -184,10 +219,12 @@ cox_collinear_columns <- function(X, tol = 1e-8) {
   rows$ci_low  <- stats_df$ci_low[rows$k]
   rows$ci_high <- stats_df$ci_high[rows$k]
   rows$p_value <- stats_df$p_value[rows$k]
+  sep <- !rows$ref & stats_df$note[rows$k] != "estimated"
   rows$hr_txt <- ifelse(rows$ref, "reference",
-                        sprintf("%.2f (%.2f\u2013%.2f)", rows$HR, rows$ci_low, rows$ci_high))
+                        ifelse(sep, "not estimable, separation",
+                               sprintf("%.2f (%.2f\u2013%.2f)", rows$HR, rows$ci_low, rows$ci_high)))
   p_txt <- vapply(rows$p_value, .cox_pfmt, character(1))
-  rows$p_txt <- ifelse(rows$ref, "", trimws(paste(p_txt, .cox_forest_stars(rows$p_value))))
+  rows$p_txt <- ifelse(rows$ref | sep, "", trimws(paste(p_txt, .cox_forest_stars(rows$p_value))))
   rows$y <- rev(seq_len(nrow(rows)))
   rows
 }
@@ -280,7 +317,7 @@ cox_collinear_columns <- function(X, tol = 1e-8) {
   list(plot = plot, ticks = ticks, label_in = label_in, width = width, height = height)
 }
 
-.cox_methods <- function(stats_df, ph_p, covs, n, events) {
+.cox_methods <- function(stats_df, ph_p, covs, n, events, sep) {
   v    <- pkg_versions(c("survival", "ggplot2", "broom"))
   rver <- paste(R.version$major, R.version$minor, sep = ".")
 
@@ -300,10 +337,23 @@ cox_collinear_columns <- function(X, tol = 1e-8) {
   paste0(
     sprintf("Hazard ratios were estimated with a Cox proportional-hazards model (%d subjects, %d events) including %s.",
             n, events, paste(covs, collapse = ", ")),
-    sig_txt, ph_txt,
+    sig_txt, .cox_separation_text(stats_df$term, sep), ph_txt,
     sprintf(" Analyses were performed in R %s with survival %s, and the forest plot was drawn with ggplot2 %s (tidied with broom %s).",
             rver, v$survival, v$ggplot2, v$broom)
   )
+}
+
+# One sentence for each term that separates the events. The Python engine writes
+# the same text.
+.cox_separation_text <- function(terms, sep) {
+  if (!any(sep != 0)) return("")
+  paste0(vapply(which(sep != 0), .cox_separation_sentence, character(1), terms = terms, sep = sep),
+         collapse = "")
+}
+
+.cox_separation_sentence <- function(i, terms, sep) {
+  sprintf(" The term %s was not estimable because it separates the events: at every event time, the subjects with an event held the %s value of %s in the risk set, so the hazard ratio has no finite estimate. The term stays in the model, and the figure and the stats table give no estimate for it.",
+          terms[i], if (sep[i] > 0) "highest" else "lowest", terms[i])
 }
 
 .cox_emit_script <- function(spec, time_col, event_col, covs, ticks, label_in, width, height,
