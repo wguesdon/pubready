@@ -54,18 +54,18 @@ tag move together.
   full precision of each number. Before, the manifest rounded each number to 6
   decimal places, for example the standard-curve intercept (F68).
 - The Python manifest, `report_provenance.json` and the `diagnose` report are
-  valid JSON: NaN and infinity are written as `null`, as R writes them. Before,
+  valid JSON. NaN and infinity are written as `null`, as R writes them. Before,
   the manifest held bare `NaN` and `Infinity` (F69).
 - The `arguments` block of the manifest records every plot option, with the
   command-line name and `null` for an option that the run did not set, in the
   same order in both engines. Before, R recorded five options and Python seven,
   and neither recorded `--group`, `--id` or `--levels`. The Python
   `REPRODUCE.md` names the image digest, as the R file does (F101).
-- The stats CSV files use one form in both engines: `NA` for a missing value,
-  `TRUE` and `FALSE`, `Inf` and `-Inf`, and no decimal part in a column of
-  whole numbers. Before, Python wrote an empty cell, `True`, `inf` and `2.0`,
-  and R wrote `NaN` apart from `NA`. The report table of Python uses the same
-  forms (F126).
+- The stats CSV files use one form in both engines. A missing value is `NA`, a
+  boolean is `TRUE` or `FALSE`, an infinite value is `Inf` or `-Inf`, and a
+  column of whole numbers has no decimal part. Before, Python wrote an empty
+  cell, `True`, `inf` and `2.0`, and R wrote `NaN` apart from `NA`. The report
+  tables of both engines use the same forms (F126).
 - The QC panel wraps its title and subtitle to the width of the figure, with
   one rule in both engines, and adds height for each extra line. Before, a
   one-panel QC figure cut its title and subtitle at the edges, in R and in
@@ -78,7 +78,7 @@ tag move together.
   message, and exits with status 1, as R does. Before, it printed a full
   traceback. Other exceptions keep their traceback (F70).
 - `figkit diagnose` accepts every option of `figkit plot`, from one option list
-  that both commands share in each engine. Before, it accepted 11 options: R
+  that both commands share in each engine. Before, it accepted 11 options. R
   stopped on `--time`, and Python dropped `--ref` with no message (F73).
 - `figkit render` finds the input file and the annotation file of a config in
   the folder of the config first, and else in the current folder. The bundle
