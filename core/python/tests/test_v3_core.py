@@ -309,3 +309,15 @@ def test_option_that_a_recipe_does_not_read_stops_the_run():
                                          "two_group_compare, "):
         check_recipe_options("heatmap", ["title"])
     check_recipe_options("sankey", ["x", "y", "id", "levels", "visit_levels"])
+
+
+def test_excel_text_cells_get_the_read_rule(tmp_path):
+    path = str(tmp_path / "data.xlsx")
+    pd.DataFrame({"group": ["a ", "b", "NA"], "value": [1.5, 2.0, 3.0],
+                  "code": ["1", "2", "None"]}).to_excel(path, index=False)
+    df, steps = read_tidy_logged(path)
+    assert list(df["group"][:2]) == ["a", "b"] and pd.isna(df["group"][2])
+    assert list(df["value"]) == [1.5, 2.0, 3.0]
+    assert list(df["code"]) == ["1", "2", "None"]
+    assert steps == ["Removed the spaces around 1 value(s): 'group' (1).",
+                     "Read 1 cell(s) that hold \"NA\" or nothing as missing: 'group' (1)."]
