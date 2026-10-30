@@ -6,6 +6,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.environ.get("PUBREADY_CORE", "/opt/pubready/core"), "python"))
+from pubready.bundle import json_safe                   # noqa: E402
 from pubready.io import read_tidy                      # noqa: E402
 from pubready.run import inspect_data, print_inspect, run_entry   # noqa: E402
 
@@ -19,7 +20,7 @@ def main():
     df = read_tidy(a.data, a.sheet)
     info = inspect_data(df)
     if a.format == "json":
-        print(json.dumps(info, indent=2))
+        print(json.dumps(json_safe(info), indent=2, allow_nan=False))
     else:
         print_inspect(info)
 

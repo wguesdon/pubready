@@ -148,3 +148,29 @@ test_that("the report table writes whole numbers as Python does (F126)", {
   expect_equal(strsplit(report_markdown_table(df), "\n")[[1]],
                c("| n | p |", "| --- | --- |", "| 1 | 0.5 |", "|  | Inf |", "| 3 |  |"))
 })
+
+# The inspect report, the same words in both engines (F72).
+inspect_csv <- c("extra,group,ID,sex", "0.7,1,1,f", "-1.6,1,2,m", "-0.2,1,3,f", "-1.2,1,4,m",
+                 "-0.1,1,5,f", "1.9,2,1,f", "0.8,2,2,m", "1.1,2,3,f", "0.1,2,4,m", "-0.1,2,5,f")
+inspect_expected <- c(
+  "Rows: 10   Columns: 4",
+  "",
+  "  extra                numeric   missing=0  unique=9  [-1.6 .. 1.9, mean 0.14]",
+  paste0("  group                numeric   missing=0  unique=2  levels: \"1\" (5), \"2\" (5)",
+         "  [1 .. 2, mean 1.5]"),
+  paste0("  ID                   numeric   missing=0  unique=5  levels: \"1\" (2), \"2\" (2), ",
+         "\"3\" (2), \"4\" (2), \"5\" (2)  [1 .. 5, mean 3]"),
+  "  sex                  text      missing=0  unique=2  levels: \"f\" (6), \"m\" (4)",
+  "",
+  "Candidate grouping columns (x):  group (numeric code), ID (numeric code), sex",
+  "Candidate outcome columns (y):   extra",
+  "Possible subject id columns:     ID (repeats across the levels of group)")
+
+test_that("inspect gives level counts, numeric codes and a subject id (F72)", {
+  info <- inspect_data(read_tidy(write_tmp_csv(inspect_csv)))
+  expect_equal(capture.output(print_inspect(info)), inspect_expected)
+  expect_equal(info$id_candidates[[1]],
+               list(column = "ID", across = "group", n_subjects = 5L, complete = TRUE))
+  expect_equal(unlist(info$group_candidates), c("group", "ID", "sex"))
+  expect_equal(unlist(info$outcome_candidates), "extra")
+})

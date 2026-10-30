@@ -14,7 +14,7 @@ from pubready.bundle import (_markdown_value, dataframe_markdown, manifest_argum
                              write_stats_csv)
 from pubready.io import read_tidy, read_tidy_logged
 from pubready.qc import qc_layout, qc_normality
-from pubready.run import run_entry
+from pubready.run import inspect_data, print_inspect, run_entry
 from pubready.spec import spec_from_args
 
 
@@ -205,3 +205,31 @@ def test_entry_prints_a_data_error_without_a_traceback(capsys):
     assert err == "Error: column 'value' not found in data\n"
     with pytest.raises(KeyError):
         run_entry(_raise_defect)
+
+
+#: The inspect report, the same words in both engines (F72).
+INSPECT_CSV = ["extra,group,ID,sex", "0.7,1,1,f", "-1.6,1,2,m", "-0.2,1,3,f", "-1.2,1,4,m",
+               "-0.1,1,5,f", "1.9,2,1,f", "0.8,2,2,m", "1.1,2,3,f", "0.1,2,4,m", "-0.1,2,5,f"]
+INSPECT_EXPECTED = [
+    "Rows: 10   Columns: 4",
+    "",
+    "  extra                numeric   missing=0  unique=9  [-1.6 .. 1.9, mean 0.14]",
+    "  group                numeric   missing=0  unique=2  levels: \"1\" (5), \"2\" (5)"
+    "  [1 .. 2, mean 1.5]",
+    "  ID                   numeric   missing=0  unique=5  levels: \"1\" (2), \"2\" (2), "
+    "\"3\" (2), \"4\" (2), \"5\" (2)  [1 .. 5, mean 3]",
+    "  sex                  text      missing=0  unique=2  levels: \"f\" (6), \"m\" (4)",
+    "",
+    "Candidate grouping columns (x):  group (numeric code), ID (numeric code), sex",
+    "Candidate outcome columns (y):   extra",
+    "Possible subject id columns:     ID (repeats across the levels of group)"]
+
+
+def test_inspect_gives_level_counts_numeric_codes_and_a_subject_id(tmp_path, capsys):
+    info = inspect_data(read_tidy(write_tmp_csv(tmp_path, INSPECT_CSV)))
+    print_inspect(info)
+    assert capsys.readouterr().out.splitlines() == INSPECT_EXPECTED
+    assert info["id_candidates"] == [{"column": "ID", "across": "group", "n_subjects": 5,
+                                      "complete": True}]
+    assert info["group_candidates"] == ["group", "ID", "sex"]
+    assert info["outcome_candidates"] == ["extra"]

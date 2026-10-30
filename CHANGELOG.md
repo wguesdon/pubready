@@ -16,6 +16,14 @@ tag move together.
 ### Added
 
 ### Changed
+- `figkit inspect` prints the same words in both engines. Each level is in
+  quotes with its count of rows. A numeric column with 2 to 6 distinct values
+  is a candidate group, marked as a numeric code, and not a candidate outcome.
+  A column whose values repeat across the levels of another column, at most
+  once in each level, is a possible subject id. The type names are numeric,
+  text, logical, date and other in both engines. The JSON output adds
+  `level_counts`, `group_candidates`, `outcome_candidates` and
+  `id_candidates` (F72).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of

@@ -49,28 +49,117 @@ run_recipe <- function(spec, raw_input, out_root, sheet = NULL, stamp = NULL) {
   invisible(bdir)
 }
 
-# Generic data inspection used by the `inspect` command.
+# Data inspection for the `inspect` command. The Python engine (run.py) applies
+# the same rules and prints the same words.
+#
+# - Each column gets one of the type names numeric, text, logical, date, other.
+# - A text or logical column with 1 to 20 distinct values, and a numeric column
+#   with 2 to 6, lists its levels in the order of level_order(), each with its
+#   count of rows.
+# - A column with 2 to 6 levels is a candidate group. A numeric one is marked as
+#   a numeric code.
+# - A column is a possible subject id when each of its values occurs at most once
+#   in each level of another column, half of its values or more occur in two of
+#   those levels or more, and it holds more distinct values than that column.
+#   The other column holds 2 to 20 levels and repeats each level at least twice
+#   on average; the first 10 such columns are checked.
+# - A numeric column with more than 6 distinct values that is not a possible
+#   subject id is a candidate outcome.
+INSPECT_GROUP_MAX <- 6
+INSPECT_LEVELS_MAX <- 20
+INSPECT_BY_MAX <- 10
+
+# The type name of a column in the inspect report.
+inspect_type <- function(v) {
+  if (is.logical(v)) return("logical")
+  if (is.numeric(v)) return("numeric")
+  if (is.character(v) || is.factor(v)) return("text")
+  if (inherits(v, c("Date", "POSIXt"))) return("date")
+  "other"
+}
+
+# The text labels of a column for the level and id rules: level_labels() for a
+# number, "TRUE" and "FALSE" for a logical value, NA for a missing value.
+inspect_labels <- function(v) {
+  if (is.factor(v)) v <- as.character(v)
+  if (inherits(v, c("Date", "POSIXt"))) v <- format(v)
+  level_labels(v)
+}
+
+# True when a column of the given type and distinct count lists its levels.
+inspect_has_levels <- function(type, n_unique) {
+  (type %in% c("text", "logical") && n_unique >= 1 && n_unique <= INSPECT_LEVELS_MAX) ||
+    (type == "numeric" && n_unique >= 2 && n_unique <= INSPECT_GROUP_MAX)
+}
+
+# One column of the inspect report.
+inspect_column <- function(nm, df) {
+  v <- df[[nm]]
+  type <- inspect_type(v)
+  lab <- inspect_labels(v)
+  present <- lab[!is.na(lab)]
+  n_unique <- length(unique(present))
+  out <- list(name = nm, type = type, n_missing = sum(is.na(v)), n_unique = n_unique)
+  if (inspect_has_levels(type, n_unique)) {
+    lv <- level_order(present)
+    out$levels <- as.list(lv)
+    out$level_counts <- as.list(as.integer(table(factor(present, levels = lv))))
+  }
+  if (type == "numeric" && any(is.finite(v))) {
+    out$min  <- min(v, na.rm = TRUE)
+    out$max  <- max(v, na.rm = TRUE)
+    out$mean <- mean(v, na.rm = TRUE)
+  }
+  out
+}
+
+# The id record of column `a` across the levels of column `b`, or NULL when `a`
+# is not a possible subject id there.
+inspect_id_candidate <- function(a_lab, b_lab, a_name, b_name) {
+  keep <- !is.na(a_lab) & !is.na(b_lab)
+  a <- a_lab[keep]
+  b <- b_lab[keep]
+  n_a <- length(unique(a))
+  if (n_a < 2 || n_a <= length(unique(b))) return(NULL)
+  if (anyDuplicated(data.frame(a, b))) return(NULL)
+  tab <- table(a, b)
+  n_levels <- rowSums(tab > 0)
+  if (mean(n_levels >= 2) < 0.5) return(NULL)
+  list(column = a_name, across = b_name, n_subjects = nrow(tab),
+       complete = all(n_levels == ncol(tab)))
+}
+
 inspect_data <- function(df) {
-  cols <- lapply(names(df), function(nm) {
-    v <- df[[nm]]
-    is_num <- is.numeric(v)
-    out <- list(
-      name      = nm,
-      type      = class(v)[1],
-      n_missing = sum(is.na(v)),
-      n_unique  = length(unique(v[!is.na(v)]))
-    )
-    if (!is_num && out$n_unique <= 20 && out$n_unique > 0) {
-      out$levels <- as.list(sort(unique(as.character(v[!is.na(v)]))))
+  cols <- lapply(names(df), inspect_column, df = df)
+  labs <- lapply(df, inspect_labels)
+  n_unique <- vapply(cols, `[[`, integer(1), "n_unique")
+  by <- which(n_unique >= 2 & n_unique <= INSPECT_LEVELS_MAX & n_unique * 2 <= nrow(df))
+  by <- utils::head(by, INSPECT_BY_MAX)
+  ids <- list()
+  for (i in seq_along(cols)) {
+    for (j in by) {
+      if (i == j) next
+      cand <- inspect_id_candidate(labs[[i]], labs[[j]], cols[[i]]$name, cols[[j]]$name)
+      if (!is.null(cand)) {
+        ids[[length(ids) + 1]] <- cand
+        break
+      }
     }
-    if (is_num && any(is.finite(v))) {
-      out$min  <- min(v, na.rm = TRUE)
-      out$max  <- max(v, na.rm = TRUE)
-      out$mean <- mean(v, na.rm = TRUE)
+  }
+  id_names <- vapply(ids, `[[`, character(1), "column")
+  groups <- character(0)
+  outcomes <- character(0)
+  for (cl in cols) {
+    if (!is.null(cl$levels) && cl$n_unique >= 2 && cl$n_unique <= INSPECT_GROUP_MAX) {
+      groups <- c(groups, cl$name)
     }
-    out
-  })
-  list(n_rows = nrow(df), n_cols = ncol(df), columns = cols)
+    if (cl$type == "numeric" && cl$n_unique > INSPECT_GROUP_MAX && !cl$name %in% id_names) {
+      outcomes <- c(outcomes, cl$name)
+    }
+  }
+  list(n_rows = nrow(df), n_cols = ncol(df), columns = cols,
+       group_candidates = as.list(groups), outcome_candidates = as.list(outcomes),
+       id_candidates = ids)
 }
 
 # A wide table (a matrix of genes, for example) would print one line per column
@@ -85,30 +174,54 @@ inspect_data <- function(df) {
           length(nms) - .inspect_max_names)
 }
 
+# The levels of a column as the text report prints them: each level in quotes
+# with its count of rows.
+inspect_levels_text <- function(cl) {
+  paste(sprintf("\"%s\" (%d)", unlist(cl$levels), unlist(cl$level_counts)), collapse = ", ")
+}
+
+# One line of the candidate list of the text report.
+inspect_candidate_line <- function(label, names) {
+  cat(sprintf("%-33s%s\n", label, .inspect_names(names)))
+}
+
 print_inspect <- function(info) {
   cat(sprintf("Rows: %d   Columns: %d\n\n", info$n_rows, info$n_cols))
-  group_like <- character(0)
-  numeric_cols <- character(0)
-  for (i in seq_along(info$columns)) {
-    c <- info$columns[[i]]
-    if (!is.null(c$levels) && c$n_unique >= 2 && c$n_unique <= 6) group_like <- c(group_like, c$name)
-    if (!is.null(c$mean)) numeric_cols <- c(numeric_cols, c$name)
-    if (i > .inspect_max_cols) next
-    line <- sprintf("  %-20s %-10s  missing=%d  unique=%d",
-                    c$name, c$type, c$n_missing, c$n_unique)
-    if (!is.null(c$levels)) {
-      line <- paste0(line, "  levels: ", paste(unlist(c$levels), collapse = ", "))
+  for (i in seq_len(min(length(info$columns), .inspect_max_cols))) {
+    cl <- info$columns[[i]]
+    line <- sprintf("  %-20s %-8s  missing=%d  unique=%d",
+                    cl$name, cl$type, cl$n_missing, cl$n_unique)
+    if (!is.null(cl$levels)) {
+      line <- paste0(line, "  levels: ", inspect_levels_text(cl))
     }
-    if (!is.null(c$mean)) {
-      line <- paste0(line, sprintf("  [%.3g .. %.3g, mean %.3g]", c$min, c$max, c$mean))
+    if (!is.null(cl$mean)) {
+      line <- paste0(line, sprintf("  [%.3g .. %.3g, mean %.3g]", cl$min, cl$max, cl$mean))
     }
-    cat(line, "\n")
+    cat(line, "\n", sep = "")
   }
   hidden <- length(info$columns) - .inspect_max_cols
   if (hidden > 0) {
     cat(sprintf("  ... and %d more column(s); use --format json for every column.\n", hidden))
   }
   cat("\n")
-  if (length(group_like)) cat("Candidate grouping columns (x): ", .inspect_names(group_like), "\n")
-  if (length(numeric_cols)) cat("Candidate outcome columns  (y): ", .inspect_names(numeric_cols), "\n")
+  types <- vapply(info$columns, `[[`, character(1), "type")
+  names(types) <- vapply(info$columns, `[[`, character(1), "name")
+  groups <- unlist(info$group_candidates)
+  if (length(groups)) {
+    is_code <- types[groups] == "numeric"
+    groups[is_code] <- paste0(groups[is_code], " (numeric code)")
+    inspect_candidate_line("Candidate grouping columns (x):", groups)
+  }
+  if (length(info$outcome_candidates)) {
+    inspect_candidate_line("Candidate outcome columns (y):", unlist(info$outcome_candidates))
+  }
+  if (length(info$id_candidates)) {
+    ids <- vapply(info$id_candidates, inspect_id_text, character(1))
+    inspect_candidate_line("Possible subject id columns:", ids)
+  }
+}
+
+# One possible subject id as the text report prints it.
+inspect_id_text <- function(cand) {
+  sprintf("%s (repeats across the levels of %s)", cand$column, cand$across)
 }
