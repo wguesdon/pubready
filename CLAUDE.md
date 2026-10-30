@@ -18,6 +18,7 @@ For work on the repository itself, follow the rules below.
 | `tools/render_audit/` | The stress datasets and the runner that renders every recipe with both engines for a visual review. |
 | `core/r/` | R recipes, built on ggpubr, rstatix and ggprism. |
 | `core/python/` | Python recipes, built on matplotlib, seaborn and pingouin. |
+| `core/recipe_options.txt` | The options that each recipe reads. Both engines stop on any other option. |
 | `container/` | The `Containerfile` and the pinned R and Python dependencies. |
 | `skills/claude-code/SKILL.md` | The Claude Code adapter. |
 | `skills/codex/AGENTS.md` | The Codex adapter, linked from the root `AGENTS.md`. |
@@ -55,7 +56,8 @@ For work on the repository itself, follow the rules below.
    must also go into the `force-include` table of `pyproject.toml`.
 5. Add a new recipe to the recipe table in all three adapters, to
    `docs/how_it_works.md`, to `example/README.md` and to the smoke test. Add a
-   public benchmark case for it as `benchmarks/README.md` describes.
+   line with its options to `core/recipe_options.txt`. Add a public benchmark
+   case for it as `benchmarks/README.md` describes.
 6. Write output only under `pubready_output/` or a directory that `--out` names.
    These directories are ignored by git.
 7. Record a user-visible change in `CHANGELOG.md` and bump `VERSION` when the
