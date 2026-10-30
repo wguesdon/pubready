@@ -375,3 +375,25 @@ test_that("a studentized-range P below 1e-12 is written as < 1e-12", {
                                                 test = "anova"))
   expect_true(all(res$stats$p_adj == "< 1e-12"))
 })
+
+# The y position of the bracket layer of a plot, NA for another layer.
+v3_layer_bracket_y <- function(layer) {
+  d <- layer$data
+  if (is.data.frame(d) && "y.position" %in% names(d)) max(d$y.position) else NA_real_
+}
+
+v3_bracket_y <- function(plot) max(vapply(plot$layers, v3_layer_bracket_y, numeric(1)), na.rm = TRUE)
+
+# F84: an axis of values below 1e-4 takes scientific notation, and the bracket
+# of two_group_compare sits above the data.
+test_that("small axis values read in scientific notation", {
+  expect_equal(plain_number_labels(c(1.5e-9, 2e-9, 2.5e-9, NA)),
+               c("1.5e-09", "2.0e-09", "2.5e-09", NA))
+  expect_equal(plain_number_labels(c(0, 1e-5, 2e-5)), c("0e+00", "1e-05", "2e-05"))
+  expect_equal(plain_number_labels(c(0, 0.25, 0.5)), c("0.00", "0.25", "0.50"))
+  df <- data.frame(group = rep(c("a", "b"), each = 5),
+                   conc = c(2.4e-9, 2.3e-9, 1.7e-9, 2.2e-9, 2.0e-9, 3.1e-9, 3.3e-9, 2.9e-9, 3.2e-9,
+                            2.7e-9))
+  res <- recipe_two_group_compare(df, v3_spec("two_group_compare", x = "group", y = "conc"))
+  expect_gt(v3_bracket_y(res$plot), 3.3e-9)
+})

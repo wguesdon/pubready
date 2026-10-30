@@ -76,18 +76,35 @@ legend_width <- function(labels, title = "") {
   0.55 + 0.075 * chars
 }
 
-# Format axis breaks as plain numbers with a comma between the thousands, never
-# in scientific notation. The count of decimals is the smallest one that shows
-# every break exactly (at most 6). Python has the same rule in
-# theme.PlainNumberFormatter.
+# Format axis breaks as plain numbers with a comma between the thousands. The
+# count of decimals is the smallest one that shows every break exactly (at most
+# 6). An axis whose largest break is below 1e-4 in absolute value, as for molar
+# concentrations, would read "0.000000", so it takes scientific notation with
+# the smallest count of mantissa decimals that shows every break exactly.
+# Python has the same rule in theme.PlainNumberFormatter.
 plain_number_labels <- function(x) {
   fin <- x[is.finite(x)]
+  if (length(fin) > 0 && max(abs(fin)) > 0 && max(abs(fin)) < 1e-4) {
+    return(.sci_number_labels(x, fin))
+  }
   digits <- 0L
   while (digits < 6L && length(fin) > 0 &&
          any(abs(round(fin, digits) - fin) > 1e-9 * pmax(1, abs(fin)))) {
     digits <- digits + 1L
   }
   out <- formatC(x + 0, format = "f", digits = digits, big.mark = ",")
+  out[!is.finite(x)] <- NA_character_
+  out
+}
+
+# Breaks in scientific notation, "1.5e-09", with the smallest count of mantissa
+# decimals (at most 6) that shows every break exactly.
+.sci_number_labels <- function(x, fin) {
+  digits <- 0L
+  while (digits < 6L && any(abs(signif(fin, digits + 1L) - fin) > 1e-9 * abs(fin))) {
+    digits <- digits + 1L
+  }
+  out <- formatC(x + 0, format = "e", digits = digits)
   out[!is.finite(x)] <- NA_character_
   out
 }

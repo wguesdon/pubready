@@ -114,13 +114,15 @@ recipe_two_group_compare <- function(df, spec) {
   pal  <- spec$appearance$palette %||% pubready_palette[seq_len(2)]
   geom <- spec$appearance$geom %||% "box"
 
-  # A violin with trim = FALSE reaches past the data, so its bracket starts
-  # above the drawn violin, not above the largest value.
-  if (identical(geom, "violin")) {
-    tops <- vapply(by_group, geom_top, numeric(1), geom = "violin")
-    span <- max(tops) - min(df[[y]], na.rm = TRUE)
-    stat$y.position <- max(tops) + 0.06 * span
-  }
+  # The bracket starts above the drawn geom (a violin with trim = FALSE reaches
+  # past the data) by 6% of the data span. The position comes from the data
+  # range, not from the rounding of rstatix, so the bracket also sits above
+  # values near 1e-9.
+  tops <- vapply(by_group, geom_top, numeric(1), geom = geom)
+  span <- max(tops) - min(df[[y]], na.rm = TRUE)
+  if (!is.finite(span) || span <= 0) span <- abs(max(tops))
+  if (!is.finite(span) || span <= 0) span <- 1
+  stat$y.position <- max(tops) + 0.06 * span
 
   # fill is mapped inside each geom, not globally: the significance-bracket
   # layer inherits global aesthetics, and a global fill would break it because
@@ -345,6 +347,8 @@ recipe_two_group_compare <- function(df, spec) {
     test_line,
     "stat <- rstatix::add_significance(stat)",
     'stat <- rstatix::add_xy_position(stat, x = ".x")',
+    "# The bracket sits 6% of the data span above the largest value.",
+    "stat$y.position <- max(sdf$.y) + 0.06 * diff(range(sdf$.y))",
     plabel_line,
     "",
     gl$prep,

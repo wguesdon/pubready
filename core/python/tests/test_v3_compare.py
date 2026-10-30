@@ -354,3 +354,12 @@ def test_a_studentized_range_p_below_1e12_is_written_as_less_than():
     res = recipe_multi_group_compare(mg, v3_spec("multi_group_compare", x="g", y="y",
                                                  test="anova"))
     assert (res["stats"]["p_adj"] == "< 1e-12").all()
+
+
+# F84: an axis of values below 1e-4 takes scientific notation.
+def test_small_axis_values_read_in_scientific_notation():
+    from pubready.theme import plain_number_labels
+    assert plain_number_labels([1.5e-9, 2e-9, 2.5e-9, float("nan")]) == [
+        "1.5e-09", "2.0e-09", "2.5e-09", ""]
+    assert plain_number_labels([0, 1e-5, 2e-5]) == ["0e+00", "1e-05", "2e-05"]
+    assert plain_number_labels([0, 0.25, 0.5]) == ["0.00", "0.25", "0.50"]

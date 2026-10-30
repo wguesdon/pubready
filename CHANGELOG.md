@@ -113,6 +113,11 @@ tag move together.
   "< 1e-12" in the stats table and in a `p.format` bracket. The studentized
   range loses its precision there in both engines: R wrote 0 or about 2.4e-13,
   and Python wrote 0 (F118).
+- The y axis of `two_group_compare`, `multi_group_compare` and `paired_compare`
+  reads in scientific notation, for example "1.5e-09", when its largest break
+  is below 1e-4, as for molar concentrations. It read "0.000000" before. The R
+  bracket of `two_group_compare` now sits 6% of the data span above the drawn
+  geom, so it no longer falls to 0 on such values (F84).
 
 ## [3.0.0] - 2026-10-29
 
