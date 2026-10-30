@@ -14,6 +14,8 @@ baseline itself. That categorisation reads the change from baseline alone, so
 the column is named for what it measures: a full RECIST 1.1 assessment also
 reads the nadir, the non-target lesions and any new lesion.
 """
+import functools
+
 import numpy as np
 import pandas as pd
 
@@ -136,6 +138,7 @@ def recipe_spider_response(df, spec):
     d[y] = pd.to_numeric(d[y], errors="coerce")
     n_rows0 = len(d)
     d = d.dropna()
+    n_missing = n_rows0 - len(d)
     d[idc] = d[idc].astype(str)
     check_one_row_per_time(d[idc], d[x], "spider_response", x)
     d = d.sort_values([idc, x], kind="mergesort").reset_index(drop=True)
@@ -143,6 +146,7 @@ def recipe_spider_response(df, spec):
     baseline = d.groupby(idc, sort=False)[y].first()
     usable = baseline[(baseline != 0) & np.isfinite(baseline)].index
     dropped = len(baseline) - len(usable)
+    rows_zero = int((~d[idc].isin(usable)).sum())
     d = d[d[idc].isin(usable)].reset_index(drop=True)
     if len(d) < 2:
         raise ValueError("spider_response needs at least one patient with a non-zero baseline")
@@ -159,6 +163,7 @@ def recipe_spider_response(df, spec):
     # carry a best change of zero rather than the smallest growth they reached.
     post = d[d[idc].duplicated()]
     no_follow_up = sorted(set(d[idc]) - set(post[idc]))
+    rows_no_follow = int(d[idc].isin(no_follow_up).sum())
     if no_follow_up:
         d = d[~d[idc].isin(no_follow_up)].reset_index(drop=True)
         post = post[~post[idc].isin(no_follow_up)]
@@ -177,15 +182,18 @@ def recipe_spider_response(df, spec):
         for row in per.itertuples()]
 
     steps = [f"Kept {len(per)} patient(s) across {len(d)} measurement(s)."]
-    if n_rows0 > len(d):
-        steps.append(f"Dropped {n_rows0 - len(d)} row(s) with a missing time, "
-                     "value or patient.")
+    # Each reason is counted on its own: rows with a missing cell, then the
+    # patients (and their rows) with a zero baseline or with no later visit.
+    if n_missing:
+        what = "patient, time, value or group" if grp else "patient, time or value"
+        steps.append(f"Dropped {n_missing} row(s) with a missing {what}.")
     if dropped:
-        steps.append(f"Dropped {dropped} patient(s) whose baseline was zero or "
-                     "absent, because a percentage change needs a non-zero baseline.")
+        steps.append(f"Dropped {dropped} patient(s) ({rows_zero} row(s)) whose baseline was "
+                     "zero, because a percentage change needs a non-zero baseline.")
     if no_follow_up:
-        steps.append(f"Dropped {len(no_follow_up)} patient(s) with no visit after "
-                     "the baseline, because a response needs a second measurement.")
+        steps.append(f"Dropped {len(no_follow_up)} patient(s) ({rows_no_follow} row(s)) with no "
+                     "visit after the baseline, because a response needs a second "
+                     "measurement.")
 
     if grp:
         colour_of = d[[idc, grp]].drop_duplicates(idc).set_index(idc)[grp].astype(str)
@@ -243,8 +251,7 @@ def recipe_spider_response(df, spec):
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": d, "clean_steps": steps, "label": slugify(y),
         "width": w, "height": h,
-        "build_script": lambda in_name, fig_stub: _script(spec, in_name, fig_stub,
-                                                          pd_cut, pr_cut),
+        "build_script": functools.partial(_script, spec, pd_cut=pd_cut, pr_cut=pr_cut),
     }
 
 

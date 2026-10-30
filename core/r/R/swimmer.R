@@ -39,13 +39,17 @@ recipe_swimmer <- function(df, spec) {
   } else rep(1L, n0)
   d$ongoing <- status == 0L
   for (m in markers) d[[m]] <- suppressWarnings(as.numeric(df[[m]]))
-  keep <- !is.na(d$patient) & is.finite(d$duration) & d$duration >= 0 & !is.na(d$group) &
-    !is.na(d$ongoing)
+  # A row with a missing cell and a row with a negative duration are counted
+  # on their own, so the data log gives the right reason for each drop.
+  missing <- is.na(d$patient) | !is.finite(d$duration) | is.na(d$group) | is.na(d$ongoing)
+  negative <- !missing & d$duration < 0
+  keep <- !missing & !negative
   d <- d[keep, , drop = FALSE]
   if (anyDuplicated(d$patient)) stop("swimmer needs one row per patient")
   if (nrow(d) < 1) stop("swimmer needs at least one patient with a duration")
   clean_steps <- c(
-    if (sum(!keep) > 0) sprintf("Dropped %d row(s) with a missing patient, duration, status or arm.", sum(!keep)),
+    if (sum(missing) > 0) sprintf("Dropped %d row(s) with a missing patient, duration, status or arm.", sum(missing)),
+    if (sum(negative) > 0) sprintf("Dropped %d row(s) with a negative duration.", sum(negative)),
     sprintf("Kept %d of %d patient(s).", nrow(d), n0))
 
   d <- d[order(d$duration, d$patient, method = "radix"), , drop = FALSE]

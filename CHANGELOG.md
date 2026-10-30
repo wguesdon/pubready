@@ -88,6 +88,10 @@ tag move together.
   time point, and the message names each such patient and time, as
   `timecourse` does. Before, a second baseline row became a later visit, and a
   patient whose lesion grew by 25.9% read "partial response" (F59).
+- The data logs of `spider_response` and `swimmer` count each drop reason on
+  its own: rows with a missing cell, patients with a zero baseline or with no
+  later visit (with their row counts), and rows with a negative duration.
+  Before, these drops read as rows with a missing value (F124).
 
 ## [3.0.0] - 2026-10-29
 

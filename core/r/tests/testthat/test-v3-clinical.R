@@ -258,3 +258,20 @@ test_that("waterfall and spider_response name a patient with two rows at one tim
   expect_error(recipe_spider_response(d, v3c_spec("spider_response", x = "week", y = "lesion", id = "patient")),
                paste("spider_response", msg), fixed = TRUE)
 })
+
+test_that("the spider and swimmer data logs count each drop reason on its own (F124)", {
+  d <- data.frame(patient = c("P1", "P1", "P2", "P2", "P3", "P4", "P4", "P5"),
+                  week = c(0, 8, 0, 8, 0, 0, 8, NA),
+                  lesion = c(50, 40, 0, 10, 30, 20, 25, 33))
+  res <- recipe_spider_response(d, v3c_spec("spider_response", x = "week", y = "lesion", id = "patient"))
+  expect_equal(res$clean_steps, c(
+    "Kept 2 patient(s) across 4 measurement(s).",
+    "Dropped 1 row(s) with a missing patient, time or value.",
+    "Dropped 1 patient(s) (2 row(s)) whose baseline was zero, because a percentage change needs a non-zero baseline.",
+    "Dropped 1 patient(s) (1 row(s)) with no visit after the baseline, because a response needs a second measurement."))
+  s <- data.frame(patient = c("P1", "P2", "P3", "P4"), months = c(4, -2, NA, 7))
+  res <- recipe_swimmer(s, v3c_spec("swimmer", id = "patient", time = "months"))
+  expect_equal(res$clean_steps, c("Dropped 1 row(s) with a missing patient, duration, status or arm.",
+                                  "Dropped 1 row(s) with a negative duration.",
+                                  "Kept 2 of 4 patient(s)."))
+})

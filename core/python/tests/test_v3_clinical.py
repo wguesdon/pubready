@@ -316,3 +316,23 @@ def test_waterfall_and_spider_name_a_patient_with_two_rows_at_one_time():
         recipe_waterfall(d, v3c_spec("waterfall", x="week", y="lesion", id="patient"))
     with pytest.raises(ValueError, match="spider_response " + msg):
         recipe_spider_response(d, v3c_spec("spider_response", x="week", y="lesion", id="patient"))
+
+
+def test_the_spider_and_swimmer_data_logs_count_each_drop_reason_on_its_own():
+    """F124: the patient drops were logged as rows with a missing value."""
+    d = pd.DataFrame({"patient": ["P1", "P1", "P2", "P2", "P3", "P4", "P4", "P5"],
+                      "week": [0, 8, 0, 8, 0, 0, 8, np.nan],
+                      "lesion": [50, 40, 0, 10, 30, 20, 25, 33]})
+    res = recipe_spider_response(d, v3c_spec("spider_response", x="week", y="lesion", id="patient"))
+    assert res["clean_steps"] == [
+        "Kept 2 patient(s) across 4 measurement(s).",
+        "Dropped 1 row(s) with a missing patient, time or value.",
+        "Dropped 1 patient(s) (2 row(s)) whose baseline was zero, because a percentage change "
+        "needs a non-zero baseline.",
+        "Dropped 1 patient(s) (1 row(s)) with no visit after the baseline, because a response "
+        "needs a second measurement."]
+    s = pd.DataFrame({"patient": ["P1", "P2", "P3", "P4"], "months": [4, -2, np.nan, 7]})
+    res = recipe_swimmer(s, v3c_spec("swimmer", id="patient", time="months"))
+    assert res["clean_steps"] == ["Dropped 1 row(s) with a missing patient, duration, status or arm.",
+                                  "Dropped 1 row(s) with a negative duration.",
+                                  "Kept 2 of 4 patient(s)."]

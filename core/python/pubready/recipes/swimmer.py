@@ -74,16 +74,25 @@ def recipe_swimmer(df, spec):
     })
     for m in markers:
         d[m] = pd.to_numeric(df[m], errors="coerce")
-    keep = (d["patient"].notna() & np.isfinite(d["duration"]) & (d["duration"] >= 0)
-            & d["group"].notna() & d["ongoing"].notna())
+    # A row with a missing cell and a row with a negative duration are counted
+    # on their own, so the data log gives the right reason for each drop.
+    missing = (d["patient"].isna() | ~np.isfinite(d["duration"]) | d["group"].isna()
+               | d["ongoing"].isna())
+    negative = ~missing & (d["duration"] < 0)
+    keep = ~missing & ~negative
     d = d[keep].reset_index(drop=True)
     d["ongoing"] = d["ongoing"].astype(bool)
     if d["patient"].duplicated().any():
         raise ValueError("swimmer needs one row per patient")
     if d.empty:
         raise ValueError("swimmer needs at least one patient with a duration")
-    steps = ([f"Dropped {int((~keep).sum())} row(s) with a missing patient, duration, status or "
-              "arm."] if int((~keep).sum()) else []) + [f"Kept {len(d)} of {n0} patient(s)."]
+    steps = []
+    if missing.any():
+        steps.append(f"Dropped {int(missing.sum())} row(s) with a missing patient, duration, "
+                     "status or arm.")
+    if negative.any():
+        steps.append(f"Dropped {int(negative.sum())} row(s) with a negative duration.")
+    steps.append(f"Kept {len(d)} of {n0} patient(s).")
 
     # The arms are sorted, as the other recipes sort their groups; R sorts them
     # in the same C-locale order.

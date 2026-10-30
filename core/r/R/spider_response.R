@@ -31,15 +31,17 @@ recipe_spider_response <- function(df, spec) {
   d[[y]] <- suppressWarnings(as.numeric(d[[y]]))
   n_rows0 <- nrow(d)
   d <- d[stats::complete.cases(d), , drop = FALSE]
+  n_missing <- n_rows0 - nrow(d)
   d[[idc]] <- as.character(d[[idc]])
   check_one_row_per_time(d[[idc]], d[[x]], "spider_response", x)
   d <- d[order(d[[idc]], d[[x]]), , drop = FALSE]
 
   baseline <- stats::aggregate(d[[y]], by = list(id = d[[idc]]),
-                               FUN = function(v) v[1])
+                               FUN = .sp_first)
   names(baseline) <- c("id", "baseline")
   usable <- baseline$id[is.finite(baseline$baseline) & baseline$baseline != 0]
   dropped <- setdiff(baseline$id, usable)
+  rows_zero <- sum(!d[[idc]] %in% usable)
   d <- d[d[[idc]] %in% usable, , drop = FALSE]
   baseline <- baseline[baseline$id %in% usable, , drop = FALSE]
   if (nrow(d) < 2) {
@@ -57,6 +59,7 @@ recipe_spider_response <- function(df, spec) {
   # carry a best change of zero rather than the smallest growth they reached.
   post <- d[duplicated(d[[idc]]), , drop = FALSE]
   no_follow_up <- setdiff(unique(d[[idc]]), unique(post[[idc]]))
+  rows_no_follow <- sum(d[[idc]] %in% no_follow_up)
   if (length(no_follow_up) > 0) {
     d <- d[!d[[idc]] %in% no_follow_up, , drop = FALSE]
     post <- post[!post[[idc]] %in% no_follow_up, , drop = FALSE]
@@ -68,7 +71,7 @@ recipe_spider_response <- function(df, spec) {
   best  <- stats::aggregate(post$change, by = list(id = post[[idc]]), FUN = min)
   worst <- stats::aggregate(post$change, by = list(id = post[[idc]]), FUN = max)
   last  <- stats::aggregate(post$change, by = list(id = post[[idc]]),
-                            FUN = function(v) v[length(v)])
+                            FUN = .sp_last)
   visits <- stats::aggregate(d$change, by = list(id = d[[idc]]), FUN = length)
   names(best) <- c("id", "best"); names(worst) <- c("id", "worst")
   names(last) <- c("id", "last"); names(visits) <- c("id", "visits")
@@ -82,17 +85,19 @@ recipe_spider_response <- function(df, spec) {
   clean_steps <- c(
     sprintf("Kept %d patient(s) across %d measurement(s).",
             nrow(best), nrow(d)),
-    if (n_rows0 > nrow(d)) {
-      sprintf("Dropped %d row(s) with a missing time, value or patient.",
-              n_rows0 - nrow(d))
+    # Each reason is counted on its own: rows with a missing cell, then the
+    # patients (and their rows) with a zero baseline or with no later visit.
+    if (n_missing > 0) {
+      sprintf("Dropped %d row(s) with a missing %s.", n_missing,
+              if (!is.null(grp) && nzchar(grp)) "patient, time, value or group" else "patient, time or value")
     } else NULL,
     if (length(dropped) > 0) {
-      sprintf("Dropped %d patient(s) whose baseline was zero or absent, because a percentage change needs a non-zero baseline.",
-              length(dropped))
+      sprintf("Dropped %d patient(s) (%d row(s)) whose baseline was zero, because a percentage change needs a non-zero baseline.",
+              length(dropped), rows_zero)
     } else NULL,
     if (length(no_follow_up) > 0) {
-      sprintf("Dropped %d patient(s) with no visit after the baseline, because a response needs a second measurement.",
-              length(no_follow_up))
+      sprintf("Dropped %d patient(s) (%d row(s)) with no visit after the baseline, because a response needs a second measurement.",
+              length(no_follow_up), rows_no_follow)
     } else NULL)
 
   plotdf <- data.frame(id = d[[idc]], time = d[[x]], change = d$change,
@@ -163,9 +168,8 @@ recipe_spider_response <- function(df, spec) {
 
   resolved <- list(family = "spider", label = "Spider plot")
   methods  <- .spider_methods(nrow(best), nrow(d), pd_cut, pr_cut, counts, spec)
-  build_script <- function(in_name, fig_stub) {
-    .spider_emit_script(spec, in_name, fig_stub, pd_cut, pr_cut)
-  }
+  build_script <- list(fn = .spider_emit_script,
+                       args = list(spec = spec, pd_cut = pd_cut, pr_cut = pr_cut))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
@@ -203,6 +207,9 @@ check_numeric_time <- function(v, col) {
   }
   stop(sprintf("column '%s' holds no number, and the time has to be numeric", col))
 }
+
+.sp_first <- function(v) v[1]
+.sp_last <- function(v) v[length(v)]
 
 .spider_methods <- function(n_patients, n_rows, pd_cut, pr_cut, counts, spec) {
   v    <- pkg_versions("ggplot2")
