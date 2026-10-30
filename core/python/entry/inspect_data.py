@@ -7,7 +7,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.environ.get("PUBREADY_CORE", "/opt/pubready/core"), "python"))
 from pubready.io import read_tidy                      # noqa: E402
-from pubready.run import inspect_data, print_inspect   # noqa: E402
+from pubready.run import inspect_data, print_inspect, run_entry   # noqa: E402
 
 
 def main():
@@ -25,4 +25,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_entry(main)

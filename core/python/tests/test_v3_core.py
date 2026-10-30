@@ -14,6 +14,7 @@ from pubready.bundle import (_markdown_value, dataframe_markdown, manifest_argum
                              write_stats_csv)
 from pubready.io import read_tidy, read_tidy_logged
 from pubready.qc import qc_layout, qc_normality
+from pubready.run import run_entry
 from pubready.spec import spec_from_args
 
 
@@ -184,3 +185,23 @@ def test_report_table_writes_whole_numbers_as_r_does():
     df = pd.DataFrame({"n": [1.0, np.nan, 3.0], "p": [0.5, np.inf, np.nan]})
     assert dataframe_markdown(df).splitlines() == [
         "| n | p |", "| --- | --- |", "| 1 | 0.5 |", "|  | Inf |", "| 3 |  |"]
+
+
+def _raise_data_error():
+    """Stand in for an entry main that meets a data error."""
+    raise ValueError("column 'value' not found in data")
+
+
+def _raise_defect():
+    """Stand in for an entry main that meets a defect of pubready."""
+    raise KeyError("value")
+
+
+def test_entry_prints_a_data_error_without_a_traceback(capsys):
+    with pytest.raises(SystemExit) as stop:
+        run_entry(_raise_data_error)
+    assert stop.value.code == 1
+    err = capsys.readouterr().err
+    assert err == "Error: column 'value' not found in data\n"
+    with pytest.raises(KeyError):
+        run_entry(_raise_defect)

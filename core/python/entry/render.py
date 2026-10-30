@@ -5,7 +5,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.environ.get("PUBREADY_CORE", "/opt/pubready/core"), "python"))
-from pubready.run import run_recipe          # noqa: E402
+from pubready.run import run_entry, run_recipe   # noqa: E402
 from pubready.spec import spec_from_config    # noqa: E402
 
 
@@ -24,4 +24,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_entry(main)

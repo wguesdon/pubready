@@ -1,9 +1,31 @@
 """Drive one recipe end to end for the Python engine."""
 import os
+import sys
 
 from . import bundle
 from .io import read_tidy_logged
 from .recipes import get_recipe
+
+#: The errors that a user can correct in the data or the command. An entry
+#: script prints their message only, as R prints a stop() message; any other
+#: exception keeps its traceback, because it is a defect of pubready.
+USER_ERRORS = (ValueError, FileNotFoundError)
+
+
+def run_entry(main):
+    """Run the main function of an entry script.
+
+    Args:
+        main: The main function, which takes no argument.
+
+    Raises:
+        SystemExit: With status 1 and the message only, for a user error.
+    """
+    try:
+        main()
+    except USER_ERRORS as err:
+        print(f"Error: {err}", file=sys.stderr)
+        sys.exit(1)
 
 
 def container_info():

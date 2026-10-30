@@ -13,6 +13,7 @@ from pubready.bundle import _ts, slugify, write_json   # noqa: E402
 from pubready.io import read_tidy          # noqa: E402
 from pubready.qc import qc_normality       # noqa: E402
 from pubready.recipes import get_recipe    # noqa: E402
+from pubready.run import run_entry         # noqa: E402
 from pubready.spec import spec_from_args   # noqa: E402
 
 
@@ -80,4 +81,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_entry(main)

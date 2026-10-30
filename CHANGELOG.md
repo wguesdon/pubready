@@ -59,6 +59,9 @@ tag move together.
   value as an empty cell, so `proportions` no longer prints "invalid factor
   level, NA generated" twice after the bundle. A "|" in a cell is escaped with
   one backslash, as in Python, so it no longer splits the cell (F120).
+- The Python engine prints a data error as one line, "Error: " and the
+  message, and exits with status 1, as R does. Before, it printed a full
+  traceback. Other exceptions keep their traceback (F70).
 
 ## [3.0.0] - 2026-10-29
 
