@@ -26,3 +26,13 @@ def test_entry_benchmark_contract(dataset, flags, answers, recipe, code):
     result = json.loads(completed.stdout)
     assert result["recipe"] == recipe
     assert result["exit_code"] == code
+
+
+@pytest.mark.parametrize("args", [["--x", "a", "--x", "b"], ["--unknown"], ["--top_n", "bad"]])
+def test_parser_errors_are_json(args):
+    """Invalid or contradictory command flags keep the JSON error contract."""
+    entry = Path(__file__).resolve().parents[1] / "entry/advise.py"
+    result = subprocess.run([sys.executable, str(entry), "--format", "json", *args],
+                            capture_output=True, text=True, check=False)
+    assert result.returncode == 2
+    assert json.loads(result.stdout)["status"] == "usage_error"

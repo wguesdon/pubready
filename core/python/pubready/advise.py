@@ -545,6 +545,22 @@ def finish_leaf(tree, node_id, df, options, answers, facts, result):
                              else "The scientist can run the selected recipe."})
 
 
+def empty_result(digest):
+    """Build the public output shape before parsing or walking.
+
+    Args:
+        digest: The tree hash.
+
+    Returns:
+        dict: An empty result.
+    """
+    return {"advise_schema": 1, "pubready_version": os.environ.get("PUBREADY_VERSION", PUBREADY_VERSION),
+              "tree_sha256": digest, "walker": "python", "status": "complete", "exit_code": 0,
+              "data": None, "facts": {}, "path": [], "recipe": None, "doc_heading": None,
+              "test": None, "command": None, "command_text": None, "next_step": None,
+              "open_questions": [], "conflicts": [], "notes": []}
+
+
 def advise(options, entries=(), filename=None, tree_path=None, frame=None):
     """Run the deterministic walk without any statistical computation.
 
@@ -559,11 +575,7 @@ def advise(options, entries=(), filename=None, tree_path=None, frame=None):
         dict: The complete public result, including its exit code.
     """
     tree, digest = load_tree(tree_path)
-    result = {"advise_schema": 1, "pubready_version": os.environ.get("PUBREADY_VERSION", PUBREADY_VERSION),
-              "tree_sha256": digest, "walker": "python", "status": "complete", "exit_code": 0,
-              "data": None, "facts": {}, "path": [], "recipe": None, "doc_heading": None,
-              "test": None, "command": None, "command_text": None, "next_step": None,
-              "open_questions": [], "conflicts": [], "notes": []}
+    result = empty_result(digest)
     try:
         answers = merge_answers(tree, options, entries, filename)
         options = dict(options)
