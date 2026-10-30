@@ -71,6 +71,10 @@ tag move together.
   axis. The methods text names the group (F125).
 - The `dose_response` methods text gives the count of rows with a dose of zero
   or below that the recipe left out, as the data log does (F76).
+- `dose_response` divides a response of the order 1e3 or more, or 1e-3 or
+  less, by a power of ten before the fit, so the R fit converges on a scale of
+  1e12 as the Python fit does. The plateaus and the sums of squares are
+  reported on the original scale, and the methods text names the factor (F80).
 - `enrichment_dot` keeps a term with an adjusted p of 0: the p is set to the
   smallest positive double and the term is drawn as a triangle at the top of
   the colour scale. The data log records the replacement and each dropped row

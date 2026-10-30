@@ -278,6 +278,12 @@ recipe_dose_response <- function(df, spec) {
     if (sum(nonpos) > 0) sprintf("Dropped %d row(s) with a dose of zero or below, because the dose axis is logarithmic.", sum(nonpos)),
     sprintf("Kept %d of %d row(s).", nrow(d), n0))
   d$lx <- log10(d$dose)
+  # A response on a scale far from 1, such as 1e12 RLU, keeps nls from
+  # converging. The fit runs on the response divided by a power of ten, and the
+  # plateaus and the sums of squares go back to the original scale (F80).
+  rs <- .drc_response_scale(d$y)
+  y_orig <- d$y
+  d$y <- d$y / rs
 
   g_lv <- unique(d$group)
   # The span rule compares each fitted span with the range of the mean
@@ -313,6 +319,11 @@ recipe_dose_response <- function(df, spec) {
   shared <- if (length(det_lv) >= 2) {
     .drc_shared_test(d[d$group %in% det_lv, , drop = FALSE], stats_df[det, , drop = FALSE])
   } else NULL
+  stats_df <- .drc_unscale_rows(stats_df, rs)
+  shared <- .drc_unscale_shared(shared, rs)
+  d$y <- y_orig
+  pts$mean <- pts$mean * rs
+  pts$sem <- pts$sem * rs
 
   pal <- spec$appearance$palette %||% pubready_palette
   pal <- rep(pal, length.out = length(g_lv))
@@ -360,10 +371,10 @@ recipe_dose_response <- function(df, spec) {
     curves = stats::setNames(lapply(seq_len(nrow(stats_df)), .drc_meta_row, rows = stats_df), g_lv),
     shared_ec50_test = shared)
   resolved <- list(family = "dose_response", label = test_meta$name)
-  methods <- .drc_methods(stats_df, shared, d, spec, x, y, replicated, sum(nonpos))
+  methods <- .drc_methods(stats_df, shared, d, spec, x, y, replicated, sum(nonpos), rs)
   build_script <- list(fn = .drc_emit_script,
                        args = list(spec = spec, starts = starts, algos = algos,
-                                   has_group = has_group))
+                                   has_group = has_group, rs = rs))
 
   df_used <- data.frame(group = d$group, dose = d$dose, response = d$y, stringsAsFactors = FALSE)
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
@@ -413,7 +424,7 @@ recipe_dose_response <- function(df, spec) {
        hill = r$hill, bottom = r$bottom, top = r$top, r_squared = r$r_squared)
 }
 
-.drc_methods <- function(rows, shared, d, spec, x, y, replicated, n_nonpos = 0) {
+.drc_methods <- function(rows, shared, d, spec, x, y, replicated, n_nonpos = 0, rs = 1) {
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   v <- pkg_versions("ggplot2")
   y_lab <- spec$appearance$y_label %||% y
@@ -453,13 +464,14 @@ recipe_dose_response <- function(df, spec) {
     "The 95% confidence interval of the midpoint was computed on the log10 scale from the standard error of the fit and back-transformed. ",
     .drc_points_text(replicated),
     .drc_nonpos_text(n_nonpos),
+    .drc_scale_text(rs),
     "A curve whose mean responses varied by less than 10% of the range of the mean responses of all curves, or whose responses did not differ between the doses in a one-way ANOVA (P >= 0.05), was not fitted, and its midpoint was reported as not determined. ",
     "A midpoint was also reported as not determined when the fit did not converge, when the fitted span (top minus bottom) was below 10% of the range of the mean responses, when the midpoint lay outside the tested doses, or when its 95% CI was not finite. ",
     fits, nd_txt, shared_txt,
     sprintf(" Fitted in R %s with stats::nls and drawn with ggplot2 %s.", rver, v$ggplot2))
 }
 
-.drc_emit_script <- function(spec, starts, algos, has_group, in_name, fig_stub) {
+.drc_emit_script <- function(spec, starts, algos, has_group, in_name, fig_stub, rs = 1) {
   x <- spec$data$x; y <- spec$data$y; grp <- spec$data$group
   start_lines <- vapply(names(starts), .drc_start_literal, character(1), starts = starts)
   c(
@@ -479,7 +491,9 @@ recipe_dose_response <- function(df, spec) {
     paste0("  ", start_lines, c(rep(",", max(length(start_lines) - 1, 0)), "")[seq_along(start_lines)]),
     ")",
     sprintf("algos <- c(%s)", paste(sprintf('"%s" = "%s"', names(algos), unlist(algos)), collapse = ", ")),
-    "fml <- y ~ bottom + (top - bottom) / (1 + 10^((log_ec50 - lx) * hill))",
+    "# The fit runs on the response divided by a power of ten, as in the figure.",
+    sprintf("rs <- %s; d$ys <- d$y / rs", format(rs, scientific = TRUE)),
+    "fml <- ys ~ bottom + (top - bottom) / (1 + 10^((log_ec50 - lx) * hill))",
     "ctrl <- nls.control(maxiter = 1000, tol = 1e-8, minFactor = 1e-12)",
     "curves <- NULL",
     "for (g in names(starts)) {",
@@ -488,7 +502,7 @@ recipe_dose_response <- function(df, spec) {
     "  print(summary(fit))",
     "  grid <- seq(min(d$lx[d$group == g]), max(d$lx[d$group == g]), length.out = 200)",
     "  curves <- rbind(curves, data.frame(group = g, dose = 10^grid,",
-    "                                     y = predict(fit, data.frame(lx = grid))))",
+    "                                     y = predict(fit, data.frame(lx = grid)) * rs))",
     "}",
     "p <- ggplot() + geom_point(data = d, aes(dose, y, colour = group), alpha = 0.6) +",
     sprintf('  scale_x_log10() + labs(x = "%s", y = "%s") + theme_classic()',
@@ -519,4 +533,36 @@ recipe_dose_response <- function(df, spec) {
   if (n > 0) {
     sprintf("%d row(s) with a dose of zero or below were left out of the fit and the figure, because the dose axis is logarithmic. ", n)
   } else ""
+}
+
+# The power of ten that the response is divided by before the fit: 10^e for a
+# largest absolute response of the order 10^e when e is 3 or more or -3 or
+# less, else 1 (F80). The Python engine has the same rule.
+.drc_response_scale <- function(y) {
+  m <- max(abs(y))
+  if (!is.finite(m) || m == 0) return(1)
+  e <- floor(log10(m))
+  if (abs(e) >= 3) 10^e else 1
+}
+
+# The plateaus and the residual sum of squares of the stats table back on the
+# scale of the response.
+.drc_unscale_rows <- function(rows, rs) {
+  rows$bottom <- rows$bottom * rs
+  rows$top <- rows$top * rs
+  rows$rss <- rows$rss * rs^2
+  rows
+}
+
+.drc_unscale_shared <- function(shared, rs) {
+  if (is.null(shared)) return(NULL)
+  shared$rss_shared <- shared$rss_shared * rs^2
+  shared$rss_separate <- shared$rss_separate * rs^2
+  shared
+}
+
+.drc_scale_text <- function(rs) {
+  if (rs == 1) return("")
+  sprintf("The responses were divided by %s for the fit, so that the optimiser works near 1, and the plateaus are reported on the original scale. ",
+          sprintf("%g", rs))
 }

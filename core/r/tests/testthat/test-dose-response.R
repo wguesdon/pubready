@@ -101,3 +101,16 @@ test_that("the dose_response methods count the rows with a zero dose", {
   expect_match(res$methods, "2 row(s) with a dose of zero or below were left out of the fit",
                fixed = TRUE)
 })
+
+# A response on the scale of 1e12 is divided by a power of ten for the fit, so
+# nls converges, and the plateaus come back on the original scale (F80).
+test_that("dose_response fits a response on the scale of 1e12", {
+  df <- drc_three_curves()
+  df <- df[df$compound == "active A", ]
+  df$response <- df$response * 1e10
+  res <- recipe_dose_response(df, drc_spec(x = "dose", y = "response"))
+  expect_equal(res$stats$fit_status, "fitted")
+  expect_equal(res$stats$midpoint, 0.3, tolerance = 0.1)
+  expect_equal(res$stats$top, 1e12, tolerance = 0.1)
+  expect_match(res$methods, "The responses were divided by 1e+11 for the fit", fixed = TRUE)
+})

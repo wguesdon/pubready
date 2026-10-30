@@ -134,3 +134,16 @@ def test_the_dose_response_methods_count_the_rows_with_a_zero_dose():
                                       "response": [100.0, 100.0]})], ignore_index=True)
     res = recipe_dose_response(df, drc_spec(x="dose", y="response", group="compound"))
     assert "2 row(s) with a dose of zero or below were left out of the fit" in res["methods"]
+
+
+def test_dose_response_fits_a_response_on_the_scale_of_1e12():
+    """The response is divided by a power of ten for the fit, as in R (F80)."""
+    df = drc_three_curves()
+    df = df[df["compound"] == "active A"].copy()
+    df["response"] = df["response"] * 1e10
+    res = recipe_dose_response(df, drc_spec(x="dose", y="response"))
+    st = res["stats"]
+    assert st["fit_status"].iloc[0] == "fitted"
+    assert st["midpoint"].iloc[0] == pytest.approx(0.3, rel=0.1)
+    assert st["top"].iloc[0] == pytest.approx(1e12, rel=0.1)
+    assert "The responses were divided by 1e+11 for the fit" in res["methods"]

@@ -353,6 +353,69 @@ def shared_test(d, rows):
             "rss_shared": rss_sh, "rss_separate": rss_sep}
 
 
+def response_scale(y):
+    """The power of ten that the response is divided by before the fit (F80).
+
+    The scale is 10**e for a largest absolute response of the order 10**e when
+    e is 3 or more or -3 or less, else 1, as .drc_response_scale() in R.
+
+    Args:
+        y: The responses.
+
+    Returns:
+        float: The scale.
+    """
+    m = float(np.max(np.abs(y)))
+    if not np.isfinite(m) or m == 0:
+        return 1.0
+    e = int(np.floor(np.log10(m)))
+    return float(10.0 ** e) if abs(e) >= 3 else 1.0
+
+
+def unscale_row(r, rs):
+    """Put the plateaus and the residual sum of squares of one row back on scale.
+
+    Args:
+        r: The stats row, changed in place.
+        rs: The scale of the fit.
+    """
+    r["bottom"] = r["bottom"] * rs
+    r["top"] = r["top"] * rs
+    r["rss"] = r["rss"] * rs ** 2
+
+
+def unscale_shared(shared, rs):
+    """Put the sums of squares of the shared test back on the scale of the response.
+
+    Args:
+        shared: The shared-EC50 test, or None.
+        rs: The scale of the fit.
+
+    Returns:
+        dict or None: The test.
+    """
+    if shared is None:
+        return None
+    shared["rss_shared"] = shared["rss_shared"] * rs ** 2
+    shared["rss_separate"] = shared["rss_separate"] * rs ** 2
+    return shared
+
+
+def _scale_text(rs):
+    """Say that the response was scaled for the fit, as .drc_scale_text() in R.
+
+    Args:
+        rs: The scale of the fit.
+
+    Returns:
+        str: The sentence with a trailing space, or "" for a scale of 1.
+    """
+    if rs == 1:
+        return ""
+    return (f"The responses were divided by {rs:g} for the fit, so that the optimiser works near "
+            "1, and the plateaus are reported on the original scale. ")
+
+
 def dose_summary(d):
     """Mean and standard error of the response at each dose of each curve.
 
@@ -413,6 +476,12 @@ def recipe_dose_response(df, spec):
                      "because the dose axis is logarithmic.")
     steps.append(f"Kept {len(d)} of {n0} row(s).")
     d["lx"] = np.log10(d["dose"])
+    # A response on a scale far from 1, such as 1e12 RLU, can keep a fit from
+    # converging. The fit runs on the response divided by a power of ten, and the
+    # plateaus and the sums of squares go back to the original scale (F80).
+    rs = response_scale(d["y"].to_numpy())
+    y_orig = d["y"].copy()
+    d["y"] = d["y"] / rs
 
     groups = list(pd.unique(d["group"]))
     # The span rule compares each fitted span with the range of the mean
@@ -445,6 +514,13 @@ def recipe_dose_response(df, spec):
     if len(det_groups) >= 2:
         shared = shared_test(d[d["group"].isin(det_groups)].reset_index(drop=True),
                              stats_df[det].reset_index(drop=True))
+    for r in rows:
+        unscale_row(r, rs)
+    stats_df = pd.DataFrame(rows)
+    shared = unscale_shared(shared, rs)
+    d["y"] = y_orig
+    summ["mean"] = summ["mean"] * rs
+    summ["sem"] = summ["sem"] * rs
 
     ap = spec["appearance"]
     pal = palette(len(groups), ap.get("palette"))
@@ -503,10 +579,10 @@ def recipe_dose_response(df, spec):
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
         "methods": _methods(stats_df, shared, len(d), spec, x, y, replicated,
-                            int(nonpos.sum())),
+                            int(nonpos.sum()), rs),
         "df_used": df_used, "clean_steps": steps, "label": slugify(y),
         "width": w, "height": h,
-        "build_script": functools.partial(_script, spec, starts, methods, has_group),
+        "build_script": functools.partial(_script, spec, starts, methods, has_group, rs),
     }
 
 
@@ -593,7 +669,7 @@ def _points_text(replicated):
     return "Each point is the single response at its dose. "
 
 
-def _methods(rows, shared, n_points, spec, x, y, replicated, n_nonpos=0):
+def _methods(rows, shared, n_points, spec, x, y, replicated, n_nonpos=0, rs=1.0):
     """Write the methods paragraph.
 
     Args:
@@ -605,6 +681,7 @@ def _methods(rows, shared, n_points, spec, x, y, replicated, n_nonpos=0):
         y: The response column.
         replicated: True when a dose of a curve has more than one response.
         n_nonpos: The count of rows dropped for a dose of zero or below.
+        rs: The power of ten that the response was divided by for the fit.
 
     Returns:
         str: The paragraph.
@@ -647,7 +724,7 @@ def _methods(rows, shared, n_points, spec, x, y, replicated, n_nonpos=0):
         "curve (variable Hill slope) fitted by nonlinear least squares on log10 dose "
         f"(n = {n_points} points, {len(rows)} curve(s)). The 95% confidence interval of the "
         "midpoint was computed on the log10 scale from the standard error of the fit and "
-        f"back-transformed. {_points_text(replicated)}{_nonpos_text(n_nonpos)}A curve whose mean "
+        f"back-transformed. {_points_text(replicated)}{_nonpos_text(n_nonpos)}{_scale_text(rs)}A curve whose mean "
         "responses varied by "
         "less than 10% of the range "
         "of the mean responses of all curves, or whose responses did not differ between the "
@@ -660,7 +737,7 @@ def _methods(rows, shared, n_points, spec, x, y, replicated, n_nonpos=0):
     )
 
 
-def _script(spec, starts, methods, has_group, in_name, fig_stub):
+def _script(spec, starts, methods, has_group, rs, in_name, fig_stub):
     """Write the standalone script that refits and redraws the curves.
 
     Args:
@@ -668,6 +745,7 @@ def _script(spec, starts, methods, has_group, in_name, fig_stub):
         starts: The starting values of each curve.
         methods: The curve_fit routine that converged for each curve.
         has_group: Whether the data has a curve column.
+        rs: The power of ten that the response is divided by for the fit.
         in_name: The name of the input copy inside the bundle.
         fig_stub: The name of the figure file, without its extension.
 
@@ -699,6 +777,8 @@ d = pd.DataFrame({{"dose": pd.to_numeric(raw["{x}"], errors="coerce"),
                    "group": {group_expr}}})
 d = d[np.isfinite(d["dose"]) & np.isfinite(d["y"]) & (d["dose"] > 0)]
 d["lx"] = np.log10(d["dose"])
+# The fit runs on the response divided by a power of ten, as in the figure.
+rs = {rs!r}
 methods = {methods!r}
 starts = {{
     {start_txt}
@@ -706,11 +786,11 @@ starts = {{
 fig, ax = plt.subplots(figsize=({6.2 if has_group else 4.6}, 4.2))
 for g, p0 in starts.items():
     s = d[d["group"] == g]
-    popt, pcov = curve_fit(fpl, s["lx"], s["y"], p0=p0, method=methods[g], maxfev=20000,
+    popt, pcov = curve_fit(fpl, s["lx"], s["y"] / rs, p0=p0, method=methods[g], maxfev=20000,
                            ftol=1e-12, xtol=1e-12, gtol=1e-12)
     print(g, "bottom, top, log10 EC50, hill:", popt)
     grid = np.linspace(s["lx"].min(), s["lx"].max(), 200)
-    ax.plot(10 ** grid, fpl(grid, *popt), label=g)
+    ax.plot(10 ** grid, fpl(grid, *popt) * rs, label=g)
     ax.scatter(s["dose"], s["y"], s=14, alpha=0.6)
 # A curve whose midpoint is not determined is drawn as points only, as in the figure.
 for g in d["group"].unique():
