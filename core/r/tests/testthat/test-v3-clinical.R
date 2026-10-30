@@ -59,3 +59,13 @@ test_that("an event column holds 0, 1 or a logical, else the message lists its v
   expect_error(recipe_swimmer(s, v3c_spec("swimmer", id = "patient", time = "months", event = "ended")),
                "must be coded 1 = the course ended, 0 = ongoing, but it holds 'no', 'yes'", fixed = TRUE)
 })
+
+test_that("the median survival takes the midpoint of a step at exactly 0.5 (F67)", {
+  d <- data.frame(time = c(1:10, seq(2, 20, 2), 1, 2, 2.5, 3),
+                  event = c(rep(1, 20), 1, 1, 0, 1),
+                  arm = rep(c("a", "b", "c"), c(10, 10, 4)))
+  res <- recipe_survival_km(d, v3c_spec("survival_km", time = "time", event = "event", x = "arm"))
+  expect_equal(res$stats$median_survival, c(5.5, 11, 2.5))
+  ref <- summary(survival::survfit(survival::Surv(time, event) ~ arm, data = d))$table[, "median"]
+  expect_equal(unname(res$stats$median_survival), unname(ref))
+})

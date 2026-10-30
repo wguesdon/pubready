@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from pubready.recipes.cox_forest import recipe_cox_forest
-from pubready.recipes.survival_km import event_codes, recipe_survival_km
+from pubready.recipes.survival_km import event_codes, km_median, recipe_survival_km
 from pubready.recipes.swimmer import recipe_swimmer
 from pubready.spec import spec_from_args
 
@@ -75,3 +75,15 @@ def test_an_event_column_holds_0_1_or_a_logical_else_the_message_lists_its_value
     with pytest.raises(ValueError, match="must be coded 1 = the course ended, 0 = ongoing, "
                                          "but it holds 'no', 'yes'"):
         recipe_swimmer(s, v3c_spec("swimmer", id="patient", time="months", event="ended"))
+
+
+def test_the_median_survival_takes_the_midpoint_of_a_step_at_exactly_one_half():
+    """F67: lifelines took the start of the step; survfit takes the midpoint."""
+    d = pd.DataFrame({"time": list(range(1, 11)) + list(range(2, 21, 2)) + [1, 2, 2.5, 3],
+                      "event": [1] * 20 + [1, 1, 0, 1],
+                      "arm": ["a"] * 10 + ["b"] * 10 + ["c"] * 4})
+    res = recipe_survival_km(d, v3c_spec("survival_km", time="time", event="event", x="arm"))
+    # The medians that survival::survfit reports (see test-v3-clinical.R).
+    assert list(res["stats"]["median_survival"]) == pytest.approx([5.5, 11, 2.5])
+    assert np.isnan(km_median(np.array([0.0, 1, 2, 3]), np.array([1.0, 0.8, 0.6, 0.55])))
+    assert km_median(np.array([0.0, 1, 2]), np.array([1.0, 0.75, 0.5])) == 2

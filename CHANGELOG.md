@@ -30,6 +30,10 @@ tag move together.
   stops the run, and the message lists those values. Before, a text column
   passed the check and stopped later with an unclear error, and R read 1.5 as
   1 (F56).
+- The Python `survival_km` reports the median survival by the rule of
+  `survival::survfit`: when the curve sits at exactly 0.5 on a step, the median
+  is the midpoint between the start of the step and the next drop. A median of
+  52 in Python and 52.5 in R is now 52.5 in both engines (F67).
 
 ## [3.0.0] - 2026-10-29
 

@@ -134,6 +134,32 @@ def event_codes(values, col, meaning="1 = event, 0 = censored"):
     return pd.Series([c for c, _ in read], index=values.index, dtype=float)
 
 
+def km_median(time, surv):
+    """The median survival time by the rule of survival::survfit in R.
+
+    The median is the first time at which the curve is at or below 0.5. When the
+    curve sits at exactly 0.5 on a step, it is the midpoint between the start of
+    that step and the time of the next drop, as print.survfit and
+    quantile.survfit report it. lifelines takes the start of the step instead.
+
+    Args:
+        time: The times of the curve, in increasing order.
+        surv: The survival at each time.
+
+    Returns:
+        float: The median, or NaN when the curve stays above 0.5.
+    """
+    tol = np.sqrt(np.finfo(float).eps)
+    keep = surv < 0.5 + tol
+    if not keep.any():
+        return float("nan")
+    x, y = time[keep], surv[keep]
+    lower = y < y[0]
+    if abs(y[0] - 0.5) < tol and lower.any():
+        return float((x[0] + x[np.argmax(lower)]) / 2)
+    return float(x[0])
+
+
 def km_width(leg_labs, title):
     """The figure width, as km_width() of the R engine.
 
@@ -246,7 +272,8 @@ def recipe_survival_km(df, spec):
         kmf.fit(sub[t], sub[e], label=grp)
         kmf.plot_survival_function(ax=ax, ci_show=False, color=pal[i],
                                    show_censors=True, censor_styles={"marker": "|", "ms": 6})
-        med = float(kmf.median_survival_time_)
+        sf = kmf.survival_function_
+        med = km_median(sf.index.to_numpy(float), sf.iloc[:, 0].to_numpy(float))
         rows.append({"group": grp, "n": int(len(sub)), "events": int(sub[e].sum()),
                      "median_survival": med if np.isfinite(med) else float("nan")})
 
