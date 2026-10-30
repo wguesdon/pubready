@@ -119,6 +119,10 @@ Common options:
 | `--fc_cutoff`, `--p_cutoff`, `--top_n` | the fold-change cutoff, the p cutoff and the count of labels of `volcano` and `ma_plot` (default 1, 0.05 and 15); `--top_n` also sets the most lead SNPs that `manhattan` labels |
 | `--facet COL` (`feature_panel`) | the feature column of long data; without it, every numeric column other than `--x` is a feature |
 
+Write a value that starts with "-" in the `--option=value` form, for example
+`"--ylab=-log10 adjusted p"`. The R option parser reads `--ylab "-log10"` as
+two options and stops.
+
 ### Check the setup
 
 `figkit doctor` checks the host setup and prints one line for each check. A

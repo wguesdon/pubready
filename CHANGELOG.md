@@ -44,6 +44,9 @@ tag move together.
 - `docs/how_it_works.md` says what pins the packages of the image: the CRAN
   snapshot of the base image for R, and the lock file of the build for Python
   (F106).
+- The volcano command of `example/README.md` failed in R, because its `--ylab`
+  value starts with "-". It now uses the `--ylab=VALUE` form, and
+  `docs/how_it_works.md` states the rule (F99).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of

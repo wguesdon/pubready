@@ -138,11 +138,12 @@ figkit plot --recipe two_group_compare --data example/tumor_volume.csv \
 ### `de_results.csv` — volcano plot
 A small synthetic differential-expression table (1200 genes, 150 truly
 differential) shaped like a DESeq2 result. Columns `gene`, `log2FoldChange`,
-`pvalue`, `padj`. Threshold on the adjusted p to call significance:
+`pvalue`, `padj`. Threshold on the adjusted p to call significance. The
+`--ylab` value starts with "-", so it uses the `--ylab=VALUE` form:
 
 ```bash
 figkit plot --recipe volcano --data example/de_results.csv \
-  --y padj --ylab "-log10 adjusted p"
+  --y padj "--ylab=-log10 adjusted p"
 ```
 
 Generated deterministically by `tools/make_examples/make_volcano_data.R` (base R,
