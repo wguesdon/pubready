@@ -10,11 +10,33 @@
 # size, then by degree, then by their set names, and the sets by size; the
 # Python engine uses the same order, so both engines show the same bars.
 
-.up_as_member <- function(v) {
-  if (is.logical(v)) return(v)
-  vn <- suppressWarnings(as.numeric(v))
-  if (all(is.na(vn) | vn %in% c(0, 1))) return(!is.na(vn) & vn == 1)
-  tolower(as.character(v)) %in% c("1", "true", "yes", "y", "t")
+# One membership rule in both engines (F49). A cell is a member for 1, TRUE, T,
+# yes or y, and not a member for 0, FALSE, F, no or n, in any case. An empty cell
+# is not a member, and the data log counts it. Any other value, such as a count
+# of 2 or an "x", stops the run and names the column. The Python engine has the
+# same rule and message.
+.up_yes <- c("1", "true", "t", "yes", "y")
+.up_no <- c("0", "false", "f", "no", "n")
+
+# The cells of one column as text: a whole number with no decimal point, as
+# level_labels() writes it, and NA for an empty cell.
+.up_cells <- function(v) {
+  s <- if (is.logical(v)) ifelse(v, "TRUE", "FALSE")
+       else if (is.numeric(v)) level_labels(v)
+       else trimws(as.character(v))
+  s[!is.na(s) & !nzchar(s)] <- NA_character_
+  s
+}
+
+.up_as_member <- function(v, col) {
+  s <- .up_cells(v)
+  code <- tolower(s)
+  bad <- unique(s[!is.na(code) & !code %in% c(.up_yes, .up_no)])
+  if (length(bad) > 0) {
+    stop(sprintf("upset: column '%s' holds the value(s) %s, which are not a membership code; use 1/0, TRUE/FALSE or yes/no, and leave a cell empty for not a member",
+                 col, paste(sprintf("'%s'", utils::head(bad, 5)), collapse = ", ")))
+  }
+  list(member = !is.na(code) & code %in% .up_yes, n_empty = sum(is.na(code)))
 }
 
 .up_combo_sets <- function(code, set_names) {
@@ -43,18 +65,29 @@ recipe_upset <- function(df, spec) {
   }
   if (ncol(setdf) < 2) stop("upset needs at least 2 set columns")
 
-  bin <- as.data.frame(lapply(setdf, .up_as_member))
-  names(bin)    <- names(setdf)
+  bin <- data.frame(row.names = seq_len(nrow(setdf)))
+  empty_steps <- character(0)
+  for (cn in names(setdf)) {
+    mem <- .up_as_member(setdf[[cn]], cn)
+    bin[[cn]] <- mem$member
+    if (mem$n_empty > 0) {
+      empty_steps <- c(empty_steps, sprintf("Read %d empty cell(s) of column '%s' as not a member.",
+                                            mem$n_empty, cn))
+    }
+  }
   rownames(bin) <- ids
 
   n_elements <- nrow(bin)
   in_any  <- rowSums(as.matrix(bin)) > 0
   dropped <- sum(!in_any)
   bin <- bin[in_any, , drop = FALSE]
-  clean_steps <- if (dropped > 0) {
-    sprintf("Dropped %d element(s) that belonged to no set (%d -> %d).",
-            dropped, n_elements, nrow(bin))
-  } else "No cleaning applied; every element belongs to at least one set."
+  clean_steps <- c(
+    empty_steps,
+    if (dropped > 0) sprintf("Dropped %d element(s) that belonged to no set (%d -> %d).",
+                             dropped, n_elements, nrow(bin)))
+  if (length(clean_steps) == 0) {
+    clean_steps <- "No cleaning applied; every element belongs to at least one set."
+  }
   df_used <- data.frame(element = rownames(bin), bin, check.names = FALSE)
 
   m <- ComplexHeatmap::make_comb_mat(bin)
@@ -161,7 +194,12 @@ recipe_upset <- function(df, spec) {
     "suppressPackageStartupMessages(library(ComplexHeatmap))",
     "",
     read_line,
-    "bin <- as.data.frame(lapply(raw, as.numeric)) == 1",
+    "# 1, TRUE, T, yes or y is a member; any other code or an empty cell is not.",
+    "bin <- raw",
+    "for (cn in names(raw)) {",
+    "  s <- tolower(trimws(as.character(raw[[cn]])))",
+    "  bin[[cn]] <- !is.na(s) & s %in% c(\"1\", \"true\", \"t\", \"yes\", \"y\")",
+    "}",
     "bin <- as.data.frame(bin[rowSums(bin) > 0, , drop = FALSE])",
     "m <- make_comb_mat(bin)",
     "cs <- comb_size(m); cd <- comb_degree(m); cn <- comb_name(m)",

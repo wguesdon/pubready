@@ -69,6 +69,12 @@ tag move together.
 - `distribution` draws no density curve and reports no bandwidth for a group
   with no spread, so a group of equal values no longer stretches the shared x
   axis. The methods text names the group (F125).
+- `upset` reads set membership with one rule in both engines: 1, TRUE, T, yes
+  and y are members, 0, FALSE, F, no and n are not, in any case, and an empty
+  cell is not a member and is counted in the data log. Any other value, such as
+  a count of 2, stops the run and names the column. A "yes"/"no" column was an
+  empty set in R, and a 0/1 column with one empty cell was an empty set in
+  Python (F49).
 - The R `distribution` subtitle reads "bin width 1.3" with one space; each
   formatted number of the recipe is trimmed (F127).
 
