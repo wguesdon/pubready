@@ -237,3 +237,12 @@ def test_an_unknown_test_value_stops_the_comparison_recipes():
         recipe_factorial_anova(fa, v3_spec("factorial_anova", x="g", fill="t", y="y", test="bogus"))
     with pytest.raises(ValueError, match="multi_group_compare does not know --test 'welch_t'"):
         recipe_multi_group_compare(fa, v3_spec("multi_group_compare", x="g", y="y", test="welch_t"))
+
+
+# F55: a subject with two rows in one condition stops paired_compare.
+def test_paired_compare_stops_on_a_subject_with_two_rows_in_one_condition():
+    df = pd.DataFrame({"subject": [f"S{i:02d}" for i in range(1, 5)] * 2 + ["S02"],
+                       "condition": ["pre"] * 4 + ["post"] * 4 + ["pre"],
+                       "value": [1, 2, 3, 4, 2, 3, 5, 6, 250]})
+    with pytest.raises(ValueError, match="'subject' repeats the subject 'S02' within a condition"):
+        recipe_paired_compare(df, v3_spec("paired_compare", x="condition", y="value", id="subject"))

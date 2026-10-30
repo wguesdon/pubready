@@ -273,3 +273,13 @@ test_that("an unknown --test value stops the comparison recipes", {
                                                       test = "welch_t")),
                "multi_group_compare does not know --test 'welch_t'")
 })
+
+# F55: a subject with two rows in one condition stops paired_compare.
+test_that("paired_compare stops on a subject with two rows in one condition", {
+  df <- data.frame(subject = c(sprintf("S%02d", 1:4), sprintf("S%02d", 1:4), "S02"),
+                   condition = c(rep("pre", 4), rep("post", 4), "pre"),
+                   value = c(1, 2, 3, 4, 2, 3, 5, 6, 250))
+  expect_error(recipe_paired_compare(df, v3_spec("paired_compare", x = "condition", y = "value",
+                                                 id = "subject")),
+               "'subject' repeats the subject 'S02' within a condition")
+})

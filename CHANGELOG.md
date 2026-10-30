@@ -75,6 +75,9 @@ tag move together.
   `proportions` stop on a `--test` value that they do not know, with a message
   that lists the values that they know. `proportions` and `factorial_anova` ran
   their default test before (F63).
+- `paired_compare` stops and names the subjects when a subject has two rows in
+  one condition, as `estimation_plot --paired` does. It kept the first row
+  before, so the result depended on the row order (F55).
 
 ## [3.0.0] - 2026-10-29
 

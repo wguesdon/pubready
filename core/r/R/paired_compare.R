@@ -29,9 +29,15 @@ recipe_paired_compare <- function(df, spec) {
                  x, length(lv), paste(lv, collapse = ", ")))
   }
 
+  # One value per subject and condition: a second row would make the result
+  # depend on the row order, so the run stops and names the subjects.
+  dup <- duplicated(data.frame(level_labels(df[[idc]]), df[[x]]))
+  if (any(dup)) {
+    stop(sprintf("paired_compare needs one value per subject and condition; '%s' repeats %s within a condition",
+                 idc, .paired_subject_list(unique(level_labels(df[[idc]][dup])))))
+  }
   a <- df[df[[x]] == lv[1], c(idc, y)]; names(a) <- c("id", "v1")
   b <- df[df[[x]] == lv[2], c(idc, y)]; names(b) <- c("id", "v2")
-  a <- a[!duplicated(a$id), ]; b <- b[!duplicated(b$id), ]
   m <- merge(a, b, by = "id")
   n_ids <- length(unique(df[[idc]]))
   dropped <- n_ids - nrow(m)
@@ -123,6 +129,15 @@ recipe_paired_compare <- function(df, spec) {
        qc = list(quantity = "within-subject differences",
                  panels = list(differences = diffs)),
        width = 3.8, height = 4.2)
+}
+
+# The subjects of a message: "the subject 'S02'", or the first ten subjects and
+# the count of the others. The Python engine writes the same words.
+.paired_subject_list <- function(ids) {
+  shown <- utils::head(ids, 10)
+  txt <- sprintf("the subject%s %s", if (length(ids) > 1) "s" else "", quote_join(shown))
+  if (length(ids) > 10) txt <- sprintf("%s and %d more", txt, length(ids) - 10)
+  txt
 }
 
 .paired_methods <- function(label, lv, n, pval, eff_name, eff, spec, floor_txt = "") {

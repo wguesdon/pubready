@@ -11,13 +11,29 @@ from scipy import stats as ss
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette, plain_number_axis, wrap_labels
 from ..util import (SCRIPT_LABEL_FN, cap_first, check_test_method, is_zero_variance, level_labels,
-                    level_order, p_stars, rank_biserial_paired, rank_floor_text,
+                    level_order, p_stars, quote_join, rank_biserial_paired, rank_floor_text,
                     rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
                     wilcoxon_signed_rank_r, zero_variance_message)
 
 
 TESTS = ("auto", "t", "t_test", "paired_t", "student_t", "wilcoxon", "wilcox", "signed_rank", "mwu")
 """The --test values that paired_compare knows (F63)."""
+
+
+def _subject_list(ids):
+    """The subjects of a message, as .paired_subject_list() of the R engine writes them.
+
+    Args:
+        ids: The subject ids.
+
+    Returns:
+        str: "the subject 'S02'", or the first ten subjects and the count of the
+        others.
+    """
+    txt = f"the subject{'s' if len(ids) > 1 else ''} {quote_join(ids[:10])}"
+    if len(ids) > 10:
+        txt += f" and {len(ids) - 10} more"
+    return txt
 
 
 def recipe_paired_compare(df, spec):
@@ -42,8 +58,15 @@ def recipe_paired_compare(df, spec):
     if len(lv) != 2:
         raise ValueError(f"paired_compare needs exactly 2 conditions in '{x}'; found {len(lv)}")
 
-    a = d[d[x] == lv[0]][[idc, y]].drop_duplicates(subset=idc).rename(columns={y: "v1"})
-    b = d[d[x] == lv[1]][[idc, y]].drop_duplicates(subset=idc).rename(columns={y: "v2"})
+    # One value per subject and condition: a second row would make the result
+    # depend on the row order, so the run stops and names the subjects.
+    ids = level_labels(d[idc])
+    dup = pd.DataFrame({"id": ids, "cond": d[x]}).duplicated()
+    if dup.any():
+        raise ValueError(f"paired_compare needs one value per subject and condition; '{idc}' "
+                         f"repeats {_subject_list(list(pd.unique(ids[dup])))} within a condition")
+    a = d[d[x] == lv[0]][[idc, y]].rename(columns={y: "v1"})
+    b = d[d[x] == lv[1]][[idc, y]].rename(columns={y: "v2"})
     m = a.merge(b, on=idc)
     dropped = d[idc].nunique() - len(m)
     if len(m) < 2:
