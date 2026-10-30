@@ -18,7 +18,7 @@ import statsmodels.formula.api as smf
 from matplotlib.lines import Line2D
 from matplotlib.ticker import MaxNLocator
 
-from ..theme import apply_pub_style, palette, rain_offsets
+from ..theme import apply_pub_style, longest_line, palette, rain_offsets, wrap_label
 from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, level_labels,
                     level_order, quote_join, shapiro_normal)
 
@@ -28,6 +28,9 @@ INT_DODGE = 0.25
 BAR_DODGE = 0.8
 # The dodge width of the box geom: seaborn dodges the boxes over their width of 0.7.
 BOX_DODGE = 0.7
+# The legend labels and title wrap at the spaces at 20 characters, as
+# .fa_legend_text() of the R engine.
+LEGEND_WRAP = 20
 
 
 TESTS = ("auto", "anova", "aov", "art", "aligned_rank")
@@ -166,7 +169,8 @@ def fig_size(x_lv, fill_lv, fill_name, n_facet, has_facet):
         tuple: The width and the height in inches.
     """
     slot = 0.3 * len(fill_lv) + 0.35
-    legend_w = 0.5 + 0.08 * max(len(str(s)) for s in list(fill_lv) + [fill_name])
+    legend_w = 0.5 + 0.08 * max(longest_line(wrap_label(s, LEGEND_WRAP))
+                                for s in list(fill_lv) + [fill_name])
     w = max(6.8 if has_facet else 5.2, 0.9 + n_facet * len(x_lv) * slot + legend_w)
     lines = max(wrap_x(s).count("\n") + 1 for s in x_lv)
     h = 4.4 + (0.18 * (lines - 1) if needs_wrap(x_lv) else 0.0)
@@ -382,11 +386,13 @@ def recipe_factorial_anova(df, spec):
         ax.set_ylabel(ap.get("y_label") or y if ax is axes[0] else "")
         apply_pub_style(ax, ap.get("theme"))
     if geom == "interaction":
-        handles = [Line2D([0], [0], color=pal[i], lw=1.6, marker="o", ms=6, label=lvl)
+        handles = [Line2D([0], [0], color=pal[i], lw=1.6, marker="o", ms=6,
+                          label=wrap_label(lvl, LEGEND_WRAP))
                    for i, lvl in enumerate(f2_lv)]
     else:
-        handles = [mpatches.Patch(color=pal[i], label=lvl) for i, lvl in enumerate(f2_lv)]
-    axes[-1].legend(handles=handles, title=f2, loc="center left",
+        handles = [mpatches.Patch(color=pal[i], label=wrap_label(lvl, LEGEND_WRAP))
+                   for i, lvl in enumerate(f2_lv)]
+    axes[-1].legend(handles=handles, title=wrap_label(f2, LEGEND_WRAP), loc="center left",
                     bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=9)
     fig.suptitle(subtitle, fontsize=9.5, color="#4d4d4d")
     fig.tight_layout(rect=(0, 0, 1, 0.97))

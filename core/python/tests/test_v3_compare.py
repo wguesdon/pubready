@@ -376,3 +376,17 @@ def test_a_wide_feature_panel_coerces_a_mostly_numeric_column_and_logs_it():
     assert ("Coerced column 'f2' to numeric; 1 value(s) became NA, for example '<0.1'."
             in res["clean_steps"])
     assert "Left out the text column(s) 'site'; they are not features." in res["clean_steps"]
+
+
+# F81: long labels wrap, and the figure width follows the wrapped labels.
+def test_long_legend_labels_and_titles_wrap_in_factorial_anova_and_estimation_plot():
+    from pubready.recipes.estimation_plot import title_text
+    from pubready.recipes.factorial_anova import recipe_factorial_anova
+    from pubready.theme import wrap_label
+    long = "Traitement experimental a dose elevee de 10 uM pendant 72 heures"
+    fa = pd.DataFrame({"g": ["wt"] * 8 + ["ko"] * 8, "t": ([long] * 4 + ["v"] * 4) * 2,
+                       "y": [5, 6, 7, 8, 9, 10, 11, 12.5, 4, 5, 6, 7.5, 12, 13, 15, 16]})
+    res = recipe_factorial_anova(fa, v3_spec("factorial_anova", x="g", fill="t", y="y"))
+    assert res["width"] < 6
+    title = f"Mean difference against {long} with its 95% BCa bootstrap CI"
+    assert title_text(title, 5.2) == wrap_label(title, 52)

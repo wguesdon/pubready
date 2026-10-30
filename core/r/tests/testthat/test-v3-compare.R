@@ -411,3 +411,16 @@ test_that("a wide feature_panel coerces a mostly numeric column and logs it", {
                         res$clean_steps, fixed = TRUE)))
   expect_true("Left out the text column(s) 'site'; they are not features." %in% res$clean_steps)
 })
+
+# F81: long labels wrap, and the figure width follows the wrapped labels.
+test_that("long legend labels and titles wrap in factorial_anova and estimation_plot", {
+  long <- "Traitement experimental a dose elevee de 10 uM pendant 72 heures"
+  fa <- data.frame(g = rep(c("wt", "ko"), each = 8), t = rep(rep(c(long, "v"), each = 4), 2),
+                   y = c(5, 6, 7, 8, 9, 10, 11, 12.5, 4, 5, 6, 7.5, 12, 13, 15, 16))
+  res <- recipe_factorial_anova(fa, v3_spec("factorial_anova", x = "g", fill = "t", y = "y"))
+  expect_lt(res$width, 6)
+  expect_equal(.est_title(paste("Mean difference against", long, "with its 95% BCa bootstrap CI"),
+                          5.2),
+               wrap_label(paste("Mean difference against", long, "with its 95% BCa bootstrap CI"),
+                          52))
+})

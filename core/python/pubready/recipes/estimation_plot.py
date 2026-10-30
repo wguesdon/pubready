@@ -34,7 +34,7 @@ from scipy import special, stats
 
 from ..bundle import slugify
 from ..clean import clean_xy
-from ..theme import apply_pub_style, palette
+from ..theme import apply_pub_style, palette, wrap_label
 from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, is_zero_variance,
                     level_labels, level_order, sig_text, zero_variance_message,
                     zero_variance_subject)
@@ -364,6 +364,22 @@ def ga_width(labels):
     """
     chars = max(len(line) for lab in labels for line in str(lab).split("\n"))
     return max(4.9, 3 * max(1.1, 0.1 * chars) + 1.6)
+
+def title_text(s, width):
+    """A title wrapped at the spaces to the width of the figure.
+
+    The rule is .est_title() of the R engine: 10 characters per inch, so a long
+    group name does not run past the edge.
+
+    Args:
+        s: The title.
+        width: The figure width in inches.
+
+    Returns:
+        str: The wrapped title.
+    """
+    return wrap_label(s, int(np.floor(10 * width)))
+
 
 def wrap(label, width=14):
     """Wrap a category label into lines shorter than width, as the R engine does.
@@ -712,7 +728,7 @@ def _gardner_altman(d, lv, boots, rows, pal, paired, ap, y_lab):
                  f"{sig_text(r['ci_high'])})\n{r['test']}, {fmt_p(r['p_value'])}",
                  fontsize=10, color="#4d4d4d")
     if ap.get("title"):
-        fig.suptitle(ap["title"], fontweight="bold")
+        fig.suptitle(title_text(ap["title"], w), fontweight="bold")
     apply_pub_style(ax, ap.get("theme"))
     nice_ticks(ax.yaxis)
     sec = ax.secondary_yaxis("right", functions=(functools.partial(shift, offset=-m_ref),
@@ -756,10 +772,10 @@ def _cumming(d, lv, boots, rows, pal, paired, ap, y_lab):
     top.set_xticks(pos)
     top.set_xticklabels(_axis_labels(lv, d))
     top.set_ylabel(y_lab)
-    top.set_title(f"Mean difference against {lv[0]} with its 95% BCa bootstrap CI",
+    top.set_title(title_text(f"Mean difference against {lv[0]} with its 95% BCa bootstrap CI", w),
                   fontsize=10, color="#4d4d4d")
     if ap.get("title"):
-        fig.suptitle(ap["title"], fontweight="bold")
+        fig.suptitle(title_text(ap["title"], w), fontweight="bold")
     apply_pub_style(top, ap.get("theme"))
     nice_ticks(top.yaxis)
 

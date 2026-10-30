@@ -125,7 +125,7 @@ recipe_factorial_anova <- function(df, spec) {
       ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - sem, ymax = mean + sem), width = 0.12,
                              position = pdi, linewidth = 0.6, na.rm = TRUE) +
       ggplot2::geom_point(position = pdi, size = 2.4) +
-      ggplot2::scale_colour_manual(values = pal) +
+      ggplot2::scale_colour_manual(values = pal, labels = .fa_legend_text(levels(df[[f2]]))) +
       ggplot2::scale_y_continuous(breaks = scales::breaks_extended(n = 6))
   } else {
     p <- ggplot2::ggplot(df, ggplot2::aes(x = .data[[f1]], y = .data[[y]], fill = .data[[f2]]))
@@ -143,7 +143,7 @@ recipe_factorial_anova <- function(df, spec) {
                                    ggplot2::aes(x = .data$.point_x),
                                    size = 1.3, alpha = 0.7, shape = 21, stroke = 0.3)
     }
-    p <- p + ggplot2::scale_fill_manual(values = pal)
+    p <- p + ggplot2::scale_fill_manual(values = pal, labels = .fa_legend_text(levels(df[[f2]])))
   }
   # Long --x levels wrap at 12 characters, so neighbouring labels do not collide.
   if (.fa_needs_wrap(levels(df[[f1]]))) {
@@ -152,7 +152,8 @@ recipe_factorial_anova <- function(df, spec) {
   p <- p +
     ggplot2::labs(x = spec$appearance$x_label %||% f1,
                   y = spec$appearance$y_label %||% y,
-                  fill = f2, colour = f2, title = spec$appearance$title, subtitle = subtitle) +
+                  fill = .fa_legend_text(f2), colour = .fa_legend_text(f2),
+                  title = spec$appearance$title, subtitle = subtitle) +
     pub_theme(spec$appearance$theme) +
     ggplot2::theme(legend.position = "right",
                    plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 9.5, colour = "grey30"))
@@ -294,6 +295,11 @@ recipe_factorial_anova <- function(df, spec) {
   out
 }
 
+# The legend labels and title wrap at the spaces at 20 characters, so a long
+# --fill level does not make the legend wider than the panel. The Python
+# engine wraps with the same rule (theme.wrap_label).
+.fa_legend_text <- function(s) wrap_labels(s, 20)
+
 # Wrap the --x labels on spaces at 12 characters. strwrap keeps a line shorter
 # than its width, so the width is 13; the Python engine uses
 # textwrap.fill(12, break_on_hyphens = False) and gives the same lines.
@@ -306,7 +312,8 @@ recipe_factorial_anova <- function(df, spec) {
 # facet) by 4.4 inches. Wrapped labels add a line of height each.
 .fa_fig_size <- function(x_lv, fill_lv, fill_name, n_facet, has_facet) {
   slot <- 0.3 * length(fill_lv) + 0.35
-  legend_w <- 0.5 + 0.08 * max(nchar(c(as.character(fill_lv), fill_name)))
+  legend_w <- 0.5 + 0.08 * max(vapply(.fa_legend_text(c(as.character(fill_lv), fill_name)),
+                                     longest_line, integer(1)))
   width <- max(if (has_facet) 6.8 else 5.2, 0.9 + n_facet * length(x_lv) * slot + legend_w)
   lines <- max(lengths(strsplit(.fa_wrap_labels(x_lv), "\n", fixed = TRUE)))
   list(width = width, height = 4.4 + if (.fa_needs_wrap(x_lv)) 0.18 * (lines - 1) else 0)

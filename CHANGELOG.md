@@ -122,6 +122,11 @@ tag move together.
   numbers. Each other cell, such as "<0.1", becomes NA and the data log
   records it, and the data log names each text column that is left out. The
   whole column was dropped with no record before (F42).
+- `estimation_plot` wraps its title and the subtitle of the Cumming layout to
+  the figure width, so a long reference name no longer runs past the edge of
+  the R figure. `factorial_anova` wraps its legend labels and title at 20
+  characters in both engines, and the figure width follows the wrapped labels
+  (F81).
 
 ## [3.0.0] - 2026-10-29
 

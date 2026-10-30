@@ -236,6 +236,17 @@
   vapply(as.character(s), .est_wrap_one, character(1), width = width, USE.NAMES = FALSE)
 }
 
+# The width of the Cumming figure: 1.15 in per group plus 1.6 in, at least 5.2.
+.est_cumming_width <- function(k) max(5.2, 1.15 * k + 1.6)
+
+# A title or a subtitle wrapped at the spaces to the width of the figure, 10
+# characters per inch, so a long group name does not run past the edge. NULL
+# stays NULL. Python has the same rule (estimation_plot.title_text).
+.est_title <- function(s, width) {
+  if (is.null(s)) return(NULL)
+  wrap_label(s, floor(10 * width))
+}
+
 # The point size of the raw data, smaller for a large group (ggplot2 size in mm).
 .est_point_size <- function(d) {
   n <- max(table(d$group))
@@ -469,7 +480,8 @@ recipe_estimation_plot <- function(df, spec) {
     ggplot2::scale_x_continuous(breaks = c(1, 2, 3), labels = labs_x, limits = c(0.55, 3.55),
                                 expand = c(0, 0)) +
     ggplot2::scale_y_continuous(sec.axis = ggplot2::sec_axis(~ . - m_ref, name = "Mean difference")) +
-    ggplot2::labs(x = ap$x_label, y = y_lab, title = ap$title,
+    ggplot2::labs(x = ap$x_label, y = y_lab,
+                  title = .est_title(ap$title, .est_ga_width(labs_x)),
                   subtitle = sprintf("Mean difference %s (95%% CI %s to %s)\n%s, %s",
                                      sig_text(rows$mean_diff[1]), sig_text(rows$ci_low[1]),
                                      sig_text(rows$ci_high[1]), rows$test[1],
@@ -514,9 +526,9 @@ recipe_estimation_plot <- function(df, spec) {
     ggplot2::scale_fill_manual(values = pal, guide = "none") +
     ggplot2::scale_x_continuous(breaks = pos, labels = .est_axis_labels(lv, d), limits = xlim,
                                 expand = c(0, 0)) +
-    ggplot2::labs(x = NULL, y = y_lab, title = ap$title,
-                  subtitle = sprintf("Mean difference against %s with its 95%% BCa bootstrap CI",
-                                     lv[1])) +
+    ggplot2::labs(x = NULL, y = y_lab, title = .est_title(ap$title, .est_cumming_width(k)),
+                  subtitle = .est_title(sprintf("Mean difference against %s with its 95%% BCa bootstrap CI",
+                                                lv[1]), .est_cumming_width(k))) +
     pub_theme(ap$theme) +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"))
 
@@ -543,7 +555,7 @@ recipe_estimation_plot <- function(df, spec) {
     pub_theme(ap$theme) +
     ggplot2::theme(axis.ticks.x = ggplot2::element_blank())
   plot <- ggpubr::ggarrange(top, bottom, ncol = 1, heights = c(1.25, 1), align = "v")
-  list(plot = plot, width = max(5.2, 1.15 * k + 1.6), height = 6.4)
+  list(plot = plot, width = .est_cumming_width(k), height = 6.4)
 }
 
 .est_methods <- function(rows, ref, paired, spec, y) {
