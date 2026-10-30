@@ -28,6 +28,11 @@ tag move together.
   numeric order, else the one number that each label holds, else first
   appearance. "pre" and "post" keep the order of the file, and "week 0" comes
   before "week 12". The data log records the order and the rule.
+- The three adapters describe the changes of this release: the `--test` values
+  of each recipe, `--levels`, `--visit_levels` and `--features`, the two order
+  rules, the Welch default and the attainable-P rule, the event codes, the read
+  rule of a CSV file, the option check, `render` and the engine limits. The
+  "F test or Levene" text is gone; the variance check is Levene's test (F98).
 - The three adapters and `reference/decision_tree.md` list the designs that no
   recipe fits: strata, covariate adjustment, rates of change, and a comparison
   with one control only. The agent tells the scientist and does not force the

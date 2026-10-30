@@ -50,6 +50,13 @@ command reports a Podman problem, run `figkit doctor` and show its output to the
 user. Do not install Podman, and do not run `sudo`. The user runs each fix that
 needs administrator rights.
 
+Each recipe reads its own options. An option that the recipe does not read stops
+the run, and the message names the recipes that read it. `core/recipe_options.txt`
+lists the options of each recipe. Both engines read a CSV file with one rule: only
+an empty cell or "NA" is missing, the spaces around a value are removed, and a
+number with a comma, such as "85,45" or "4,380", stops the run. Change a decimal
+comma to "." and remove each thousands mark before the run.
+
 In a clone, `figkit plot` and `figkit render` stop when the repository holds an
 untracked file that git does not ignore, because the bundle records the commit.
 Write each helper file, such as a reshaped CSV, under `pubready_output/`, which
@@ -58,7 +65,8 @@ git ignores.
 ## Workflow
 
 1. Run `figkit inspect` on the data. Read the real column types and group sizes.
-   Do not guess them.
+   Do not guess them. `inspect` also names the candidate groups, numeric codes
+   among them, and each column that looks like a subject id.
 2. Talk through the design with the scientist: how many groups, paired or not, one
    factor or several, time to event, or a matrix. If they are unsure which test
    applies, walk the plain-language questions in `reference/decision_tree.md`.
@@ -70,7 +78,8 @@ git ignores.
    Shapiro is a default, not a verdict (underpowered at small n, over-rejects at
    large n), so the QQ plot is the tiebreaker.
 4. Call `figkit plot` with the recipe and columns. Leave `--test auto` unless a test
-   is forced. The bundle also includes the QC panel (`qc_normality_<ts>.png`).
+   is forced. When the recipe chooses its test from a normality check, the bundle
+   also includes the QC panel (`qc_normality_<ts>.png`).
    Pass `--llm-provider`, `--llm-model`, `--agent-harness` and
    `--agent-harness-version` with your own values, so that the report names the
    model and the harness that made the figure.
@@ -78,50 +87,58 @@ git ignores.
    standalone script, the stats table, the input copy, and a methods paragraph.
 6. To restyle, edit `plot_config.yaml` in the bundle and run `figkit render`. It
    recomputes the statistics, so the figure and the numbers never drift apart.
+   It uses the engine of the config unless you pass `--engine`, and it finds the
+   bundle input in the folder of the config.
 
 ## Recipes
 
 | Recipe | Tidy input | Columns you pass | Test |
 |---|---|---|---|
-| `two_group_compare` | group, value | `--x --y` | t-test or Mann-Whitney, paired or unpaired |
-| `multi_group_compare` | group, value | `--x --y` | one-way ANOVA / Welch / Kruskal-Wallis + post hoc |
-| `factorial_anova` | f1, f2[, f3], value | `--x --y --fill [--facet]` | two-way / three-way ANOVA (R also does the aligned rank transform) |
+| `two_group_compare` | group, value | `--x --y [--levels --paired]` | Welch t-test or Mann-Whitney, paired t-test or Wilcoxon signed-rank with `--paired` |
+| `multi_group_compare` | group, value | `--x --y [--levels]` | one-way ANOVA / Welch / Kruskal-Wallis + post hoc |
+| `factorial_anova` | f1, f2[, f3], value | `--x --y --fill [--facet --levels]` | two-way / three-way ANOVA (R also does the aligned rank transform) |
 | `survival_km` | time, event, group | `--time --event --x` | Kaplan-Meier + log-rank |
 | `cox_forest` | time, event, covariates | `--time --event --covariates "a,b,c"` | Cox proportional hazards |
-| `heatmap` | matrix CSV + annotation CSV | `--data --annotation` | per-feature Welch t-test when the annotation has two groups |
+| `heatmap` | matrix CSV + annotation CSV | `--data --annotation [--test welch_t]` | clustered heatmap; a Welch t-test for each feature only with `--test welch_t` and two annotation groups |
 | `correlation` | x, y (two numeric columns) | `--x --y` | Pearson / Spearman / Kendall, chosen from normality; not for the agreement of two methods, use `bland_altman` |
 | `correlation_heatmap` | table of numeric variables | `--data` | pairwise correlation, clustered, BH-adjusted stars |
-| `upset` | binary membership matrix | `--data [--top_n]` | descriptive intersection sizes, the 15 largest drawn by default (no test) |
+| `upset` | membership matrix of 1/0, TRUE/FALSE or yes/no | `--data [--top_n]` | descriptive intersection sizes, the 15 largest drawn by default (no test) |
 | `volcano` | DE table (log2FC + p) | `--data [--x --y --label]` | EnhancedVolcano-style scatter, top hits labeled |
-| `enrichment_dot` | GSEA / ORA result table | `--data [--label]` | dot plot, size = count, color = -log10 adjusted p |
-| `paired_compare` | condition, value, id | `--x --y --id` | paired t-test or Wilcoxon, connecting lines |
+| `enrichment_dot` | GSEA / ORA result table | `--data [--label]` | dot plot, size = count, color = -log10 adjusted p; a raw p is marked as not adjusted |
+| `paired_compare` | condition, value, id | `--x --y --id [--levels]` | paired t-test or Wilcoxon, connecting lines |
 | `proportions` | two categoricals | `--x --y [--levels]` | chi-square / Fisher, 100% stacked bar |
-| `pca` | samples × features + group | `--data --group` | PC1/PC2 scatter, 95% ellipses, PERMANOVA |
+| `pca` | samples × features + group | `--data --group [--features "a,b" --id --label]` | PC1/PC2 scatter, 95% ellipses, PERMANOVA; the `--id` and `--label` columns are not features |
 | `spider_response` | patient, time, value | `--x --y --id [--group]` | descriptive change from baseline, RECIST lines (no test) |
 | `waterfall` | patient, time, value (or one best change per patient) | `--y --id [--x --group]` | descriptive best change from baseline, sorted bars, RECIST lines (no test) |
 | `dose_response` | dose, response[, curve] | `--x --y [--group]` | four-parameter logistic fit, EC50 or IC50 with 95% CI, shared-EC50 F test |
 | `roc_curve` | binary outcome, numeric markers | `--y --x "m1,m2" [--positive]` | ROC curves, AUC with DeLong CI, Youden threshold, DeLong test between markers |
 | `bland_altman` | method A, method B (one row per subject) | `--x --y` | bias and 95% limits of agreement with CIs, proportional bias test |
 | `forest_meta` | one row per study: estimate and 95% CI or SE | `--y --ci_low --ci_high [--se --label --measure]` | fixed-effect and DerSimonian-Laird pooling, Q, I2, tau2 |
-| `timecourse` | subject, time, value[, group] | `--x --y --id [--group]` | mixed (or repeated-measures) ANOVA, Greenhouse-Geisser when Mauchly rejects |
+| `timecourse` | subject, time, value[, group] | `--x --y --id [--group --levels]` | mixed (or repeated-measures) ANOVA, Greenhouse-Geisser when Mauchly rejects |
 | `swimmer` | one row per patient: duration[, status, arm, event times] | `--id --time [--event --group --markers "a,b"]` | descriptive bar per patient, arrows for ongoing courses (no test) |
 | `distribution` | one numeric variable[, group] | `--y [--x]` | descriptive histogram, kernel density and normal fit per group, Shapiro-Wilk (no comparison) |
 | `composition` | sample, category[, count, condition] | `--id --x [--y --group]` | 100% stacked bar per sample, per-category Mann-Whitney or Kruskal-Wallis, BH-adjusted (exploratory) |
-| `estimation_plot` | group, value[, subject] | `--x --y [--ref --paired --id]` | mean difference against the reference with a 95% BCa bootstrap CI, Welch or paired t-test; Gardner-Altman or Cumming plot |
+| `estimation_plot` | group, value[, subject] | `--x --y [--ref --paired --id --levels]` | mean difference against the reference with a 95% BCa bootstrap CI, Welch or paired t-test; Gardner-Altman or Cumming plot |
 | `enzyme_kinetics` | substrate, rate[, condition] | `--x --y [--group]` | Michaelis-Menten fit, Vmax and Km with 95% CIs, F tests of one shared Km and one shared Vmax |
 | `standard_curve` | concentration (empty for an unknown), signal[, sample] | `--x --y [--id --test auto\|linear\|4pl]` | 4PL or linear standard curve, unknowns read off the curve, no extrapolation, recovery of the standards |
 | `cumulative_incidence` | time, status (0 = censored, other codes = causes)[, group] | `--time --event [--x --cause]` | Aalen-Johansen cumulative incidence of each cause, Gray's test across groups, number at risk |
 | `calibration` | binary outcome, predicted probabilities | `--y --x "p1,p2" [--positive]` | Brier score, calibration intercept and slope, Hosmer-Lemeshow test, decile plot with a lowess smooth |
-| `sankey` | patient, visit, state (one row per patient visit) | `--id --x --y` | state transitions across visits; Bowker's or McNemar's test for two visits |
+| `sankey` | patient, visit, state (one row per patient visit) | `--id --x --y [--levels --visit_levels]` | state transitions across visits; Bowker's or McNemar's test for two visits |
 | `ma_plot` | DE table: log2FC, p, mean expression (`baseMean`, `AveExpr` or `logCPM`) | `--data [--x MEAN --y P --label]` | M against A, up and down genes coloured, top hits labeled (the test is upstream) |
 | `manhattan` | one row per SNP: chromosome, position, p | `--group --x --y [--label]` | Manhattan and QQ plot, 5e-8 and 1e-5 lines, lead SNPs, lambda_GC |
-| `feature_panel` | group, value, feature (long) or one column per feature (wide) | `--x [--y --facet]` | one panel per feature; Welch t or Mann-Whitney, ANOVA or Kruskal-Wallis; BH across the features |
+| `feature_panel` | group, value, feature (long) or one column per feature (wide) | `--x [--y --facet --levels]` | one panel per feature; Welch t or Mann-Whitney, ANOVA or Kruskal-Wallis; BH across the features |
 | `embedding` | UMAP or t-SNE coordinates and a cluster, computed upstream | `--x --y --group` | scatter by cluster, labels at the medians, silhouette width per cluster (no test) |
 
 Common options: `--engine r|python` (default r), `--geom box|violin|bar|raincloud|interaction` (interaction: `factorial_anova` only),
-`--paired`, `--test auto|welch_t|wilcoxon|anova|kruskal|art` (correlation:
-`pearson|spearman|kendall`; proportions: `chisq|fisher`; timecourse:
-`gg|uncorrected`), `--scale`/`--cluster` (heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n`
+`--paired`, `--test` (`two_group_compare`: `auto|welch_t|student_t|wilcoxon`;
+`multi_group_compare`: `auto|anova|welch|kruskal`; `paired_compare`: `auto|t|wilcoxon`;
+`factorial_anova`: `auto|anova|art`; `feature_panel`: `auto|welch_t|wilcoxon|anova|kruskal`;
+`estimation_plot`: `auto|welch_t`; `correlation`: `auto|pearson|spearman|kendall`;
+`correlation_heatmap`: `pearson|spearman|kendall`; `proportions`: `auto|chisq|fisher`;
+`timecourse`: `auto|gg|uncorrected`; `standard_curve`: `auto|linear|4pl`; `heatmap`:
+`auto|welch_t`; an unknown value stops the run), `--levels "a,b,c"` (the order of the
+`--x` values; the states of `sankey`), `--visit_levels "a,b,c"` (the `sankey` visits),
+`--features "a,b"` (`pca`), `--scale`/`--cluster` (heatmaps), `--fc_cutoff`/`--p_cutoff`/`--top_n`
 (volcano, ma_plot; `--top_n` also sets the terms of enrichment_dot and the intersections
 of upset), `--id --group --label`, `--positive LEVEL` (roc_curve case level, calibration event level),
 `--cause CODE` (cumulative_incidence cause of interest, default 1),
@@ -148,12 +165,20 @@ For `cumulative_incidence`, code the status as 0 for a censored subject and as
 one code for each event type. Name the cause of interest with `--cause`. For
 `calibration`, give the predicted probabilities between 0 and 1, and confirm the
 event level as for `roc_curve`. For `sankey`, give one row for each patient and
-visit. Numeric states sort as numbers, and text states keep the order of their
-first appearance in the data. To set a clinical order, pass every state with
-`--levels`, for example `--levels "CR,PR,SD,PD"`.
-The `proportions` groups also keep the order of their first appearance in the
-data. To set another order, pass every group with `--levels`, for example
-`--levels "1st,2nd,3rd,Crew"`.
+visit. A status of `cumulative_incidence` that holds text or a negative code stops
+the run.
+
+The order of the levels follows two rules in both engines. The groups of a
+comparison sort as numbers when every label is a number, else in code-point
+order, so "Drug" comes before "control". The first level is group 1 of the
+contrast, and the first level of a text covariate is the `cox_forest` reference.
+Paired conditions, the `timecourse` time points and the `sankey` visits follow
+the time rule: numeric order, else the one number that each label holds, so
+"week 8" comes before "week 16", else the order of first appearance. The
+`proportions` groups and the `sankey` states keep the order of their first
+appearance. To set an order, pass every value with `--levels`, for example
+`--levels "CR,PR,SD,PD"` for the `sankey` states, or `--visit_levels` for the
+`sankey` visits. When a value holds a comma, separate the values with "|".
 `paired_compare` reads long rows. When the two conditions are in two columns,
 such as `pre` and `post`, first make one row for each subject and condition,
 with the subject id in its own column.
@@ -162,13 +187,18 @@ with the subject id in its own column.
 
 The full test-selection tree is in `reference/decision_tree.md`, and the assumption
 checks behind it in `reference/assumptions.md`; walk those with the scientist rather
-than deciding from memory. In short, `--test auto` measures before it picks: it checks
-normality (Shapiro-Wilk) and, for group comparisons, equal variance (F test or
-Levene), then goes parametric when the assumptions hold and non-parametric otherwise,
-with the Welch correction when variances differ. `figkit diagnose` shows that evidence
-as a QQ plot so the scientist can confirm the choice. Override any step with `--test`.
-Event columns code `1 = event, 0 = censored`; `survival_km` needs `--x` for the
-grouping arm.
+than deciding from memory. In short, `--test auto` measures before it picks. It
+checks normality with Shapiro-Wilk: of each group, of the paired differences, or
+of the model residuals. A constant group is not normal. Two independent groups get
+Welch's t-test when both are normal, and the Mann-Whitney U test otherwise. For
+three groups or more, Levene's test, centered on the median, chooses between the
+ANOVA and Welch's ANOVA. When the rank test cannot reach P < 0.05 at the group
+sizes, for example 3 against 3, auto keeps the parametric test, and the methods
+text says why. `figkit diagnose` takes the options of `figkit plot` and shows that
+evidence as a QQ plot, so the scientist can confirm the choice. Override any step
+with `--test`. Event columns code `1 = event, 0 = censored`, or TRUE and FALSE.
+Any other value, such as "dead" or 2, stops the run. `survival_km` needs `--x` for
+the grouping arm.
 
 ## Designs that no recipe fits
 
@@ -197,11 +227,14 @@ test, and the smoke test asserts it. The public benchmarks in `benchmarks/` hold
 public dataset in the image fits `spider_response` or `waterfall`, so only the
 smoke test checks those two. Five gaps remain.
 The aligned rank transform for non-parametric factorial ANOVA is R only, so
-`--test art --engine python` errors and routes you to R.
+`--test art --engine python` stops and routes you to R. Under `--test auto`, when
+the model residuals fail Shapiro-Wilk, R runs the aligned rank transform and
+Python stops with the same route, so the two engines never report two tests.
 The Python `survival_km` table has no confidence interval for the median survival.
-In `multi_group_compare` a Tukey P value below about 1e-8 differs between the
-engines in the second or third digit, because R's `ptukey` loses relative precision
-in the far tail; both values stay far below any significance threshold. The `pca`
+In `multi_group_compare` a Tukey or Games-Howell P value below about 1e-5 can
+differ between the engines in the fourth digit or later, because R's `ptukey`
+loses relative precision in the far tail. Both engines write a P value below 1e-12
+as "< 1e-12". The `pca`
 PERMANOVA is exact, and identical in both engines, when the design has 5000
 labelings or fewer. A larger design uses 999 seeded permutations, and the two
 engines draw different permutations, so the two P values differ by the Monte Carlo
