@@ -34,14 +34,20 @@ from scipy import special, stats
 
 from ..bundle import slugify
 from ..clean import clean_xy
-from ..theme import apply_pub_style, palette
-from ..util import cap_first, sig_text
+from ..theme import apply_pub_style, palette, wrap_label
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, is_zero_variance,
+                    level_labels, level_order, sig_text, zero_variance_message,
+                    zero_variance_subject)
 
 SEED = 20261029
 MODULUS = 2147483647
 MULTIPLIER = 48271
 N_BOOT = 5000
 BLOCK = 4096
+
+
+TESTS = ("auto", "welch_t", "t")
+"""The --test values that estimation_plot knows (F63)."""
 
 
 def block_multipliers(b):
@@ -214,6 +220,32 @@ def t_test(r, g, paired):
     return float(res.statistic), float(df), float(res.pvalue)
 
 
+def check_variance(r, g, paired, ref_name, grp_name):
+    """Stop a comparison whose t-test divides by a variance of zero.
+
+    The t-test divides by the variance of both groups (paired: of the
+    differences). When that variance is zero the run stops and names the
+    samples, as .est_check_variance() of the R engine does.
+
+    Args:
+        r: The reference values.
+        g: The values of the compared group.
+        paired: Whether the values are pairs.
+        ref_name: The reference level.
+        grp_name: The compared level.
+
+    Raises:
+        ValueError: If the variance of the test is zero.
+    """
+    hint = "the estimation plot needs values that vary"
+    if paired and is_zero_variance(g - r):
+        raise ValueError(zero_variance_message(
+            "paired t-test", "the within-subject differences have", hint))
+    if not paired and is_zero_variance(r) and is_zero_variance(g):
+        raise ValueError(zero_variance_message("Welch two-sample t-test",
+                                               zero_variance_subject([ref_name, grp_name]), hint))
+
+
 def compare(r, g, paired, ref_name, grp_name):
     """Compare one group with the reference.
 
@@ -227,6 +259,7 @@ def compare(r, g, paired, ref_name, grp_name):
     Returns:
         tuple: The stats row and the bootstrap differences.
     """
+    check_variance(r, g, paired, ref_name, grp_name)
     est = g.sum() / len(g) - r.sum() / len(r)
     boot = boot_diffs(r, g, paired)
     lo, hi = bca_interval(boot, est, jackknife(r, g, paired), float(np.max(np.abs(np.concatenate([r, g])))))
@@ -332,6 +365,22 @@ def ga_width(labels):
     chars = max(len(line) for lab in labels for line in str(lab).split("\n"))
     return max(4.9, 3 * max(1.1, 0.1 * chars) + 1.6)
 
+def title_text(s, width):
+    """A title wrapped at the spaces to the width of the figure.
+
+    The rule is .est_title() of the R engine: 10 characters per inch, so a long
+    group name does not run past the edge.
+
+    Args:
+        s: The title.
+        width: The figure width in inches.
+
+    Returns:
+        str: The wrapped title.
+    """
+    return wrap_label(s, int(np.floor(10 * width)))
+
+
 def wrap(label, width=14):
     """Wrap a category label into lines shorter than width, as the R engine does.
 
@@ -431,6 +480,7 @@ def recipe_estimation_plot(df, spec):
         ValueError: If a column is missing, if a group is too small, or if the
             reference level is not in the data.
     """
+    check_test_method("estimation_plot", spec["test"].get("method"), TESTS)
     x, y = spec["data"].get("x"), spec["data"].get("y")
     if not x or not y:
         raise ValueError("estimation_plot needs --x (the group column) and --y (the value column)")
@@ -447,7 +497,7 @@ def recipe_estimation_plot(df, spec):
 
     d0, steps = clean_xy(df, x, y)
     steps = [s for s in steps if s != "No cleaning applied; input used as-is."]
-    d = pd.DataFrame({"group": d0[x].astype(str), "y": d0[y].astype(float),
+    d = pd.DataFrame({"group": level_labels(d0[x]), "y": d0[y].astype(float),
                       "id": id_text(d0[id_col]) if paired else np.nan})
     if paired:
         miss = d["id"].isna() | (d["id"] == "")
@@ -458,13 +508,17 @@ def recipe_estimation_plot(df, spec):
             raise ValueError(f"estimation_plot --paired needs one value per subject and group; "
                              f"'{id_col}' repeats a subject within a group")
 
-    lv_sorted = sorted(d["group"].unique())
+    # One level rule in both engines: the --levels order, else numeric order when
+    # every label is a number, else code-point order. --ref names the reference,
+    # which goes first; it is the first level when --ref is not given.
+    lv_sorted = level_order(d["group"], spec["data"].get("levels"), "group")
     ref = spec["data"].get("ref") or lv_sorted[0]
     if ref not in lv_sorted:
         raise ValueError(f"--ref '{ref}' is not a level of '{x}' (levels: {', '.join(lv_sorted)})")
     lv = [ref] + [g for g in lv_sorted if g != ref]
     if len(lv) < 2:
         raise ValueError(f"estimation_plot needs at least 2 groups in '{x}'")
+    check_spread(d["y"], "estimation_plot", f"the outcome '{y}'")
 
     rows, boots = [], []
     for g in lv[1:]:
@@ -674,7 +728,7 @@ def _gardner_altman(d, lv, boots, rows, pal, paired, ap, y_lab):
                  f"{sig_text(r['ci_high'])})\n{r['test']}, {fmt_p(r['p_value'])}",
                  fontsize=10, color="#4d4d4d")
     if ap.get("title"):
-        fig.suptitle(ap["title"], fontweight="bold")
+        fig.suptitle(title_text(ap["title"], w), fontweight="bold")
     apply_pub_style(ax, ap.get("theme"))
     nice_ticks(ax.yaxis)
     sec = ax.secondary_yaxis("right", functions=(functools.partial(shift, offset=-m_ref),
@@ -718,10 +772,10 @@ def _cumming(d, lv, boots, rows, pal, paired, ap, y_lab):
     top.set_xticks(pos)
     top.set_xticklabels(_axis_labels(lv, d))
     top.set_ylabel(y_lab)
-    top.set_title(f"Mean difference against {lv[0]} with its 95% BCa bootstrap CI",
+    top.set_title(title_text(f"Mean difference against {lv[0]} with its 95% BCa bootstrap CI", w),
                   fontsize=10, color="#4d4d4d")
     if ap.get("title"):
-        fig.suptitle(ap["title"], fontweight="bold")
+        fig.suptitle(title_text(ap["title"], w), fontweight="bold")
     apply_pub_style(top, ap.get("theme"))
     nice_ticks(top.yaxis)
 
@@ -882,9 +936,11 @@ def bca(r, g, paired):
     return est, *np.quantile(boot, stats.norm.cdf(z0 + (z0 + zq) / (1 - acc * (z0 + zq))))
 
 
+{SCRIPT_LABEL_FN}
+
 d = pd.read_csv("{in_name}")
 d = d[d["{x}"].notna() & np.isfinite(pd.to_numeric(d["{y}"], errors="coerce"))]
-d["{x}"] = d["{x}"].astype(str)
+d["{x}"] = d["{x}"].map(label)
 lv = {lv!r}
 res = []
 for g in lv[1:]:

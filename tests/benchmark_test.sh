@@ -110,7 +110,7 @@ bench airway_enrichment "over-representation" --recipe enrichment_dot \
   --data $D/airway_enrichment.csv
 bench airway_upset "UpSet" --recipe upset --data $D/airway_upset.csv
 bench anorexia_paired "paired t-test" --recipe paired_compare --data $D/anorexia_ft.csv \
-  --x condition --y weight_lbs --id subject --test t
+  --x condition --y weight_lbs --id subject --test t --levels pre,post
 bench veteran_km "log-rank" --recipe survival_km --data $D/veteran.csv \
   --time time --event status --x celltype --xlab "Days"
 bench veteran_cox "Cox" --recipe cox_forest --data $D/veteran.csv \

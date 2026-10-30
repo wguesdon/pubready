@@ -7,7 +7,7 @@ test_that("recipe_paired_compare runs the paired t-test", {
     condition = rep(c("pre", "post"), each = 8),
     value     = c(pre, post), stringsAsFactors = FALSE)
   opt <- list(recipe = "paired_compare", data = "p.csv", x = "condition", y = "value",
-              id = "subject", test = "t")
+              id = "subject", test = "t", levels = "pre,post")
   spec <- spec_from_opt(opt)
 
   res <- recipe_paired_compare(df, spec)

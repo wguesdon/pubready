@@ -13,7 +13,11 @@
   else paste0("P = ", formatC(p, format = "g", digits = 2))
 }
 
+# The --test values that factorial_anova knows (F63).
+.factorial_anova_tests <- c("auto", "anova", "aov", "art", "aligned_rank")
+
 recipe_factorial_anova <- function(df, spec) {
+  check_test_method("factorial_anova", spec$test$method, .factorial_anova_tests)
   y  <- spec$data$y
   f1 <- spec$data$x
   f2 <- spec$data$fill
@@ -24,20 +28,33 @@ recipe_factorial_anova <- function(df, spec) {
   factors <- c(f1, f2, if (!is.null(f3) && nzchar(f3)) f3)
   for (f in factors) if (!f %in% names(df)) stop(sprintf("factor column '%s' not found", f))
   if (!y %in% names(df)) stop(sprintf("outcome column '%s' not found", y))
-  for (f in factors) df[[f]] <- factor(df[[f]])
-  df[[y]] <- as.numeric(df[[y]])
+  # Each reason for a dropped row is counted on its own: a text value of the
+  # outcome that becomes NA, and a missing value in each column.
+  y_raw <- df[[y]]
+  df[[y]] <- suppressWarnings(as.numeric(df[[y]]))
+  coerced <- sum(is.na(df[[y]]) & !is.na(y_raw))
+  n_missing <- vapply(c(y, factors), .fa_n_missing, integer(1), df = df)
   n0 <- nrow(df)
   df <- df[stats::complete.cases(df[, c(y, factors)]), , drop = FALSE]
-  clean_steps <- if (nrow(df) < n0) {
-    sprintf("Dropped %d row(s) with missing values in %s (%d -> %d rows).",
-            n0 - nrow(df), paste(c(y, factors), collapse = ", "), n0, nrow(df))
-  } else "No cleaning applied; input used as-is."
+  # The factors are made after the rows are dropped, so a level whose every
+  # outcome is missing does not stay as an empty slot of the axis. --levels
+  # orders the --x levels; --fill and --facet take the rule without a list:
+  # numeric order when every label is a number, else code-point order.
+  df[[f1]] <- .fa_factor(df[[f1]], unlist(spec$data$levels))
+  for (f in factors[-1]) df[[f]] <- .fa_factor(df[[f]])
+  clean_steps <- .fa_clean_steps(y, coerced, n_missing, n0, nrow(df))
+  check_spread(df[[y]], "factorial_anova", sprintf("the outcome '%s'", y))
+  .fa_check_design(df, factors)
 
-  rhs <- paste(sprintf("`%s`", factors), collapse = " * ")
-  fml <- stats::as.formula(sprintf("`%s` ~ %s", y, rhs))
+  # The models run on a copy with syntactic column names (.y, .f1, .f2, .f3),
+  # so a column name with a space or a symbol cannot break a formula, also in
+  # ARTool. The effects take the original names back.
+  safe <- sprintf(".f%d", seq_along(factors))
+  sdf <- stats::setNames(data.frame(df[[y]], df[factors]), c(".y", safe))
+  fml <- stats::as.formula(sprintf(".y ~ %s", paste(safe, collapse = " * ")))
 
   method <- tolower(spec$test$method %||% "auto")
-  resid_vec <- tryCatch(as.numeric(stats::residuals(stats::aov(fml, data = df))),
+  resid_vec <- tryCatch(as.numeric(stats::residuals(stats::aov(fml, data = sdf))),
                         error = .fa_null_on_error)
   res_p  <- if (!is.null(resid_vec)) shapiro_safe(resid_vec)$p else NA_real_
   use_art <- if (method %in% c("anova", "aov")) FALSE
@@ -45,10 +62,11 @@ recipe_factorial_anova <- function(df, spec) {
              else (!is.na(res_p) && res_p < 0.05)   # auto
 
   if (use_art) {
-    m  <- ARTool::art(fml, data = df)
+    m  <- ARTool::art(fml, data = sdf)
     at <- as.data.frame(stats::anova(m))
     eff <- data.frame(
-      effect      = at$Term,
+      effect      = vapply(as.character(at$Term), .fa_term_name, character(1),
+                           safe = safe, factors = factors, USE.NAMES = FALSE),
       df1         = at$Df,
       df2         = at$Df.res,
       statistic   = at$F,
@@ -61,11 +79,12 @@ recipe_factorial_anova <- function(df, spec) {
     # car::Anova gives the Type II table at full precision; rstatix::anova_test
     # rounds F to three decimals and P to three significant digits. The effect
     # size is the partial eta squared, which the Python engine also reports.
-    at <- as.data.frame(car::Anova(stats::lm(fml, data = df), type = 2))
+    at <- as.data.frame(car::Anova(stats::lm(fml, data = sdf), type = 2))
     terms <- setdiff(rownames(at), "Residuals")
     ss_res <- at["Residuals", "Sum Sq"]
     eff <- data.frame(
-      effect      = gsub("`", "", terms),
+      effect      = vapply(terms, .fa_term_name, character(1), safe = safe,
+                           factors = factors, USE.NAMES = FALSE),
       df1         = at[terms, "Df"],
       df2         = at["Residuals", "Df"],
       statistic   = at[terms, "F value"],
@@ -106,7 +125,7 @@ recipe_factorial_anova <- function(df, spec) {
       ggplot2::geom_errorbar(ggplot2::aes(ymin = mean - sem, ymax = mean + sem), width = 0.12,
                              position = pdi, linewidth = 0.6, na.rm = TRUE) +
       ggplot2::geom_point(position = pdi, size = 2.4) +
-      ggplot2::scale_colour_manual(values = pal) +
+      ggplot2::scale_colour_manual(values = pal, labels = .fa_legend_text(levels(df[[f2]]))) +
       ggplot2::scale_y_continuous(breaks = scales::breaks_extended(n = 6))
   } else {
     p <- ggplot2::ggplot(df, ggplot2::aes(x = .data[[f1]], y = .data[[y]], fill = .data[[f2]]))
@@ -124,7 +143,7 @@ recipe_factorial_anova <- function(df, spec) {
                                    ggplot2::aes(x = .data$.point_x),
                                    size = 1.3, alpha = 0.7, shape = 21, stroke = 0.3)
     }
-    p <- p + ggplot2::scale_fill_manual(values = pal)
+    p <- p + ggplot2::scale_fill_manual(values = pal, labels = .fa_legend_text(levels(df[[f2]])))
   }
   # Long --x levels wrap at 12 characters, so neighbouring labels do not collide.
   if (.fa_needs_wrap(levels(df[[f1]]))) {
@@ -133,7 +152,8 @@ recipe_factorial_anova <- function(df, spec) {
   p <- p +
     ggplot2::labs(x = spec$appearance$x_label %||% f1,
                   y = spec$appearance$y_label %||% y,
-                  fill = f2, colour = f2, title = spec$appearance$title, subtitle = subtitle) +
+                  fill = .fa_legend_text(f2), colour = .fa_legend_text(f2),
+                  title = spec$appearance$title, subtitle = subtitle) +
     pub_theme(spec$appearance$theme) +
     ggplot2::theme(legend.position = "right",
                    plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 9.5, colour = "grey30"))
@@ -141,8 +161,9 @@ recipe_factorial_anova <- function(df, spec) {
     p <- p + ggplot2::facet_wrap(ggplot2::vars(.data[[f3]]))
   }
 
+  eff$residual_shapiro_p <- res_p
   stats_df <- eff[, c("effect", "df1", "df2", "statistic", "p_value", "effect_size",
-                      "effect_size_name", "significant")]
+                      "effect_size_name", "significant", "residual_shapiro_p")]
 
   test_meta <- list(
     name    = test_name,
@@ -163,7 +184,8 @@ recipe_factorial_anova <- function(df, spec) {
                        args = list(spec = spec, factors = factors, use_art = use_art,
                                    pal = pal[seq_len(nlevels(df[[f2]]))],
                                    width = size$width, height = size$height,
-                                   wrap_x = .fa_needs_wrap(levels(df[[f1]]))))
+                                   wrap_x = .fa_needs_wrap(levels(df[[f1]])),
+                                   fac_levels = lapply(df[factors], levels)))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
@@ -175,6 +197,81 @@ recipe_factorial_anova <- function(df, spec) {
 }
 
 .fa_null_on_error <- function(e) NULL
+
+# The original name of a model term: ".f1:.f2" becomes "genotype:treatment".
+.fa_term_name <- function(term, safe, factors) {
+  paste(factors[match(strsplit(term, ":", fixed = TRUE)[[1]], safe)], collapse = ":")
+}
+
+# The design check before the fit, in the same words as the Python engine. Each
+# factor needs 2 or more levels (F92). Every cell of the design needs a value,
+# because an empty cell makes some terms not estimable and the two engines then
+# test different hypotheses (F53). Some cell needs 2 or more values, else no
+# residual degree of freedom is left (F92).
+.fa_check_design <- function(df, factors) {
+  for (f in factors) {
+    lv <- levels(df[[f]])
+    if (length(lv) < 2) {
+      stop(sprintf("factorial_anova needs 2 or more levels in each factor; '%s' has %d (%s)",
+                   f, length(lv), quote_join(lv)))
+    }
+  }
+  cells <- as.data.frame(table(df[factors]), stringsAsFactors = FALSE)
+  names(cells) <- c(factors, "Freq")
+  empty <- cells[cells$Freq == 0, factors, drop = FALSE]
+  if (nrow(empty) > 0) {
+    txt <- vapply(seq_len(nrow(empty)), .fa_cell_text, character(1), cells = empty,
+                  factors = factors)
+    more <- if (length(txt) > 5) sprintf("; and %d more", length(txt) - 5) else ""
+    stop(sprintf("factorial_anova needs a value in every cell of the design; no row holds %s%s",
+                 paste(utils::head(txt, 5), collapse = "; "), more))
+  }
+  if (nrow(df) <= nrow(cells)) {
+    stop(sprintf("factorial_anova needs a cell with 2 or more values to estimate the residual variance; the %d cells hold one value each",
+                 nrow(cells)))
+  }
+  invisible(NULL)
+}
+
+# One cell of the design as text: genotype = 'ko', treatment = 'drug'.
+.fa_cell_text <- function(i, cells, factors) {
+  paste(sprintf("%s = '%s'", factors, unlist(cells[i, factors], use.names = FALSE)),
+        collapse = ", ")
+}
+
+# The count of missing values of one column.
+.fa_n_missing <- function(col, df) sum(is.na(df[[col]]))
+
+# The data log of the cleaning: the coerced outcome values, the rows with no
+# value in each column (a row with two missing values counts in both), and the
+# rows dropped in all. The Python engine writes the same steps.
+.fa_clean_steps <- function(y, coerced, n_missing, n0, n1) {
+  steps <- character(0)
+  if (coerced > 0) {
+    steps <- c(steps, sprintf("Coerced column '%s' to numeric; %d value(s) became NA.", y, coerced))
+  }
+  for (col in names(n_missing)[n_missing > 0]) {
+    steps <- c(steps, sprintf("%d row(s) have no value in '%s'.", n_missing[[col]], col))
+  }
+  if (n1 < n0) {
+    steps <- c(steps, sprintf("Dropped %d row(s) with a missing value (%d -> %d rows).",
+                              n0 - n1, n0, n1))
+  }
+  if (length(steps) == 0) "No cleaning applied; input used as-is." else steps
+}
+
+# A factor column with the level rule of both engines (util level_order).
+.fa_factor <- function(v, levels = NULL) {
+  lab <- level_labels(v)
+  factor(lab, levels = level_order(lab, levels, "level"))
+}
+
+# The line of an emitted script that makes one factor with the levels of the
+# figure.
+.fa_factor_line <- function(i, factors, fac_levels) {
+  sprintf('df[["%s"]] <- factor(df[["%s"]], levels = c(%s))', factors[i], factors[i],
+          paste(sprintf('"%s"', fac_levels[[i]]), collapse = ", "))
+}
 
 # The dodge width of the interaction plot; the Python engine offsets each line
 # by the same amount.
@@ -198,6 +295,11 @@ recipe_factorial_anova <- function(df, spec) {
   out
 }
 
+# The legend labels and title wrap at the spaces at 20 characters, so a long
+# --fill level does not make the legend wider than the panel. The Python
+# engine wraps with the same rule (theme.wrap_label).
+.fa_legend_text <- function(s) wrap_labels(s, 20)
+
 # Wrap the --x labels on spaces at 12 characters. strwrap keeps a line shorter
 # than its width, so the width is 13; the Python engine uses
 # textwrap.fill(12, break_on_hyphens = False) and gives the same lines.
@@ -210,7 +312,8 @@ recipe_factorial_anova <- function(df, spec) {
 # facet) by 4.4 inches. Wrapped labels add a line of height each.
 .fa_fig_size <- function(x_lv, fill_lv, fill_name, n_facet, has_facet) {
   slot <- 0.3 * length(fill_lv) + 0.35
-  legend_w <- 0.5 + 0.08 * max(nchar(c(as.character(fill_lv), fill_name)))
+  legend_w <- 0.5 + 0.08 * max(vapply(.fa_legend_text(c(as.character(fill_lv), fill_name)),
+                                     longest_line, integer(1)))
   width <- max(if (has_facet) 6.8 else 5.2, 0.9 + n_facet * length(x_lv) * slot + legend_w)
   lines <- max(lengths(strsplit(.fa_wrap_labels(x_lv), "\n", fixed = TRUE)))
   list(width = width, height = 4.4 + if (.fa_needs_wrap(x_lv)) 0.18 * (lines - 1) else 0)
@@ -234,10 +337,22 @@ recipe_factorial_anova <- function(df, spec) {
 
   paste0(
     intro, " Effects tested: ", paste(parts, collapse = "; "), ".", es_txt,
+    .fa_geom_text(spec$appearance$geom %||% "box", factors[2]),
     " Significance was set at P < 0.05.",
     sprintf(" Analyses were performed in R %s with %s; figures were produced with ggplot2 %s.",
             rver, soft, v$ggplot2)
   )
+}
+
+# The sentence of the methods text on what the bar and the interaction geoms
+# show. The Python engine writes the same words.
+.fa_geom_text <- function(geom, fill) {
+  if (identical(geom, "bar")) {
+    " The bars show the mean +/- SEM of each cell."
+  } else if (identical(geom, "interaction")) {
+    sprintf(" The points show the mean +/- SEM of each cell, joined by one line per level of %s.",
+            fill)
+  } else ""
 }
 
 .fa_effect_part <- function(i, eff) {
@@ -261,25 +376,18 @@ recipe_factorial_anova <- function(df, spec) {
   df
 }
 
-.fa_emit_script <- function(spec, factors, use_art, pal, width, height, wrap_x, in_name, fig_stub) {
+.fa_emit_script <- function(spec, factors, use_art, pal, width, height, wrap_x, fac_levels,
+                            in_name, fig_stub) {
   y  <- spec$data$y
   f1 <- factors[1]; f2 <- factors[2]; f3 <- if (length(factors) >= 3) factors[3] else NULL
   pal_str <- paste0("c(", paste(sprintf('"%s"', pal), collapse = ", "), ")")
-  rhs <- paste(sprintf("`%s`", factors), collapse = " * ")
   geom <- spec$appearance$geom %||% "box"
   if (geom == "interaction") {
     return(.fa_emit_interaction_script(spec, factors, use_art, pal_str, width, height, wrap_x,
-                                       in_name, fig_stub))
+                                       fac_levels, in_name, fig_stub))
   }
 
-  omni_lines <- if (use_art) c(
-    sprintf('m  <- ARTool::art(%s ~ %s, data = df)', y, rhs),
-    'at <- as.data.frame(anova(m))',
-    'eff <- data.frame(effect = at$Term, p = at[["Pr(>F)"]])'
-  ) else c(
-    sprintf('at <- as.data.frame(rstatix::anova_test(df, %s ~ %s, type = 2))', y, rhs),
-    'eff <- data.frame(effect = at$Effect, p = at$p)'
-  )
+  omni_lines <- .fa_script_model_lines(y, factors, use_art)
   geom_lines <- if (geom == "bar") c(
     '  stat_summary(fun = mean, geom = "bar", position = position_dodge(0.8), width = 0.7, alpha = 0.9, colour = "black", linewidth = 0.3) +',
     '  stat_summary(fun.data = mean_se, geom = "errorbar", position = position_dodge(0.8), width = 0.2) +'
@@ -309,7 +417,8 @@ recipe_factorial_anova <- function(df, spec) {
     "})",
     "",
     sprintf('df <- as.data.frame(read_csv("%s", show_col_types = FALSE))', in_name),
-    paste0(sprintf('df[["%s"]] <- factor(df[["%s"]]); ', factors, factors), collapse = ""),
+    vapply(seq_along(factors), .fa_factor_line, character(1), factors = factors,
+           fac_levels = fac_levels),
     sprintf('df[["%s"]] <- as.numeric(df[["%s"]])', y, y),
     "",
     omni_lines,
@@ -335,22 +444,37 @@ recipe_factorial_anova <- function(df, spec) {
   )
 }
 
+# The lines of an emitted script that fit the model of the recipe on a copy with
+# syntactic column names and give the effects their column names back.
+.fa_script_model_lines <- function(y, factors, use_art) {
+  safe <- sprintf(".f%d", seq_along(factors))
+  map <- paste(sprintf('"%s" = "%s"', safe, factors), collapse = ", ")
+  cols <- paste(sprintf('"%s"', factors), collapse = ", ")
+  fml <- sprintf(".y ~ %s", paste(safe, collapse = " * "))
+  model <- if (use_art) c(
+    sprintf("at <- as.data.frame(anova(ARTool::art(%s, data = sdf)))", fml),
+    'eff <- data.frame(effect = as.character(at$Term), p = at[["Pr(>F)"]])'
+  ) else c(
+    sprintf("at <- as.data.frame(car::Anova(lm(%s, data = sdf), type = 2))", fml),
+    'at <- at[rownames(at) != "Residuals", ]',
+    'eff <- data.frame(effect = rownames(at), p = at[["Pr(>F)"]])'
+  )
+  c("# The models run on a copy with syntactic column names; the effects take the",
+    "# names of the columns back.",
+    sprintf("safe <- c(%s)", map),
+    sprintf('sdf <- setNames(data.frame(df[["%s"]], df[c(%s)]), c(".y", names(safe)))', y, cols),
+    model,
+    'term_name <- function(t) paste(safe[strsplit(t, ":", fixed = TRUE)[[1]]], collapse = ":")',
+    "eff$effect <- vapply(eff$effect, term_name, character(1), USE.NAMES = FALSE)")
+}
+
 # The standalone script of the interaction geom: the same ANOVA, then the mean
 # +/- SEM of each cell joined by one line per --fill level.
 .fa_emit_interaction_script <- function(spec, factors, use_art, pal_str, width, height, wrap_x,
-                                        in_name, fig_stub) {
+                                        fac_levels, in_name, fig_stub) {
   y  <- spec$data$y
   f1 <- factors[1]; f2 <- factors[2]; f3 <- if (length(factors) >= 3) factors[3] else NULL
-  rhs <- paste(sprintf("`%s`", factors), collapse = " * ")
-  omni_lines <- if (use_art) c(
-    sprintf('m  <- ARTool::art(%s ~ %s, data = df)', y, rhs),
-    'at <- as.data.frame(anova(m))',
-    'eff <- data.frame(effect = at$Term, p = at[["Pr(>F)"]])'
-  ) else c(
-    sprintf('at <- as.data.frame(car::Anova(lm(`%s` ~ %s, data = df), type = 2))', y, rhs),
-    'at <- at[rownames(at) != "Residuals", ]',
-    'eff <- data.frame(effect = gsub("`", "", rownames(at)), p = at[["Pr(>F)"]])'
-  )
+  omni_lines <- .fa_script_model_lines(y, factors, use_art)
   by_line <- sprintf('by <- df[c(%s)]', paste(sprintf('"%s"', factors), collapse = ", "))
   c(
     "#!/usr/bin/env Rscript",
@@ -361,7 +485,8 @@ recipe_factorial_anova <- function(df, spec) {
     "})",
     "",
     sprintf('df <- as.data.frame(read_csv("%s", show_col_types = FALSE))', in_name),
-    paste0(sprintf('df[["%s"]] <- factor(df[["%s"]]); ', factors, factors), collapse = ""),
+    vapply(seq_along(factors), .fa_factor_line, character(1), factors = factors,
+           fac_levels = fac_levels),
     sprintf('df[["%s"]] <- as.numeric(df[["%s"]])', y, y),
     "",
     omni_lines,

@@ -8,8 +8,11 @@ from pubready.spec import spec_from_args
 
 
 def test_resolve_picks_test_from_assumptions():
-    assert _resolve("auto", True, True, False)["label"] == "Student's two-sample t-test"
+    # Welch's t-test is the auto default whatever Levene's test gives (F109).
+    assert _resolve("auto", True, True, False)["label"] == "Welch two-sample t-test"
     assert _resolve("auto", True, False, False)["label"] == "Welch two-sample t-test"
+    assert _resolve("student_t", True, False, False)["label"] == "Student's two-sample t-test"
+    assert _resolve("t", True, True, False)["label"] == "Welch two-sample t-test"
     assert _resolve("auto", False, True, False)["label"] == "Mann-Whitney U test"
     assert _resolve("welch_t", False, True, False)["var_equal"] is False
     assert _resolve("t", True, True, True)["label"] == "paired t-test"
@@ -87,6 +90,7 @@ def test_two_group_and_paired_name_the_direction_of_the_effect():
                         "value": list(range(1, 9)) + [v + d for v, d in
                                                       zip(range(1, 9), [2, 3, 2, 4, 3, 2, 3, 4])]})
     pres = recipe_paired_compare(pdf, spec_from_args(SimpleNamespace(
-        recipe="paired_compare", data="p.csv", x="condition", y="value", id="subject", test="t")))
+        recipe="paired_compare", data="p.csv", x="condition", y="value", id="subject", test="t",
+        levels="pre,post")))
     assert pres["stats"]["contrast"].iloc[0] == "post - pre"
     assert "(post minus pre)" in pres["methods"]

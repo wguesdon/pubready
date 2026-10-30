@@ -62,6 +62,35 @@ tag move together.
   engines read it. The Python engine also stops on an unknown option. Before,
   `--facet` on `proportions` or `--title` on `survival_km` ran with exit code
   0 and no message (F71).
+- Before `--test auto` takes a rank test because the normality check failed,
+  `two_group_compare`, `paired_compare`, `multi_group_compare` and
+  `feature_panel` compute the smallest P that the rank test can reach at the
+  group sizes. When that P is above 0.05, the recipe keeps the parametric test,
+  and the methods text gives the attainable P. A forced rank test still runs,
+  and the text gives the attainable P. `test_meta` records it as
+  `rank_test_attainable_p` (F61).
+- Under `--test auto`, `two_group_compare` runs Welch's t-test when both groups
+  are normal. Levene's test still runs and goes to the stats table, but it no
+  longer chooses Student's t-test. `--test t` also runs Welch's t-test, and
+  `--test student_t` forces Student's t-test. The methods text says that the
+  Welch t-test does not assume equal variances (F109).
+- The comparison recipes order their groups with one rule in both engines:
+  the `--levels` order, else numeric order when every label is a number, else
+  code-point order. A numeric group reads "80", not "80.0", and a dose axis
+  reads 0, 80, 160 in Python too. `--levels` now works in `two_group_compare`,
+  `multi_group_compare`, `paired_compare`, `factorial_anova` (the `--x`
+  levels), `estimation_plot` and `feature_panel`. The first level is group 1 of
+  a contrast. `paired_compare` no longer takes the order of first appearance,
+  so pass `--levels pre,post` to keep pre on the left. `estimation_plot` keeps
+  `--ref` for the reference, and `proportions` keeps its own order rule with
+  the new labels (F38, F64).
+- Under `--test auto`, the Python engine of `factorial_anova` runs the
+  Shapiro-Wilk test on the residuals of the full model, as R does. When
+  P < 0.05, R takes the aligned rank transform, which Python does not have, so
+  Python stops with a message that gives the P and routes to `--engine r` or
+  to `--test anova`. Python ran the ANOVA before, so the engines reported
+  different tests. Both engines write the residual P to the stats table as
+  `residual_shapiro_p` and to `test_meta` (F37).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of
@@ -206,6 +235,82 @@ tag move together.
   in both engines with one formula. Before, the R figures had a fixed width,
   so a label of 60 characters shrank the panel to nothing, and a long state
   made the `sankey` figure 28 in wide (F81).
+- A sample with zero range is not normal in both engines, with a Shapiro P of
+  NA, so `--test auto` chooses the same test. A t-test, a one-way ANOVA or
+  Welch's ANOVA whose variance is zero stops with a message that names the
+  groups. `correlation` stops on a constant column and names it.
+  `feature_panel` reports a constant feature as "not tested: constant" and
+  leaves it out of the normality check and of the BH count (F43).
+- The paired t-test of `two_group_compare --paired` writes no sentence about
+  equal variances and names its effect size "Cohen's dz", the mean of the
+  within-pair differences over their SD, group1 minus group2 (F66).
+- `two_group_compare --paired` chooses between the paired t-test and the
+  Wilcoxon signed-rank test from the Shapiro-Wilk test of the within-pair
+  differences, not of each group. The rows still pair by their order in each
+  group, and groups of unequal size stop the run. The stats table gets
+  `shapiro_p_diff`, the QC panel shows the differences, and the methods text
+  names them (F36).
+- The R engine of `two_group_compare` computes Cohen's d over the pooled SD, as
+  the Python engine and `feature_panel` do, and not over the average variance
+  of `rstatix::cohens_d`. On the cats data both engines now give -0.95. The
+  methods text states the formula (F65).
+- The R engine of `factorial_anova` makes its factors after it drops the rows
+  with a missing value, so a level whose every outcome is missing leaves no
+  empty slot, and the points sit on their boxes (F54).
+- The R engine of `two_group_compare`, `multi_group_compare` and
+  `factorial_anova`, also with `--test art`, accepts a column name with a space
+  or a symbol. The tests and the emitted scripts run on a copy with syntactic
+  names, and the tables keep the original names (F44).
+- `two_group_compare`, `multi_group_compare`, `paired_compare`,
+  `factorial_anova`, `estimation_plot`, `feature_panel`, `correlation` and
+  `proportions` stop on a `--test` value that they do not know, with a message
+  that lists the values that they know. `proportions` and `factorial_anova` ran
+  their default test before (F63).
+- `paired_compare` stops and names the subjects when a subject has two rows in
+  one condition, as `estimation_plot --paired` does. It kept the first row
+  before, so the result depended on the row order (F55).
+- `two_group_compare`, `multi_group_compare`, `paired_compare`,
+  `estimation_plot` and `factorial_anova` stop with "the outcome has zero
+  variance" when every value of the outcome is the same. R stopped with an
+  unclear error, and Python wrote "nan" or F values from rounding noise (F90).
+- The comparison recipes and `correlation` stop with a clear message when the
+  variance of the outcome or of a column is not a finite positive number, as
+  for values near 1e300 or near 1e-300. They gave a silent NA, P = 1 or a
+  crash before (F83).
+- The data log of `factorial_anova` counts each reason for a dropped row on its
+  own: the outcome values that became NA as numbers, and the rows with no value
+  in each column. It named every column as the reason before (F124).
+- `factorial_anova` counts each cell of the design before the fit and stops
+  when a cell holds no value, and names the cell. The engines tested different
+  hypotheses on such a design: the interaction gave P = 2.5e-7 in Python and
+  P = 0.82 in R (F53).
+- `factorial_anova` stops with a message that names the column and the count
+  when a factor has only one level, or when every cell holds one value, so no
+  residual degree of freedom is left (F92).
+- The methods text of `factorial_anova --geom bar` says that the bars show the
+  mean +/- SEM of each cell, and the text of `--geom interaction` says the same
+  of the points (F122).
+- On the chi-squared branch of `proportions`, a 2 x 2 table with a zero cell
+  gives no odds ratio in both engines (NA), and the methods text says that a
+  cell is zero. R wrote Inf and Python an empty cell before (F93).
+- `multi_group_compare` writes a Tukey or Games-Howell P below 1e-12 as
+  "< 1e-12" in the stats table and in a `p.format` bracket. The studentized
+  range loses its precision there in both engines: R wrote 0 or about 2.4e-13,
+  and Python wrote 0 (F118).
+- The y axis of `two_group_compare`, `multi_group_compare` and `paired_compare`
+  reads in scientific notation, for example "1.5e-09", when its largest break
+  is below 1e-4, as for molar concentrations. It read "0.000000" before. The R
+  bracket of `two_group_compare` now sits 6% of the data span above the drawn
+  geom, so it no longer falls to 0 on such values (F84).
+- A wide `feature_panel` keeps a column when 80% or more of its cells read as
+  numbers. Each other cell, such as "<0.1", becomes NA and the data log
+  records it, and the data log names each text column that is left out. The
+  whole column was dropped with no record before (F42).
+- `estimation_plot` wraps its title and the subtitle of the Cumming layout to
+  the figure width, so a long reference name no longer runs past the edge of
+  the R figure. `factorial_anova` wraps its legend labels and title at 20
+  characters in both engines, and the figure width follows the wrapped labels
+  (F81).
 
 ## [3.0.0] - 2026-10-29
 

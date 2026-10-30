@@ -634,6 +634,26 @@ for eng in r python; do
   check_bundle "$OUT/km_space_$eng" "survival_km with spaced names ($eng)"
 done
 
+# Area A: the comparison recipes.
+echo
+echo "[A1] column names with a space run in both engines (F44)"
+SP="$OUT/space_cols"; mkdir -p "$SP"
+sed '1s/.*/"treatment group","tumor volume"/' example/tumor_volume.csv > "$SP/tumor_space.csv"
+sed '1s/.*/"mouse genotype","expression level"/' example/gene_expression.csv > "$SP/gene_space.csv"
+sed '1s/.*/"mouse genotype","drug treatment","response value"/' example/twoway_response.csv \
+  > "$SP/twoway_space.csv"
+for engine in r python; do
+  ./cli/figkit plot --engine "$engine" --recipe two_group_compare --data "$SP/tumor_space.csv" \
+    --x "treatment group" --y "tumor volume" --out "$SP/tg_$engine" > /dev/null 2>&1
+  check_bundle "$SP/tg_$engine" "two_group_compare with spaces in the names ($engine)"
+  ./cli/figkit plot --engine "$engine" --recipe multi_group_compare --data "$SP/gene_space.csv" \
+    --x "mouse genotype" --y "expression level" --test kruskal --out "$SP/mg_$engine" > /dev/null 2>&1
+  check_bundle "$SP/mg_$engine" "multi_group_compare with spaces in the names ($engine)"
+done
+./cli/figkit plot --recipe factorial_anova --data "$SP/twoway_space.csv" --x "mouse genotype" \
+  --fill "drug treatment" --y "response value" --test art --out "$SP/fa_art_r" > /dev/null 2>&1
+check_bundle "$SP/fa_art_r" "factorial_anova --test art with spaces in the names (r)"
+
 echo
 if [ "$fail" -eq 0 ]; then
   echo "ALL SMOKE TESTS PASSED"

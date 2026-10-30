@@ -231,8 +231,10 @@ def plain_number_labels(values):
     """Format axis breaks as plain numbers with a comma between the thousands.
 
     The count of decimals is the smallest one that shows every break exactly (at
-    most 6), never in scientific notation, as plain_number_labels() of the R
-    engine does.
+    most 6). An axis whose largest break is below 1e-4 in absolute value, as for
+    molar concentrations, would read "0.000000", so it takes scientific notation
+    with the smallest count of mantissa decimals that shows every break exactly,
+    as plain_number_labels() of the R engine does.
 
     Args:
         values: The break values.
@@ -243,11 +245,51 @@ def plain_number_labels(values):
     import numpy as np
     vals = np.asarray(values, dtype=float)
     fin = vals[np.isfinite(vals)]
+    if len(fin) and 0 < np.max(np.abs(fin)) < 1e-4:
+        return _sci_number_labels(vals, fin)
     digits = 0
     while digits < 6 and len(fin) and np.any(
             np.abs(np.round(fin, digits) - fin) > 1e-9 * np.maximum(1, np.abs(fin))):
         digits += 1
     return [f"{v + 0.0:,.{digits}f}" if np.isfinite(v) else "" for v in vals]
+
+
+def _signif(v, digits):
+    """Round to a count of significant digits, as R's signif() does.
+
+    Args:
+        v: The values.
+        digits: The count of significant digits.
+
+    Returns:
+        numpy.ndarray: The rounded values.
+    """
+    import numpy as np
+    v = np.asarray(v, dtype=float)
+    out = np.zeros_like(v)
+    nz = v != 0
+    mag = np.floor(np.log10(np.abs(v[nz])))
+    scale = 10.0 ** (digits - 1 - mag)
+    out[nz] = np.round(v[nz] * scale) / scale
+    return out
+
+
+def _sci_number_labels(vals, fin):
+    """Breaks in scientific notation, as .sci_number_labels() of the R engine.
+
+    Args:
+        vals: The break values.
+        fin: The finite break values.
+
+    Returns:
+        list: The labels, such as "1.5e-09", with the smallest count of mantissa
+        decimals (at most 6) that shows every break exactly.
+    """
+    import numpy as np
+    digits = 0
+    while digits < 6 and np.any(np.abs(_signif(fin, digits + 1) - fin) > 1e-9 * np.abs(fin)):
+        digits += 1
+    return [f"{v + 0.0:.{digits}e}" if np.isfinite(v) else "" for v in vals]
 
 
 class PlainNumberFormatter(Formatter):

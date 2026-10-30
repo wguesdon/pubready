@@ -10,11 +10,34 @@ from scipy import stats as ss
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette, plain_number_axis, wrap_labels
-from ..util import (cap_first, p_stars, rank_biserial_paired, shapiro_normal,
-                    wilcoxon_signed_rank_r)
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, is_zero_variance,
+                    level_labels, level_order, p_stars, quote_join, rank_biserial_paired,
+                    rank_floor_text, rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
+                    wilcoxon_signed_rank_r, zero_variance_message)
+
+
+TESTS = ("auto", "t", "t_test", "paired_t", "student_t", "wilcoxon", "wilcox", "signed_rank", "mwu")
+"""The --test values that paired_compare knows (F63)."""
+
+
+def _subject_list(ids):
+    """The subjects of a message, as .paired_subject_list() of the R engine writes them.
+
+    Args:
+        ids: The subject ids.
+
+    Returns:
+        str: "the subject 'S02'", or the first ten subjects and the count of the
+        others.
+    """
+    txt = f"the subject{'s' if len(ids) > 1 else ''} {quote_join(ids[:10])}"
+    if len(ids) > 10:
+        txt += f" and {len(ids) - 10} more"
+    return txt
 
 
 def recipe_paired_compare(df, spec):
+    check_test_method("paired_compare", spec["test"].get("method"), TESTS)
     x, y, idc = spec["data"]["x"], spec["data"]["y"], spec["data"].get("id")
     if not x or not y:
         raise ValueError("paired_compare needs --x (condition) and --y (value)")
@@ -27,13 +50,24 @@ def recipe_paired_compare(df, spec):
     d = df[[idc, x, y]].copy()
     d[y] = pd.to_numeric(d[y], errors="coerce")
     d = d.dropna()
-    d[x] = d[x].astype(str)
-    lv = list(pd.unique(d[x]))  # preserve appearance order (pre before post)
+    # One level rule in both engines: the --levels order (--levels pre,post keeps
+    # pre left of post), else numeric order when every label is a number, else
+    # code-point order. The row order of the file no longer sets the sign.
+    d[x] = level_labels(d[x])
+    lv = level_order(d[x], spec["data"].get("levels"), "condition")
     if len(lv) != 2:
         raise ValueError(f"paired_compare needs exactly 2 conditions in '{x}'; found {len(lv)}")
+    check_spread(d[y], "paired_compare", f"the outcome '{y}'")
 
-    a = d[d[x] == lv[0]][[idc, y]].drop_duplicates(subset=idc).rename(columns={y: "v1"})
-    b = d[d[x] == lv[1]][[idc, y]].drop_duplicates(subset=idc).rename(columns={y: "v2"})
+    # One value per subject and condition: a second row would make the result
+    # depend on the row order, so the run stops and names the subjects.
+    ids = level_labels(d[idc])
+    dup = pd.DataFrame({"id": ids, "cond": d[x]}).duplicated()
+    if dup.any():
+        raise ValueError(f"paired_compare needs one value per subject and condition; '{idc}' "
+                         f"repeats {_subject_list(list(pd.unique(ids[dup])))} within a condition")
+    a = d[d[x] == lv[0]][[idc, y]].rename(columns={y: "v1"})
+    b = d[d[x] == lv[1]][[idc, y]].rename(columns={y: "v2"})
     m = a.merge(b, on=idc)
     dropped = d[idc].nunique() - len(m)
     if len(m) < 2:
@@ -45,14 +79,22 @@ def recipe_paired_compare(df, spec):
     diffs = (m["v2"] - m["v1"]).to_numpy()
     pdiff, dnorm = shapiro_normal(diffs)
     method = (spec["test"].get("method") or "auto").lower()
+    # When the differences fail the normality check but the signed-rank test
+    # cannot reach P < 0.05 with this count of pairs, auto keeps the paired t-test.
+    rank_min_p = rank_test_min_p([len(m)], "signed_rank")
+    kept = (method in ("auto", "") and not dnorm and rank_test_cannot_reach(rank_min_p)
+            and not is_zero_variance(diffs))
     if method in ("auto", ""):
-        family = "t" if dnorm else "wilcoxon"
+        family = "t" if (dnorm or kept) else "wilcoxon"
     elif method in ("t", "t_test", "paired_t", "student_t"):
         family = "t"
     elif method in ("wilcoxon", "wilcox", "signed_rank", "mwu"):
         family = "wilcoxon"
     else:
         raise ValueError(f"unknown paired test '{method}' (use t or wilcoxon)")
+    if family == "t" and is_zero_variance(diffs):
+        raise ValueError(zero_variance_message(
+            "paired t-test", "the within-subject differences have", "use --test wilcoxon"))
 
     if family == "t":
         res = ss.ttest_rel(m["v2"], m["v1"])
@@ -103,8 +145,10 @@ def recipe_paired_compare(df, spec):
         "mean_difference": float(np.mean(diffs)),
         "effect_size": {"name": eff_name, "value": eff},
         "assumptions": {"normality_of_differences": {"test": "shapiro-wilk", "p": pdiff}},
+        "rank_test_attainable_p": rank_min_p,
     }
-    methods = _methods(label, lv, len(m), eff_name, eff, spec)
+    floor_txt = rank_floor_text(rank_min_p, kept) if (kept or family == "wilcoxon") else ""
+    methods = _methods(label, lv, len(m), eff_name, eff, spec, floor_txt)
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": m, "clean_steps": steps, "label": slugify(y),
@@ -114,7 +158,7 @@ def recipe_paired_compare(df, spec):
     }
 
 
-def _methods(label, lv, n, eff_name, eff, spec):
+def _methods(label, lv, n, eff_name, eff, spec, floor_txt=""):
     from importlib.metadata import version as v
     import platform
     y_lab = spec["appearance"].get("y_label") or spec["data"]["y"]
@@ -123,6 +167,8 @@ def _methods(label, lv, n, eff_name, eff, spec):
                   "within-subject differences. ")
     else:
         choice = "The test was set by the user. "
+    if floor_txt:
+        choice += floor_txt + " "
     return (
         f"{cap_first(y_lab)} was compared between {lv[0]} and {lv[1]} within each subject with a "
         f"{label} (n = {n} pairs). {choice}"
@@ -150,10 +196,13 @@ import matplotlib.pyplot as plt
 import numpy as np, pandas as pd
 from scipy import stats as ss
 
+
+{SCRIPT_LABEL_FN}
+
 raw = pd.read_csv("{in_name}")
 raw["{y}"] = pd.to_numeric(raw["{y}"], errors="coerce")
 raw = raw.dropna(subset=["{idc}", "{x}", "{y}"])
-raw["{x}"] = raw["{x}"].astype(str)
+raw["{x}"] = raw["{x}"].map(label)
 lv = {lv}
 a = raw[raw["{x}"] == lv[0]][["{idc}", "{y}"]].drop_duplicates("{idc}").rename(columns={{"{y}": "v1"}})
 b = raw[raw["{x}"] == lv[1]][["{idc}", "{y}"]].drop_duplicates("{idc}").rename(columns={{"{y}": "v2"}})

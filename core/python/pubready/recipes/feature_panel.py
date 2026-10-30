@@ -20,8 +20,11 @@ from matplotlib.ticker import MaxNLocator
 from scipy import stats
 
 from ..bundle import slugify
+from ..clean import coerce_numeric_columns
 from ..theme import apply_pub_style, new_fig, palette
-from ..util import cap_first, mann_whitney_r, rank_biserial_unpaired, shapiro_normal
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_test_method, is_zero_variance, level_labels,
+                    level_order, mann_whitney_r, quote_join, rank_biserial_unpaired,
+                    rank_floor_text, rank_test_cannot_reach, rank_test_min_p, shapiro_normal)
 
 MAX_FEATURES = 36
 MAX_QC_PANELS = 48
@@ -32,6 +35,11 @@ EFFECTS = {"welch_t": "Cohen's d", "wilcoxon": "rank-biserial r",
            "anova": "eta squared", "kruskal": "eta-squared (H)"}
 ALIASES = {"mann_whitney": "wilcoxon", "mwu": "wilcoxon", "wilcox": "wilcoxon",
            "kw": "kruskal", "kruskal_wallis": "kruskal"}
+
+
+TESTS = ("auto", "welch_t", "wilcoxon", "anova", "kruskal", "mann_whitney", "mwu", "wilcox",
+         "kw", "kruskal_wallis")
+"""The --test values that feature_panel knows (F63)."""
 
 
 def signif_stars(p):
@@ -78,34 +86,6 @@ def bh_adjust(p):
     return out
 
 
-def group_label(v):
-    """Text of one group value, as R's as.character writes it.
-
-    Args:
-        v: The value.
-
-    Returns:
-        str: The label; a whole number has no decimal part.
-    """
-    if isinstance(v, (float, np.floating)) and float(v).is_integer():
-        return str(int(v))
-    return str(v)
-
-
-def group_levels(g):
-    """The group levels: numbers in numeric order, text in code-point order.
-
-    Args:
-        g: The group values, as a pandas Series without missing values.
-
-    Returns:
-        list: The level labels.
-    """
-    if pd.api.types.is_numeric_dtype(g):
-        return [group_label(v) for v in sorted(pd.unique(g))]
-    return sorted(pd.unique(g.astype(str)))
-
-
 def long_table(df, spec):
     """Bring a long or a wide table to one row per value.
 
@@ -134,24 +114,33 @@ def long_table(df, spec):
         d = pd.DataFrame({"feature": df[fcol].astype(str).where(df[fcol].notna()),
                           "group": df[x], "value": pd.to_numeric(df[y], errors="coerce")})
         layout = "long"
+        wide_steps = []
     else:
+        # A column is a feature when 80% or more of its cells read as numbers; a
+        # cell such as "<0.1" becomes NaN and is logged, and each text column
+        # that is left out is named (clean.coerce_numeric_columns, one rule in
+        # both engines).
         skip = {x, dat.get("id"), dat.get("label")}
-        cols = [c for c in df.columns
-                if pd.api.types.is_numeric_dtype(df[c]) and c not in skip]
+        cdf, cols, text, wide_steps = coerce_numeric_columns(
+            df, [c for c in df.columns if c not in skip])
         if not cols:
             raise ValueError("feature_panel found no numeric feature column; pass --facet for long data")
-        d = pd.concat([pd.DataFrame({"feature": c, "group": df[x],
-                                     "value": pd.to_numeric(df[c], errors="coerce")})
+        d = pd.concat([pd.DataFrame({"feature": c, "group": cdf[x], "value": cdf[c]})
                        for c in cols], ignore_index=True)
         layout = "wide"
+        if text:
+            wide_steps.append(f"Left out the text column(s) {quote_join(text)}; they are not "
+                              "features.")
     n0 = len(d)
     keep = (d["feature"].notna() & (d["feature"].astype(str).str.len() > 0)
             & d["group"].notna() & np.isfinite(d["value"]))
     d = d[keep].reset_index(drop=True)
-    glv = group_levels(d["group"])
-    d["group"] = [group_label(v) for v in d["group"]]
+    # One level rule in both engines: the --levels order, else numeric order when
+    # every label is a number, else code-point order.
+    d["group"] = level_labels(d["group"])
+    glv = level_order(d["group"], dat.get("levels"), "group")
     feats = list(pd.unique(d["feature"]))
-    steps = [f"Read {layout} data: {len(feats)} feature(s), {len(glv)} group(s)."]
+    steps = [f"Read {layout} data: {len(feats)} feature(s), {len(glv)} group(s)."] + wide_steps
     if int((~keep).sum()):
         steps.append(f"Dropped {int((~keep).sum())} value(s) with a missing feature, group or value "
                      f"({n0} -> {len(d)}).")
@@ -317,6 +306,7 @@ def recipe_feature_panel(df, spec):
         ValueError: If a column is missing, there are too many features or
             fewer than two groups.
     """
+    check_test_method("feature_panel", spec["test"].get("method"), TESTS)
     lg = long_table(df, spec)
     d, feats, glv = lg["d"], lg["features"], lg["groups"]
     if len(feats) > MAX_FEATURES:
@@ -325,25 +315,40 @@ def recipe_feature_panel(df, spec):
     if len(glv) < 2:
         raise ValueError("feature_panel needs at least 2 groups")
 
-    keys = [f"{f}: {g}" for f in feats for g in glv]
+    # A constant feature (every value the same) is not tested: it stays out of
+    # the normality check, of the tests and of the BH count.
+    const = np.array([is_zero_variance(d.loc[d["feature"] == f, "value"]) for f in feats],
+                     dtype=bool)
+    pairs = [(f, g) for f, c in zip(feats, const) if not c for g in glv]
+    keys = [f"{f}: {g}" for f, g in pairs]
     samples = {k: d.loc[(d["feature"] == f) & (d["group"] == g), "value"].to_numpy(dtype=float)
-               for k, (f, g) in zip(keys, [(f, g) for f in feats for g in glv])}
+               for k, (f, g) in zip(keys, pairs)}
     sw = [bool(shapiro_normal(v)[1]) for v in samples.values()]
     all_normal = all(sw)
     method = spec["test"].get("method") or "auto"
-    test = resolve_test(method, len(glv), all_normal)
     forced = method.lower() != "auto"
+    # When the normality check fails but the rank test cannot reach P < 0.05 at
+    # the group sizes of the panel, auto keeps the parametric family.
+    tested = [f for f, c in zip(feats, const) if not c]
+    sizes = [max([int(((d["feature"] == f) & (d["group"] == g)).sum()) for f in tested], default=0)
+             for g in glv]
+    rank_min_p = rank_test_min_p(sizes, "mann_whitney" if len(glv) == 2 else "kruskal")
+    kept = not forced and not all_normal and rank_test_cannot_reach(rank_min_p)
+    test = resolve_test(method, len(glv), all_normal or kept)
 
     res = np.array([test_feature(d, f, glv, test) for f in feats], dtype=float).reshape(len(feats), 5)
+    res[const, :] = np.nan
     p = res[:, 3]
     q = bh_adjust(p)
     stats_df = pd.DataFrame({
         "feature": feats, "test": LABELS[test], "statistic": res[:, 0], "df1": res[:, 1],
         "df2": res[:, 2], "p_value": p, "p_adj": q, "p_adj_signif": [signif_stars(v) for v in q],
-        "effect_size": res[:, 4], "effect_size_name": EFFECTS[test]})
+        "effect_size": res[:, 4], "effect_size_name": EFFECTS[test],
+        "note": ["not tested: constant" if c else "" for c in const]})
     for g in glv:
         stats_df[f"n_{g}"] = [int(((d["feature"] == f) & (d["group"] == g)).sum()) for f in feats]
-    n_untested = int(np.isnan(p).sum())
+    n_untested = int((np.isnan(p) & ~const).sum())
+    n_tested = int((~np.isnan(p)).sum())
     n_sig = int(np.nansum(q < 0.05))
 
     ap = spec["appearance"]
@@ -376,8 +381,9 @@ def recipe_feature_panel(df, spec):
             ax.scatter(np.full(len(v), k) + jit, v, s=9, color=pal[k], alpha=0.8,
                        edgecolors="black", linewidths=0.25, zorder=3)
         qv = q[i]
-        ax.set_title(f"{title_name(f)}\nq = {'NA' if np.isnan(qv) else format(qv, '.2g')}", fontsize=10,
-                     linespacing=1.15)
+        qtxt = ("not tested: constant" if const[i] else
+                f"q = {'NA' if np.isnan(qv) else format(qv, '.2g')}")
+        ax.set_title(f"{title_name(f)}\n{qtxt}", fontsize=10, linespacing=1.15)
         ax.set_xticks(range(len(glv)))
         ax.set_xticklabels(ticks, fontsize=9, linespacing=0.95)
         ax.set_xlim(-0.6, len(glv) - 0.4)
@@ -394,7 +400,7 @@ def recipe_feature_panel(df, spec):
         axes[j // ncol][j % ncol].set_visible(False)
     fig.supxlabel(ap.get("x_label") or spec["data"]["x"], fontsize=13)
     fig.supylabel(y_lab, fontsize=13)
-    sub_txt = (f"{LABELS[test]} per feature; BH-adjusted q across {len(feats)} features; "
+    sub_txt = (f"{LABELS[test]} per feature; BH-adjusted q across {n_tested} features; "
                f"{n_sig} with q < 0.05")
     fig.suptitle(sub_txt, fontsize=10, color="#4d4d4d")
     fig.tight_layout(rect=(0, 0, 1, 1 - 0.12 / h))
@@ -407,7 +413,8 @@ def recipe_feature_panel(df, spec):
     test_meta = {
         "name": LABELS[test], "test": test, "p_adjust": "BH", "n_features": len(feats),
         "n_groups": len(glv), "groups": glv, "n_significant": n_sig, "n_untested": n_untested,
-        "forced": forced,
+        "n_constant": int(const.sum()), "n_tested": n_tested, "forced": forced,
+        "kept_parametric": kept, "rank_test_attainable_p": rank_min_p,
         "assumptions": {"normality": {"test": "shapiro-wilk", "all_normal": all_normal,
                                       "n_checked": len(keys), "n_non_normal": int(len(sw) - sum(sw))}},
     }
@@ -416,7 +423,7 @@ def recipe_feature_panel(df, spec):
         "methods": _methods(test_meta, stats_df, glv, y_lab, spec["data"]["x"]),
         "df_used": d[["feature", "group", "value"]], "clean_steps": lg["steps"], "qc": qc,
         "label": slugify(os.path.splitext(spec["data"]["file"])[0]), "width": w, "height": h,
-        "build_script": functools.partial(_script, spec, lg["layout"], test, ncol),
+        "build_script": functools.partial(_script, spec, lg["layout"], test, ncol, glv),
     }
 
 
@@ -437,7 +444,17 @@ def _methods(tm, stats_df, glv, y_lab, x):
     import platform
     nc = tm["assumptions"]["normality"]["n_checked"]
     if tm["forced"]:
-        choice = f"The {tm['name']} was set for every feature by the user. "
+        floor_txt = (rank_floor_text(tm["rank_test_attainable_p"], False)
+                     if tm["test"] in ("wilcoxon", "kruskal") else "")
+        choice = (f"The {tm['name']} was set for every feature by the user. "
+                  + (floor_txt + " " if floor_txt else ""))
+    elif tm["kept_parametric"]:
+        choice = ("One test family was chosen for the whole panel: the Shapiro-Wilk test was run on "
+                  f"each of the {nc} feature-by-group samples, and "
+                  f"{tm['assumptions']['normality']['n_non_normal']} of them departed from normality "
+                  "(P <= 0.05, or fewer than 3 values). "
+                  f"{rank_floor_text(tm['rank_test_attainable_p'], True)} The {tm['name']} was used "
+                  "for every feature. ")
     elif tm["assumptions"]["normality"]["all_normal"]:
         choice = ("One test family was chosen for the whole panel: the Shapiro-Wilk test was run on "
                   f"each of the {nc} feature-by-group samples, and because none departed from "
@@ -451,17 +468,19 @@ def _methods(tm, stats_df, glv, y_lab, x):
     nt = ", ".join(f"{g} (n = {n_range(stats_df[f'n_{g}'])})" for g in glv)
     untested = (f"{tm['n_untested']} feature(s) had a group with fewer than 2 values and were not "
                 "tested. " if tm["n_untested"] else "")
+    constant = (f"{tm['n_constant']} feature(s) were constant (all values equal) and were not "
+                "tested. " if tm["n_constant"] else "")
     return (
         f"{cap_first(y_lab)} was compared between the levels of {x} ({', '.join(glv)}) separately "
         f"for each of {tm['n_features']} features. {choice}P values were adjusted across the "
-        f"{tm['n_features']} features with the Benjamini-Hochberg method; {tm['n_significant']} "
+        f"{tm['n_tested']} features with the Benjamini-Hochberg method; {tm['n_significant']} "
         f"features had an adjusted P (q) below 0.05. The effect size is {EFFECTS[tm['test']]}. "
-        f"{untested}Group sizes per feature: {nt}. Drawn in Python {platform.python_version()} "
-        f"with matplotlib {v('matplotlib')} and scipy {v('scipy')}."
+        f"{constant}{untested}Group sizes per feature: {nt}. Drawn in Python "
+        f"{platform.python_version()} with matplotlib {v('matplotlib')} and scipy {v('scipy')}."
     )
 
 
-def _script(spec, layout, test, ncol, in_name, fig_stub):
+def _script(spec, layout, test, ncol, glv, in_name, fig_stub):
     """Write the standalone script that redraws the panel.
 
     Args:
@@ -469,6 +488,7 @@ def _script(spec, layout, test, ncol, in_name, fig_stub):
         layout: "long" or "wide".
         test: The test key.
         ncol: The count of panel columns.
+        glv: The group levels, in the order of the figure.
         in_name: The name of the input copy inside the bundle.
         fig_stub: The name of the figure file, without its extension.
 
@@ -479,11 +499,11 @@ def _script(spec, layout, test, ncol, in_name, fig_stub):
     x = dat["x"]
     if layout == "long":
         read = (f'd = pd.DataFrame({{"feature": raw["{dat["facet"]}"].astype(str), '
-                f'"group": raw["{x}"].astype(str), "value": pd.to_numeric(raw["{dat["y"]}"], '
+                f'"group": raw["{x}"].map(label), "value": pd.to_numeric(raw["{dat["y"]}"], '
                 'errors="coerce")})')
     else:
         read = (f'cols = [c for c in raw.select_dtypes("number").columns if c != "{x}"]\n'
-                f'd = pd.concat([pd.DataFrame({{"feature": c, "group": raw["{x}"].astype(str), '
+                f'd = pd.concat([pd.DataFrame({{"feature": c, "group": raw["{x}"].map(label), '
                 '"value": raw[c]}) for c in cols], ignore_index=True)')
     call = {"welch_t": "stats.ttest_ind(*g, equal_var=False).pvalue",
             "wilcoxon": "stats.mannwhitneyu(*g).pvalue",
@@ -498,11 +518,14 @@ import numpy as np, pandas as pd
 from scipy import stats
 from statsmodels.stats.multitest import multipletests
 
+
+{SCRIPT_LABEL_FN}
+
 raw = pd.read_csv("{in_name}")
 {read}
 d = d[np.isfinite(d["value"])]
 feats = list(pd.unique(d["feature"]))
-levels = sorted(pd.unique(d["group"]))
+levels = {glv!r}
 p = []
 for f in feats:
     g = [d.loc[(d["feature"] == f) & (d["group"] == lv), "value"].to_numpy() for lv in levels]

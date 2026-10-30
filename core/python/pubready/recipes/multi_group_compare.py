@@ -14,16 +14,48 @@ from scipy import stats
 from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, category_width, geom_top, new_fig, palette,
                      plain_number_axis, script_geom_code, wrap_labels)
-from ..util import cap_first, cld_letters, df_text, p_stars, shapiro_normal
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, cld_letters,
+                    df_text, level_labels, level_order, p_bracket_label, p_floor_column, p_stars,
+                    rank_floor_text, rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
+                    zero_variance_groups, zero_variance_message, zero_variance_subject)
 
 MAX_BRACKETS = 6
 """More significant pairs than this switch the figure to a compact letter display."""
 
 
-def _resolve(method, all_normal, equal_var):
+TESTS = ("auto", "anova", "aov", "welch", "welch_anova", "kruskal", "kruskal_wallis", "kw")
+"""The --test values that multi_group_compare knows (F63)."""
+
+
+def _resolve(method, all_normal, equal_var, rank_min_p=np.nan, can_run=None):
+    """Resolve the omnibus test from the request and the assumption checks.
+
+    When the normality check fails but the Kruskal-Wallis test cannot reach
+    P < 0.05 at the group sizes, --test auto keeps the parametric test that
+    Levene's test picks, when that test can run, as resolve_multi_group_method()
+    of the R engine does.
+
+    Args:
+        method: The --test value.
+        all_normal: Whether every group passed the normality check.
+        equal_var: Whether Levene's test found equal variances.
+        rank_min_p: The smallest P that the Kruskal-Wallis test can reach.
+        can_run: Whether the "anova" and the "welch" test can run.
+
+    Returns:
+        tuple: The family, the omnibus label, the post hoc label and whether
+        the parametric test was kept for the attainable P.
+
+    Raises:
+        ValueError: If the test is unknown.
+    """
     method = (method or "auto").lower()
+    can_run = can_run or {"anova": True, "welch": True}
+    para = "anova" if equal_var else "welch"
+    kept = bool(method == "auto" and not all_normal and rank_test_cannot_reach(rank_min_p)
+                and can_run[para])
     if method == "auto":
-        fam = "anova" if (all_normal and equal_var) else "welch" if all_normal else "kruskal"
+        fam = para if (all_normal or kept) else "kruskal"
     elif method in ("anova", "aov"):
         fam = "anova"
     elif method in ("welch", "welch_anova"):
@@ -36,16 +68,20 @@ def _resolve(method, all_normal, equal_var):
              "kruskal": "Kruskal-Wallis test"}[fam]
     posthoc = {"anova": "Tukey's HSD", "welch": "the Games-Howell test",
                "kruskal": "Dunn's test with Benjamini-Hochberg adjustment"}[fam]
-    return fam, label, posthoc
+    return fam, label, posthoc, kept
 
 
 def recipe_multi_group_compare(df, spec):
+    check_test_method("multi_group_compare", spec["test"].get("method"), TESTS)
     x, y = spec["data"]["x"], spec["data"]["y"]
     df, steps = clean_xy(df, x, y)
-    df[x] = df[x].astype(str)
-    lv = sorted(df[x].unique())
+    # One level rule in both engines: the --levels order, else numeric order when
+    # every label is a number, else code-point order.
+    df[x] = level_labels(df[x])
+    lv = level_order(df[x], spec["data"].get("levels"), "group")
     if len(lv) < 2:
         raise ValueError(f"multi_group_compare needs 2+ groups in '{x}'")
+    check_spread(df[y], "multi_group_compare", f"the outcome '{y}'")
 
     groups = [df.loc[df[x] == g, y].to_numpy() for g in lv]
     all_normal = all(bool(shapiro_normal(g)[1]) for g in groups)
@@ -54,7 +90,12 @@ def recipe_multi_group_compare(df, spec):
     except Exception:
         lev_p = np.nan
     equal_var = np.isnan(lev_p) or lev_p > 0.05
-    fam, label, posthoc_label = _resolve(spec["test"].get("method"), all_normal, equal_var)
+    rank_min_p = rank_test_min_p([len(g) for g in groups], "kruskal")
+    zv = zero_variance_groups(dict(zip(lv, groups)))
+    fam, label, posthoc_label, kept = _resolve(
+        spec["test"].get("method"), all_normal, equal_var, rank_min_p,
+        {"anova": len(zv) < len(lv), "welch": not zv})
+    _check_variance(fam, label, dict(zip(lv, groups)))
 
     if fam == "anova":
         row = pg.anova(data=df, dv=y, between=x).iloc[0]
@@ -76,6 +117,7 @@ def recipe_multi_group_compare(df, spec):
                     eff=(float(row.H) - len(lv) + 1) / (len(df) - len(lv)))
         m = sp.posthoc_dunn(df, val_col=y, group_col=x, p_adjust="fdr_bh")
         pairs = [(str(i), str(j), float(m.loc[i, j])) for i, j in itertools.combinations(list(m.index), 2)]
+    pairs = order_pairs(pairs, lv)
 
     ap = spec["appearance"]
     pal = palette(len(lv), ap.get("palette"))
@@ -103,7 +145,7 @@ def recipe_multi_group_compare(df, spec):
         span = max(abs(top_all), 1.0)
     letters = None
     if display == "brackets" and sig:
-        _draw_brackets(ax, sig, lv, top_all, span, blabel)
+        _draw_brackets(ax, sig, lv, top_all, span, blabel, fam in ("anova", "welch"))
     elif display == "compact letter display":
         letters = cld_letters(lv, [a for a, _, _ in pairs], [b for _, b, _ in pairs],
                               [p for _, _, p in pairs])
@@ -133,6 +175,9 @@ def recipe_multi_group_compare(df, spec):
         "omnibus_df2": omni["df2"], "omnibus_p": omni["p"],
         "omnibus_effect_size_name": omni["eff_name"], "omnibus_effect_size": omni["eff"],
     } for a, b, p in pairs])
+    floored = fam in ("anova", "welch")
+    if floored and len(stats_df):
+        stats_df["p_adj"] = p_floor_column(stats_df["p_adj"])
 
     n_by = {g: int(len(gr)) for g, gr in zip(lv, groups)}
     test_meta = {
@@ -146,8 +191,10 @@ def recipe_multi_group_compare(df, spec):
         "display": display, "letters": letters,
         "assumptions": {"normality": {"test": "shapiro-wilk", "all_normal": all_normal},
                         "equal_variance": {"test": "Levene", "p": lev_p}},
+        "rank_test_attainable_p": rank_min_p,
     }
-    methods = _methods(label, posthoc_label, omni, n_by, spec, display, len(sig))
+    floor_txt = rank_floor_text(rank_min_p, kept) if (kept or fam == "kruskal") else ""
+    methods = _methods(label, posthoc_label, omni, n_by, spec, display, len(sig), floor_txt)
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": df, "clean_steps": steps, "width": w, "height": h,
@@ -155,6 +202,62 @@ def recipe_multi_group_compare(df, spec):
         "build_script": functools.partial(_script, spec, fam, label, lv, pal, letters, w,
                                           blabel=blabel),
     }
+
+
+def _pair_key(row, pos):
+    """Sort key of a pair: the position of its first group, then of its second.
+
+    Args:
+        row: The pair as (group1, group2, p).
+        pos: The position of each group on the axis.
+
+    Returns:
+        tuple: The two positions.
+    """
+    return (pos[row[0]], pos[row[1]])
+
+
+def order_pairs(pairs, lv):
+    """Orient each pair along the axis and sort the pairs in the level order.
+
+    group1 is the group that comes first in the level order, and the pairs
+    follow combn(levels, 2) of the R engine, whatever order the post hoc
+    function gives.
+
+    Args:
+        pairs: The pairs as (group1, group2, p).
+        lv: The groups, in the order of the axis.
+
+    Returns:
+        list: The pairs, oriented and sorted.
+    """
+    pos = {g: i for i, g in enumerate(lv)}
+    out = [(a, b, p) if pos[a] < pos[b] else (b, a, p) for a, b, p in pairs]
+    return sorted(out, key=functools.partial(_pair_key, pos=pos))
+
+
+def _check_variance(fam, label, by_group):
+    """Stop an ANOVA whose variance is zero, as .mg_check_variance() of the R engine.
+
+    Welch's ANOVA weights each group by the inverse of its variance, and the
+    one-way ANOVA divides by the pooled variance. A variance of zero there makes
+    the statistic infinite, so the run stops and names the groups.
+
+    Args:
+        fam: The test family: anova, welch or kruskal.
+        label: The omnibus test.
+        by_group: The values of each group.
+
+    Raises:
+        ValueError: If the variance of the test is zero.
+    """
+    zv = zero_variance_groups(by_group)
+    if fam == "welch" and zv:
+        raise ValueError(zero_variance_message(label, zero_variance_subject(zv),
+                                               "use --test anova or --test kruskal"))
+    if fam == "anova" and len(zv) == len(by_group):
+        raise ValueError(zero_variance_message(label, zero_variance_subject(zv),
+                                               "use --test kruskal"))
 
 
 def _bracket_key(row, pos):
@@ -171,7 +274,7 @@ def _bracket_key(row, pos):
     return (abs(i2 - i1), min(i1, i2))
 
 
-def _draw_brackets(ax, sig, lv, top_all, span, blabel):
+def _draw_brackets(ax, sig, lv, top_all, span, blabel, floored=False):
     """Draw one bracket per significant pair, each on its own level.
 
     The rule is the one of .mg_bracket_rows() in the R engine: the narrowest
@@ -185,6 +288,8 @@ def _draw_brackets(ax, sig, lv, top_all, span, blabel):
         top_all: The top of the tallest geom.
         span: The span of the drawn axis.
         blabel: "p.signif" for stars or "p.format" for the P value.
+        floored: Whether the P values come from the studentized range, so a P
+            below 1e-12 reads "p < 1e-12".
     """
     pos = {g: i for i, g in enumerate(lv)}
     rows = sorted(sig, key=functools.partial(_bracket_key, pos=pos))
@@ -194,12 +299,12 @@ def _draw_brackets(ax, sig, lv, top_all, span, blabel):
     for (a, b, p), yk in zip(rows, levels):
         x1, x2 = sorted((pos[a], pos[b]))
         ax.plot([x1, x1, x2, x2], [yk - tip, yk, yk, yk - tip], color="black", lw=0.8)
-        lab = f"p = {p:.2g}" if blabel == "p.format" else p_stars(p)
+        lab = p_bracket_label(p, floored) if blabel == "p.format" else p_stars(p)
         ax.text((x1 + x2) / 2, yk, lab, ha="center", va="bottom", fontsize=10)
     ax.set_ylim(top=top)
 
 
-def _methods(label, posthoc_label, omni, n_by, spec, display, n_sig):
+def _methods(label, posthoc_label, omni, n_by, spec, display, n_sig, floor_txt=""):
     """Write the methods paragraph, with the same sentences as the R engine.
 
     Args:
@@ -210,6 +315,7 @@ def _methods(label, posthoc_label, omni, n_by, spec, display, n_sig):
         spec: The figure specification.
         display: "brackets" or "compact letter display".
         n_sig: The count of significant pairs.
+        floor_txt: The sentence on the attainable P of the rank test, or "".
 
     Returns:
         str: The paragraph.
@@ -224,6 +330,8 @@ def _methods(label, posthoc_label, omni, n_by, spec, display, n_sig):
         omni_txt = (f"{art}{label} (F({df_text(omni['df1'])}, {df_text(omni['df2'])}) = "
                     f"{omni['stat']:.2f}, P = {omni['p']:.2g})")
     eff = f" The effect size was {omni['eff_name']} = {omni['eff']:.2f}." if omni["eff_name"] else ""
+    if floor_txt:
+        eff = " " + floor_txt + eff
     ns = ", ".join(f"{g} (n = {n})" for g, n in n_by.items())
     if display == "compact letter display":
         ph_txt = (f" Pairwise comparisons used {posthoc_label}. Because {n_sig} pairs differed"
@@ -310,7 +418,9 @@ def bracket_key(row):
     return (abs(i2 - i1), min(i1, i2))
 
 
-df = pd.read_csv("{in_name}"); df["{x}"] = df["{x}"].astype(str)
+{SCRIPT_LABEL_FN}
+
+df = pd.read_csv("{in_name}"); df["{x}"] = df["{x}"].map(label)
 order = {lv}
 {omni_line}
 {ph_line}

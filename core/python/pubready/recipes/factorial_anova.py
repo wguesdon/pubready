@@ -5,6 +5,7 @@ effect's p-value shown on top. ``--geom interaction`` draws the interaction plot
 of the same ANOVA instead: the mean +/- SEM of each cell, one line per --fill
 level."""
 import functools
+import itertools
 import textwrap
 
 import matplotlib.patches as mpatches
@@ -17,8 +18,9 @@ import statsmodels.formula.api as smf
 from matplotlib.lines import Line2D
 from matplotlib.ticker import MaxNLocator
 
-from ..theme import apply_pub_style, palette, rain_offsets
-from ..util import cap_first
+from ..theme import apply_pub_style, longest_line, palette, rain_offsets, wrap_label
+from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, level_labels,
+                    level_order, quote_join, shapiro_normal)
 
 # The dodge width of the interaction plot, as position_dodge(0.25) in R.
 INT_DODGE = 0.25
@@ -26,6 +28,13 @@ INT_DODGE = 0.25
 BAR_DODGE = 0.8
 # The dodge width of the box geom: seaborn dodges the boxes over their width of 0.7.
 BOX_DODGE = 0.7
+# The legend labels and title wrap at the spaces at 20 characters, as
+# .fa_legend_text() of the R engine.
+LEGEND_WRAP = 20
+
+
+TESTS = ("auto", "anova", "aov", "art", "aligned_rank")
+"""The --test values that factorial_anova knows (F63)."""
 
 
 def _plab(p):
@@ -40,6 +49,67 @@ def _plab(p):
     if p is None or (isinstance(p, float) and np.isnan(p)):
         return "P = NA"
     return "P < 0.001" if p < 0.001 else f"P = {p:.2g}"
+
+
+def check_design(df, factors, levels=None):
+    """Check the design before the fit, as .fa_check_design() of the R engine.
+
+    Each factor needs 2 or more levels. Every cell of the design needs a value,
+    because an empty cell makes some terms not estimable and the two engines
+    then test different hypotheses. Some cell needs 2 or more values, else no
+    residual degree of freedom is left.
+
+    Args:
+        df: The cleaned data, with the factors as text labels.
+        factors: The factor columns, --x first.
+        levels: The --levels order of --x, or None.
+
+    Raises:
+        ValueError: If the design cannot be fitted, in the words of the R engine.
+    """
+    lv = {f: level_order(df[f], levels if i == 0 else None, "level") for i, f in enumerate(factors)}
+    for f in factors:
+        if len(lv[f]) < 2:
+            raise ValueError(f"factorial_anova needs 2 or more levels in each factor; '{f}' has "
+                             f"{len(lv[f])} ({quote_join(lv[f])})")
+    counts = df.groupby(factors).size().to_dict()
+    # The cells in the order of R's table(): the first factor varies fastest.
+    cells = [tuple(reversed(c)) for c in itertools.product(*[lv[f] for f in reversed(factors)])]
+    empty = [c for c in cells if counts.get(c, 0) == 0]
+    if empty:
+        txt = [", ".join(f"{f} = '{v}'" for f, v in zip(factors, c)) for c in empty]
+        more = f"; and {len(txt) - 5} more" if len(txt) > 5 else ""
+        raise ValueError("factorial_anova needs a value in every cell of the design; no row holds "
+                         + "; ".join(txt[:5]) + more)
+    if len(df) <= len(cells):
+        raise ValueError("factorial_anova needs a cell with 2 or more values to estimate the "
+                         f"residual variance; the {len(cells)} cells hold one value each")
+
+
+def clean_step_lines(y, coerced, n_missing, n0, n1):
+    """The data log of the cleaning, as .fa_clean_steps() of the R engine writes it.
+
+    Args:
+        y: The outcome column.
+        coerced: The count of outcome values that became NA as numbers.
+        n_missing: The count of missing values of each column, in order.
+        n0: The count of rows before the cleaning.
+        n1: The count of rows after it.
+
+    Returns:
+        list: The steps: the coerced values, the rows with no value in each
+        column (a row with two missing values counts in both), and the rows
+        dropped in all.
+    """
+    steps = []
+    if coerced:
+        steps.append(f"Coerced column '{y}' to numeric; {coerced} value(s) became NA.")
+    for col, n in n_missing.items():
+        if n:
+            steps.append(f"{n} row(s) have no value in '{col}'.")
+    if n1 < n0:
+        steps.append(f"Dropped {n0 - n1} row(s) with a missing value ({n0} -> {n1} rows).")
+    return steps or ["No cleaning applied; input used as-is."]
 
 
 def _clean_term(t, factors):
@@ -99,7 +169,8 @@ def fig_size(x_lv, fill_lv, fill_name, n_facet, has_facet):
         tuple: The width and the height in inches.
     """
     slot = 0.3 * len(fill_lv) + 0.35
-    legend_w = 0.5 + 0.08 * max(len(str(s)) for s in list(fill_lv) + [fill_name])
+    legend_w = 0.5 + 0.08 * max(longest_line(wrap_label(s, LEGEND_WRAP))
+                                for s in list(fill_lv) + [fill_name])
     w = max(6.8 if has_facet else 5.2, 0.9 + n_facet * len(x_lv) * slot + legend_w)
     lines = max(wrap_x(s).count("\n") + 1 for s in x_lv)
     h = 4.4 + (0.18 * (lines - 1) if needs_wrap(x_lv) else 0.0)
@@ -218,6 +289,7 @@ def recipe_factorial_anova(df, spec):
     Returns:
         dict: The recipe result for the bundle writer.
     """
+    check_test_method("factorial_anova", spec["test"].get("method"), TESTS)
     y = spec["data"]["y"]
     f1, f2, f3 = spec["data"]["x"], spec["data"]["fill"], spec["data"].get("facet")
     if not f2:
@@ -232,18 +304,33 @@ def recipe_factorial_anova(df, spec):
             raise ValueError(f"column '{f}' not found")
     df = df.copy()
     for f in factors:
-        df[f] = df[f].astype(str)
+        df[f] = level_labels(df[f])
+    # Each reason for a dropped row is counted on its own: a text value of the
+    # outcome that becomes NA, and a missing value in each column.
+    y_raw = df[y]
     df[y] = pd.to_numeric(df[y], errors="coerce")
+    coerced = int((df[y].isna() & y_raw.notna()).sum())
+    n_missing = {c: int(df[c].isna().sum()) for c in [y] + factors}
     n0 = len(df)
     df = df.dropna(subset=[y] + factors).reset_index(drop=True)
-    clean_steps = (f"Dropped {n0 - len(df)} row(s) with missing values ({n0} -> {len(df)} rows)."
-                   if len(df) < n0 else "No cleaning applied; input used as-is.")
+    clean_steps = clean_step_lines(y, coerced, n_missing, n0, len(df))
+    check_spread(df[y], "factorial_anova", f"the outcome '{y}'")
+    check_design(df, factors, spec["data"].get("levels"))
 
     ren = {y: "_y_"}
     ren.update({f: f"_f{i}_" for i, f in enumerate(factors)})
     d2 = df.rename(columns=ren)
     rhs = "*".join(f"C(_f{i}_)" for i in range(len(factors)))
     model = smf.ols(f"_y_ ~ {rhs}", data=d2).fit()
+    # Under --test auto the R engine takes the aligned rank transform when the
+    # residuals of the full model fail Shapiro-Wilk. The Python engine has no
+    # aligned rank transform, so it stops there and routes the user.
+    res_p = shapiro_normal(model.resid.to_numpy())[0]
+    if method == "auto" and np.isfinite(res_p) and res_p < 0.05:
+        raise ValueError(
+            f"factorial_anova: the residuals of the ANOVA depart from normality (Shapiro-Wilk "
+            f"P = {res_p:.3g}), so --test auto takes the aligned rank transform, which only the R "
+            "engine has; rerun with --engine r, or with --test anova to keep the parametric ANOVA")
     aov = sm.stats.anova_lm(model, typ=2)
     # Partial eta squared, SS_effect / (SS_effect + SS_residual), as the R engine reports.
     ss_res = float(aov.loc["Residual", "sum_sq"])
@@ -259,6 +346,7 @@ def recipe_factorial_anova(df, spec):
                      "effect_size_name": "partial eta squared",
                      "significant": float(r["PR(>F)"]) < 0.05})
     eff = pd.DataFrame(rows)
+    eff["residual_shapiro_p"] = res_p
 
     sig = eff[eff["significant"]]
     subtitle = ("\n".join(f"{r.effect.replace(':', ' × ')}: {_plab(r.p_value)}"
@@ -266,9 +354,12 @@ def recipe_factorial_anova(df, spec):
                 if len(sig) else "No significant effects (P ≥ 0.05)")
 
     ap = spec["appearance"]
-    f1_lv = sorted(df[f1].unique()); f2_lv = sorted(df[f2].unique())
+    # --levels orders the --x levels; --fill and --facet take the rule without a
+    # list: numeric order when every label is a number, else code-point order.
+    f1_lv = level_order(df[f1], spec["data"].get("levels"), "level")
+    f2_lv = level_order(df[f2], None, "level")
     pal = palette(len(f2_lv), ap.get("palette"))
-    facet_lv = sorted(df[f3].unique()) if f3 else [None]
+    facet_lv = level_order(df[f3], None, "level") if f3 else [None]
     geom = ap.get("geom") or "box"
     w, h = fig_size(f1_lv, f2_lv, f2, len(facet_lv), bool(f3))
     wrap = needs_wrap(f1_lv)
@@ -295,11 +386,13 @@ def recipe_factorial_anova(df, spec):
         ax.set_ylabel(ap.get("y_label") or y if ax is axes[0] else "")
         apply_pub_style(ax, ap.get("theme"))
     if geom == "interaction":
-        handles = [Line2D([0], [0], color=pal[i], lw=1.6, marker="o", ms=6, label=lvl)
+        handles = [Line2D([0], [0], color=pal[i], lw=1.6, marker="o", ms=6,
+                          label=wrap_label(lvl, LEGEND_WRAP))
                    for i, lvl in enumerate(f2_lv)]
     else:
-        handles = [mpatches.Patch(color=pal[i], label=lvl) for i, lvl in enumerate(f2_lv)]
-    axes[-1].legend(handles=handles, title=f2, loc="center left",
+        handles = [mpatches.Patch(color=pal[i], label=wrap_label(lvl, LEGEND_WRAP))
+                   for i, lvl in enumerate(f2_lv)]
+    axes[-1].legend(handles=handles, title=wrap_label(f2, LEGEND_WRAP), loc="center left",
                     bbox_to_anchor=(1.02, 0.5), frameon=False, fontsize=9)
     fig.suptitle(subtitle, fontsize=9.5, color="#4d4d4d")
     fig.tight_layout(rect=(0, 0, 1, 0.97))
@@ -307,6 +400,7 @@ def recipe_factorial_anova(df, spec):
     test_meta = {
         "name": f"{len(factors)}-way ANOVA", "type": "type_II_anova",
         "factors": factors,
+        "residual_normality": {"test": "shapiro-wilk", "p": res_p},
         "effects": [{"effect": r.effect, "df1": r.df1, "df2": r.df2,
                      "statistic": r.statistic, "p_value": r.p_value,
                      "effect_size": r.effect_size} for r in eff.itertuples()],
@@ -340,11 +434,30 @@ def _methods(eff, factors, spec):
     return (
         f"{cap_first(y_label)} was analyzed by a {len(factors)}-way ANOVA (Type II sums of squares) "
         f"with factors {', '.join(factors)}. Effects tested: {parts}. Effect sizes are partial eta squared."
+        + geom_text(spec["appearance"].get("geom") or "box", factors[1]) +
         " Significance was set at P < 0.05."
         f" Analyses were performed in Python {platform.python_version()} with statsmodels {v('statsmodels')};"
         f" figures were produced with seaborn {v('seaborn')}."
         " (The Python engine uses parametric ANOVA only; the aligned rank transform is R-only.)"
     )
+
+
+def geom_text(geom, fill):
+    """The sentence of the methods text on what the bar and the interaction geoms show.
+
+    Args:
+        geom: The geom.
+        fill: The --fill column.
+
+    Returns:
+        str: The sentence, or "" for the box geom, in the words of the R engine.
+    """
+    if geom == "bar":
+        return " The bars show the mean +/- SEM of each cell."
+    if geom == "interaction":
+        return (" The points show the mean +/- SEM of each cell, joined by one line per level of "
+                f"{fill}.")
+    return ""
 
 
 def _script_points(f1, f2, y, pal, dodge):
@@ -397,7 +510,7 @@ def _script(spec, factors, f1_lv, f2_lv, facet_lv, pal, w, h, in_name, fig_stub)
     y = spec["data"]["y"]; f1, f2 = factors[0], factors[1]
     f3 = factors[2] if len(factors) >= 3 else None
     ap = spec["appearance"]
-    facet_line = (f'facet_lv = sorted(df["{f3}"].unique())' if f3 else "facet_lv = [None]")
+    facet_line = f"facet_lv = {facet_lv!r}"
     wrap_line = ('\n    ax.set_xticks(range(len(f1_lv))); ax.set_xticklabels([textwrap.fill(s, 12, break_on_hyphens=False) for s in f1_lv])'
                  if needs_wrap(f1_lv) else "")
     if (ap.get("geom") or "box") == "interaction":
@@ -435,9 +548,12 @@ import numpy as np
 import pandas as pd, seaborn as sns
 import statsmodels.api as sm, statsmodels.formula.api as smf
 
+
+{SCRIPT_LABEL_FN}
+
 df = pd.read_csv("{in_name}")
 factors = {factors}
-for f in factors: df[f] = df[f].astype(str)
+for f in factors: df[f] = df[f].map(label)
 ren = {{"{y}": "_y_"}}; ren.update({{f: "_f%d_" % i for i, f in enumerate(factors)}})
 d2 = df.rename(columns=ren)
 rhs = "*".join("C(_f%d_)" % i for i in range(len(factors)))

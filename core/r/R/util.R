@@ -13,14 +13,81 @@ is_normal_check <- function(n) isTRUE(n$normal)
 # The installed version of one package, as a string.
 pkg_version_string <- function(p) as.character(utils::packageVersion(p))
 
-# Shapiro-Wilk normality on a numeric vector, guarded for small and large n.
+# Shapiro-Wilk normality on a numeric vector, guarded for small and large n. A
+# sample with zero range (every value the same) is not normal and has no P, in
+# both engines (util.shapiro_normal).
 shapiro_safe <- function(v) {
   v <- v[is.finite(v)]
   n <- length(v)
   if (n < 3)   return(list(test = "shapiro-wilk", n = n, p = NA_real_, normal = NA))
+  if (max(v) == min(v)) return(list(test = "shapiro-wilk", n = n, p = NA_real_, normal = FALSE))
   if (n > 5000) return(list(test = "shapiro-wilk", n = n, p = NA_real_, normal = TRUE))
   p <- tryCatch(stats::shapiro.test(v)$p.value, error = na_on_error)
   list(test = "shapiro-wilk", n = n, p = p, normal = isTRUE(p > 0.05))
+}
+
+# Whether a sample has zero variance: two or more finite values, all equal.
+is_zero_variance <- function(v) {
+  v <- v[is.finite(v)]
+  length(v) >= 2 && max(v) == min(v)
+}
+
+# Stop when a variable cannot carry a test: every value is the same, or the
+# variance is not a finite positive number, as for values near 1e300 (the
+# squares overflow) or near 1e-300 (the squares underflow). `what` names the
+# variable, for example "the outcome 'value'". The Python engine writes the same
+# words (util.check_spread).
+check_spread <- function(v, recipe, what) {
+  if (is_zero_variance(v)) {
+    stop(sprintf("%s cannot run because %s has zero variance (all values are equal)", recipe, what))
+  }
+  v <- v[is.finite(v)]
+  if (length(v) >= 2) {
+    s <- stats::var(v)
+    if (!is.finite(s) || s <= 0) {
+      stop(sprintf("%s cannot run because the variance of %s is not a finite positive number (the values run from %s to %s); rescale the values, for example to other units",
+                   recipe, what, sprintf("%.3g", min(v)), sprintf("%.3g", max(v))))
+    }
+  }
+  invisible(NULL)
+}
+
+# The names of the groups of a named list that have zero variance.
+zero_variance_groups <- function(groups) {
+  names(groups)[vapply(groups, is_zero_variance, logical(1))]
+}
+
+# Stop on a --test value that a recipe does not know, and list the values that
+# it knows. The Python engine writes the same message (util.check_test_method).
+check_test_method <- function(recipe, method, allowed) {
+  m <- tolower(method %||% "auto")
+  if (nzchar(m) && !m %in% allowed) {
+    stop(sprintf("%s does not know --test '%s'; use one of: %s", recipe, m,
+                 paste(allowed, collapse = ", ")))
+  }
+  invisible(m)
+}
+
+# The quoted names of a list, joined as text: 'a'; 'a' and 'b'; 'a', 'b' and 'c'.
+quote_join <- function(x) {
+  q <- sprintf("'%s'", x)
+  if (length(q) <= 1) return(paste(q, collapse = ""))
+  paste(paste(q[-length(q)], collapse = ", "), "and", q[length(q)])
+}
+
+# The message that stops a test that divides by a variance of zero. `subject`
+# names the samples, for example "the group 'a' has" or "the within-pair
+# differences have"; `hint` names what to run instead. The Python engine writes
+# the same words (util.zero_variance_message).
+zero_variance_message <- function(test, subject, hint) {
+  sprintf("%s cannot run because %s zero variance (all values are equal); %s",
+          test, subject, hint)
+}
+
+# The subject of zero_variance_message() for a set of groups.
+zero_variance_subject <- function(groups) {
+  if (length(groups) == 1) sprintf("the group %s has", quote_join(groups))
+  else sprintf("the groups %s have", quote_join(groups))
 }
 
 # Rank-biserial correlation for two independent groups, from the Mann-Whitney U
@@ -32,6 +99,20 @@ rank_biserial_unpaired <- function(u, n1, n2) {
   2 * as.numeric(u) / (n1 * n2) - 1
 }
 
+# Signed Cohen's d of two groups, first minus second. Two independent groups use
+# the pooled standard deviation; paired data use dz, the mean of the
+# differences over their standard deviation. The Python engine uses the same
+# formulas (util.cohens_d_r).
+cohens_d_signed <- function(a, b, paired = FALSE) {
+  if (paired) {
+    d <- a - b
+    return(mean(d) / stats::sd(d))
+  }
+  na <- length(a); nb <- length(b)
+  pooled <- sqrt(((na - 1) * stats::var(a) + (nb - 1) * stats::var(b)) / (na + nb - 2))
+  (mean(a) - mean(b)) / pooled
+}
+
 # Rank-biserial correlation for paired differences (Kerby's formula). Zero
 # differences are dropped, as in the signed-rank test itself.
 rank_biserial_paired <- function(d) {
@@ -41,20 +122,63 @@ rank_biserial_paired <- function(d) {
   (sum(rk[d > 0]) - sum(rk[d < 0])) / sum(rk)
 }
 
+# The smallest P that a rank test can reach at the given group sizes: the same
+# test function on data with no tie and complete separation. Independent groups
+# take the ranks 1 to N in group order ("mann_whitney" for two groups, "kruskal"
+# for the Kruskal-Wallis test); paired data take n distinct positive
+# differences ("signed_rank"). NA when a group is empty. The Python engine has
+# the same rule (util.rank_test_min_p).
+rank_test_min_p <- function(sizes, test) {
+  sizes <- as.integer(sizes)
+  if (length(sizes) == 0 || any(is.na(sizes)) || any(sizes < 1)) return(NA_real_)
+  if (test == "signed_rank") {
+    return(suppressWarnings(stats::wilcox.test(as.numeric(seq_len(sizes[1])))$p.value))
+  }
+  if (length(sizes) < 2) return(NA_real_)
+  v <- as.numeric(seq_len(sum(sizes)))
+  g <- rep(seq_along(sizes), sizes)
+  if (test == "mann_whitney") {
+    return(suppressWarnings(stats::wilcox.test(v[g == 1], v[g == 2])$p.value))
+  }
+  stats::kruskal.test(v, factor(g))$p.value
+}
+
+# Whether the rank test cannot reach P < 0.05: then --test auto keeps the
+# parametric test after a failed normality check.
+rank_test_cannot_reach <- function(min_p) isTRUE(min_p > 0.05)
+
+# The sentence of a methods text on the attainable P of the rank test, empty
+# when the rank test can reach P < 0.05. `kept` says that the parametric test
+# was kept for this reason. The Python engine writes the same words.
+rank_floor_text <- function(min_p, kept) {
+  if (!rank_test_cannot_reach(min_p)) return("")
+  txt <- sprintf("The rank test cannot reach P < 0.05 at these group sizes (smallest attainable P = %s)",
+                 sig_text(min_p, 2))
+  if (isTRUE(kept)) paste0(txt, ", so the parametric test was kept.") else paste0(txt, ".")
+}
+
 # Resolve which two-group test to run from the request and the assumption checks.
-resolve_two_group_method <- function(method, all_normal, equal_var, paired) {
+# The t-test of two independent groups is Welch's t-test, which does not assume
+# equal variances; --test student_t forces Student's t-test. Levene's test
+# (equal_var) still runs for the stats table, but it does not choose the test.
+# When the normality check fails but the rank test cannot reach P < 0.05 at the
+# group sizes (rank_min_p), --test auto keeps the parametric test, unless the
+# t-test cannot run (t_can_run, a variance of zero).
+resolve_two_group_method <- function(method, all_normal, equal_var, paired,
+                                     rank_min_p = NA_real_, t_can_run = TRUE) {
   method <- tolower(method %||% "auto")
+  kept <- FALSE
   if (method == "auto") {
     if (isTRUE(all_normal)) {
-      family <- "t"; var_equal <- isTRUE(equal_var)
+      family <- "t"; var_equal <- FALSE
+    } else if (rank_test_cannot_reach(rank_min_p) && isTRUE(t_can_run)) {
+      family <- "t"; var_equal <- FALSE; kept <- TRUE
     } else {
       family <- "wilcoxon"; var_equal <- NA
     }
   } else if (method %in% c("t", "t_test", "student_t", "welch_t")) {
     family <- "t"
-    var_equal <- if (method == "student_t") TRUE
-                 else if (method == "welch_t") FALSE
-                 else isTRUE(equal_var)
+    var_equal <- method == "student_t"
   } else if (method %in% c("wilcoxon", "mann_whitney", "wilcox", "mwu")) {
     family <- "wilcoxon"; var_equal <- NA
   } else {
@@ -67,7 +191,8 @@ resolve_two_group_method <- function(method, all_normal, equal_var, paired) {
   } else {
     if (paired) "Wilcoxon signed-rank test" else "Mann-Whitney U test"
   }
-  list(family = family, var_equal = var_equal, label = label, paired = paired)
+  list(family = family, var_equal = var_equal, label = label, paired = paired,
+       kept_parametric = kept, rank_min_p = rank_min_p)
 }
 
 # Installed versions of the named packages, as a named list of strings.
@@ -153,6 +278,32 @@ cld_letters <- function(levels, group1, group2, p, alpha = 0.05) {
 cap_first <- function(s) {
   if (length(s) == 0 || is.na(s) || nchar(s) == 0) return(s)
   paste0(toupper(substring(s, 1, 1)), substring(s, 2))
+}
+
+# The studentized range distribution (ptukey) of the Tukey and the Games-Howell
+# tests loses its precision in the far tail in both engines: R gives 0 or about
+# 2.4e-13, Python 0, where the exact P can be 1e-17. Below this floor the P is
+# written as "< 1e-12".
+p_floor_studentized <- 1e-12
+
+# A column of P values as text when one of them is below the floor: "< 1e-12"
+# for those, 15 significant digits for the others. A column with no P below the
+# floor stays numeric. The Python engine has the same rule (util.p_floor_column).
+p_floor_column <- function(p, floor = p_floor_studentized) {
+  low <- !is.na(p) & p < floor
+  if (!any(low)) return(p)
+  out <- sprintf("%.15g", p)
+  out[low] <- sprintf("< %g", floor)
+  out[is.na(p)] <- NA_character_
+  out
+}
+
+# The label of a bracket in the p.format style: "p = 0.032", or "p < 1e-12"
+# below the floor when `floored` is TRUE.
+p_bracket_label <- function(p, floored = FALSE) {
+  out <- paste0("p = ", formatC(p, format = "g", digits = 2))
+  if (floored) out[!is.na(p) & p < p_floor_studentized] <- sprintf("p < %g", p_floor_studentized)
+  out
 }
 
 # The P value as a phrase for a methods sentence: "P < 0.001" below 0.001, else

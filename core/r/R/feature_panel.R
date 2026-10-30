@@ -34,14 +34,6 @@
              stringsAsFactors = FALSE)
 }
 
-# The group levels: numeric groups in numeric order, text in C-locale order.
-.fp_group_levels <- function(g) {
-  if (is.numeric(g)) return(as.character(sort(unique(g))))
-  sort(unique(as.character(g)), method = "radix")
-}
-
-.fp_is_feature_col <- function(v) is.numeric(v)
-
 .fp_long <- function(df, spec) {
   x <- spec$data$x; fcol <- spec$data$facet; y <- spec$data$y
   if (is.null(x) || !nzchar(x)) stop("feature_panel needs --x (the group column)")
@@ -52,21 +44,32 @@
     d <- data.frame(feature = as.character(df[[fcol]]), group = df[[x]],
                     value = suppressWarnings(as.numeric(df[[y]])), stringsAsFactors = FALSE)
     layout <- "long"
+    wide_steps <- character(0)
   } else {
+    # A column is a feature when 80% or more of its cells read as numbers; a
+    # cell such as "<0.1" becomes NA and is logged, and each text column that is
+    # left out is named (util coerce_numeric_columns, one rule in both engines).
     skip <- c(x, spec$data$id, spec$data$label)
-    cols <- setdiff(names(df)[vapply(df, .fp_is_feature_col, logical(1))], skip)
+    co <- coerce_numeric_columns(df, setdiff(names(df), skip))
+    cols <- co$numeric
     if (length(cols) == 0) stop("feature_panel found no numeric feature column; pass --facet for long data")
-    d <- do.call(rbind, lapply(cols, .fp_stack_col, df = df, x = x))
+    d <- do.call(rbind, lapply(cols, .fp_stack_col, df = co$df, x = x))
     layout <- "wide"
+    wide_steps <- c(co$steps,
+                    if (length(co$text) > 0) sprintf("Left out the text column(s) %s; they are not features.",
+                                                     quote_join(co$text)))
   }
   n0 <- nrow(d)
   keep <- !is.na(d$feature) & nzchar(d$feature) & !is.na(d$group) & is.finite(d$value)
   d <- d[keep, , drop = FALSE]
-  glv <- .fp_group_levels(d$group)
-  d$group <- as.character(d$group)
+  # One level rule in both engines: the --levels order, else numeric order when
+  # every label is a number, else code-point order.
+  d$group <- level_labels(d$group)
+  glv <- level_order(d$group, unlist(spec$data$levels), "group")
   feats <- unique(d$feature)
   steps <- c(
     sprintf("Read %s data: %d feature(s), %d group(s).", layout, length(feats), length(glv)),
+    wide_steps,
     if (sum(!keep) > 0) sprintf("Dropped %d value(s) with a missing feature, group or value (%d -> %d).",
                                 sum(!keep), n0, nrow(d)))
   list(d = d, features = feats, groups = glv, steps = steps, layout = layout)
@@ -91,6 +94,17 @@
 }
 
 .fp_shapiro_normal <- function(v) isTRUE(shapiro_safe(v)$normal)
+
+.fp_is_constant <- function(f, d) is_zero_variance(d$value[d$feature == f])
+
+# The group sizes of the panel: the largest count of each group over the
+# tested features, for the attainable P of the rank test.
+.fp_design_sizes <- function(d, feats, glv) {
+  if (length(feats) == 0) return(rep(0L, length(glv)))
+  counts <- matrix(vapply(feats, .fp_counts, numeric(length(glv)), d = d, glv = glv),
+                   nrow = length(glv))
+  apply(counts, 1, max)
+}
 
 .fp_cohens_d <- function(a, b) {
   na <- length(a); nb <- length(b)
@@ -150,7 +164,12 @@
 
 .fp_title_name <- function(s) vapply(s, .fp_title_one, character(1), USE.NAMES = FALSE)
 
+# The --test values that feature_panel knows (F63).
+.feature_panel_tests <- c("auto", "welch_t", "wilcoxon", "anova", "kruskal", "mann_whitney",
+                          "mwu", "wilcox", "kw", "kruskal_wallis")
+
 recipe_feature_panel <- function(df, spec) {
+  check_test_method("feature_panel", spec$test$method, .feature_panel_tests)
   lg <- .fp_long(df, spec)
   d <- lg$d; feats <- lg$features; glv <- lg$groups
   if (length(feats) > .fp_max_features) {
@@ -159,15 +178,24 @@ recipe_feature_panel <- function(df, spec) {
   }
   if (length(glv) < 2) stop("feature_panel needs at least 2 groups")
 
-  keys <- as.vector(t(outer(feats, glv, paste, sep = ": ")))
+  # A constant feature (every value the same) is not tested: it stays out of the
+  # normality check, of the tests and of the BH count.
+  const <- vapply(feats, .fp_is_constant, logical(1), d = d)
+  keys <- as.vector(t(outer(feats[!const], glv, paste, sep = ": ")))
   sw <- vapply(split(d$value, factor(paste(d$feature, d$group, sep = ": "), levels = keys)),
                .fp_shapiro_normal, logical(1))
   all_normal <- all(sw)
-  test <- .fp_resolve(spec$test$method, length(glv), all_normal)
   forced <- !identical(tolower(spec$test$method %||% "auto"), "auto")
+  # When the normality check fails but the rank test cannot reach P < 0.05 at
+  # the group sizes of the panel, auto keeps the parametric family.
+  rank_min_p <- rank_test_min_p(.fp_design_sizes(d, feats[!const], glv),
+                                if (length(glv) == 2) "mann_whitney" else "kruskal")
+  kept <- !forced && !all_normal && rank_test_cannot_reach(rank_min_p)
+  test <- .fp_resolve(spec$test$method, length(glv), all_normal || kept)
 
   res <- vapply(feats, .fp_test_feature, numeric(5), d = d, glv = glv, test = test)
   res <- matrix(res, nrow = 5)
+  res[, const] <- NA_real_
   p <- res[4, ]
   q <- stats::p.adjust(p, method = "BH")
   counts <- matrix(vapply(feats, .fp_counts, numeric(length(glv)), d = d, glv = glv),
@@ -175,12 +203,15 @@ recipe_feature_panel <- function(df, spec) {
   stats_df <- data.frame(feature = feats, test = .fp_labels[[test]], statistic = res[1, ],
                          df1 = res[2, ], df2 = res[3, ], p_value = p, p_adj = q,
                          p_adj_signif = .fp_signif(q), effect_size = res[5, ],
-                         effect_size_name = .fp_effects[[test]], stringsAsFactors = FALSE)
+                         effect_size_name = .fp_effects[[test]],
+                         note = ifelse(const, "not tested: constant", ""), stringsAsFactors = FALSE)
   for (i in seq_along(glv)) stats_df[[paste0("n_", glv[i])]] <- as.integer(counts[i, ])
-  n_untested <- sum(is.na(p))
+  n_untested <- sum(is.na(p) & !const)
+  n_tested <- sum(!is.na(p))
 
   # Panels in the input order of the features, titled with the adjusted p.
   qtxt <- ifelse(is.na(q), "q = NA", paste0("q = ", formatC(q, format = "g", digits = 2)))
+  qtxt[const] <- "not tested: constant"
   titles <- paste0(.fp_title_name(feats), "\n", qtxt)
   d$panel <- factor(d$feature, levels = feats)
   d$group <- factor(d$group, levels = glv)
@@ -189,7 +220,7 @@ recipe_feature_panel <- function(df, spec) {
   pal <- pub_palette(length(glv), spec$appearance$palette)
   n_sig <- sum(q < 0.05, na.rm = TRUE)
   sub <- sprintf("%s per feature; BH-adjusted q across %d features; %d with q < 0.05",
-                 .fp_labels[[test]], length(feats), n_sig)
+                 .fp_labels[[test]], n_tested, n_sig)
   y_lab <- spec$appearance$y_label %||% if (lg$layout == "long") spec$data$y else "Value"
 
   plot <- ggplot2::ggplot(d, ggplot2::aes(x = group, y = value)) +
@@ -220,7 +251,8 @@ recipe_feature_panel <- function(df, spec) {
   test_meta <- list(
     name = .fp_labels[[test]], test = test, p_adjust = "BH", n_features = length(feats),
     n_groups = length(glv), groups = glv, n_significant = n_sig, n_untested = n_untested,
-    forced = forced,
+    n_constant = sum(const), n_tested = n_tested, forced = forced,
+    kept_parametric = kept, rank_test_attainable_p = rank_min_p,
     assumptions = list(normality = list(test = "shapiro-wilk", all_normal = all_normal,
                                         n_checked = length(keys), n_non_normal = sum(!sw))))
   resolved <- list(family = "feature_panel", label = .fp_labels[[test]])
@@ -228,7 +260,8 @@ recipe_feature_panel <- function(df, spec) {
   list(plot = plot, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = .fp_methods(test_meta, stats_df, glv, y_lab, spec$data$x),
        build_script = list(fn = .fp_emit_script,
-                           args = list(spec = spec, layout = lg$layout, test = test, ncol = ncol)),
+                           args = list(spec = spec, layout = lg$layout, test = test, ncol = ncol,
+                                       glv = glv)),
        label = slugify(tools::file_path_sans_ext(spec$data$file)),
        df_used = d[, c("feature", "group", "value")], clean_steps = lg$steps, qc = qc,
        width = 0.9 + panel_w * ncol, height = 1.2 + 2.45 * nrow)
@@ -238,7 +271,13 @@ recipe_feature_panel <- function(df, spec) {
   v <- pkg_versions("ggplot2")
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   choice <- if (isTRUE(tm$forced)) {
-    sprintf("The %s was set for every feature by the user. ", tm$name)
+    floor_txt <- if (tm$test %in% c("wilcoxon", "kruskal")) rank_floor_text(tm$rank_test_attainable_p, FALSE) else ""
+    sprintf("The %s was set for every feature by the user. %s", tm$name,
+            if (nzchar(floor_txt)) paste0(floor_txt, " ") else "")
+  } else if (isTRUE(tm$kept_parametric)) {
+    sprintf("One test family was chosen for the whole panel: the Shapiro-Wilk test was run on each of the %d feature-by-group samples, and %d of them departed from normality (P <= 0.05, or fewer than 3 values). %s The %s was used for every feature. ",
+            tm$assumptions$normality$n_checked, tm$assumptions$normality$n_non_normal,
+            rank_floor_text(tm$rank_test_attainable_p, TRUE), tm$name)
   } else if (isTRUE(tm$assumptions$normality$all_normal)) {
     sprintf("One test family was chosen for the whole panel: the Shapiro-Wilk test was run on each of the %d feature-by-group samples, and because none departed from normality (P > 0.05) the parametric %s was used for every feature. ",
             tm$assumptions$normality$n_checked, tm$name)
@@ -253,8 +292,9 @@ recipe_feature_panel <- function(df, spec) {
             cap_first(y_lab), x, paste(glv, collapse = ", "), tm$n_features),
     choice,
     sprintf("P values were adjusted across the %d features with the Benjamini-Hochberg method; %d features had an adjusted P (q) below 0.05. ",
-            tm$n_features, tm$n_significant),
+            tm$n_tested, tm$n_significant),
     sprintf("The effect size is %s. ", .fp_effects[[tm$test]]),
+    if (tm$n_constant > 0) sprintf("%d feature(s) were constant (all values equal) and were not tested. ", tm$n_constant) else "",
     if (tm$n_untested > 0) sprintf("%d feature(s) had a group with fewer than 2 values and were not tested. ", tm$n_untested) else "",
     sprintf("Group sizes per feature: %s. ", nt),
     sprintf("Drawn in R %s with ggplot2 %s.", rver, v$ggplot2))
@@ -265,7 +305,7 @@ recipe_feature_panel <- function(df, spec) {
   if (r[1] == r[2]) as.character(r[1]) else sprintf("%d to %d", r[1], r[2])
 }
 
-.fp_emit_script <- function(spec, layout, test, ncol, in_name, fig_stub) {
+.fp_emit_script <- function(spec, layout, test, ncol, glv, in_name, fig_stub) {
   x <- spec$data$x
   read_lines <- if (layout == "long") {
     c(sprintf('d <- data.frame(feature = as.character(raw[["%s"]]), group = as.character(raw[["%s"]]), value = as.numeric(raw[["%s"]]))',
@@ -289,6 +329,8 @@ recipe_feature_panel <- function(df, spec) {
     sprintf('raw <- read.csv("%s", check.names = FALSE)', in_name),
     read_lines,
     "d <- d[is.finite(d$value) & !is.na(d$group), ]",
+    sprintf("d$group <- factor(d$group, levels = c(%s))",
+            paste(sprintf('"%s"', glv), collapse = ", ")),
     "feats <- unique(d$feature)",
     sprintf("test_one <- function(f) %s", test_call),
     "p <- vapply(feats, test_one, numeric(1))",

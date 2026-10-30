@@ -15,7 +15,7 @@ def test_paired_compare_paired_t_end_to_end():
         "value": pre + post,
     })
     a = SimpleNamespace(recipe="paired_compare", data="p.csv", x="condition", y="value",
-                        id="subject", test="t")
+                        id="subject", test="t", levels="pre,post")
     spec = spec_from_args(a)
 
     res = recipe_paired_compare(df, spec)

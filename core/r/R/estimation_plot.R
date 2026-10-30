@@ -132,8 +132,24 @@
   (mean(g) - mean(r)) / s * j
 }
 
+# The t-test of a comparison divides by the variance of both groups (paired: of
+# the differences). When that variance is zero the run stops and names the
+# samples. The Python engine has the same rule.
+.est_check_variance <- function(r, g, paired, ref_name, grp_name) {
+  hint <- "the estimation plot needs values that vary"
+  if (paired && is_zero_variance(g - r)) {
+    stop(zero_variance_message("paired t-test", "the within-subject differences have", hint))
+  }
+  if (!paired && is_zero_variance(r) && is_zero_variance(g)) {
+    stop(zero_variance_message("Welch two-sample t-test",
+                               zero_variance_subject(c(ref_name, grp_name)), hint))
+  }
+  invisible(NULL)
+}
+
 # One comparison: the group against the reference.
 .est_compare <- function(r, g, paired, ref_name, grp_name) {
+  .est_check_variance(r, g, paired, ref_name, grp_name)
   est <- sum(g) / length(g) - sum(r) / length(r)
   boot <- .est_boot_diffs(r, g, paired)
   ci <- .est_bca(boot, est, .est_jackknife(r, g, paired), max(abs(c(r, g))))
@@ -220,6 +236,17 @@
   vapply(as.character(s), .est_wrap_one, character(1), width = width, USE.NAMES = FALSE)
 }
 
+# The width of the Cumming figure: 1.15 in per group plus 1.6 in, at least 5.2.
+.est_cumming_width <- function(k) max(5.2, 1.15 * k + 1.6)
+
+# A title or a subtitle wrapped at the spaces to the width of the figure, 10
+# characters per inch, so a long group name does not run past the edge. NULL
+# stays NULL. Python has the same rule (estimation_plot.title_text).
+.est_title <- function(s, width) {
+  if (is.null(s)) return(NULL)
+  wrap_label(s, floor(10 * width))
+}
+
 # The point size of the raw data, smaller for a large group (ggplot2 size in mm).
 .est_point_size <- function(d) {
   n <- max(table(d$group))
@@ -279,7 +306,11 @@
 
 .est_fmt_p <- function(p) if (p < 0.001) "P < 0.001" else paste("P =", sig_text(p, 2))
 
+# The --test values that estimation_plot knows (F63).
+.estimation_plot_tests <- c("auto", "welch_t", "t")
+
 recipe_estimation_plot <- function(df, spec) {
+  check_test_method("estimation_plot", spec$test$method, .estimation_plot_tests)
   x <- spec$data$x; y <- spec$data$y
   if (is.null(x) || is.null(y)) {
     stop("estimation_plot needs --x (the group column) and --y (the value column)")
@@ -299,7 +330,7 @@ recipe_estimation_plot <- function(df, spec) {
   steps <- cl$steps
   steps <- steps[steps != "No cleaning applied; input used as-is."]
   d0 <- cl$df
-  d <- data.frame(group = as.character(d0[[x]]), y = as.numeric(d0[[y]]),
+  d <- data.frame(group = level_labels(d0[[x]]), y = as.numeric(d0[[y]]),
                   id = if (paired) as.character(d0[[id]]) else NA_character_,
                   stringsAsFactors = FALSE)
   if (paired) {
@@ -313,7 +344,10 @@ recipe_estimation_plot <- function(df, spec) {
     }
   }
 
-  lv_sorted <- sort(unique(d$group), method = "radix")
+  # One level rule in both engines: the --levels order, else numeric order when
+  # every label is a number, else code-point order. --ref names the reference,
+  # which goes first; it is the first level when --ref is not given.
+  lv_sorted <- level_order(d$group, unlist(spec$data$levels), "group")
   ref <- spec$data$ref %||% lv_sorted[1]
   if (!ref %in% lv_sorted) {
     stop(sprintf("--ref '%s' is not a level of '%s' (levels: %s)", ref, x,
@@ -321,6 +355,7 @@ recipe_estimation_plot <- function(df, spec) {
   }
   lv <- c(ref, setdiff(lv_sorted, ref))
   if (length(lv) < 2) stop(sprintf("estimation_plot needs at least 2 groups in '%s'", x))
+  check_spread(d$y, "estimation_plot", sprintf("the outcome '%s'", y))
 
   comps <- list()
   for (g in lv[-1]) {
@@ -445,7 +480,8 @@ recipe_estimation_plot <- function(df, spec) {
     ggplot2::scale_x_continuous(breaks = c(1, 2, 3), labels = labs_x, limits = c(0.55, 3.55),
                                 expand = c(0, 0)) +
     ggplot2::scale_y_continuous(sec.axis = ggplot2::sec_axis(~ . - m_ref, name = "Mean difference")) +
-    ggplot2::labs(x = ap$x_label, y = y_lab, title = ap$title,
+    ggplot2::labs(x = ap$x_label, y = y_lab,
+                  title = .est_title(ap$title, .est_ga_width(labs_x)),
                   subtitle = sprintf("Mean difference %s (95%% CI %s to %s)\n%s, %s",
                                      sig_text(rows$mean_diff[1]), sig_text(rows$ci_low[1]),
                                      sig_text(rows$ci_high[1]), rows$test[1],
@@ -490,9 +526,9 @@ recipe_estimation_plot <- function(df, spec) {
     ggplot2::scale_fill_manual(values = pal, guide = "none") +
     ggplot2::scale_x_continuous(breaks = pos, labels = .est_axis_labels(lv, d), limits = xlim,
                                 expand = c(0, 0)) +
-    ggplot2::labs(x = NULL, y = y_lab, title = ap$title,
-                  subtitle = sprintf("Mean difference against %s with its 95%% BCa bootstrap CI",
-                                     lv[1])) +
+    ggplot2::labs(x = NULL, y = y_lab, title = .est_title(ap$title, .est_cumming_width(k)),
+                  subtitle = .est_title(sprintf("Mean difference against %s with its 95%% BCa bootstrap CI",
+                                                lv[1]), .est_cumming_width(k))) +
     pub_theme(ap$theme) +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"))
 
@@ -519,7 +555,7 @@ recipe_estimation_plot <- function(df, spec) {
     pub_theme(ap$theme) +
     ggplot2::theme(axis.ticks.x = ggplot2::element_blank())
   plot <- ggpubr::ggarrange(top, bottom, ncol = 1, heights = c(1.25, 1), align = "v")
-  list(plot = plot, width = max(5.2, 1.15 * k + 1.6), height = 6.4)
+  list(plot = plot, width = .est_cumming_width(k), height = 6.4)
 }
 
 .est_methods <- function(rows, ref, paired, spec, y) {

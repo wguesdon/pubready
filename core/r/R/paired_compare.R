@@ -3,7 +3,12 @@
 # t-test or the Wilcoxon signed-rank test is chosen from the normality of the
 # within-subject differences, unless forced with --test.
 
+# The --test values that paired_compare knows (F63).
+.paired_compare_tests <- c("auto", "t", "t_test", "paired_t", "student_t", "wilcoxon", "wilcox",
+                           "signed_rank", "mwu")
+
 recipe_paired_compare <- function(df, spec) {
+  check_test_method("paired_compare", spec$test$method, .paired_compare_tests)
   x <- spec$data$x; y <- spec$data$y; idc <- spec$data$id
   if (is.null(x) || is.null(y)) stop("paired_compare needs --x (condition) and --y (value)")
   if (is.null(idc) || !nzchar(idc)) stop("paired_compare needs --id (the subject column)")
@@ -13,18 +18,27 @@ recipe_paired_compare <- function(df, spec) {
   df[[y]] <- suppressWarnings(as.numeric(df[[y]]))
   n_rows0 <- nrow(df)
   df <- df[stats::complete.cases(df), , drop = FALSE]
-  # Preserve the order the conditions appear in (so pre stays left of post),
-  # rather than sorting alphabetically.
-  df[[x]] <- factor(df[[x]], levels = unique(as.character(df[[x]])))
-  lv <- levels(df[[x]])
+  # One level rule in both engines: the --levels order (--levels pre,post keeps
+  # pre left of post), else numeric order when every label is a number, else
+  # code-point order. The row order of the file no longer sets the sign.
+  lab <- level_labels(df[[x]])
+  lv <- level_order(lab, unlist(spec$data$levels), "condition")
+  df[[x]] <- factor(lab, levels = lv)
   if (length(lv) != 2) {
     stop(sprintf("paired_compare needs exactly 2 conditions in '%s'; found %d (%s)",
                  x, length(lv), paste(lv, collapse = ", ")))
   }
+  check_spread(df[[y]], "paired_compare", sprintf("the outcome '%s'", y))
 
+  # One value per subject and condition: a second row would make the result
+  # depend on the row order, so the run stops and names the subjects.
+  dup <- duplicated(data.frame(level_labels(df[[idc]]), df[[x]]))
+  if (any(dup)) {
+    stop(sprintf("paired_compare needs one value per subject and condition; '%s' repeats %s within a condition",
+                 idc, .paired_subject_list(unique(level_labels(df[[idc]][dup])))))
+  }
   a <- df[df[[x]] == lv[1], c(idc, y)]; names(a) <- c("id", "v1")
   b <- df[df[[x]] == lv[2], c(idc, y)]; names(b) <- c("id", "v2")
-  a <- a[!duplicated(a$id), ]; b <- b[!duplicated(b$id), ]
   m <- merge(a, b, by = "id")
   n_ids <- length(unique(df[[idc]]))
   dropped <- n_ids - nrow(m)
@@ -36,11 +50,20 @@ recipe_paired_compare <- function(df, spec) {
   diffs <- m$v2 - m$v1
   norm  <- shapiro_safe(diffs)
   method <- tolower(spec$test$method %||% "auto")
+  # When the differences fail the normality check but the signed-rank test
+  # cannot reach P < 0.05 with this count of pairs, auto keeps the paired t-test.
+  rank_min_p <- rank_test_min_p(nrow(m), "signed_rank")
+  kept <- method %in% c("auto", "") && !isTRUE(norm$normal) &&
+    rank_test_cannot_reach(rank_min_p) && !is_zero_variance(diffs)
   family <- if (method %in% c("auto", "")) {
-    if (isTRUE(norm$normal)) "t" else "wilcoxon"
+    if (isTRUE(norm$normal) || kept) "t" else "wilcoxon"
   } else if (method %in% c("t", "t_test", "paired_t", "student_t")) "t"
     else if (method %in% c("wilcoxon", "wilcox", "signed_rank", "mwu")) "wilcoxon"
     else stop(sprintf("unknown paired test '%s' (use t or wilcoxon)", method))
+  if (family == "t" && is_zero_variance(diffs)) {
+    stop(zero_variance_message("paired t-test", "the within-subject differences have",
+                               "use --test wilcoxon"))
+  }
 
   if (family == "t") {
     tt <- stats::t.test(m$v2, m$v1, paired = TRUE)
@@ -93,10 +116,12 @@ recipe_paired_compare <- function(df, spec) {
     name = label, statistic = stat, p_value = pval,
     n_pairs = nrow(m), mean_difference = mean(diffs),
     effect_size = list(name = eff_name, value = eff),
-    assumptions = list(normality_of_differences = list(test = "shapiro-wilk", p = norm$p)))
+    assumptions = list(normality_of_differences = list(test = "shapiro-wilk", p = norm$p)),
+    rank_test_attainable_p = rank_min_p)
 
   resolved <- list(family = family, label = label)
-  methods  <- .paired_methods(label, lv, nrow(m), pval, eff_name, eff, spec)
+  floor_txt <- if (kept || family == "wilcoxon") rank_floor_text(rank_min_p, kept) else ""
+  methods  <- .paired_methods(label, lv, nrow(m), pval, eff_name, eff, spec, floor_txt)
   build_script <- list(fn = .paired_emit_script, args = list(spec = spec, family = family, lv = lv))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
@@ -107,7 +132,16 @@ recipe_paired_compare <- function(df, spec) {
        width = 3.8, height = 4.2)
 }
 
-.paired_methods <- function(label, lv, n, pval, eff_name, eff, spec) {
+# The subjects of a message: "the subject 'S02'", or the first ten subjects and
+# the count of the others. The Python engine writes the same words.
+.paired_subject_list <- function(ids) {
+  shown <- utils::head(ids, 10)
+  txt <- sprintf("the subject%s %s", if (length(ids) > 1) "s" else "", quote_join(shown))
+  if (length(ids) > 10) txt <- sprintf("%s and %d more", txt, length(ids) - 10)
+  txt
+}
+
+.paired_methods <- function(label, lv, n, pval, eff_name, eff, spec, floor_txt = "") {
   v    <- pkg_versions(c("ggplot2", "ggpubr"))
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   y_lab <- spec$appearance$y_label %||% spec$data$y
@@ -117,6 +151,7 @@ recipe_paired_compare <- function(df, spec) {
     if (tolower(spec$test$method %||% "auto") == "auto") {
       "The test was chosen from the Shapiro-Wilk normality of the within-subject differences. "
     } else "The test was set by the user. ",
+    if (nzchar(floor_txt)) paste0(floor_txt, " ") else "",
     sprintf("Effect size is reported as %s = %s (%s minus %s). Significance was set at P < 0.05. ",
             eff_name, formatC(eff, format = "f", digits = 2), lv[2], lv[1]),
     sprintf("Drawn in R %s with ggplot2 %s and ggpubr %s.", rver, v$ggplot2, v$ggpubr))
