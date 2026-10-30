@@ -20,7 +20,7 @@ from matplotlib.ticker import MaxNLocator
 
 from ..theme import apply_pub_style, palette, rain_offsets
 from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, level_labels,
-                    level_order, quote_join)
+                    level_order, quote_join, shapiro_normal)
 
 # The dodge width of the interaction plot, as position_dodge(0.25) in R.
 INT_DODGE = 0.25
@@ -318,6 +318,15 @@ def recipe_factorial_anova(df, spec):
     d2 = df.rename(columns=ren)
     rhs = "*".join(f"C(_f{i}_)" for i in range(len(factors)))
     model = smf.ols(f"_y_ ~ {rhs}", data=d2).fit()
+    # Under --test auto the R engine takes the aligned rank transform when the
+    # residuals of the full model fail Shapiro-Wilk. The Python engine has no
+    # aligned rank transform, so it stops there and routes the user.
+    res_p = shapiro_normal(model.resid.to_numpy())[0]
+    if method == "auto" and np.isfinite(res_p) and res_p < 0.05:
+        raise ValueError(
+            f"factorial_anova: the residuals of the ANOVA depart from normality (Shapiro-Wilk "
+            f"P = {res_p:.3g}), so --test auto takes the aligned rank transform, which only the R "
+            "engine has; rerun with --engine r, or with --test anova to keep the parametric ANOVA")
     aov = sm.stats.anova_lm(model, typ=2)
     # Partial eta squared, SS_effect / (SS_effect + SS_residual), as the R engine reports.
     ss_res = float(aov.loc["Residual", "sum_sq"])
@@ -333,6 +342,7 @@ def recipe_factorial_anova(df, spec):
                      "effect_size_name": "partial eta squared",
                      "significant": float(r["PR(>F)"]) < 0.05})
     eff = pd.DataFrame(rows)
+    eff["residual_shapiro_p"] = res_p
 
     sig = eff[eff["significant"]]
     subtitle = ("\n".join(f"{r.effect.replace(':', ' × ')}: {_plab(r.p_value)}"
@@ -384,6 +394,7 @@ def recipe_factorial_anova(df, spec):
     test_meta = {
         "name": f"{len(factors)}-way ANOVA", "type": "type_II_anova",
         "factors": factors,
+        "residual_normality": {"test": "shapiro-wilk", "p": res_p},
         "effects": [{"effect": r.effect, "df1": r.df1, "df2": r.df2,
                      "statistic": r.statistic, "p_value": r.p_value,
                      "effect_size": r.effect_size} for r in eff.itertuples()],

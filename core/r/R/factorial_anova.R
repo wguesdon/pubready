@@ -160,8 +160,9 @@ recipe_factorial_anova <- function(df, spec) {
     p <- p + ggplot2::facet_wrap(ggplot2::vars(.data[[f3]]))
   }
 
+  eff$residual_shapiro_p <- res_p
   stats_df <- eff[, c("effect", "df1", "df2", "statistic", "p_value", "effect_size",
-                      "effect_size_name", "significant")]
+                      "effect_size_name", "significant", "residual_shapiro_p")]
 
   test_meta <- list(
     name    = test_name,

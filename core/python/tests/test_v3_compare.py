@@ -303,3 +303,17 @@ def test_factorial_anova_stops_on_an_empty_cell_one_level_or_no_residual_df():
     n1 = pd.DataFrame({"g": ["wt", "wt", "ko", "ko"], "t": ["v", "d", "v", "d"], "y": [1, 3, 2, 5]})
     with pytest.raises(ValueError, match="the 4 cells hold one value each"):
         recipe_factorial_anova(n1, v3_spec("factorial_anova", x="g", fill="t", y="y"))
+
+
+# F37: under --test auto the Python factorial_anova checks the residuals, and
+# stops where the R engine takes the aligned rank transform.
+def test_python_factorial_anova_stops_when_the_residuals_fail_shapiro_wilk():
+    from pubready.recipes.factorial_anova import recipe_factorial_anova
+    y = [v + s for s in (0, 3, 6, 9) for v in list(range(1, 10)) + [100]]
+    fa = pd.DataFrame({"g": ["wt"] * 20 + ["ko"] * 20, "t": (["v"] * 10 + ["d"] * 10) * 2, "y": y})
+    with pytest.raises(ValueError, match="rerun with --engine r, or with --test anova"):
+        recipe_factorial_anova(fa, v3_spec("factorial_anova", x="g", fill="t", y="y"))
+    res = recipe_factorial_anova(fa, v3_spec("factorial_anova", x="g", fill="t", y="y",
+                                             test="anova"))
+    assert (res["stats"]["residual_shapiro_p"] < 0.05).all()
+    assert res["test_meta"]["residual_normality"]["p"] < 0.05

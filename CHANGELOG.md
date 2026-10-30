@@ -38,6 +38,13 @@ tag move together.
   so pass `--levels pre,post` to keep pre on the left. `estimation_plot` keeps
   `--ref` for the reference, and `proportions` keeps its own order rule with
   the new labels (F38, F64).
+- Under `--test auto`, the Python engine of `factorial_anova` runs the
+  Shapiro-Wilk test on the residuals of the full model, as R does. When
+  P < 0.05, R takes the aligned rank transform, which Python does not have, so
+  Python stops with a message that gives the P and routes to `--engine r` or
+  to `--test anova`. Python ran the ANOVA before, so the engines reported
+  different tests. Both engines write the residual P to the stats table as
+  `residual_shapiro_p` and to `test_meta` (F37).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of

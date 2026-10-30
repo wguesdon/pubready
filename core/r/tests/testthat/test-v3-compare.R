@@ -334,3 +334,12 @@ test_that("factorial_anova stops on an empty cell, one level or no residual df",
   expect_error(recipe_factorial_anova(n1, v3_spec("factorial_anova", x = "g", fill = "t", y = "y")),
                "the 4 cells hold one value each")
 })
+
+# F37: both engines write the residual Shapiro-Wilk P to the stats table.
+test_that("factorial_anova writes the residual Shapiro-Wilk P to the stats table", {
+  fa <- data.frame(g = rep(c("wt", "ko"), each = 20), t = rep(rep(c("v", "d"), each = 10), 2),
+                   y = rep(c(1:9, 100), 4) + rep(c(0, 3, 6, 9), each = 10))
+  res <- recipe_factorial_anova(fa, v3_spec("factorial_anova", x = "g", fill = "t", y = "y"))
+  expect_true(all(res$stats$residual_shapiro_p < 0.05))
+  expect_match(res$test_meta$name, "aligned rank transform")
+})
