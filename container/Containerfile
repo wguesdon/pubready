@@ -116,6 +116,11 @@ RUN install2.r --error --skipinstalled cmprsk ResourceSelection qqman \
  && rm -rf /tmp/downloaded_packages
 
 # Core scripts are mounted here at runtime by the figkit CLI.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      fonts-noto-core fonts-noto-cjk fonts-symbola \
+ && fc-cache -f \
+ && rm -rf /var/lib/apt/lists/*
+
 RUN mkdir -p /opt/pubready/core
 
 ARG PUBREADY_VERSION=0.0.0

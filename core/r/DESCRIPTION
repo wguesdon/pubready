@@ -1,6 +1,6 @@
 Package: pubready
 Title: Publication-Ready Figures with Statistics, R Engine
-Version: 3.0.0
+Version: 4.0.0
 Authors@R:
     person("William", "Guesdon", email = "wguesdon@gmail.com", role = c("aut", "cre"))
 Description: The R engine for pubready. A curated library of parameterized recipe
@@ -43,7 +43,7 @@ Imports:
     yaml
 Suggests:
     ResourceSelection,
-    testthat (>= 3.0.0)
+    testthat (>= 4.0.0)
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

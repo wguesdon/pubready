@@ -14,6 +14,7 @@ from .io import read_tidy
 from .run import inspect_column, inspect_id_candidate, inspect_labels
 from .spec import PLOT_VALUE_OPTIONS, check_recipe_options, read_recipe_options, split_list_option
 from .util import level_order, time_level_order
+from .version import PUBREADY_VERSION
 
 REFERENCE = Path(os.environ.get("PUBREADY_REFERENCE", "/opt/pubready/reference"))
 STATUS_CODES = {"complete": 0, "usage_error": 2, "needs_answers": 3,
@@ -558,7 +559,7 @@ def advise(options, entries=(), filename=None, tree_path=None, frame=None):
         dict: The complete public result, including its exit code.
     """
     tree, digest = load_tree(tree_path)
-    result = {"advise_schema": 1, "pubready_version": os.environ.get("PUBREADY_VERSION", "3.0.0"),
+    result = {"advise_schema": 1, "pubready_version": os.environ.get("PUBREADY_VERSION", PUBREADY_VERSION),
               "tree_sha256": digest, "walker": "python", "status": "complete", "exit_code": 0,
               "data": None, "facts": {}, "path": [], "recipe": None, "doc_heading": None,
               "test": None, "command": None, "command_text": None, "next_step": None,

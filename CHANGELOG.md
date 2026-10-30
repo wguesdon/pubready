@@ -13,7 +13,11 @@ tag move together.
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-10-30
+
 ### Added
+- The image includes Noto fonts and a monochrome symbol font. Python keeps
+  its Latin font and uses these fallback fonts for CJK, symbols and emoji.
 - `figkit advise` reads a decision tree for all 34 recipes and returns a plot
   command, the decision path and unanswered questions. Both target engines use
   one Python walker. The command requires explicit control, case and cause

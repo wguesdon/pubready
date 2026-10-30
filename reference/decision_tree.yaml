@@ -320,7 +320,7 @@ nodes:
       doc_heading: Matrix heatmaps
       reason: Show a clustered feature matrix.
       flags: {required: []}
-      test: {default: auto, allowed: ["auto", "welch_t"], checks: Only explicit welch_t runs feature tests with two annotation groups., outcomes: [{when: Always., test: Clustered heatmap}]}
+      test: {default: auto, allowed: ["auto", "welch_t"], checks: Only explicit welch_t runs feature tests with two annotation groups., outcomes: [{when: Python., test: Clustered heatmap}, {when: R., test: Clustered heatmap (ComplexHeatmap)}]}
   correlation_heatmap:
     leaf:
       recipe: correlation_heatmap
