@@ -267,3 +267,117 @@ assumption numbers and prints the recommended test, so the scientist can confirm
 force another with `--test`.
 Forcing a test still runs and records the assumption checks, and the methods paragraph
 states exactly what was run.
+
+## Machine advice
+
+`figkit advise` walks [decision_tree.yaml](decision_tree.yaml). Both target
+engines use the same Python walker. It computes data facts without a statistical
+test. `inspect` and advise share the column and subject-id rules.
+
+```bash
+./cli/figkit advise --data example/tumor_volume.csv --x group --y volume \
+  --answer aim=compare --answer design=independent --format json
+```
+
+A missing scientist answer returns exit code 3 and no command. Answer each
+question, then repeat the command. The control, case level and event cause need
+explicit answers. The next action is diagnose when normality selects the test.
+An explicit forced test sends the next action to plot.
+
+Unsupported design answers return exit code 5. These answers are `stratified`,
+`covariate_adjusted`, `rate_of_change` and `control_only`. A repeated feature
+panel also needs a model outside these recipes. When `--y` and `--facet` are
+both present, answer `n_outcomes=one` for factors or `n_outcomes=panel` for features.
+
+## Category outcomes
+
+Use `proportions` for independent categories and `sankey` for repeated categories.
+Force with `--test chisq | fisher` for `proportions`.
+
+## Feature panels
+
+`feature_panel` compares each feature across independent groups. Long data uses
+`--x --y --facet`; wide data uses `--x` and numeric feature columns.
+Force with `--test welch_t | wilcoxon | anova | kruskal`.
+
+## Effect estimates
+
+`estimation_plot` reports mean differences against the explicit `--ref` group.
+Paired data also needs `--id` and uses the paired test.
+Force with `--test welch_t`.
+
+## Curves
+
+The scientist selects the curve from the experiment, not from the column names.
+
+### Enzyme kinetics
+
+`enzyme_kinetics` fits the Michaelis-Menten curve with `--x --y` and optional `--group`.
+
+### Standard curves
+
+`standard_curve` interpolates unknown concentrations. An unknown has an empty
+concentration and a measured signal. Force with `--test linear | 4pl`.
+
+## Descriptive figures
+
+The scientist selects the figure. These recipes can report statistics even when
+normality does not select a test.
+
+### Distributions
+
+`distribution` shows a numeric distribution with `--y` and optional `--x` groups.
+
+### Compositions
+
+`composition` shows category fractions within samples with `--id --x`.
+
+### Matrix heatmaps
+
+`heatmap` clusters a feature matrix. Auto runs no feature test.
+Force with `--test welch_t` only for a two-group annotation supplied with `--annotation`.
+
+### Correlation matrices
+
+`correlation_heatmap` shows pairwise correlations and adjusted P values.
+Force with `--test pearson | spearman | kendall`.
+
+### Principal components
+
+`pca` uses numeric features and `--group`. `--features` selects columns explicitly.
+
+### Supplied embeddings
+
+`embedding` shows upstream coordinates with `--x --y --group`.
+
+### Volcano plots
+
+`volcano` shows upstream fold changes and P values. It accepts explicit `--x --y` columns.
+
+### MA plots
+
+`ma_plot` shows fold changes against expression. The differential test runs upstream.
+
+### Manhattan plots
+
+`manhattan` uses chromosome `--group`, position `--x` and P value `--y`.
+
+### Enrichment results
+
+`enrichment_dot` shows upstream enrichment results. It labels raw P values as not adjusted.
+
+### Set intersections
+
+`upset` shows membership intersections. It rejects an unknown membership code.
+
+### Changes from baseline
+
+`spider_response` uses `--x --y --id` for time, response and patient.
+
+### Best changes
+
+`waterfall` shows each patient's best change with `--y --id` and optional `--x` time.
+
+### Treatment durations
+
+`swimmer` shows treatment durations with `--time --id` and optional event markers.

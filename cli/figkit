@@ -16,6 +16,8 @@ figkit — reproducible publication figures
 
 Usage:
   figkit inspect --data FILE [--sheet S] [--format text|json]
+  figkit advise --data FILE [plot options] [--answer KEY=VALUE ...]
+                [--answers FILE] [--format text|json]
   figkit diagnose --recipe NAME --data FILE [plot options]
   figkit plot --recipe NAME --data FILE --x COL --y COL [options]
   figkit render --config plot_config.yaml [--data FILE] [--engine r|python]
@@ -100,6 +102,14 @@ and any other option stops the run:
   --palette "#3B6DB3,#C1432B"              fill colors
   --sheet S                                Excel sheet of the data file
   --out DIR                                output root (default pubready_output)
+
+Advise uses Python for both target engines. It draws no figure and runs no test.
+Answer keys: aim, outcome_type, design, category_design, n_outcomes, n_factors,
+             n_groups, n_times, presentation, id, ref, positive, cause,
+             competing_events, tte_aim, curve_kind, measure, describe_kind,
+             levels, test. Plot flag names are also accepted in an answers file.
+Exit codes: 0 complete, 1 file or runtime error, 2 usage error, 3 needs answers,
+            4 conflict, 5 out of scope. Read reference/decision_tree.yaml for choices.
 
 Recipes: two_group_compare, multi_group_compare, factorial_anova,
          survival_km, cox_forest, heatmap, correlation,
@@ -280,9 +290,15 @@ require_image() {
 # host without SELinux.
 container_run() {
   require_image
+  local figkit_cmd=figkit
+  [ "$PWD" != "$REPO_ROOT" ] || figkit_cmd=./cli/figkit
   podman --log-level=error run --rm --security-opt label=disable \
     -v "$PWD":/work -w /work \
     -v "$CORE_DIR":/opt/pubready/core:ro \
+    -v "$REPO_ROOT/reference":/opt/pubready/reference:ro \
+    -e PUBREADY_REFERENCE=/opt/pubready/reference \
+    -e PUBREADY_VERSION="$VERSION" \
+    -e PUBREADY_FIGKIT_CMD="$figkit_cmd" \
     -e PUBREADY_CORE=/opt/pubready/core \
     -e PUBREADY_IMAGE="$IMAGE" \
     -e PUBREADY_IMAGE_ID="$(image_id)" \
@@ -312,6 +328,7 @@ run_tests() {
   podman --log-level=error run --rm --security-opt label=disable \
     -v "$CORE_DIR":/opt/pubready/core:ro \
     -v "$REPO_ROOT/benchmarks":/opt/pubready/benchmarks:ro \
+    -v "$REPO_ROOT/reference":/opt/pubready/reference:ro \
     -e PUBREADY_CORE=/opt/pubready/core \
     -e PUBREADY_CORE_R=/opt/pubready/core/r \
     -e PUBREADY_BENCHMARKS=/opt/pubready/benchmarks \
@@ -321,6 +338,7 @@ run_tests() {
   podman --log-level=error run --rm --security-opt label=disable \
     -v "$CORE_DIR":/opt/pubready/core:ro \
     -v "$REPO_ROOT/benchmarks":/opt/pubready/benchmarks:ro \
+    -v "$REPO_ROOT/reference":/opt/pubready/reference:ro \
     -e PYTHONPATH=/opt/pubready/core/python \
     -e PUBREADY_BENCHMARKS=/opt/pubready/benchmarks \
     "$IMAGE" python3 -m pytest /opt/pubready/core/python/tests -q -p no:cacheprovider
@@ -584,6 +602,10 @@ dispatch() {
     require_tracked_report_source
   fi
   parse_report_options "$@"
+  if [ "$cmd" = "advise" ]; then
+    run_py advise ${REPORT_ARGS[@]+"${REPORT_ARGS[@]}"}
+    return
+  fi
   # ${a[@]+"${a[@]}"} expands an empty array to nothing under set -u. A plain
   # "${a[@]}" stops bash before 4.4, such as the bash 3.2 of macOS.
   if [ "$(engine_of "$cmd" ${REPORT_ARGS[@]+"${REPORT_ARGS[@]}"})" = "python" ]; then
@@ -597,6 +619,7 @@ cmd="${1:-}"; [ $# -gt 0 ] && shift || true
 
 case "$cmd" in
   inspect)  dispatch inspect  "$@" ;;
+  advise)   dispatch advise   "$@" ;;
   diagnose) dispatch diagnose "$@" ;;
   plot)     dispatch plot     "$@" ;;
   render)   dispatch render   "$@" ;;

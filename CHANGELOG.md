@@ -14,6 +14,10 @@ tag move together.
 ## [Unreleased]
 
 ### Added
+- `figkit advise` reads a decision tree for all 34 recipes and returns a plot
+  command, the decision path and unanswered questions. Both target engines use
+  one Python walker. The command requires explicit control, case and cause
+  choices, rejects conflicting answers and identifies unsupported designs.
 - 32 benchmark cases on 15 new public datasets from R packages in the image
   check the paths that the 3.0.0 cases checked once or not at all: Student's
   t, Mann-Whitney, Games-Howell, Dunn, three-way and aligned rank transform

@@ -1,0 +1,366 @@
+schema_version: 1
+doc: reference/decision_tree.md
+questions:
+  aim:
+    text: What must the figure show?
+    source: scientist
+    answers: {"compare": Compare outcomes., "association": Measure association., "agreement": Measure agreement., "discrimination": Discriminate cases., "calibration": Check predicted risks., "meta_analysis": Combine studies., "curve": Fit a curve., "time_to_event": Analyze time to event., "describe": Describe the data.}
+  n_outcomes:
+    text: Does the figure compare one outcome or a panel of features?
+    source: data_or_scientist
+    answers: {"one": Compare one outcome., "panel": Test each feature.}
+    data_rules:
+      - {fact: layout, equals: one, answer: "one"}
+      - {fact: layout, equals: panel, answer: "panel"}
+  outcome_type:
+    text: Is the outcome continuous or a category?
+    source: data_or_scientist
+    answers: {"continuous": The outcome is continuous., "category": The outcome is a category.}
+    data_rules:
+      - {fact: y.kind, equals: text, answer: "category"}
+      - {fact: y.kind, equals: logical, answer: "category"}
+      - {fact: y.continuous, equals: true, answer: "continuous"}
+  design: &design
+    text: Which analysis design does the question require?
+    source: scientist
+    answers: {"independent": Each subject contributes to one independent group., "paired": Each subject has two conditions., "repeated": Each subject has repeated measurements., "stratified": Adjust the comparison for strata., "covariate_adjusted": Adjust the comparison for a covariate., "rate_of_change": Compare rates of change., "control_only": Compare each group only with a control.}
+    data_rules:
+      - {fact: id.proposal, equals: paired, propose: "paired"}
+      - {fact: id.proposal, equals: repeated, propose: "repeated"}
+      - {fact: x.n_levels, at_least: 3, forbid: ["paired"], reason: A paired design needs two conditions.}
+  category_design:
+    <<: *design
+    text: Are category outcomes independent, repeated, or part of an unsupported design?
+    answers: {"independent": The groups are independent., "repeated": Each subject has a category at each visit., "stratified": Adjust the comparison for strata., "covariate_adjusted": Adjust the comparison for a covariate., "rate_of_change": Compare rates of change., "control_only": Compare only against a control.}
+    data_rules: []
+  n_factors:
+    text: How many factors define the groups?
+    source: data
+    answers: {"1": There is one factor., "2": There are two factors., "3": There are three factors.}
+    data_rules:
+      - {fact: n_factors, equals: 1, answer: "1"}
+      - {fact: n_factors, equals: 2, answer: "2"}
+      - {fact: n_factors, equals: 3, answer: "3"}
+  n_groups:
+    text: How many groups does the x column hold?
+    source: data
+    answers: {"2": There are two groups., "3+": There are at least three groups.}
+    data_rules:
+      - {fact: x.n_levels, equals: 2, answer: "2"}
+      - {fact: x.n_levels, at_least: 3, answer: "3+"}
+  n_times:
+    text: How many conditions does the x column hold?
+    source: data
+    answers: {"2": There are two conditions., "3+": There are at least three conditions.}
+    data_rules:
+      - {fact: x.n_levels, equals: 2, answer: "2"}
+      - {fact: x.n_levels, at_least: 3, answer: "3+"}
+  presentation:
+    text: Do you want significance brackets or an effect estimate against a control?
+    source: scientist
+    required: false
+    default: bracket
+    answers: {"bracket": Show significance brackets., "estimation": Show mean differences and bootstrap confidence intervals.}
+  id:
+    text: Which column identifies the subject?
+    source: data_or_scientist
+    flag: id
+    answers_from: columns
+  ref:
+    text: Which group is the control?
+    source: scientist
+    flag: ref
+    answers_from: x.levels
+  positive:
+    text: Which outcome level is the case or event?
+    source: scientist
+    flag: positive
+    answers_from: y.levels
+  cause:
+    text: Which event code is the cause of interest?
+    source: scientist
+    flag: cause
+    answers_from: event.nonzero_codes
+  competing_events:
+    text: Can another event prevent the event of interest?
+    source: data_or_scientist
+    answers: {"absent": There is one event type., "present": Competing events exist.}
+    data_rules:
+      - {fact: event.codes, subset_of: ["0", "1"], answer: "absent"}
+      - {fact: event.codes, not_subset_of: ["0", "1"], forbid: ["absent"], reason: The event column has codes other than zero and one.}
+  tte_aim:
+    text: Do you compare groups or estimate adjusted hazard ratios?
+    source: scientist
+    answers: {"compare_groups": Compare survival between groups., "adjusted_hazards": Estimate adjusted hazard ratios.}
+  curve_kind:
+    text: Which curve describes the experiment?
+    source: scientist
+    answers: {"dose_response": Fit a dose response., "michaelis_menten": Fit enzyme kinetics., "standard_curve": Interpolate unknown concentrations.}
+    data_rules:
+      - {fact: unknown_concentrations, equals: true, propose: "standard_curve"}
+  measure:
+    text: Are the study estimates ratios or differences?
+    source: scientist
+    flag: measure
+    answers: {"auto": Use the recipe rule explicitly., "ratio": The estimates are ratios., "difference": The estimates are differences.}
+    data_rules:
+      - {fact: y.all_positive, equals: false, forbid: ["ratio"], reason: A ratio estimate must be positive.}
+  describe_kind:
+    text: Which descriptive figure do you want?
+    source: scientist
+    answers: {"distribution": Show a distribution., "composition": Show category composition., "heatmap": Show a clustered matrix., "correlation_heatmap": Show pairwise correlations., "pca": Show principal components., "embedding": Show supplied coordinates., "volcano": Show fold changes and P values., "ma_plot": Show expression and fold changes., "manhattan": Show genomic associations., "enrichment_dot": Show enrichment results., "upset": Show set intersections., "spider_response": Show changes from baseline., "waterfall": Show best changes., "swimmer": Show treatment durations.}
+  levels:
+    text: In which order do the levels go?
+    source: scientist
+    flag: levels
+    required: false
+    answers_from: x.levels
+  test:
+    text: Do you force a test?
+    source: scientist
+    flag: test
+    required: false
+    default: auto
+    answers_from: test.allowed
+nodes:
+  start:
+    ask: aim
+    doc_heading: Statistical decision tree
+    branches: {"compare": outcomes, "association": correlation, "agreement": bland_altman, "discrimination": roc_curve, "calibration": calibration, "meta_analysis": forest_meta, "curve": curves, "time_to_event": competing, "describe": descriptive}
+  outcomes:
+    ask: n_outcomes
+    doc_heading: Continuous outcome
+    branches: {"one": outcome, "panel": panel_design}
+  outcome:
+    ask: outcome_type
+    doc_heading: Continuous outcome
+    branches: {"continuous": continuous_design, "category": categorical_design}
+  continuous_design:
+    ask: design
+    doc_heading: Continuous outcome
+    branches: {"independent": factors, "paired": times, "repeated": timecourse, "stratified": unsupported, "covariate_adjusted": unsupported, "rate_of_change": unsupported, "control_only": unsupported}
+  panel_design:
+    ask: design
+    doc_heading: Feature panels
+    branches: {"independent": feature_panel, "paired": unsupported, "repeated": unsupported, "stratified": unsupported, "covariate_adjusted": unsupported, "rate_of_change": unsupported, "control_only": unsupported}
+  categorical_design:
+    ask: category_design
+    doc_heading: Category outcomes
+    branches: {"independent": proportions, "repeated": sankey, "stratified": unsupported, "covariate_adjusted": unsupported, "rate_of_change": unsupported, "control_only": unsupported}
+  factors:
+    ask: n_factors
+    doc_heading: Continuous outcome
+    branches: {"1": independent_presentation, "2": factorial_anova, "3": factorial_anova}
+  independent_presentation:
+    ask: presentation
+    doc_heading: Continuous outcome
+    branches: {"bracket": groups, "estimation": estimation_plot}
+  groups:
+    ask: n_groups
+    doc_heading: Continuous outcome
+    branches: {"2": two_group_compare, "3+": multi_group_compare}
+  times:
+    ask: n_times
+    doc_heading: Continuous outcome
+    branches: {"2": paired_presentation, "3+": unsupported}
+  paired_presentation:
+    ask: presentation
+    doc_heading: Continuous outcome
+    branches: {"bracket": paired_compare, "estimation": paired_estimation}
+  competing:
+    ask: competing_events
+    doc_heading: Time to event
+    branches: {"absent": survival_aim, "present": cumulative_incidence}
+  survival_aim:
+    ask: tte_aim
+    doc_heading: Time to event
+    branches: {"compare_groups": survival_km, "adjusted_hazards": cox_forest}
+  curves:
+    ask: curve_kind
+    doc_heading: Curves
+    branches: {"dose_response": dose_response, "michaelis_menten": enzyme_kinetics, "standard_curve": standard_curve}
+  descriptive:
+    ask: describe_kind
+    doc_heading: Descriptive figures
+    branches: {"distribution": distribution, "composition": composition, "heatmap": heatmap, "correlation_heatmap": correlation_heatmap, "pca": pca, "embedding": embedding, "volcano": volcano, "ma_plot": ma_plot, "manhattan": manhattan, "enrichment_dot": enrichment_dot, "upset": upset, "spider_response": spider_response, "waterfall": waterfall, "swimmer": swimmer}
+  unsupported:
+    out_of_scope: No recipe covers this design. Use a model that accounts for the requested design; do not pool the observations.
+    doc_heading: Designs that no recipe fits
+  two_group_compare:
+    leaf:
+      recipe: two_group_compare
+      doc_heading: Two groups → `two_group_compare`
+      reason: Compare one continuous outcome between two independent groups.
+      flags: {required: [x, y]}
+      test:
+        default: auto
+        allowed: ["auto", "welch_t", "student_t", "wilcoxon"]
+        checks: Shapiro-Wilk checks each group. The attainable-P rule can retain Welch when the t-test can run. Levene is reported only.
+        outcomes:
+          - {when: Normal groups or the attainable-P rule retains Welch., test: Welch two-sample t-test}
+          - {when: The scientist forces student_t., test: "Student's two-sample t-test"}
+          - {when: Otherwise under auto or forced wilcoxon., test: Mann-Whitney U test}
+      next_step: diagnose
+  multi_group_compare:
+    leaf:
+      recipe: multi_group_compare
+      doc_heading: Three or more groups → `multi_group_compare`
+      reason: Compare one outcome across independent groups.
+      flags: {required: [x, y]}
+      test: {default: auto, allowed: ["auto", "anova", "welch", "kruskal"], checks: "Shapiro-Wilk, Levene and the attainable-P rule select the test.", outcomes: [{when: Normal and equal variance., test: one-way ANOVA}, {when: Normal and unequal variance., test: "Welch's one-way ANOVA"}, {when: The rank path applies., test: Kruskal-Wallis test}]}
+      next_step: diagnose
+  paired_compare:
+    leaf:
+      recipe: paired_compare
+      doc_heading: Paired, two conditions with a subject id → `paired_compare`
+      reason: Compare two conditions within each subject.
+      flags: {required: [x, y, id]}
+      ask_at_leaf: [id]
+      test: {default: auto, allowed: ["auto", "t", "wilcoxon"], checks: Shapiro-Wilk checks the differences. The attainable-P rule can retain the paired t-test., outcomes: [{when: Normal differences or the attainable-P rule retains the t-test., test: paired t-test}, {when: The rank path applies., test: Wilcoxon signed-rank test}]}
+      next_step: diagnose
+  factorial_anova:
+    leaf:
+      recipe: factorial_anova
+      doc_heading: Two or three factors → `factorial_anova`
+      reason: Estimate factorial effects on one continuous outcome.
+      flags: {required: [x, y, fill]}
+      test: {default: auto, allowed: ["auto", "anova", "art"], checks: Shapiro-Wilk checks model residuals., outcomes: [{when: Normal residuals or forced anova., test: 2-way ANOVA}, {when: Non-normal residuals or forced art in R., test: "aligned rank transform ANOVA (2-way)"}]}
+      next_step: diagnose
+      engine_notes:
+        - {engine: python, forbidden: ["art"], note: The aligned rank transform is R only. Under auto Python stops and routes to R when residuals fail Shapiro-Wilk.}
+  feature_panel:
+    leaf:
+      recipe: feature_panel
+      doc_heading: Feature panels
+      reason: Test each feature across independent groups and adjust across features.
+      flags: {required: [x]}
+      test: {default: auto, allowed: ["auto", "welch_t", "wilcoxon", "anova", "kruskal"], checks: Shapiro-Wilk checks each feature and group. The attainable-P rule can retain the parametric family., outcomes: [{when: Two groups and parametric family., test: Welch t-test}, {when: Two groups and rank family., test: Mann-Whitney U test}, {when: Multiple groups and parametric family., test: one-way ANOVA}, {when: Multiple groups and rank family., test: Kruskal-Wallis test}]}
+      next_step: diagnose
+  estimation_plot:
+    leaf: &estimation
+      recipe: estimation_plot
+      doc_heading: Effect estimates
+      reason: Estimate mean differences against the scientist's control group.
+      flags: {required: [x, y, ref]}
+      ask_at_leaf: [ref]
+      test: {default: auto, allowed: ["auto", "welch_t"], checks: The test does not depend on normality., outcomes: [{when: Independent groups., test: mean difference with a BCa bootstrap CI}, {when: Paired groups., test: paired mean difference with a BCa bootstrap CI}]}
+      next_step: plot
+  paired_estimation:
+    leaf:
+      <<: *estimation
+      flags: {required: [x, y, ref, id]}
+      ask_at_leaf: [ref, id]
+      fixed_flags: {paired: true}
+  timecourse:
+    leaf:
+      recipe: timecourse
+      doc_heading: Repeated measures over time → `timecourse`
+      reason: Compare repeated measurements with time as a factor.
+      flags: {required: [x, y, id]}
+      ask_at_leaf: [id]
+      test: {default: auto, allowed: ["auto", "gg", "uncorrected"], checks: Mauchly determines the sphericity correction. Diagnose shows model residuals., outcomes: [{when: There is a between-subject group., test: "mixed ANOVA (group between, time within)"}, {when: There is no between-subject group., test: one-way repeated-measures ANOVA}]}
+      next_step: diagnose
+  proportions:
+    leaf:
+      recipe: proportions
+      doc_heading: Category outcomes
+      reason: Compare categorical outcomes between independent groups.
+      flags: {required: [x, y]}
+      test: {default: auto, allowed: ["auto", "chisq", "fisher"], checks: Expected cell counts select Fisher below five., outcomes: [{when: Expected counts are sufficient., test: Pearson's chi-squared test}, {when: Sparse expected counts., test: Fisher's exact test}]}
+      engine_notes:
+        - {engine: python, forbidden: [], note: Fisher enumeration above one million tables stops and routes to the R network algorithm or chisq.}
+  sankey:
+    leaf: {recipe: sankey, doc_heading: The same patients in a category at each visit → `sankey`, reason: Show transitions between visits., flags: {required: [x, y, id]}, ask_at_leaf: [id]}
+  correlation:
+    leaf:
+      recipe: correlation
+      doc_heading: Association between two continuous variables → `correlation`
+      reason: Measure association between two numeric variables.
+      flags: {required: [x, y]}
+      test: {default: auto, allowed: ["auto", "pearson", "spearman", "kendall"], checks: Shapiro-Wilk checks both variables., outcomes: [{when: Both normal., test: Pearson correlation}, {when: Otherwise., test: Spearman correlation}, {when: Forced kendall., test: Kendall correlation}]}
+      next_step: diagnose
+  bland_altman:
+    leaf: {recipe: bland_altman, doc_heading: Two methods that measure the same quantity → `bland_altman`, reason: Measure agreement as x minus y., flags: {required: [x, y]}}
+  roc_curve:
+    leaf: {recipe: roc_curve, doc_heading: A marker that discriminates cases from controls → `roc_curve`, reason: Measure discrimination for the scientist's case level., flags: {required: [x, y, positive]}, ask_at_leaf: [positive]}
+  calibration:
+    leaf: {recipe: calibration, doc_heading: Predicted risks against the observed outcome → `calibration`, reason: Compare predicted probabilities with observed events., flags: {required: [x, y, positive]}, ask_at_leaf: [positive]}
+  forest_meta:
+    leaf: {recipe: forest_meta, doc_heading: Combining studies → `forest_meta`, reason: Combine study estimates with their uncertainty., flags: {required: [y]}, ask_at_leaf: [measure]}
+  survival_km:
+    leaf:
+      recipe: survival_km
+      doc_heading: Group comparison → `survival_km`
+      reason: Compare time to one event between groups.
+      flags: {required: [time, event, x]}
+      engine_notes:
+        - {engine: python, forbidden: [], note: The Python table has no confidence interval for median survival.}
+  cox_forest:
+    leaf: {recipe: cox_forest, doc_heading: Adjusted hazard → `cox_forest`, reason: Estimate hazard ratios adjusted for covariates., flags: {required: [time, event, covariates]}}
+  cumulative_incidence:
+    leaf: {recipe: cumulative_incidence, doc_heading: Competing events → `cumulative_incidence`, reason: Estimate cumulative incidence with competing events., flags: {required: [time, event, cause]}, ask_at_leaf: [cause]}
+  dose_response:
+    leaf: {recipe: dose_response, doc_heading: Response against dose → `dose_response`, reason: Fit a four-parameter dose response., flags: {required: [x, y]}}
+  enzyme_kinetics:
+    leaf: {recipe: enzyme_kinetics, doc_heading: Enzyme kinetics, reason: Fit a Michaelis-Menten curve., flags: {required: [x, y]}}
+  standard_curve:
+    leaf:
+      recipe: standard_curve
+      doc_heading: Standard curves
+      reason: Interpolate unknown concentrations from standards.
+      flags: {required: [x, y]}
+      test: {default: auto, allowed: ["auto", "linear", "4pl"], checks: The recipe selects the calibration model., outcomes: [{when: Always., test: Standard curve interpolation}]}
+  distribution:
+    leaf: {recipe: distribution, doc_heading: Distributions, reason: Describe a numeric distribution., flags: {required: [y]}}
+  composition:
+    leaf: {recipe: composition, doc_heading: Compositions, reason: Describe category composition within samples., flags: {required: [id, x]}}
+  heatmap:
+    leaf:
+      recipe: heatmap
+      doc_heading: Matrix heatmaps
+      reason: Show a clustered feature matrix.
+      flags: {required: []}
+      test: {default: auto, allowed: ["auto", "welch_t"], checks: Only explicit welch_t runs feature tests with two annotation groups., outcomes: [{when: Always., test: Clustered heatmap}]}
+  correlation_heatmap:
+    leaf:
+      recipe: correlation_heatmap
+      doc_heading: Correlation matrices
+      reason: Show pairwise correlations with adjusted P values.
+      flags: {required: []}
+      test:
+        default: pearson
+        allowed: ["pearson", "spearman", "kendall"]
+        checks: The scientist selects the correlation method.
+        outcomes:
+          - {when: Pearson in R., test: Clustered pearson correlation heatmap (ComplexHeatmap)}
+          - {when: Spearman in R., test: Clustered spearman correlation heatmap (ComplexHeatmap)}
+          - {when: Kendall in R., test: Clustered kendall correlation heatmap (ComplexHeatmap)}
+          - {when: Pearson in Python., test: Clustered pearson correlation heatmap (seaborn.clustermap)}
+          - {when: Spearman in Python., test: Clustered spearman correlation heatmap (seaborn.clustermap)}
+          - {when: Kendall in Python., test: Clustered kendall correlation heatmap (seaborn.clustermap)}
+  pca:
+    leaf:
+      recipe: pca
+      doc_heading: Principal components
+      reason: Show principal components and test group separation.
+      flags: {required: [group]}
+      engine_notes:
+        - {engine: python, forbidden: [], note: Above 5000 labelings the engines use different seeded permutations for PERMANOVA.}
+  embedding:
+    leaf: {recipe: embedding, doc_heading: Supplied embeddings, reason: Show coordinates computed upstream., flags: {required: [x, y, group]}}
+  volcano:
+    leaf: {recipe: volcano, doc_heading: Volcano plots, reason: Show upstream differential results., flags: {required: []}}
+  ma_plot:
+    leaf: {recipe: ma_plot, doc_heading: MA plots, reason: Show fold changes against mean expression., flags: {required: []}}
+  manhattan:
+    leaf: {recipe: manhattan, doc_heading: Manhattan plots, reason: Show genomic association results., flags: {required: [x, y, group]}}
+  enrichment_dot:
+    leaf: {recipe: enrichment_dot, doc_heading: Enrichment results, reason: Show upstream enrichment results., flags: {required: []}}
+  upset:
+    leaf: {recipe: upset, doc_heading: Set intersections, reason: Show set membership intersections., flags: {required: []}}
+  spider_response:
+    leaf: {recipe: spider_response, doc_heading: Changes from baseline, reason: Show each patient's change from baseline., flags: {required: [x, y, id]}}
+  waterfall:
+    leaf: {recipe: waterfall, doc_heading: Best changes, reason: Show the best change for each patient., flags: {required: [y, id]}}
+  swimmer:
+    leaf: {recipe: swimmer, doc_heading: Treatment durations, reason: Show each patient's treatment duration., flags: {required: [time, id]}}

@@ -1,0 +1,14 @@
+{
+  "two_group_compare": {"dataset": "sleep", "flags": {"x": "group", "y": "extra"}},
+  "multi_group_compare": {"dataset": "plant_growth", "flags": {"x": "group", "y": "weight"}},
+  "paired_compare": {"dataset": "sleep", "flags": {"x": "group", "y": "extra", "id": "ID"}},
+  "factorial_anova": {"dataset": "tooth_growth", "flags": {"x": "dose", "y": "len", "fill": "supp"}},
+  "feature_panel": {"dataset": "iris", "flags": {"x": "Species"}},
+  "estimation_plot": {"dataset": "sleep", "flags": {"x": "group", "y": "extra", "ref": "1"}},
+  "timecourse": {"dataset": "orthodont", "flags": {"x": "age", "y": "distance", "id": "Subject", "group": "Sex"}},
+  "proportions": {"dataset": "titanic", "flags": {"x": "Class", "y": "Survived"}},
+  "correlation": {"dataset": "mtcars", "flags": {"x": "wt", "y": "mpg"}},
+  "standard_curve": {"dataset": "dnase_standard_curve", "flags": {"x": "conc", "y": "density", "id": "sample"}},
+  "heatmap": {"dataset": "mtcars_matrix", "flags": {"annotation": "mtcars_annotation.csv"}},
+  "correlation_heatmap": {"dataset": "state_x77", "flags": {}}
+}
