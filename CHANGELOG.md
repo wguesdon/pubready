@@ -33,6 +33,13 @@ tag move together.
   rules, the Welch default and the attainable-P rule, the event codes, the read
   rule of a CSV file, the option check, `render` and the engine limits. The
   "F test or Levene" text is gone; the variance check is Levene's test (F98).
+- `reference/decision_tree.md` and `reference/assumptions.md` follow the code:
+  the Welch default, the attainable-P rule, the paired differences, the residual
+  check of `factorial_anova`, the Mauchly rule, the event codes, the `cox_forest`
+  checks, the opt-in heatmap test, and the columns where each check lands. Three
+  stale statements are gone: the Python heatmap draws its stars, the `swimmer`
+  medians are in the methods text, and `multi_group_compare` keeps its checks in
+  the manifest (F103).
 - The three adapters and `reference/decision_tree.md` list the designs that no
   recipe fits: strata, covariate adjustment, rates of change, and a comparison
   with one control only. The agent tells the scientist and does not force the

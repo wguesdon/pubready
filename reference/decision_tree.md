@@ -20,17 +20,24 @@ checks that led to it.
 ## Continuous outcome
 
 ### Two groups → `two_group_compare`
-Check normality of each group (Shapiro-Wilk) and equal variance (Levene's test).
+Check normality of each group (Shapiro-Wilk). Levene's test, centered on the
+median, runs too, and its P goes to the stats table, but it does not choose the
+test.
 
-- Both groups normal, equal variance → Student's two-sample t-test.
-- Both groups normal, unequal variance → Welch two-sample t-test.
+- Both groups normal → Welch two-sample t-test. It does not assume equal
+  variances, and it loses almost nothing when the variances are equal.
 - Either group not normal → Mann-Whitney U test.
-- Paired design (`--paired`): paired t-test when the differences are normal, else
+- The Mann-Whitney U test cannot reach P < 0.05 at the group sizes, for example
+  3 against 3 → the Welch t-test stays, and the methods text gives the smallest P
+  that the rank test can reach.
+- Paired design (`--paired`): the rows pair by their order in each group, and the
+  normality of the within-pair differences chooses between the paired t-test and
   the Wilcoxon signed-rank test. Paired data that carries a subject id is better
   served by `paired_compare`, which draws the connecting lines.
 
-Effect size is Cohen's d for the t-tests and rank-biserial r for the rank tests.
-Force with `--test student_t | welch_t | wilcoxon`.
+Effect size is Cohen's d with the pooled SD for the unpaired t-test, Cohen's dz
+for the paired t-test, and rank-biserial r for the rank tests. Force with
+`--test welch_t | student_t | wilcoxon`. `--test t` is Welch's t-test.
 
 ### Three or more groups → `multi_group_compare`
 Check normality of every group (Shapiro-Wilk) and equal variance across groups
@@ -41,6 +48,8 @@ Check normality of every group (Shapiro-Wilk) and equal variance across groups
   Games-Howell.
 - Any group not normal → Kruskal-Wallis test, post hoc Dunn's test with
   Benjamini-Hochberg adjustment.
+- The Kruskal-Wallis test cannot reach P < 0.05 at the group sizes → the ANOVA or
+  Welch's ANOVA stays, by Levene's test, and the methods text says why.
 
 The omnibus test is the figure subtitle. Only pairwise comparisons that reach
 significance (adjusted P < 0.05) get a bracket; the full pairwise table is saved.
@@ -51,16 +60,26 @@ Check normality of the within-subject differences (Shapiro-Wilk).
 
 - Differences normal → paired t-test (effect size Cohen's dz).
 - Otherwise → Wilcoxon signed-rank test (rank-biserial r).
+- The signed-rank test cannot reach P < 0.05 with the count of pairs, for example
+  5 pairs → the paired t-test stays, and the methods text says why.
 
-A line connects each subject's two points. Force with `--test t | wilcoxon`.
+A line connects each subject's two points. The two conditions follow the time
+rule: numeric order, else the one number that each label holds, else the order
+of first appearance, so "pre" and "post" keep the order of the file. `--levels`
+sets another order. A subject with two rows in one condition stops the run.
+Force with `--test t | wilcoxon`.
 
 ### Two or three factors → `factorial_anova`
 Type II ANOVA by default. Under `--test auto`, when the fitted model's residuals
 are not normal (Shapiro-Wilk on the residuals, P < 0.05) the recipe switches to
 the aligned rank transform (ARTool), the nonparametric factorial path. Every
-effect's p-value is drawn on the figure. Force with `--test anova | art`. The
-aligned rank transform is R only; `--test art --engine python` errors and routes
-you to R.
+effect's p-value is drawn on the figure, and the stats table gives the residual
+Shapiro-Wilk P. Force with `--test anova | art`. The aligned rank transform is R
+only, so `--test art --engine python` stops and routes you to R. Under `--test
+auto`, the Python engine also stops with that route when the residuals are not
+normal. The design must have a value in each cell, two levels or more in each
+factor, and residual degrees of freedom, else the run stops and names the
+problem.
 
 ### Repeated measures over time → `timecourse`
 Each subject is measured at every time point, and a subject can belong to a group.
@@ -72,6 +91,10 @@ the drop.
 - Mauchly's test rejects sphericity (P < 0.05) → the time effect and the
   interaction carry the Greenhouse-Geisser correction.
 - Otherwise → no correction.
+- Mauchly's test is not available when the subjects, less the groups, are fewer
+  than the time points less one → under auto, the time effect carries the
+  Greenhouse-Geisser correction, and the text says that Mauchly's test was not
+  available.
 
 Both P values are in the stats table. Force with `--test gg | uncorrected`. Two
 time points with a subject id are better served by `paired_compare`. The
@@ -163,33 +186,41 @@ continuity correction. With three visits or more, the figure is descriptive.
 ### Group comparison → `survival_km`
 Kaplan-Meier curves with censoring ticks and a number-at-risk table. Groups are
 compared with the log-rank test, its p-value on the plot. Input `--time --event
---x`, with the event column coded 1 = event, 0 = censored.
+--x`, with the event column coded 1 = event, 0 = censored, or TRUE and FALSE. Any
+other value, such as "dead" or 2, stops the run and lists the values.
 
 ### Adjusted hazard → `cox_forest`
 Cox proportional-hazards model over one or more covariates, drawn as a forest of
 hazard ratios with 95% confidence intervals. A global cox.zph test checks the
 proportional-hazards assumption and its p-value is reported. Input `--time
---event --covariates "a,b,c"`.
+--event --covariates "a,b,c"`. A covariate is numeric when 80% or more of its
+cells read as numbers, and the first level of a text covariate is the reference.
+A covariate with one value, a collinear covariate or data with no event stops
+the run. A covariate that separates the events has no finite hazard ratio, so
+the figure, the stats table and the text mark it "not estimable, separation".
 
 ### Competing events → `cumulative_incidence`
 Use this recipe when another event can prevent the event of interest, for example
 a death before a relapse. Kaplan-Meier treats the competing event as censoring and
 overestimates the probability of the event of interest. Code the status as 0 for
 a censored subject and as one code for each event type, and name the cause of
-interest with `--cause`. The recipe estimates the cumulative incidence of each
+interest with `--cause`. A status that holds text or a negative code stops the
+run. The recipe estimates the cumulative incidence of each
 cause in each group with the Aalen-Johansen estimator, and Gray's test compares
 the groups for each cause. Input `--time --event [--x --cause]`.
 
 ## Descriptive figures (no test chosen from assumptions)
 These recipes show structure rather than run an inferential test:
 
-- `heatmap` — clustered heatmap; adds a per-feature Welch t-test only when the
-  annotation has exactly two groups (stars on the R figure; the Python engine
-  keeps the stars in the stats table).
+- `heatmap` — clustered heatmap. A Welch t-test of each feature runs only with
+  `--test welch_t` and an annotation of exactly two groups, and both engines draw
+  its stars. Do not test genes that a differential test already chose, because
+  that test is circular.
 - `correlation_heatmap` — pairwise correlation across the numeric columns,
   clustered, with Benjamini-Hochberg-adjusted significance stars.
 - `volcano`, `enrichment_dot`, `upset` — descriptive; any differential or
-  enrichment test is upstream of the figure.
+  enrichment test is upstream of the figure. A table with only a raw p makes
+  `enrichment_dot` mark the p as not adjusted.
 - `pca` — PCA scatter with 95% normal-theory ellipses for each group of four
   samples or more. Group separation is tested with a PERMANOVA. The test is exact
   when the design has 5000 labelings or fewer, and it uses 999 seeded permutations
@@ -205,14 +236,14 @@ These recipes show structure rather than run an inferential test:
   `spider_response`. It also accepts one precomputed change per patient.
 - `swimmer` draws the time on treatment of each patient as one sorted bar, with an
   arrow for a course that is still ongoing and a symbol for each event time named
-  in `--markers`. The stats table gives the median duration of each arm.
+  in `--markers`. The stats table holds one row for each patient, and the methods
+  text gives the median duration of each arm.
 
 ## Multiple comparisons
 Correct whenever there is more than one comparison. The multi-group post-hoc tests
 carry their own correction: Tukey's HSD and Games-Howell are inherently adjusted,
 and Dunn's test uses Benjamini-Hochberg. The correlation heatmap adjusts across the
-matrix with Benjamini-Hochberg. A single two-group comparison needs no correction,
-so `--p_adjust` defaults to none there.
+matrix with Benjamini-Hochberg. A single two-group comparison needs no correction.
 
 ## Designs that no recipe fits
 No recipe fits the designs below. Tell the scientist, and do not force the
@@ -231,7 +262,8 @@ nearest recipe, because a pooled test can give the wrong answer.
 
 ## Overriding
 The tree gives the default; the scientist decides. When the choice is not obvious, run
-`figkit diagnose` first: it shows the QQ plot and the assumption numbers and prints the
-recommended test, so the scientist can confirm it or force another with `--test`.
+`figkit diagnose` first, with the options of `figkit plot`: it shows the QQ plot and the
+assumption numbers and prints the recommended test, so the scientist can confirm it or
+force another with `--test`.
 Forcing a test still runs and records the assumption checks, and the methods paragraph
 states exactly what was run.
