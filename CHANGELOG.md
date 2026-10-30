@@ -83,6 +83,13 @@ tag move together.
   bundle record the engine that ran. Before, R redrew a Python bundle and the
   manifest still said python (F60).
 
+### Removed
+- `--p_adjust` is gone from both engines. No recipe applied it, and the R
+  methods text of `two_group_compare` said that the P values were adjusted.
+  The `two_group_compare` stats table loses its `p_adjust_method` column, the
+  manifest loses `p_adjust`, and a config that holds `test: p_adjust` drops the
+  key (F75).
+
 ## [3.0.0] - 2026-10-29
 
 The fixes of the public data audit change figure output and stats tables in

@@ -81,8 +81,8 @@ test_that("the manifest writes NaN, infinity and NA as null (F69)", {
 manifest_arg_names <- c(
   "x", "y", "fill", "facet", "time", "event", "covariates", "annotation", "id",
   "group", "label", "positive", "se", "ci_low", "ci_high", "measure", "markers",
-  "ref", "cause", "levels", "visit_levels", "features", "test", "paired",
-  "p_adjust", "scale", "cluster", "fc_cutoff", "p_cutoff", "top_n",
+  "ref", "cause", "levels", "visit_levels", "features", "test", "paired", "scale",
+  "cluster", "fc_cutoff", "p_cutoff", "top_n",
   "pd_threshold", "pr_threshold", "geom", "theme", "xlab", "ylab", "title",
   "palette")
 
@@ -179,7 +179,7 @@ test_that("inspect gives level counts, numeric codes and a subject id (F72)", {
 plot_option_names <- c(
   "annotation", "ci_high", "ci_low", "cause", "cluster", "covariates", "data", "engine",
   "event", "facet", "fc_cutoff", "features", "fill", "geom", "group", "id", "label",
-  "levels", "markers", "measure", "out", "p_adjust", "p_cutoff", "paired", "palette",
+  "levels", "markers", "measure", "out", "p_cutoff", "paired", "palette",
   "pd_threshold", "positive", "pr_threshold", "recipe", "ref", "scale", "se", "sheet",
   "stamp", "test", "theme", "time", "title", "top_n", "visit_levels", "x", "xlab", "y",
   "ylab")
@@ -206,4 +206,14 @@ test_that("render finds the bundle input in the folder of the config (F74)", {
   expect_equal(resolve_config_path("example/other.csv", cfg), "example/other.csv")
   expect_equal(resolve_config_path("/abs/path.csv", cfg), "/abs/path.csv")
   expect_null(resolve_config_path(NULL, cfg))
+})
+
+test_that("--p_adjust is gone and an old config drops the key (F75)", {
+  path <- tempfile(fileext = ".yaml")
+  writeLines(c("engine: r", "recipe: two_group_compare", "data:", "  x: group",
+               "test:", "  method: auto", "  p_adjust: bonferroni"), path)
+  spec <- spec_from_config(path)
+  expect_null(spec$test$p_adjust)
+  expect_equal(spec$test$method, "auto")
+  expect_false("p_adjust" %in% names(spec_from_opt(list(recipe = "x", data = "d.csv"))$test))
 })

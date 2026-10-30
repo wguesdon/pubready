@@ -49,7 +49,6 @@ plot_option_list <- function() {
     optparse::make_option("--features", type = "character", default = NULL),
     optparse::make_option("--test",     type = "character", default = NULL),
     optparse::make_option("--paired",   action = "store_true", default = FALSE),
-    optparse::make_option("--p_adjust", type = "character", default = NULL),
     optparse::make_option("--geom",     type = "character", default = NULL),
     optparse::make_option("--theme",    type = "character", default = NULL),
     optparse::make_option("--xlab",     type = "character", default = NULL),
@@ -109,8 +108,7 @@ spec_from_opt <- function(opt) {
                   covariates = split_list_option(opt$covariates)),
     test   = list(
       method   = opt$test %||% "auto",
-      paired   = isTRUE(opt$paired),
-      p_adjust = opt$p_adjust %||% "none"
+      paired   = isTRUE(opt$paired)
     ),
     appearance = ap
   )
@@ -133,8 +131,9 @@ spec_from_config <- function(path) {
   cfg <- yaml::read_yaml(path)
   cfg$data <- fix_axis_keys(cfg$data)
   cfg$appearance <- modifyList(default_appearance(), cfg$appearance %||% list())
-  cfg$test <- modifyList(list(method = "auto", paired = FALSE, p_adjust = "none"),
-                         cfg$test %||% list())
+  cfg$test <- modifyList(list(method = "auto", paired = FALSE), cfg$test %||% list())
+  # --p_adjust was removed: no recipe applied it. An old config drops the key.
+  cfg$test$p_adjust <- NULL
   cfg
 }
 

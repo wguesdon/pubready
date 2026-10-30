@@ -37,7 +37,7 @@ PLOT_VALUE_OPTIONS = (("fc_cutoff", float), ("p_cutoff", float), ("top_n", int),
                       ("se", str), ("ci_low", str), ("ci_high", str), ("measure", str),
                       ("markers", str), ("ref", str), ("cause", str), ("levels", str),
                       ("visit_levels", str), ("features", str), ("test", str),
-                      ("p_adjust", str), ("geom", str), ("theme", str), ("xlab", str),
+                      ("geom", str), ("theme", str), ("xlab", str),
                       ("ylab", str), ("title", str), ("palette", str), ("sheet", str),
                       ("stamp", str))
 
@@ -141,7 +141,6 @@ def spec_from_args(a):
         "test": {
             "method": getattr(a, "test", None) or "auto",
             "paired": bool(getattr(a, "paired", False)),
-            "p_adjust": getattr(a, "p_adjust", None) or "none",
         },
         "appearance": ap,
     }
@@ -152,8 +151,10 @@ def spec_from_config(path):
     ap = default_appearance()
     ap.update(cfg.get("appearance") or {})
     cfg["appearance"] = ap
-    t = {"method": "auto", "paired": False, "p_adjust": "none"}
+    t = {"method": "auto", "paired": False}
     t.update(cfg.get("test") or {})
+    # --p_adjust was removed: no recipe applied it. An old config drops the key.
+    t.pop("p_adjust", None)
     cfg["test"] = t
     cfg.setdefault("engine", "python")
     cfg.setdefault("data", {})

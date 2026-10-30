@@ -548,7 +548,6 @@ def manifest_arguments(spec):
     out = {k: data.get(k) for k in MANIFEST_DATA_ARGS}
     out["test"] = test.get("method") or "auto"
     out["paired"] = bool(test.get("paired", False))
-    out["p_adjust"] = test.get("p_adjust") or "none"
     for k, field in MANIFEST_APPEARANCE_ARGS:
         out[k] = ap.get(field)
     for k in MANIFEST_LIST_ARGS:

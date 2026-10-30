@@ -135,7 +135,6 @@ recipe_two_group_compare <- function(df, spec) {
     statistic        = if (!is.null(stat$statistic)) unname(stat$statistic[1]) else NA_real_,
     df               = if ("df" %in% names(stat)) unname(stat$df[1]) else NA_real_,
     p_value          = stat$p[1],
-    p_adjust_method  = spec$test$p_adjust,
     effect_size_name = eff_name,
     effect_size      = eff_val,
     shapiro_p_group1 = norm[[g1]]$p,
@@ -148,7 +147,6 @@ recipe_two_group_compare <- function(df, spec) {
     name        = resolved$label,
     statistic   = if (!is.null(stat$statistic)) unname(stat$statistic[1]) else NULL,
     p_value     = stat$p[1],
-    adjustment  = spec$test$p_adjust,
     effect_size = list(name = eff_name, value = eff_val),
     assumptions = list(
       normality      = list(test = "shapiro-wilk",

@@ -16,7 +16,7 @@ from pubready.bundle import (_markdown_value, dataframe_markdown, manifest_argum
 from pubready.io import read_tidy, read_tidy_logged
 from pubready.qc import qc_layout, qc_normality
 from pubready.run import inspect_data, print_inspect, run_entry
-from pubready.spec import add_plot_arguments, resolve_config_path, spec_from_args
+from pubready.spec import add_plot_arguments, resolve_config_path, spec_from_args, spec_from_config
 
 
 def write_tmp_csv(tmp_path, lines):
@@ -105,8 +105,8 @@ def test_manifest_keeps_the_full_precision_of_each_number(tmp_path):
 MANIFEST_ARG_NAMES = [
     "x", "y", "fill", "facet", "time", "event", "covariates", "annotation", "id",
     "group", "label", "positive", "se", "ci_low", "ci_high", "measure", "markers",
-    "ref", "cause", "levels", "visit_levels", "features", "test", "paired",
-    "p_adjust", "scale", "cluster", "fc_cutoff", "p_cutoff", "top_n",
+    "ref", "cause", "levels", "visit_levels", "features", "test", "paired", "scale",
+    "cluster", "fc_cutoff", "p_cutoff", "top_n",
     "pd_threshold", "pr_threshold", "geom", "theme", "xlab", "ylab", "title",
     "palette"]
 
@@ -240,7 +240,7 @@ def test_inspect_gives_level_counts_numeric_codes_and_a_subject_id(tmp_path, cap
 PLOT_OPTION_NAMES = [
     "annotation", "ci_high", "ci_low", "cause", "cluster", "covariates", "data", "engine",
     "event", "facet", "fc_cutoff", "features", "fill", "geom", "group", "id", "label",
-    "levels", "markers", "measure", "out", "p_adjust", "p_cutoff", "paired", "palette",
+    "levels", "markers", "measure", "out", "p_cutoff", "paired", "palette",
     "pd_threshold", "positive", "pr_threshold", "recipe", "ref", "scale", "se", "sheet",
     "stamp", "test", "theme", "time", "title", "top_n", "visit_levels", "x", "xlab", "y",
     "ylab"]
@@ -264,3 +264,14 @@ def test_render_finds_the_bundle_input_in_the_folder_of_the_config(tmp_path):
     assert resolve_config_path("example/other.csv", cfg) == "example/other.csv"
     assert resolve_config_path("/abs/path.csv", cfg) == "/abs/path.csv"
     assert resolve_config_path(None, cfg) is None
+
+
+def test_p_adjust_is_gone_and_an_old_config_drops_the_key(tmp_path):
+    path = tmp_path / "plot_config.yaml"
+    path.write_text("engine: python\nrecipe: two_group_compare\ndata:\n  x: group\n"
+                    "test:\n  method: auto\n  p_adjust: bonferroni\n")
+    spec = spec_from_config(str(path))
+    assert "p_adjust" not in spec["test"]
+    assert spec["test"]["method"] == "auto"
+    a = SimpleNamespace(recipe="x", data="d.csv", x=None, y=None)
+    assert "p_adjust" not in spec_from_args(a)["test"]

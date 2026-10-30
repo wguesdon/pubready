@@ -151,7 +151,6 @@ manifest_arguments <- function(spec) {
   for (k in MANIFEST_DATA_ARGS) out[k] <- list(spec$data[[k]])
   out["test"] <- list(spec$test$method %||% "auto")
   out["paired"] <- list(isTRUE(spec$test$paired))
-  out["p_adjust"] <- list(spec$test$p_adjust %||% "none")
   for (k in names(MANIFEST_APPEARANCE_ARGS)) {
     out[k] <- list(spec$appearance[[MANIFEST_APPEARANCE_ARGS[[k]]]])
   }
@@ -218,9 +217,6 @@ methods_paragraph <- function(resolved, stats_df, test_meta, spec) {
               formatC(eff_v, format = "f", digits = 2), stats_df$group1[1], stats_df$group2[1])
     }
   } else ""
-  adj_txt <- if (!identical(spec$test$p_adjust, "none")) {
-    sprintf(" P-values were adjusted for multiple comparisons using the %s method.", spec$test$p_adjust)
-  } else ""
   n_txt <- if (all(c("n1", "n2") %in% names(stats_df))) {
     sprintf(" Group sizes were n = %d and n = %d.", stats_df$n1[1], stats_df$n2[1])
   } else ""
@@ -228,7 +224,7 @@ methods_paragraph <- function(resolved, stats_df, test_meta, spec) {
   paste0(
     sprintf("%s was compared between the two groups with a %s.",
             cap_first(y_label), resolved$label),
-    " ", norm_txt, var_txt, eff_txt, adj_txt,
+    " ", norm_txt, var_txt, eff_txt,
     " Significance was set at P < 0.05.",
     sprintf(" Analyses were performed in R %s with rstatix %s; figures were produced with ggpubr %s and ggprism %s.",
             rver, v$rstatix, v$ggpubr, v$ggprism),

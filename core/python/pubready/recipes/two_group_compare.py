@@ -104,14 +104,12 @@ def recipe_two_group_compare(df, spec):
         "outcome": y, "group1": lv[0], "group2": lv[1], "contrast": f"{lv[0]} - {lv[1]}",
         "n1": len(a), "n2": len(b),
         "test": r["label"], "statistic": statistic, "df": dof, "p_value": pval,
-        "p_adjust_method": spec["test"].get("p_adjust", "none"),
         "effect_size_name": eff_name, "effect_size": eff,
         "shapiro_p_group1": p1, "shapiro_p_group2": p2, "var_equal_p": var_p,
     }])
 
     test_meta = {
         "name": r["label"], "statistic": statistic, "p_value": pval,
-        "adjustment": spec["test"].get("p_adjust", "none"),
         "effect_size": {"name": eff_name, "value": eff},
         "assumptions": {
             "normality": {"test": "shapiro-wilk", "p_group1": p1, "p_group2": p2},
