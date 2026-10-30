@@ -77,6 +77,8 @@ tag move together.
   When the table holds no adjusted p column, the raw p is drawn and labelled
   "not adjusted" in the legend, the stats table (`p_value`), the data log and
   the methods text (F52).
+- `enrichment_dot` makes a repeated term name unique, "Term (2)" for the
+  second copy, and logs it. R stopped with "factor level is duplicated" (F79).
 - `enzyme_kinetics` reports a fit as not determined, as `dose_response` does,
   when Vmax or Km is not positive, when Km lies above the highest substrate
   concentration, or when the 95% CI of Km or of Vmax holds 0. Such a curve keeps

@@ -83,3 +83,13 @@ test_that("enrichment_dot labels a raw p as not adjusted", {
   expect_match(res$clean_steps[1], "raw p column 'pvalue'", fixed = TRUE)
   expect_equal(res$plot$scales$get_scales("colour")$name, "-log10 p (not adjusted)")
 })
+
+# A repeated term name is made unique and logged; R stopped on it (F79).
+test_that("enrichment_dot makes a repeated term name unique", {
+  df <- enrich_area_d()[c(1, 4, 5), ]
+  df$Description <- c("Pathway 1", "Pathway 1", "Pathway 4")
+  res <- recipe_enrichment_dot(df, spec_from_opt(list(recipe = "enrichment_dot", data = "e.csv")))
+  expect_setequal(res$stats$term, c("Pathway 1", "Pathway 1 (2)", "Pathway 4"))
+  expect_true(any(grepl("Made 1 repeated term name(s) unique by adding (2), (3) and so on: 'Pathway 1'.",
+                        res$clean_steps, fixed = TRUE)))
+})

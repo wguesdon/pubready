@@ -116,3 +116,13 @@ def test_enrichment_dot_labels_a_raw_p_as_not_adjusted():
     assert "raw p column 'pvalue'" in res["clean_steps"][0]
     titles = [ax.get_title(loc="left") for ax in res["fig"].axes]
     assert "-log10 p (not adjusted)" in titles
+
+
+def test_enrichment_dot_makes_a_repeated_term_name_unique():
+    """A repeated term name is made unique and logged, as in R (F79)."""
+    df = enrich_area_d().iloc[[0, 3, 4]].reset_index(drop=True)
+    df["Description"] = ["Pathway 1", "Pathway 1", "Pathway 4"]
+    res = recipe_enrichment_dot(df, enrich_spec())
+    assert set(res["stats"]["term"]) == {"Pathway 1", "Pathway 1 (2)", "Pathway 4"}
+    assert ("Made 1 repeated term name(s) unique by adding (2), (3) and so on: 'Pathway 1'."
+            in res["clean_steps"])

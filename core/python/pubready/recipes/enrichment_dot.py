@@ -12,6 +12,7 @@ import pandas as pd
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, significance_cmap
+from .pca import name_list
 from .volcano import DOUBLE_XMIN, display_y
 
 _TERM = ["Description", "ID", "pathway", "term", "Term", "NAME"]
@@ -145,6 +146,24 @@ def dot_area(ct, lo, rng):
     return 30 + 200 * (arr - lo) / rng
 
 
+def unique_terms(term):
+    """Make repeated term names unique, as .enrich_unique() in R.
+
+    The second copy of a name gets " (2)", the third " (3)", and so on.
+
+    Args:
+        term: The term names.
+
+    Returns:
+        tuple: The names, as a numpy array, and the list of names that repeated.
+    """
+    s = pd.Series(term)
+    k = s.groupby(s, sort=False).cumcount().to_numpy() + 1
+    out = np.array([t if n == 1 else f"{t} ({n})" for t, n in zip(term, k)], dtype=object)
+    dup = list(pd.unique(s[k > 1]))
+    return out, dup
+
+
 def p_words(adjusted):
     """The words for the p column, as .enrich_p_words() in R (F52).
 
@@ -208,6 +227,9 @@ def recipe_enrichment_dot(df, spec):
     is_zero = is_zero[keep]
     if len(term) < 1:
         raise ValueError("enrichment_dot: no usable rows")
+    # A term name that repeats would make two rows with one label; the second
+    # name gets " (2)", the third " (3)", and so on, as in R (F79).
+    term, dup = unique_terms(term)
     clean_steps = []
     if (~keep).any():
         clean_steps.append(f"Dropped {int((~keep).sum())} row(s) with a missing term, {pw['noun']} "
@@ -218,6 +240,9 @@ def recipe_enrichment_dot(df, spec):
     if not adjusted:
         clean_steps.insert(0, f"The table holds no adjusted p column, so the raw p column "
                               f"'{padj_col}' is shown and labelled as not adjusted.")
+    if dup:
+        clean_steps.append(f"Made {len(dup)} repeated term name(s) unique by adding (2), (3) and so "
+                           f"on: {name_list(dup, 5)}.")
     if not clean_steps:
         clean_steps = ["No cleaning applied; enrichment table used as-is."]
     df_used = pd.DataFrame({"term": term, "x": xval, "p_adjust": padj, "count": count})

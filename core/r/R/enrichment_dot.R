@@ -28,6 +28,17 @@
   }, numeric(1), USE.NAMES = FALSE)
 }
 
+# Make repeated term names unique: the second copy of a name gets " (2)", the
+# third " (3)", and so on. Returns the names and the names that repeated. The
+# Python engine has the same rule.
+.enrich_unique <- function(term) {
+  k <- stats::ave(seq_along(term), term, FUN = seq_along)
+  dup <- k > 1
+  out <- term
+  out[dup] <- sprintf("%s (%d)", term[dup], k[dup])
+  list(term = out, dup = unique(term[dup]))
+}
+
 # Fill words greedily into lines of at most `width` characters. A word longer
 # than the width keeps its own line.
 .enrich_greedy <- function(words, width) {
@@ -104,6 +115,10 @@ recipe_enrichment_dot <- function(df, spec) {
   term <- term[keep]; padj <- padj[keep]; count <- count[keep]; xval <- xval[keep]
   is_zero <- is_zero[keep]
   if (length(term) < 1) stop("enrichment_dot: no usable rows")
+  # A term name that repeats would make two factor levels with one name, which
+  # stops R; the second name gets " (2)", the third " (3)", and so on (F79).
+  uq <- .enrich_unique(term)
+  term <- uq$term
   clean_steps <- c(
     if (sum(!keep) > 0) sprintf("Dropped %d row(s) with a missing term, %s or x value (%d -> %d).",
                                 sum(!keep), pw$noun, n0, length(term)),
@@ -112,6 +127,10 @@ recipe_enrichment_dot <- function(df, spec) {
   if (!adjusted) {
     clean_steps <- c(sprintf("The table holds no adjusted p column, so the raw p column '%s' is shown and labelled as not adjusted.",
                              cols$padj), clean_steps)
+  }
+  if (length(uq$dup) > 0) {
+    clean_steps <- c(clean_steps, sprintf("Made %d repeated term name(s) unique by adding (2), (3) and so on: %s.",
+                                          length(uq$dup), .pca_name_list(uq$dup, 5)))
   }
   if (length(clean_steps) == 0) clean_steps <- "No cleaning applied; enrichment table used as-is."
   df_used <- data.frame(term = term, x = xval, p_adjust = padj, count = count, stringsAsFactors = FALSE)
