@@ -330,10 +330,22 @@ recipe_factorial_anova <- function(df, spec) {
 
   paste0(
     intro, " Effects tested: ", paste(parts, collapse = "; "), ".", es_txt,
+    .fa_geom_text(spec$appearance$geom %||% "box", factors[2]),
     " Significance was set at P < 0.05.",
     sprintf(" Analyses were performed in R %s with %s; figures were produced with ggplot2 %s.",
             rver, soft, v$ggplot2)
   )
+}
+
+# The sentence of the methods text on what the bar and the interaction geoms
+# show. The Python engine writes the same words.
+.fa_geom_text <- function(geom, fill) {
+  if (identical(geom, "bar")) {
+    " The bars show the mean +/- SEM of each cell."
+  } else if (identical(geom, "interaction")) {
+    sprintf(" The points show the mean +/- SEM of each cell, joined by one line per level of %s.",
+            fill)
+  } else ""
 }
 
 .fa_effect_part <- function(i, eff) {

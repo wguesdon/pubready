@@ -317,3 +317,13 @@ def test_python_factorial_anova_stops_when_the_residuals_fail_shapiro_wilk():
                                              test="anova"))
     assert (res["stats"]["residual_shapiro_p"] < 0.05).all()
     assert res["test_meta"]["residual_normality"]["p"] < 0.05
+
+
+# F122: the methods text says that the bars show the mean +/- SEM.
+def test_factorial_anova_bar_geom_states_the_mean_and_sem():
+    from pubready.recipes.factorial_anova import recipe_factorial_anova
+    fa = pd.DataFrame({"g": ["wt"] * 8 + ["ko"] * 8, "t": (["v"] * 4 + ["d"] * 4) * 2,
+                       "y": [5, 6, 7, 8, 9, 10, 11, 12.5, 4, 5, 6, 7.5, 12, 13, 15, 16]})
+    res = recipe_factorial_anova(fa, v3_spec("factorial_anova", x="g", fill="t", y="y",
+                                             geom="bar"))
+    assert "The bars show the mean +/- SEM of each cell." in res["methods"]

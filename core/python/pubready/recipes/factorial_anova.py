@@ -428,11 +428,30 @@ def _methods(eff, factors, spec):
     return (
         f"{cap_first(y_label)} was analyzed by a {len(factors)}-way ANOVA (Type II sums of squares) "
         f"with factors {', '.join(factors)}. Effects tested: {parts}. Effect sizes are partial eta squared."
+        + geom_text(spec["appearance"].get("geom") or "box", factors[1]) +
         " Significance was set at P < 0.05."
         f" Analyses were performed in Python {platform.python_version()} with statsmodels {v('statsmodels')};"
         f" figures were produced with seaborn {v('seaborn')}."
         " (The Python engine uses parametric ANOVA only; the aligned rank transform is R-only.)"
     )
+
+
+def geom_text(geom, fill):
+    """The sentence of the methods text on what the bar and the interaction geoms show.
+
+    Args:
+        geom: The geom.
+        fill: The --fill column.
+
+    Returns:
+        str: The sentence, or "" for the box geom, in the words of the R engine.
+    """
+    if geom == "bar":
+        return " The bars show the mean +/- SEM of each cell."
+    if geom == "interaction":
+        return (" The points show the mean +/- SEM of each cell, joined by one line per level of "
+                f"{fill}.")
+    return ""
 
 
 def _script_points(f1, f2, y, pal, dodge):

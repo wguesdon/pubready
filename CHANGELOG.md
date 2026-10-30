@@ -103,6 +103,9 @@ tag move together.
 - `factorial_anova` stops with a message that names the column and the count
   when a factor has only one level, or when every cell holds one value, so no
   residual degree of freedom is left (F92).
+- The methods text of `factorial_anova --geom bar` says that the bars show the
+  mean +/- SEM of each cell, and the text of `--geom interaction` says the same
+  of the points (F122).
 
 ## [3.0.0] - 2026-10-29
 

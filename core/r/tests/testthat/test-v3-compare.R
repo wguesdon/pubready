@@ -343,3 +343,12 @@ test_that("factorial_anova writes the residual Shapiro-Wilk P to the stats table
   expect_true(all(res$stats$residual_shapiro_p < 0.05))
   expect_match(res$test_meta$name, "aligned rank transform")
 })
+
+# F122: the methods text says that the bars show the mean +/- SEM.
+test_that("factorial_anova --geom bar states the mean +/- SEM", {
+  fa <- data.frame(g = rep(c("wt", "ko"), each = 8), t = rep(rep(c("v", "d"), each = 4), 2),
+                   y = c(5, 6, 7, 8, 9, 10, 11, 12.5, 4, 5, 6, 7.5, 12, 13, 15, 16))
+  res <- recipe_factorial_anova(fa, v3_spec("factorial_anova", x = "g", fill = "t", y = "y",
+                                            geom = "bar"))
+  expect_match(res$methods, "The bars show the mean +/- SEM of each cell.", fixed = TRUE)
+})
