@@ -24,8 +24,9 @@ rerun it.
 ## The workflow
 
 1. The scientist drops a tidy CSV or Excel file into a project folder.
-2. `figkit inspect` reports the columns, their types, group sizes, and candidate
-   x and y columns. The data shape is measured, not guessed.
+2. `figkit inspect` reports the columns, their types, group sizes, candidate
+   x and y columns, and the columns that look like a subject id. The data shape is
+   measured, not guessed.
 3. The agent chats through the design: how many groups, paired or unpaired,
    parametric assumptions, one factor or several, time-to-event or a matrix. The
    scientist confirms.
@@ -94,14 +95,15 @@ Common options:
 | `--engine r\|python` | which engine draws the figure (default r) |
 | `--x`, `--y` | the axis columns for tidy data |
 | `--fill`, `--facet` | second and third factors (factorial) |
-| `--time`, `--event` | survival columns (event coded 1 = event, 0 = censored) |
+| `--time`, `--event` | survival columns (event coded 1 = event, 0 = censored, or TRUE and FALSE; any other value stops the run) |
 | `--covariates "a,b,c"` | Cox model covariates |
 | `--annotation FILE` | heatmap column annotation CSV |
-| `--test` | force a test instead of `auto` |
+| `--test` | force a test instead of `auto`; the values of each recipe are in the table below, and an unknown value stops the run |
 | `--paired` | paired design |
 | `--geom box\|violin\|bar\|raincloud\|interaction` | figure geometry; `interaction` is the interaction plot of `factorial_anova` |
 | `--scale`, `--cluster` | heatmap scaling and clustering |
 | `--id`, `--group`, `--label` | the subject, the grouping and the label columns of the recipes that use them |
+| `--features "a,b"` | the feature columns of `pca`; without it, every numeric column other than the group, `--id` and `--label` is a feature |
 | `--pd_threshold`, `--pr_threshold` | the two RECIST reference lines of `spider_response` and `waterfall`, +20 and -30 by default |
 | `--positive LEVEL` | the case level of the `roc_curve` outcome and the event level of the `calibration` outcome (default: the second level in sorted order) |
 | `--ci_low`, `--ci_high`, `--se` | the 95% CI bounds, or the standard error, of each study in `forest_meta` |
@@ -115,13 +117,70 @@ Common options:
 | `--ref LEVEL` | the reference group of `estimation_plot` (default: the first level in sorted order) |
 | `--test auto\|linear\|4pl` | the curve of `standard_curve`: auto fits a 4PL when the standards have 5 or more positive concentrations and the fit converges, and a line in all other conditions |
 | `--cause CODE` | the event code of the cause of interest of `cumulative_incidence` (default 1) |
-| `--levels "a,b,c"` | the state order of `sankey` or the group order of `proportions`; the list must name every state or group of the data |
+| `--levels "a,b,c"` | the order of the `--x` values: the groups of the comparison recipes and of `proportions`, the conditions of `paired_compare` and the time points of `timecourse`; in `sankey`, the order of the states. The list must name every value of the data. When a value holds a comma, separate the values with "\|" |
+| `--visit_levels "a,b,c"` | the order of the `sankey` visits; the list must name every visit of the data |
 | `--fc_cutoff`, `--p_cutoff`, `--top_n` | the fold-change cutoff, the p cutoff and the count of labels of `volcano` and `ma_plot` (default 1, 0.05 and 15); `--top_n` also sets the most lead SNPs that `manhattan` labels |
 | `--facet COL` (`feature_panel`) | the feature column of long data; without it, every numeric column other than `--x` is a feature |
 
 Write a value that starts with "-" in the `--option=value` form, for example
 `"--ylab=-log10 adjusted p"`. The R option parser reads `--ylab "-log10"` as
 two options and stops.
+
+The `--test` values of each recipe:
+
+| Recipe | `--test` values |
+|---|---|
+| `two_group_compare` | `auto`, `welch_t` (also `t`), `student_t`, `wilcoxon` (also `mann_whitney`) |
+| `multi_group_compare` | `auto`, `anova`, `welch`, `kruskal` |
+| `paired_compare` | `auto`, `t`, `wilcoxon` (also `signed_rank`) |
+| `factorial_anova` | `auto`, `anova`, `art` (R only) |
+| `feature_panel` | `auto`, `welch_t`, `wilcoxon`, `anova`, `kruskal` |
+| `estimation_plot` | `auto`, `welch_t` |
+| `correlation` | `auto`, `pearson`, `spearman`, `kendall` |
+| `correlation_heatmap` | `auto` (Pearson), `pearson`, `spearman`, `kendall` |
+| `proportions` | `auto`, `chisq`, `fisher` |
+| `timecourse` | `auto`, `gg`, `uncorrected` |
+| `standard_curve` | `auto`, `linear`, `4pl` |
+| `heatmap` | `auto` (no test), `welch_t` |
+
+### The options of each recipe
+
+Each recipe reads its own options, and `core/recipe_options.txt` lists them. Both
+engines read that one file. `figkit plot` and `figkit diagnose` stop when you give
+an option that the recipe does not read, before any output, for example
+"--title is not an option of survival_km; it is read by: ...". An option can
+therefore never run with no effect. A new recipe needs a line in the file.
+
+### The read rule
+
+Both engines read a CSV file with one rule. Each cell is read as text, and the
+spaces and tabs around each value and each column name are removed. Only an empty
+cell or "NA" is missing, so a response named "None" stays a response. A column is
+numeric when each present cell is a number with "." as the decimal mark, and
+logical when each present cell is TRUE or FALSE. A cell that is a number with a
+comma, such as "85,45" or "4,380", stops the run and names the column, because
+the comma can be a decimal mark or a thousands mark. An Excel cell keeps the type
+that the sheet gives it, and its text cells get the same rule. The data log has a
+"Read rule" section that counts each value that the read changed.
+
+### What `inspect` reports
+
+`figkit inspect` prints the same words in both engines. For each column it gives
+the type (numeric, text, logical, date or other), the missing count, the count of
+unique values, and each level in quotes with its count of rows. A numeric column
+with 2 to 6 distinct values is a candidate group, marked as a numeric code. A
+column whose values repeat across the levels of another column, at most once in
+each level, is a possible subject id. With `--format json`, the output adds
+`level_counts`, `group_candidates`, `outcome_candidates` and `id_candidates`.
+
+### Render
+
+`figkit render --config plot_config.yaml` looks for the bundle input in the
+folder of the config first and then in the current folder, so it runs from the
+root of the repository. `--data` names another file. Without `--engine`, render
+uses the engine that the config names, and the manifest records the engine that
+drew the figure. The Python engine prints a data error as one line,
+`Error: <message>`, with no traceback.
 
 ### Check the setup
 
@@ -167,20 +226,20 @@ engines. Pick the engine per figure with `--engine`.
 
 | Recipe | Tidy input | Test | Figure |
 |---|---|---|---|
-| `two_group_compare` | `group, value` | t-test or Mann-Whitney, paired or unpaired | box or violin with a bracket |
+| `two_group_compare` | `group, value` | Welch t-test or Mann-Whitney; with `--paired`, the paired t-test or the Wilcoxon signed-rank test from the normality of the differences | box or violin with a bracket |
 | `multi_group_compare` | `group, value` | one-way ANOVA / Welch / Kruskal-Wallis + post hoc | box with brackets for significant pairs, or a compact letter display when more than six pairs differ; omnibus as a subtitle |
 | `factorial_anova` | `f1, f2[, f3], value` | two-way and three-way ANOVA (R also does the aligned rank transform) | grouped box or bar, faceted, effects on top |
 | `survival_km` | `time, event, group` | Kaplan-Meier with a log-rank test | step curves, log-rank p, number-at-risk table (time >= t), legend right of the panel |
-| `cox_forest` | `time, event, covariate…` | Cox proportional hazards | forest plot of hazard ratios with 95% CI |
-| `heatmap` | matrix CSV + annotation CSV | per-feature Welch t-test when the annotation has two groups | clustered heatmap, z-scored, group annotation bar |
+| `cox_forest` | `time, event, covariate…` | Cox proportional hazards; a term that separates the events is marked "not estimable, separation" in the `note` column | forest plot of hazard ratios with 95% CI |
+| `heatmap` | matrix CSV + annotation CSV | a Welch t-test of each feature only with `--test welch_t` and two annotation groups, BH-adjusted | clustered heatmap, z-scored, group annotation bar, stars with the test |
 | `correlation` | `x, y` (two numeric columns) | Pearson / Spearman / Kendall, chosen from normality | scatter with method, coefficient and P in the subtitle; a Pearson scatter also has the least-squares line and its 95% CI band, and a rank correlation has no line |
 | `correlation_heatmap` | table of numeric variables | pairwise correlation, BH-adjusted | clustered correlation matrix, coefficients + significance stars |
-| `upset` | binary membership matrix | descriptive (intersection sizes, no test) | UpSet plot of the largest set intersections, 15 by default |
+| `upset` | membership matrix of 1/0, TRUE/FALSE, T/F, yes/no or y/n; an empty cell is not a member, and any other value stops the run | descriptive (intersection sizes, no test) | UpSet plot of the largest set intersections, 15 by default |
 | `volcano` | DE table (log2FC + p) | thresholds on fold change and p (test is upstream) | EnhancedVolcano-style four-color scatter, top hits labeled |
-| `enrichment_dot` | GSEA / ORA result table | descriptive (enrichment is upstream) | dot plot, size = count, color = -log10 adjusted p |
+| `enrichment_dot` | GSEA / ORA result table | descriptive (enrichment is upstream); a table with only a raw p is marked as not adjusted | dot plot, size = count, color = -log10 adjusted p; an adjusted p of 0 is a triangle |
 | `paired_compare` | `condition, value, id` | paired t-test or Wilcoxon signed-rank | before/after points with connecting lines and a bracket |
 | `proportions` | two categoricals | chi-square, or Fisher when a cell is sparse | 100% stacked bar of proportions with the p |
-| `pca` | samples × features + group | PERMANOVA for group separation | PC1/PC2 scatter, 95% ellipses, variance on the axes |
+| `pca` | samples × features + group; `--features` names the features, and the `--id` and `--label` columns are never features | PERMANOVA for group separation | PC1/PC2 scatter, 95% ellipses, variance on the axes |
 | `spider_response` | `patient, time, value` | descriptive (change from baseline, no test) | one line per patient, RECIST reference lines at +20% and -30% |
 | `waterfall` | `patient, time, value`, or one best change per patient | descriptive (best change from baseline, no test) | one sorted bar per patient, RECIST reference lines |
 | `dose_response` | `dose, response[, curve]` | four-parameter logistic fit; extra-sum-of-squares F test of one shared EC50 over the determined curves | fitted curves on a log dose axis, mean +/- SEM at each dose, EC50 or IC50 in the legend; a curve that is not determined is drawn as points only |
@@ -205,12 +264,25 @@ engines. Pick the engine per figure with `--engine`.
 ### Test selection
 
 `--test auto` walks a short decision tree rather than picking a test from a single
-prompt. For the two-group and multi-group recipes it checks normality per group
-with the Shapiro-Wilk test and equal variance with Levene's test, then chooses:
-parametric when both hold, non-parametric otherwise, with the Welch correction
-when variances differ. The `correlation` recipe uses the same normality check to
-pick Pearson (both variables normal) or Spearman. The scientist can override any
-step by passing `--test` explicitly.
+prompt. It checks normality with the Shapiro-Wilk test: of each group, of the
+paired differences, or of the model residuals. A constant sample is not normal.
+Two independent groups get Welch's t-test when both are normal, and the
+Mann-Whitney U test otherwise. Levene's test runs too, and its P goes to the stats
+table. For three groups or more, Levene's test, centered on the median, chooses
+between the ANOVA and Welch's ANOVA. The `correlation` recipe uses the same
+normality check to pick Pearson (both variables normal) or Spearman. The scientist
+can override any step by passing `--test` explicitly.
+
+At a small n a rank test cannot reach P < 0.05: 3 against 3 gives at best P = 0.10.
+Before `--test auto` takes a rank test, the recipe runs the rank test on data with
+the same group sizes, no tie and complete separation. When that smallest P is above
+0.05, the parametric test stays, `test_meta` records `rank_test_attainable_p`, and
+the methods text says why. The rule applies to `two_group_compare`,
+`paired_compare`, `multi_group_compare` and `feature_panel`.
+
+A test that divides by a zero variance stops and names the groups, and an outcome
+with zero variance stops before any test. Cohen's d uses the pooled SD, and the
+paired effect is Cohen's dz.
 
 Both engines apply the p-value rule of R's `stats::wilcox.test` to the rank tests.
 The exact null distribution is used when each group holds fewer than 50 values and
@@ -225,8 +297,10 @@ QQ plot for the quantity the test depends on (each group's values, the paired
 differences, the model residuals, or each correlated variable) labelled with the
 Shapiro-Wilk p, skewness, and kurtosis, and prints the recommended test. The QQ plot
 is the tiebreaker a p-value cannot be alone: Shapiro-Wilk is underpowered at small n
-and over-rejects at large n, so read the plot and tolerate mild deviation. Every
-`figkit plot` bundle carries the same panel as `qc_normality_*`.
+and over-rejects at large n, so read the plot and tolerate mild deviation. Each
+`figkit plot` bundle of a recipe that chooses its test from normality carries the
+same panel as `qc_normality_*`. `figkit diagnose` takes every option of
+`figkit plot`.
 
 ### The bench assay recipes
 
@@ -306,8 +380,12 @@ subject. Each `--x` column holds the predictions of one model.
 `sankey` draws the state of each patient at each visit, and a ribbon for each
 transition between two consecutive visits.
 
-- Visits sort as numbers when every visit is a number. Other visits sort in
-  code-point order.
+- The visits follow the time rule: `--visit_levels` when it is given, else
+  numeric order when every visit is a number, else the order of the one number
+  that each visit holds, so "week 8" comes before "week 16", else the order of
+  first appearance. The data log records the order and the rule. `timecourse`
+  orders its time points and `paired_compare` its two conditions with the same
+  rule, and `--levels` sets their order.
 - `--levels "a,b,c"` sets the state order. The list must name every state of
   the data, else the recipe stops and names the missing states. A listed state
   that no row holds is left out of the diagram.
@@ -333,125 +411,184 @@ Both engines apply the same rules to the layout and to the reported numbers.
 | Not determined | `dose_response` | Two checks before the fit find a flat curve. The first finds a curve whose mean responses vary by less than 10% of the range of the mean responses of all curves. The second finds a curve whose responses do not differ between the doses in a one-way ANOVA (P >= 0.05). The second check also covers a single curve, and it needs a replicate at one dose or more. A flat curve gets no fit. The checks use no fitted value, so both engines give the same reason for a flat curve. A curve is also not determined when its fit fails, when its fitted span is below 10% of the range of the mean responses, when its EC50 is outside the tested doses, or when its 95% CI is not finite. Its EC50 is NA, `fit_status` and `status_reason` give the cause, and the shared-midpoint F test leaves it out. |
 | Number at risk | `survival_km` | The table counts the subjects whose time is at or after each break. The breaks use the 1-2-5 step that gives at most six intervals, and the x axis runs to the largest time. |
 | Heterogeneity | `forest_meta` | The DerSimonian-Laird tau2 is truncated at zero, so I2 is 0% when Q is below its degrees of freedom. |
-| Labels | the comparison recipes | A category label wraps at 12 characters. The y axis shows plain numbers with a comma between the thousands. |
+| Labels | the comparison recipes | A category label wraps at 12 characters. The y axis shows plain numbers with a comma between the thousands, and scientific notation when the largest break is below 1e-4. |
+| Level order | the comparison recipes, `survival_km`, `cox_forest`, `cumulative_incidence` | The groups sort as numbers when every label is a number, else in code-point order, so the order does not depend on the locale. `--levels` sets another order. The first level is group 1 of a contrast and the reference level of a Cox covariate. A whole number reads "80", not "80.0", in both engines. |
+| Not estimable | `cox_forest` | A covariate that separates the events, so that at each event time the subject with the event holds the highest or the lowest value in the risk set, has no finite hazard ratio. Its HR, CI and P are NA, and the `note` column, the figure and the methods text say "not estimable, separation". |
+| Not determined | `enzyme_kinetics` | A curve whose Km is above the highest substrate, whose Km CI holds 0, whose Vmax is not positive, or whose Vmax CI holds 0 is not determined. Its estimates are NA, `fit_status` and `status_reason` give the cause, and the shared F tests leave it out. |
+| p = 0 | `volcano`, `enrichment_dot`, `manhattan` | A p of exactly 0 becomes the smallest positive double, and the figure draws it as a triangle at the top. A p outside 0 to 1 stops `volcano` and `manhattan`. |
+| Small P | `multi_group_compare` | A Tukey or Games-Howell P below 1e-12 is written "< 1e-12" in the stats table and on the figure. |
 
 The compact letter display uses the insert-and-absorb algorithm of Piepho (2004),
 which is also the algorithm of `multcompView::multcompLetters`. Each engine has
 its own copy of the steps, `cld_letters()` in `util.R` and in `util.py`, and the
 two unit suites check that the copies give the same letters.
 
+### Checks on the data
+
+Each recipe checks its data before the test, in both engines. A check that
+fails stops the run with a message that names the column, the group or the row,
+or it writes the cause to the data log and the stats table.
+
+| Recipes | Check | Result |
+|---|---|---|
+| comparison recipes, `correlation`, `timecourse` | An outcome with zero variance, or a variance that is not finite | The run stops. |
+| comparison recipes | A forced t-test or Welch ANOVA that divides by a zero variance | The run stops and names the groups. |
+| `feature_panel` | A constant feature | The feature is "not tested: constant", and the BH adjustment leaves it out. |
+| `factorial_anova` | An empty cell, a factor with one level, or no residual degrees of freedom | The run stops and names the problem. |
+| `paired_compare`, `two_group_compare --paired` | Two rows of one subject in one condition, or groups of unequal size under `--paired` | The run stops and names the subjects. |
+| `survival_km`, `cox_forest`, `swimmer` | An event value other than 0, 1, TRUE or FALSE | The run stops and lists the values. |
+| `cumulative_incidence` | A status that holds text or a negative code | The run stops and lists the codes. |
+| `cox_forest` | A covariate with one value, a collinear covariate, or no event | The run stops and names the column. A covariate is numeric when 80% or more of its cells read as numbers, and the data log names each cell that does not. |
+| `waterfall`, `spider_response` | Two rows of one patient at one time point | The run stops and names the patients. A patient whose first row is after the first visit gets that row as the baseline, and the data log records it. |
+| `swimmer` | A marker time after the end of the bar or below 0 | The data log records it. |
+| `timecourse` | Too few subjects for Mauchly's test | Mauchly's test is not available, and auto applies the Greenhouse-Geisser correction. |
+| `forest_meta` | A CI that does not hold its estimate, reversed bounds, a CI of zero width, or an SE of 0 or below | The run stops and names the study. A study with no label is "Study <row>". |
+| `heatmap` | A sample that the annotation does not list | The run stops and names the samples. A degenerate test gets P = NA and stays out of the BH count. |
+| `correlation_heatmap`, `pca` | A numeric column with a text cell, such as "<0.1" | The cell becomes NA when 80% or more of the column reads as numbers, and the data log names each excluded column. |
+| `correlation_heatmap` | A pair with fewer than 3 shared complete rows, or a constant in them | The run stops and names the pair. |
+| `pca` | A sample with a missing group or a missing feature value, or a feature with zero variance | The sample or the feature is dropped, and the data log records each drop. |
+| `upset` | A cell other than 1/0, TRUE/FALSE, T/F, yes/no or y/n | The run stops. An empty cell is not a member, and the data log counts it. |
+| `enrichment_dot` | A repeated term name | The second name gets " (2)", and the data log records it. |
+| `calibration` | Fewer than 3 distinct predictions in a model | The calibration slope and the Hosmer-Lemeshow test are not estimable. |
+| `roc_curve` | A constant marker or complete separation | The DeLong CI is NA, and the `constant_marker` and `complete_separation` columns say why. |
+| `bland_altman` | Constant differences | The proportional-bias regression does not run, and `differences_constant` is TRUE. |
+| `standard_curve` | Standards whose mean signals are not monotonic | The subtitle and the methods text warn of a hook effect. |
+| `dose_response` | A response of the order 1e3 or more, or 1e-3 or less | The fit runs on the response divided by a power of ten, and the plateaus are scaled back. The methods text counts the rows with a dose of zero. |
+| `composition` | A category with a total count of zero | The category is dropped, and the data log records it. |
+| `distribution` | A group with no spread | The group gets no density curve. |
+
 ### Examples
+
+Each command runs from the root of a clone on a file in `example/`.
+`example/README.md` shows the figure of each command.
 
 ```bash
 # two groups, test chosen automatically
-figkit plot --recipe two_group_compare --data data.csv --x group --y volume
+figkit plot --recipe two_group_compare --data example/tumor_volume.csv --x group --y volume
 
 # four groups, one-way ANOVA with Tukey post hoc, significant pairs only
-figkit plot --recipe multi_group_compare --data data.csv --x genotype --y expression
+figkit plot --recipe multi_group_compare --data example/gene_expression.csv --x genotype --y expression
 
 # two-way ANOVA, grouped box coloured by the second factor
-figkit plot --recipe factorial_anova --data data.csv --y response --x genotype --fill treatment
+figkit plot --recipe factorial_anova --data example/twoway_response.csv --y response \
+  --x genotype --fill treatment
 
 # Kaplan-Meier, drawn with the Python engine
-figkit plot --engine python --recipe survival_km --data trial.csv --time months --event status --x arm
+figkit plot --engine python --recipe survival_km --data example/survival_trial.csv \
+  --time time --event event --x arm
 
 # Cox hazard ratios
-figkit plot --recipe cox_forest --data trial.csv --time months --event status --covariates "arm,age,sex,stage"
+figkit plot --recipe cox_forest --data example/survival_trial.csv --time time --event event \
+  --covariates "arm,age,sex,stage"
 
-# clustered heatmap with a sample annotation
-figkit plot --recipe heatmap --data matrix.csv --annotation samples.csv
+# clustered heatmap with a sample annotation and a Welch t-test of each gene
+figkit plot --recipe heatmap --data example/expression_matrix.csv \
+  --annotation example/expression_annotation.csv --test welch_t
 
 # correlation scatter, Pearson or Spearman chosen from the data
-figkit plot --recipe correlation --data data.csv --x gene_a --y gene_b
+figkit plot --recipe correlation --data example/correlation_xy.csv --x gene_a --y gene_b
 
 # clustered correlation heatmap across a panel of numeric variables
-figkit plot --recipe correlation_heatmap --data cytokines.csv
+figkit plot --recipe correlation_heatmap --data example/correlation_vars.csv
 
-# UpSet plot from a binary membership matrix
-figkit plot --recipe upset --data memberships.csv
+# UpSet plot from a membership matrix
+figkit plot --recipe upset --data example/set_membership.csv
 
 # any comparison recipe in the GraphPad Prism style, or as a raincloud or bar
-figkit plot --recipe two_group_compare --data data.csv --x group --y volume --theme prism
-figkit plot --recipe two_group_compare --data data.csv --x group --y volume --geom raincloud
+figkit plot --recipe two_group_compare --data example/tumor_volume.csv --x group --y volume --theme prism
+figkit plot --recipe two_group_compare --data example/tumor_volume.csv --x group --y volume --geom raincloud
 
-# volcano plot from a DESeq2 / limma results table
-figkit plot --recipe volcano --data de_results.csv
+# volcano plot from a DESeq2 / limma results table, on the adjusted p
+figkit plot --recipe volcano --data example/de_results.csv --y padj
 
 # GSEA / ORA enrichment dot plot
-figkit plot --recipe enrichment_dot --data enrichment.csv
+figkit plot --recipe enrichment_dot --data example/enrichment_results.csv
 
 # paired before/after with connecting lines
-figkit plot --recipe paired_compare --data paired.csv --x condition --y value --id subject
+figkit plot --recipe paired_compare --data example/paired_response.csv --x condition --y value --id subject
 
 # proportions with a chi-square or Fisher test
-figkit plot --recipe proportions --data response.csv --x arm --y response
+figkit plot --recipe proportions --data example/response_by_arm.csv --x arm --y response
 
 # PCA scatter with ellipses and a PERMANOVA p
-figkit plot --recipe pca --data samples.csv --group group
+figkit plot --recipe pca --data example/pca_samples.csv --group group
 
 # four-parameter logistic dose-response curves, one per compound
-figkit plot --recipe dose_response --data viability.csv --x concentration --y viability --group compound
+figkit plot --recipe dose_response --data example/dose_response.csv --x concentration_um \
+  --y viability_pct --group compound
 
 # ROC curves of two markers, with the case level stated
-figkit plot --recipe roc_curve --data biomarkers.csv --y status --x marker_a,marker_b --positive disease
+figkit plot --recipe roc_curve --data example/biomarker_roc.csv --y status --x marker_a,marker_b \
+  --positive disease
 
 # Bland-Altman agreement between two assays
-figkit plot --recipe bland_altman --data assays.csv --x new_assay --y reference_assay
+figkit plot --recipe bland_altman --data example/method_agreement.csv --x new_assay --y reference_assay
 
 # meta-analysis forest plot from hazard ratios and their CIs
-figkit plot --recipe forest_meta --data trials.csv --y hazard_ratio --ci_low ci_low --ci_high ci_high --label trial
+figkit plot --recipe forest_meta --data example/meta_trials.csv --y hazard_ratio --ci_low ci_low \
+  --ci_high ci_high --label trial
 
 # repeated-measures time course with a mixed ANOVA
-figkit plot --recipe timecourse --data growth.csv --x day --y volume --id mouse --group arm
+figkit plot --recipe timecourse --data example/tumor_growth.csv --x day --y volume_mm3 --id mouse \
+  --group arm
 
-# waterfall of the best change from baseline
-figkit plot --recipe waterfall --data lesions.csv --x week --y lesion_mm --id patient --group arm
+# spider plot and waterfall of the change from baseline
+figkit plot --recipe spider_response --data example/spider_response.csv --x week \
+  --y target_lesion_mm --id patient --group arm
+figkit plot --recipe waterfall --data example/spider_response.csv --x week \
+  --y target_lesion_mm --id patient --group arm
 
 # swimmer plot of the time on treatment, with response and progression marks
-figkit plot --recipe swimmer --data patients.csv --id patient --time months --event ended \
-  --group arm --markers response_month,progression_month
+figkit plot --recipe swimmer --data example/swimmer_patients.csv --id patient --time months \
+  --event ended --group arm --markers response_month,progression_month
 
 # the shape of one variable in each group: histogram, kernel density and normal fit
-figkit plot --recipe distribution --data cells.csv --y cell_area_um2 --x condition
+figkit plot --recipe distribution --data example/distribution.csv --y cell_area_um2 --x condition
 
 # the cell-type composition of each sample, compared between two conditions
-figkit plot --recipe composition --data counts.csv --id sample --x cell_type --y n_cells \
-  --group condition
+figkit plot --recipe composition --data example/composition.csv --id sample --x cell_type \
+  --y n_cells --group condition
 
 # the interaction plot of a two-way ANOVA
-figkit plot --recipe factorial_anova --data data.csv --y response --x genotype --fill treatment \
-  --geom interaction
+figkit plot --recipe factorial_anova --data example/twoway_response.csv --y response \
+  --x genotype --fill treatment --geom interaction
+
 # estimation plot: each treatment against the vehicle, with a bootstrap CI
-figkit plot --recipe estimation_plot --data migration.csv --x treatment --y speed_um_h --ref vehicle
+figkit plot --recipe estimation_plot --data example/estimation_plot.csv --x treatment \
+  --y speed_um_h --ref vehicle
 
 # Michaelis-Menten kinetics, one curve for each inhibitor concentration
-figkit plot --recipe enzyme_kinetics --data kinetics.csv --x substrate_um --y rate --group inhibitor
+figkit plot --recipe enzyme_kinetics --data example/enzyme_kinetics.csv --x substrate_um \
+  --y rate --group inhibitor
 
 # ELISA standard curve, the unknowns read off the curve
-figkit plot --recipe standard_curve --data plate.csv --x conc_ng_ml --y absorbance --id sample
+figkit plot --recipe standard_curve --data example/standard_curve.csv --x conc_ng_ml \
+  --y absorbance --id sample
 
-# cumulative incidence of relapse (status 1) and of death without relapse (status 2)
-figkit plot --recipe cumulative_incidence --data transplant.csv --time months --event status \
-  --x arm --cause 1
+# cumulative incidence of each cause, compared between the arms
+figkit plot --recipe cumulative_incidence --data example/cumulative_incidence.csv \
+  --time months --event status --x arm --cause 1
 
 # calibration of two risk models in a validation cohort
-figkit plot --recipe calibration --data validation.csv --y event_1y \
+figkit plot --recipe calibration --data example/calibration.csv --y event_1y \
   --x risk_clinical,risk_extended --positive yes
 
 # transitions of the response category across assessments
-figkit plot --recipe sankey --data response.csv --id patient --x week --y response
+figkit plot --recipe sankey --data example/sankey.csv --id patient --x week --y response \
+  --levels "complete response,partial response,stable disease,progressive disease"
 
 # MA plot of a DESeq2 table; baseMean is drawn on the log10 scale
-figkit plot --recipe ma_plot --data de_results.csv
+figkit plot --recipe ma_plot --data example/de_basemean.csv
 
 # Manhattan and QQ plot of GWAS summary statistics
-figkit plot --recipe manhattan --data gwas.csv --group chr --x pos --y p --label snp
+figkit plot --recipe manhattan --data example/gwas_summary.csv --group chr --x pos --y p --label snp
 
 # one panel per cytokine, with the test of each and BH across the cytokines
-figkit plot --recipe feature_panel --data cytokines.csv --x group --y concentration --facet cytokine
+figkit plot --recipe feature_panel --data example/cytokine_panel.csv --x group \
+  --y concentration_pg_ml --facet cytokine
 
-# UMAP from Seurat or scanpy, coloured by cluster, with silhouette widths
-figkit plot --recipe embedding --data umap.csv --x UMAP_1 --y UMAP_2 --group seurat_clusters
+# UMAP coloured by cluster, with silhouette widths
+figkit plot --recipe embedding --data example/umap_clusters.csv --x UMAP_1 --y UMAP_2 --group cell_type
 ```
 
 ### The distribution recipe
@@ -534,22 +671,33 @@ Every `figkit plot` run writes one folder. That folder is the reproducible unit.
   for the recipes that choose a test from normality (absent for the rest).
 - `script_*.R` or `script_*.py` — a standalone script that redraws the figure.
 - `stats_*.csv` — the test result: statistic, p-value, adjusted p, effect size,
-  group sizes.
-- `input_*.csv` — a copy of the exact data used (heatmaps also copy the
-  annotation), so the bundle does not depend on a file that may change.
-- `data_log.md` — the original filename, md5 and sha256 checksums, column types,
-  and any cleaning step applied.
+  group sizes. Both engines write a missing value as NA, a flag as TRUE or FALSE,
+  an infinite value as Inf or -Inf, and a whole number with no decimal part.
+- `input_*` — a copy of the exact data used, with the extension of the input
+  (heatmaps also copy the annotation), so the bundle does not depend on a file that
+  may change.
+- `data_log.md` — the original filename, md5 and sha256 checksums, the read rule
+  and each value that the read changed, the column types, and each cleaning step
+  applied.
 - `plot_config.yaml` — the editable spec that drives `figkit render`.
 - `session_info.txt` — the full environment: R `sessionInfo()` or a Python
   package list.
 - `packages_*.txt` — the package versions for this figure: the ones the script loads
   directly first, then the complete installed set, headed with the R or Python version
   and the container OS.
-- `manifest_*.json` — structured provenance: recipe and arguments, the container
-  pinned by digest, the pubready git commit, and every package version.
+- `manifest_*.json` — structured provenance: the recipe, every plot option with
+  `null` for an option that the run did not set, the engine that drew the figure,
+  the container pinned by digest, the pubready git commit, and the versions of the
+  main packages. `packages_*.txt` holds the full list. Numbers keep their full
+  precision, and NaN and infinity are written as `null`, so the file is valid JSON.
 - `methods_*.md` — a manuscript-ready methods paragraph, templated from the same
   manifest so the reported numbers always match the figure.
-- `REPRODUCE.md` — the one Podman command to regenerate the figure.
+- `REPRODUCE.md` — the one Podman command to regenerate the figure, with the
+  image digest.
+- `report.qmd`, `report.html`, `report_provenance.json` — a Quarto report that
+  embeds the figure, the stats table and the methods text, and its provenance. The
+  report names the LLM and the agent harness that `--llm-provider`, `--llm-model`,
+  `--agent-harness` and `--agent-harness-version` give.
 
 The reproducibility guarantee is precise: the same data in the same pinned
 environment gives the same figure visually and the same statistics exactly. It
@@ -594,8 +742,10 @@ the same numbers. The manifest records which engine drew the figure.
 
 Where Python has no faithful equivalent, pubready routes you to R rather than
 running something different. The one current case is the aligned rank transform
-for non-parametric factorial ANOVA: `--test art --engine python` errors and points
-to `--engine r`. The `pca` PERMANOVA enumerates every labeling of the samples when there
+for non-parametric factorial ANOVA: `--test art --engine python` stops and points
+to `--engine r`. Under `--test auto`, when the model residuals fail Shapiro-Wilk,
+the R engine runs the aligned rank transform and the Python engine stops with the
+same route. The `pca` PERMANOVA enumerates every labeling of the samples when there
 are 5000 or fewer, so the P value is exact and the same in both engines. A larger
 design uses 999 seeded permutations, and each engine draws its own, so the two P
 values differ by the Monte Carlo error.
@@ -636,7 +786,10 @@ canonical R function computed, such as `stats::t.test`, `survival::coxph`,
 end to end through `figkit plot`. See `benchmarks/README.md`.
 
 The version lives in the root `VERSION` file and moves in lockstep across
-`core/r/DESCRIPTION`, `core/python/pubready/version.py`, and the image tag.
+`core/r/DESCRIPTION`, `core/r/R/version.R`, `core/python/pubready/version.py`,
+the default image tag in `core/r/R/run.R`, `core/r/R/bundle.R`,
+`core/python/pubready/run.py` and `core/python/pubready/bundle.py`, and the
+README install command.
 `CHANGELOG.md` records every release. "Breaking" means a change to the figkit
 command surface or to figure output, not just an internal refactor.
 
@@ -655,7 +808,7 @@ spec, and returns:
 
 The bundle writer does the rest. Because recipes own their own methods text and
 script, new ones plug in without touching the writer. Register the recipe by
-adding an example dataset, a smoke case in `tests/smoke_test.sh`, a reference
+adding a line with its options to `core/recipe_options.txt`, an example dataset, a smoke case in `tests/smoke_test.sh`, a reference
 bundle in `tools/make_examples/generate_expected.sh`, and unit tests under
 `core/r/tests/testthat` and `core/python/tests`. Add a public dataset and its
 reference values to `tools/make_benchmarks/make_benchmark_data.R`, and a case

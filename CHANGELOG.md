@@ -40,6 +40,14 @@ tag move together.
   stale statements are gone: the Python heatmap draws its stars, the `swimmer`
   medians are in the methods text, and `multi_group_compare` keeps its checks in
   the manifest (F103).
+- The examples of `docs/how_it_works.md` run on the files in `example/`. Before,
+  36 of them named files that do not exist (F100).
+- `docs/how_it_works.md` lists the true bundle contents: the report files, the
+  CSV forms, the input extension, the read rule in the data log, the full option
+  record of the manifest and the digest line of each `REPRODUCE.md`. It also
+  gives the `--test` values of each recipe, the option table, the read rule,
+  the `inspect` output, the render rule, the data checks of each recipe and the
+  files that carry the version (F101, F129).
 - The three adapters and `reference/decision_tree.md` list the designs that no
   recipe fits: strata, covariate adjustment, rates of change, and a comparison
   with one control only. The agent tells the scientist and does not force the
