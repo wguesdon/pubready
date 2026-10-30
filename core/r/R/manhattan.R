@@ -20,7 +20,9 @@
 .mh_special    <- c("X", "Y", "XY", "MT", "M")
 .mh_blues      <- c("#3B6DB3", "#1F3A5F")
 
-.mh_chr_name <- function(v) sub("^chr", "", trimws(as.character(v)), ignore.case = TRUE)
+# The chromosome names as text: a numeric column, also one that holds an empty
+# cell, reads "1" and not "1.0" (level_labels, F64); a "chr" prefix is dropped.
+.mh_chr_name <- function(v) sub("^chr", "", trimws(level_labels(v)), ignore.case = TRUE)
 
 # The chromosomes in natural order: the numbers, then X, Y, XY, MT, then any
 # other name in C-locale order.
@@ -75,7 +77,7 @@ recipe_manhattan <- function(df, spec) {
   }
 
   n0 <- nrow(df)
-  raw_chr <- trimws(as.character(df[[chr_col]]))
+  raw_chr <- trimws(level_labels(df[[chr_col]]))
   chr <- .mh_chr_name(raw_chr)
   pos <- suppressWarnings(as.numeric(df[[pos_col]]))
   p <- suppressWarnings(as.numeric(df[[p_col]]))
