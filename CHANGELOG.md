@@ -49,6 +49,10 @@ tag move together.
   `--features` for an explicit list, and names each feature and each dropped
   feature in the data log, so a numeric sample id that becomes a feature is
   visible (F47).
+- `pca` drops the same samples in both engines: each sample with a missing
+  group, then each sample with a missing feature value, then each feature with
+  no variance in the samples that remain. The data log names the rows and the
+  features. A missing group is no longer a group "nan" in Python (F48).
 
 ## [3.0.0] - 2026-10-29
 

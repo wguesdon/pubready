@@ -15,6 +15,7 @@ from scipy import stats as ss
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, palette
+from ..util import level_labels, level_order
 
 
 def _scale(X):
@@ -139,6 +140,22 @@ def name_list(cols, max_n=20):
     return ", ".join(q)
 
 
+def row_list(rows, max_n=10):
+    """Data row numbers, the first 10 and a count of the rest, as in R.
+
+    Args:
+        rows: The row numbers, counted from 1 below the header.
+
+    Returns:
+        str: The list, for example "rows 3, 7".
+    """
+    rows = [int(r) for r in rows]
+    txt = ", ".join(str(r) for r in rows[:max_n])
+    if len(rows) > max_n:
+        txt += f" and {len(rows) - max_n} more"
+    return ("row " if len(rows) == 1 else "rows ") + txt
+
+
 def feature_columns(df, grp_col, skip, features):
     """The feature columns of the PCA, as .pca_feature_columns() in R.
 
@@ -206,22 +223,33 @@ def recipe_pca(df, spec):
     if len(feat) < 2:
         raise ValueError("pca needs at least 2 numeric feature columns")
     X = df[feat].to_numpy(dtype=float)
-    keepc = X.std(0, ddof=1) > 0
-    X = X[:, keepc]
-    keepr = ~np.isnan(X).any(1)
+    # One rule in both engines: drop each sample with a missing group, then each
+    # sample with a missing feature value, then each feature with no variance in
+    # the samples that remain. The data log names each drop (F48).
+    grp_all = level_labels(df[grp_col])
+    no_grp = (grp_all.isna() | (grp_all.astype(str).str.strip() == "")).to_numpy()
+    no_feat = ~no_grp & np.isnan(X).any(1)
+    keepr = ~no_grp & ~no_feat
     X = X[keepr]
-    groups = df[grp_col].astype(str).to_numpy()[keepr]
+    with np.errstate(invalid="ignore"):
+        keepc = X.std(0, ddof=1) > 0
+    X = X[:, keepc]
+    groups = grp_all.to_numpy()[keepr].astype(str)
     if len(pd.unique(groups)) < 2:
         raise ValueError("pca needs at least 2 groups")
     labs = df[lab_col].astype(str).to_numpy()[keepr] if lab_col else None
     kept = [c for c, k in zip(feat, keepc) if k]
     steps = [f"Used {X.shape[0]} samples and {X.shape[1]} numeric features: {name_list(kept)}."]
     steps += sel_steps
+    if no_grp.any():
+        steps.append(f"Dropped {int(no_grp.sum())} sample(s) with a missing group in "
+                     f"'{grp_col}': {row_list(np.where(no_grp)[0] + 1)}.")
+    if no_feat.any():
+        steps.append(f"Dropped {int(no_feat.sum())} sample(s) with a missing feature value: "
+                     f"{row_list(np.where(no_feat)[0] + 1)}.")
     if (~keepc).any():
         steps.append(f"Dropped {int((~keepc).sum())} zero-variance feature(s): "
                      f"{name_list([c for c, k in zip(feat, keepc) if not k])}.")
-    if (~keepr).any():
-        steps.append(f"Dropped {int((~keepr).sum())} sample(s) with missing values.")
     feat = kept
 
     Xs = _scale(X)
@@ -233,7 +261,7 @@ def recipe_pca(df, spec):
     fstat, pval, pm_method, pm_count = _permanova(Xs, groups, 999, 1)
 
     ap = spec["appearance"]
-    levels = sorted(pd.unique(groups))
+    levels = level_order(groups)
     pal = palette(len(levels), ap.get("palette"))
     w, h = 5.2, 4.6
     fig, ax = plt.subplots(figsize=(w, h))

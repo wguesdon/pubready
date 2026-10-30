@@ -55,3 +55,20 @@ def test_pca_leaves_out_the_id_takes_features_and_names_them():
     assert sel["test_meta"]["n_features"] == 3
     with pytest.raises(ValueError, match="'f9'"):
         recipe_pca(df, spec_from_args(SimpleNamespace(**base, features="f1,f9")))
+
+
+def test_pca_drops_the_samples_with_a_missing_group_or_feature():
+    """A missing group is not a group; each drop is logged, as in R (F48)."""
+    df = pca_id_data()
+    df.loc[2, "group"] = np.nan
+    df.loc[4, "f2"] = np.nan
+    df["fconst"] = 3.0
+    res = recipe_pca(df, spec_from_args(SimpleNamespace(
+        recipe="pca", data="p.csv", x=None, y=None, group="group", id="sample_id")))
+    assert res["test_meta"]["n_samples"] == 10
+    assert res["test_meta"]["n_features"] == 4
+    steps = " | ".join(res["clean_steps"])
+    assert "Dropped 1 sample(s) with a missing group in 'group': row 3." in steps
+    assert "Dropped 1 sample(s) with a missing feature value: row 5." in steps
+    assert "Dropped 1 zero-variance feature(s): 'fconst'." in steps
+    assert res["stats"]["omnibus_df1"].iloc[0] == 2

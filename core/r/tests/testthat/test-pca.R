@@ -41,3 +41,21 @@ test_that("pca leaves out --id, takes --features and names the features", {
   expect_error(recipe_pca(df, spec_from_opt(list(recipe = "pca", data = "p.csv", group = "group",
                                                  features = "f1,f9"))), "'f9'")
 })
+
+# One drop rule in both engines: a sample with a missing group or a missing
+# feature value is dropped and logged; a missing group is not a group (F48).
+test_that("pca drops the samples with a missing group or feature and logs them", {
+  df <- pca_id_data()
+  df$group[3] <- NA
+  df$f2[5] <- NA
+  df$fconst <- 3
+  res <- recipe_pca(df, spec_from_opt(list(recipe = "pca", data = "p.csv", group = "group",
+                                           id = "sample_id")))
+  expect_equal(res$test_meta$n_samples, 10)
+  expect_equal(res$test_meta$n_features, 4)
+  steps <- paste(res$clean_steps, collapse = " | ")
+  expect_match(steps, "Dropped 1 sample(s) with a missing group in 'group': row 3.", fixed = TRUE)
+  expect_match(steps, "Dropped 1 sample(s) with a missing feature value: row 5.", fixed = TRUE)
+  expect_match(steps, "Dropped 1 zero-variance feature(s): 'fconst'.", fixed = TRUE)
+  expect_equal(res$stats$omnibus_df1[1], 2)
+})

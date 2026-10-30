@@ -70,6 +70,14 @@
   paste(q, collapse = ", ")
 }
 
+# Data row numbers, counted from 1 below the header: the first 10 and a count
+# of the rest. The Python engine writes the same list.
+.pca_row_list <- function(rows, max_n = 10) {
+  txt <- paste(utils::head(rows, max_n), collapse = ", ")
+  if (length(rows) > max_n) txt <- sprintf("%s and %d more", txt, length(rows) - max_n)
+  paste(if (length(rows) == 1) "row" else "rows", txt)
+}
+
 # The feature columns of the PCA. With --features, the listed columns, each of
 # which must exist and be numeric. Else every numeric column other than the
 # group and the --id and --label columns. Returns the features and the steps
@@ -113,21 +121,30 @@ recipe_pca <- function(df, spec) {
   feat_cols <- sel$features
   if (length(feat_cols) < 2) stop("pca needs at least 2 numeric feature columns")
   mat <- as.matrix(df[, feat_cols, drop = FALSE])
-  keepc <- (apply(mat, 2, stats::sd, na.rm = TRUE) > 0) %in% TRUE
-  mat <- mat[, keepc, drop = FALSE]
-  keepr <- stats::complete.cases(mat)
+  # One rule in both engines: drop each sample with a missing group, then each
+  # sample with a missing feature value, then each feature with no variance in
+  # the samples that remain. The data log names each drop (F48).
+  grp_all <- level_labels(df[[grp_col]])
+  no_grp <- is.na(grp_all) | !nzchar(trimws(grp_all))
+  no_feat <- !no_grp & !stats::complete.cases(mat)
+  keepr <- !no_grp & !no_feat
   mat <- mat[keepr, , drop = FALSE]
-  grp_chr <- as.character(df[[grp_col]])[keepr]
-  grp <- factor(grp_chr, levels = sort(unique(grp_chr), method = "radix"))
+  keepc <- (apply(mat, 2, stats::sd) > 0) %in% TRUE
+  mat <- mat[, keepc, drop = FALSE]
+  grp_chr <- grp_all[keepr]
+  grp <- factor(grp_chr, levels = level_order(grp_chr))
   if (nlevels(grp) < 2) stop("pca needs at least 2 groups")
   labs <- if (!is.null(lab_col) && nzchar(lab_col)) as.character(df[[lab_col]])[keepr] else NULL
   clean_steps <- c(
     sprintf("Used %d samples and %d numeric features: %s.", nrow(mat), ncol(mat),
             .pca_name_list(colnames(mat))),
     sel$steps,
+    if (any(no_grp)) sprintf("Dropped %d sample(s) with a missing group in '%s': %s.",
+                             sum(no_grp), grp_col, .pca_row_list(which(no_grp))) else NULL,
+    if (any(no_feat)) sprintf("Dropped %d sample(s) with a missing feature value: %s.",
+                              sum(no_feat), .pca_row_list(which(no_feat))) else NULL,
     if (sum(!keepc) > 0) sprintf("Dropped %d zero-variance feature(s): %s.", sum(!keepc),
-                                 .pca_name_list(feat_cols[!keepc])) else NULL,
-    if (sum(!keepr) > 0) sprintf("Dropped %d sample(s) with missing values.", sum(!keepr)) else NULL)
+                                 .pca_name_list(feat_cols[!keepc])) else NULL)
   feat_cols <- colnames(mat)
   df_used <- df[keepr, , drop = FALSE]
 
