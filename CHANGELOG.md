@@ -56,6 +56,8 @@ tag move together.
 - `pca` keeps a numeric column that holds a few text cells, such as "<0.1":
   each such cell becomes a missing value, and the data log names the cell and
   each text column that the recipe leaves out (F42).
+- `correlation_heatmap` keeps a numeric column that holds a few text cells in
+  the same way as `pca`, and names each dropped column in the data log (F42).
 
 ## [3.0.0] - 2026-10-29
 

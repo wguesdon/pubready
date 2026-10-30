@@ -2,6 +2,7 @@
 Mirrors the R recipe: correlation matrix drawn as a seaborn clustermap with
 dendrograms, each cell showing the coefficient and BH-adjusted stars. Pearson by
 default; --test spearman|kendall."""
+import functools
 import inspect
 import os
 
@@ -14,23 +15,46 @@ from scipy.cluster import hierarchy
 from statsmodels.stats.multitest import multipletests
 
 from ..bundle import slugify
+from ..clean import coerce_numeric_columns
 from ..theme import diverging_cmap
 from ..util import cap_first
 from .heatmap import ordered_linkage
+from .pca import name_list
+
+
+def usable(v):
+    """Whether a column is a variable, as .ch_usable() in R.
+
+    Args:
+        v: The column, numeric.
+
+    Returns:
+        bool: True when it has 3 finite values or more and some variance.
+    """
+    v = v.to_numpy(dtype=float)
+    return bool(np.isfinite(v).sum() >= 3 and np.nanstd(v) > 0)
 
 
 def recipe_correlation_heatmap(df, spec):
-    num = df.select_dtypes(include="number")
-    if num.shape[1] < 2:
+    # coerce_numeric_columns() decides what is numeric: a column with one text
+    # cell such as "<0.1" stays a variable, the cell becomes NaN, and the data
+    # log names the cell and each text column left out (F42).
+    df, numeric, text, clean_steps = coerce_numeric_columns(df)
+    if len(numeric) < 2:
         raise ValueError("correlation_heatmap needs at least 2 numeric columns")
-    n0 = num.shape[1]
-    keep = [c for c in num.columns if num[c].notna().sum() >= 3 and num[c].std() > 0]
+    num = df[numeric].astype(float)
+    keep = [c for c in numeric if usable(num[c])]
+    dropped = [c for c in numeric if c not in keep]
     num = num[keep]
     if num.shape[1] < 2:
         raise ValueError("correlation_heatmap needs at least 2 numeric columns with variance")
-    clean_steps = ([f"Dropped {n0 - num.shape[1]} non-numeric or zero-variance column(s) "
-                    f"({n0} -> {num.shape[1]} variables)."] if num.shape[1] < n0
-                   else ["No cleaning applied; numeric columns used as-is."])
+    if text:
+        clean_steps.append(f"Left out the text column(s) {name_list(text)}.")
+    if dropped:
+        clean_steps.append(f"Dropped {len(dropped)} column(s) with fewer than 3 values or no "
+                           f"variance: {name_list(dropped)}.")
+    if not clean_steps:
+        clean_steps = ["No cleaning applied; numeric columns used as-is."]
 
     method = (spec["test"].get("method") or "auto").lower()
     if method in ("auto", ""):
@@ -115,7 +139,7 @@ def recipe_correlation_heatmap(df, spec):
         "df_used": num.reset_index(drop=True), "clean_steps": clean_steps,
         "label": slugify(os.path.splitext(spec["data"]["file"])[0]),
         "width": w, "height": h,
-        "build_script": lambda in_name, fig_stub: _script(in_name, fig_stub, method, row_c, col_c),
+        "build_script": functools.partial(_script, method, row_c, col_c, varlist),
     }
 
 
@@ -136,7 +160,20 @@ def _methods(method, cluster, k, n_sig):
     )
 
 
-def _script(in_name, fig_stub, method, row_c, col_c):
+def _script(method, row_c, col_c, varlist, in_name, fig_stub):
+    """Write the standalone script that redraws the correlation heatmap.
+
+    Args:
+        method: The correlation method.
+        row_c: Whether the rows are clustered.
+        col_c: Whether the columns are clustered.
+        varlist: The variables of the figure.
+        in_name: The bundled input file name.
+        fig_stub: The figure file stem.
+
+    Returns:
+        str: The script text.
+    """
     return f'''#!/usr/bin/env python3
 # Standalone reproduction. Run inside the pinned pubready container
 # (see REPRODUCE.md) from this bundle folder.
@@ -150,7 +187,8 @@ from scipy.cluster import hierarchy
 {inspect.getsource(ordered_linkage)}
 
 raw = pd.read_csv("{in_name}")
-num = raw.select_dtypes(include="number")
+# The variables of the figure; a cell that does not read as a number is NaN.
+num = raw[{list(varlist)!r}].apply(pd.to_numeric, errors="coerce")
 M = num.corr(method="{method}")
 # The leaf order of the figure: complete linkage on the Euclidean distance of
 # the matrix rows, and at each merge the branch with the higher mean correlation

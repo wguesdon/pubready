@@ -4,21 +4,28 @@
 # hierarchically clustered, with each cell showing the coefficient and BH-
 # adjusted significance stars. Pearson by default; --test spearman|kendall.
 
+# A column is a variable when it has 3 finite values or more and some variance.
+.ch_usable <- function(v) sum(is.finite(v)) >= 3 && isTRUE(stats::sd(v, na.rm = TRUE) > 0)
+
 recipe_correlation_heatmap <- function(df, spec) {
-  num <- vapply(df, is.numeric, logical(1))
-  if (sum(num) < 2) {
+  # coerce_numeric_columns() decides what is numeric: a column with one text
+  # cell such as "<0.1" stays a variable, the cell becomes NA, and the data log
+  # names the cell and each text column left out (F42).
+  co <- coerce_numeric_columns(df)
+  if (length(co$numeric) < 2) {
     stop("correlation_heatmap needs at least 2 numeric columns")
   }
-  mat <- as.matrix(df[, num, drop = FALSE])
-  n0 <- ncol(mat)
+  mat <- as.matrix(co$df[, co$numeric, drop = FALSE])
 
-  keepc <- apply(mat, 2, function(v) sum(is.finite(v)) >= 3 && stats::sd(v, na.rm = TRUE) > 0)
+  keepc <- apply(mat, 2, .ch_usable)
   mat <- mat[, keepc, drop = FALSE]
   if (ncol(mat) < 2) stop("correlation_heatmap needs at least 2 numeric columns with variance")
-  clean_steps <- if (sum(!keepc) > 0) {
-    sprintf("Dropped %d non-numeric or zero-variance column(s) (%d -> %d variables).",
-            sum(!keepc), n0, ncol(mat))
-  } else "No cleaning applied; numeric columns used as-is."
+  clean_steps <- c(
+    co$steps,
+    if (length(co$text) > 0) sprintf("Left out the text column(s) %s.", .pca_name_list(co$text)),
+    if (sum(!keepc) > 0) sprintf("Dropped %d column(s) with fewer than 3 values or no variance: %s.",
+                                 sum(!keepc), .pca_name_list(co$numeric[!keepc])))
+  if (length(clean_steps) == 0) clean_steps <- "No cleaning applied; numeric columns used as-is."
   df_used <- as.data.frame(mat)
 
   method <- tolower(spec$test$method %||% "auto")
@@ -95,7 +102,7 @@ recipe_correlation_heatmap <- function(df, spec) {
                    label = sprintf("%s correlation heatmap", method))
   methods  <- .ch_methods(method, cluster, k, n_sig)
   build_script <- function(in_name, fig_stub) {
-    .ch_emit_script(in_name, fig_stub, method, cluster_rows, cluster_cols)
+    .ch_emit_script(in_name, fig_stub, method, cluster_rows, cluster_cols, vars)
   }
 
   list(plot = NULL, draw = draw_fn, stats = stats_df, test_meta = test_meta,
@@ -124,7 +131,7 @@ recipe_correlation_heatmap <- function(df, spec) {
             rver, v$ComplexHeatmap, v$circlize))
 }
 
-.ch_emit_script <- function(in_name, fig_stub, method, cluster_rows, cluster_cols) {
+.ch_emit_script <- function(in_name, fig_stub, method, cluster_rows, cluster_cols, vars) {
   c(
     "#!/usr/bin/env Rscript",
     "# Standalone reproduction. Run inside the pinned pubready container",
@@ -132,7 +139,11 @@ recipe_correlation_heatmap <- function(df, spec) {
     "suppressPackageStartupMessages({ library(ComplexHeatmap); library(circlize) })",
     "",
     sprintf('raw <- read.csv("%s", check.names = FALSE)', in_name),
-    "mat <- as.matrix(raw[, sapply(raw, is.numeric), drop = FALSE])",
+    "# The variables of the figure; a cell that does not read as a number is NA.",
+    sprintf("vars <- %s", paste(deparse(vars, width.cutoff = 500L), collapse = "")),
+    "num <- raw[vars]",
+    "for (v in vars) num[[v]] <- suppressWarnings(as.numeric(as.character(num[[v]])))",
+    "mat <- as.matrix(num)",
     sprintf('M <- cor(mat, method = "%s", use = "pairwise.complete.obs")', method),
     "# The leaf order of the figure: complete linkage on the Euclidean distance of",
     "# the matrix rows, and at each merge the branch with the higher mean correlation",
