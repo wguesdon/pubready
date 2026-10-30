@@ -6,7 +6,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pubready.recipes.survival_km import recipe_survival_km
+from pubready.recipes.cox_forest import recipe_cox_forest
+from pubready.recipes.survival_km import event_codes, recipe_survival_km
+from pubready.recipes.swimmer import recipe_swimmer
 from pubready.spec import spec_from_args
 
 
@@ -49,3 +51,27 @@ def test_survival_km_reads_columns_whose_names_hold_a_space():
     assert res["test_meta"]["log_rank"]["chisq"] == pytest.approx(
         ref["test_meta"]["log_rank"]["chisq"], rel=1e-12)
     assert "groups of treatment arm" in res["methods"]
+
+
+def test_an_event_column_holds_0_1_or_a_logical_else_the_message_lists_its_values():
+    """F56: a text or a decimal event code stops the run and names the values."""
+    assert list(event_codes(pd.Series([True, False, np.nan], dtype=object), "e").fillna(-1)) == [1, 0, -1]
+    assert list(event_codes(pd.Series(["1", " 0", np.nan, ""]), "e").fillna(-1)) == [1, 0, -1, -1]
+    assert list(event_codes(pd.Series([1.0, 0.0, 1.0, np.nan]), "e").fillna(-1)) == [1, 0, 1, -1]
+    with pytest.raises(ValueError, match="event column 'status' must be coded 1 = event, "
+                                         "0 = censored, but it holds 'alive', 'dead'"):
+        event_codes(pd.Series(["dead", "alive", "dead"]), "status")
+    with pytest.raises(ValueError, match="but it holds '1.5', '2', '10'"):
+        event_codes(pd.Series([1, 1.5, 0, 2, 10]), "e")
+    with pytest.raises(ValueError, match="'6', '7' and 2 more"):
+        event_codes(pd.Series([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), "e")
+    d = pd.DataFrame({"time": [3, 5, 8, 9], "event": ["dead", "alive", "dead", "alive"],
+                      "arm": ["a", "a", "b", "b"]})
+    with pytest.raises(ValueError, match="holds 'alive', 'dead'"):
+        recipe_survival_km(d, v3c_spec("survival_km", time="time", event="event", x="arm"))
+    with pytest.raises(ValueError, match="holds 'alive', 'dead'"):
+        recipe_cox_forest(d, v3c_spec("cox_forest", time="time", event="event", covariates="arm"))
+    s = pd.DataFrame({"patient": ["P1", "P2"], "months": [4, 7], "ended": ["yes", "no"]})
+    with pytest.raises(ValueError, match="must be coded 1 = the course ended, 0 = ongoing, "
+                                         "but it holds 'no', 'yes'"):
+        recipe_swimmer(s, v3c_spec("swimmer", id="patient", time="months", event="ended"))

@@ -11,7 +11,7 @@ from lifelines.statistics import multivariate_logrank_test
 from matplotlib.lines import Line2D
 
 from ..theme import apply_pub_style, longest_line, palette, wrap_labels
-from ..util import p_phrase
+from ..util import _level_label, level_order, p_phrase
 
 LEGEND_WRAP = 24
 """The legend labels wrap at this many characters, as in the R engine."""
@@ -65,6 +65,73 @@ def km_at_risk(time, group, levels, breaks):
     time = np.asarray(time, dtype=float)
     group = np.asarray(group).astype(str)
     return np.array([[int(np.sum((group == g) & (time >= b))) for b in breaks] for g in levels])
+
+
+def _event_code(v):
+    """Read one value of an event column as event_codes() does.
+
+    Args:
+        v: One value of the column.
+
+    Returns:
+        tuple: The code (0.0, 1.0 or NaN) and the label of a value that is not
+        0 or 1, else None.
+    """
+    if v is None or (isinstance(v, (float, np.floating)) and np.isnan(v)):
+        return np.nan, None
+    if isinstance(v, (bool, np.bool_)):
+        return float(v), None
+    if isinstance(v, (int, float, np.integer, np.floating)):
+        return (float(v), None) if v in (0, 1) else (np.nan, _level_label(v))
+    s = str(v).strip()
+    if s == "":
+        return np.nan, None
+    try:
+        num = float(s)
+    except ValueError:
+        return np.nan, s
+    return (num, None) if num in (0.0, 1.0) else (np.nan, s)
+
+
+def value_list(vals):
+    """Quote the first six values of a list for a message, and count the rest.
+
+    Args:
+        vals: The values, in order.
+
+    Returns:
+        str: The quoted values.
+    """
+    shown = ", ".join(f"'{v}'" for v in vals[:6])
+    return f"{shown} and {len(vals) - 6} more" if len(vals) > 6 else shown
+
+
+def event_codes(values, col, meaning="1 = event, 0 = censored"):
+    """Check an event or status column before any conversion.
+
+    One rule in both engines, shared by survival_km, cox_forest and swimmer. A
+    present value is accepted when it is a logical, a number equal to 0 or 1, or
+    a text that reads as such a number. Any other value, for example "dead", 2
+    or 1.5, stops the run, and the message lists the values that are not 0 or 1.
+    The R engine has the same rule.
+
+    Args:
+        values: The column.
+        col: The column name, for the message.
+        meaning: What the codes mean, for the message.
+
+    Returns:
+        pandas.Series: The codes as floats 0, 1 and NaN.
+
+    Raises:
+        ValueError: If a value is not 0 or 1.
+    """
+    read = [_event_code(v) for v in values]
+    bad = [lab for _, lab in read if lab is not None]
+    if bad:
+        raise ValueError(f"event column '{col}' must be coded {meaning}, but it holds "
+                         f"{value_list(level_order(bad))}")
+    return pd.Series([c for c, _ in read], index=values.index, dtype=float)
 
 
 def km_width(leg_labs, title):
@@ -146,10 +213,7 @@ def recipe_survival_km(df, spec):
 
     df = df.copy()
     df[t] = pd.to_numeric(df[t], errors="coerce")
-    ev = pd.to_numeric(df[e], errors="coerce")
-    if not ev.dropna().isin([0, 1]).all():
-        raise ValueError(f"event column '{e}' must be coded 1 = event, 0 = censored")
-    df[e] = ev
+    df[e] = event_codes(df[e], e)
     n0 = len(df)
     df = df.dropna(subset=[t, e, g])
     df = df[df[t] >= 0].reset_index(drop=True)

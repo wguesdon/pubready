@@ -16,6 +16,7 @@ from matplotlib.lines import Line2D
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
+from .survival_km import event_codes
 
 #: The marker shapes, in the order of --markers, matched to the R engine.
 SHAPES = ("o", "^", "D", "s", "v")
@@ -63,9 +64,8 @@ def recipe_swimmer(df, spec):
             raise ValueError(f"column '{c}' not found in data")
 
     n0 = len(df)
-    status = pd.to_numeric(df[ev], errors="coerce") if has_event else pd.Series(1.0, index=df.index)
-    if not status.dropna().isin([0, 1]).all():
-        raise ValueError(f"event column '{ev}' must be coded 1 = the course ended, 0 = ongoing")
+    status = (event_codes(df[ev], ev, "1 = the course ended, 0 = ongoing") if has_event
+              else pd.Series(1.0, index=df.index))
     d = pd.DataFrame({
         "patient": df[idc].astype(str).where(df[idc].notna()),
         "duration": pd.to_numeric(df[tcol], errors="coerce"),

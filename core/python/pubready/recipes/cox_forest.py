@@ -18,6 +18,7 @@ from matplotlib.ticker import NullLocator
 
 from ..theme import apply_pub_style, palette, plain_log_axis
 from ..util import format_p, p_phrase
+from .survival_km import event_codes
 
 # Tick sequences of the hazard-ratio axis, from coarse to fine (mantissas per decade).
 TICK_SETS = [(1, 2, 5), (1, 1.5, 2, 3, 5, 7), (1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8)]
@@ -364,10 +365,7 @@ def recipe_cox_forest(df, spec):
 
     df = df.copy()
     df[t] = pd.to_numeric(df[t], errors="coerce")
-    ev = pd.to_numeric(df[e], errors="coerce")
-    if not ev.dropna().isin([0, 1]).all():
-        raise ValueError(f"event column '{e}' must be coded 1 = event, 0 = censored")
-    df[e] = ev
+    df[e] = event_codes(df[e], e)
     n0 = len(df)
     df = df.dropna(subset=[t, e] + covs)
     df = df[df[t] >= 0].reset_index(drop=True)

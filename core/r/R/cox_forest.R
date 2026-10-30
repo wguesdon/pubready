@@ -24,11 +24,7 @@ recipe_cox_forest <- function(df, spec) {
   }
 
   df[[time_col]] <- suppressWarnings(as.numeric(df[[time_col]]))
-  ev <- suppressWarnings(as.integer(df[[event_col]]))
-  if (!all(ev %in% c(0L, 1L) | is.na(ev))) {
-    stop(sprintf("event column '%s' must be coded 1 = event, 0 = censored", event_col))
-  }
-  df[[event_col]] <- ev
+  df[[event_col]] <- event_codes(df[[event_col]], event_col)
   for (c in covs) if (is.character(df[[c]])) df[[c]] <- factor(df[[c]])
 
   n0   <- nrow(df)

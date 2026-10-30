@@ -25,6 +25,11 @@ tag move together.
 - The R `survival_km` reads a time, event or group column whose name holds a
   space, for example "follow up months". The model reads syntactic copies of
   the columns, and the figure and the tables keep the names (F44).
+- `survival_km`, `cox_forest` and `swimmer` check the event column before any
+  conversion. A value other than 0, 1 or a logical, for example "dead" or 1.5,
+  stops the run, and the message lists those values. Before, a text column
+  passed the check and stopped later with an unclear error, and R read 1.5 as
+  1 (F56).
 
 ## [3.0.0] - 2026-10-29
 

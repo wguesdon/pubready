@@ -18,11 +18,7 @@ recipe_survival_km <- function(df, spec) {
   }
 
   df[[time_col]] <- suppressWarnings(as.numeric(df[[time_col]]))
-  ev <- suppressWarnings(as.integer(df[[event_col]]))
-  if (!all(ev %in% c(0L, 1L) | is.na(ev))) {
-    stop(sprintf("event column '%s' must be coded 1 = event, 0 = censored", event_col))
-  }
-  df[[event_col]] <- ev
+  df[[event_col]] <- event_codes(df[[event_col]], event_col)
 
   n0   <- nrow(df)
   keep <- stats::complete.cases(df[, c(time_col, event_col, group_col)]) &
@@ -123,6 +119,34 @@ recipe_survival_km <- function(df, spec) {
 }
 
 .km_col <- function(tb, nm) if (nm %in% colnames(tb)) tb[, nm] else rep(NA_real_, nrow(tb))
+
+# Check an event or status column before any conversion, one rule in both
+# engines, shared by survival_km, cox_forest and swimmer. A present value is
+# accepted when it is a logical, a number equal to 0 or 1, or a text that reads
+# as such a number. Any other value, for example "dead", 2 or 1.5, stops the run,
+# and the message lists the values that are not 0 or 1. Returns the column as
+# integers 0, 1 and NA. The Python engine has the same rule.
+event_codes <- function(v, col, meaning = "1 = event, 0 = censored") {
+  if (is.logical(v)) return(as.integer(v))
+  txt <- trimws(as.character(v))
+  present <- !is.na(v) & !is.na(txt) & txt != ""
+  num <- suppressWarnings(as.numeric(txt))
+  ok <- !present | (!is.na(num) & num %in% c(0, 1))
+  if (!all(ok)) {
+    bad <- if (is.numeric(v)) level_labels(v[!ok]) else txt[!ok]
+    stop(sprintf("event column '%s' must be coded %s, but it holds %s", col, meaning,
+                 .km_value_list(level_order(unique(bad)))))
+  }
+  out <- rep(NA_integer_, length(v))
+  out[present] <- as.integer(num[present])
+  out
+}
+
+# Quote the first six values of a list for a message, and count the rest.
+.km_value_list <- function(vals) {
+  shown <- paste(sprintf("'%s'", utils::head(vals, 6)), collapse = ", ")
+  if (length(vals) > 6) sprintf("%s and %d more", shown, length(vals) - 6) else shown
+}
 
 # The time, the event and the group under the syntactic names .time, .event and
 # .group, for the model formula. A column name with a space or a bracket stays

@@ -34,10 +34,9 @@ recipe_swimmer <- function(df, spec) {
                   duration = suppressWarnings(as.numeric(df[[tcol]])),
                   group = if (has_group) as.character(df[[grp]]) else "all",
                   stringsAsFactors = FALSE)
-  status <- if (has_event) suppressWarnings(as.integer(df[[ev]])) else rep(1L, n0)
-  if (!all(status %in% c(0L, 1L) | is.na(status))) {
-    stop(sprintf("event column '%s' must be coded 1 = the course ended, 0 = ongoing", ev))
-  }
+  status <- if (has_event) {
+    event_codes(df[[ev]], ev, "1 = the course ended, 0 = ongoing")
+  } else rep(1L, n0)
   d$ongoing <- status == 0L
   for (m in markers) d[[m]] <- suppressWarnings(as.numeric(df[[m]]))
   keep <- !is.na(d$patient) & is.finite(d$duration) & d$duration >= 0 & !is.na(d$group) &

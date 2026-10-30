@@ -40,3 +40,22 @@ test_that("survival_km reads columns whose names hold a space (F44)", {
   run <- v3c_run_script(script, v3c_km_space())
   expect_true(is.null(run$status) || run$status == 0, info = run$out)
 })
+
+test_that("an event column holds 0, 1 or a logical, else the message lists its values (F56)", {
+  expect_equal(event_codes(c(TRUE, FALSE, NA), "e"), c(1L, 0L, NA))
+  expect_equal(event_codes(c("1", " 0", NA, ""), "e"), c(1L, 0L, NA, NA))
+  expect_equal(event_codes(c(1, 0, 1, NA), "e"), c(1L, 0L, 1L, NA))
+  expect_error(event_codes(c("dead", "alive", "dead"), "status"),
+               "event column 'status' must be coded 1 = event, 0 = censored, but it holds 'alive', 'dead'",
+               fixed = TRUE)
+  expect_error(event_codes(c(1, 1.5, 0, 2, 10), "e"), "but it holds '1.5', '2', '10'", fixed = TRUE)
+  expect_error(event_codes(c(0, 1, 2:9), "e"), "'6', '7' and 2 more", fixed = TRUE)
+  d <- data.frame(time = c(3, 5, 8, 9), event = c("dead", "alive", "dead", "alive"), arm = c("a", "a", "b", "b"))
+  expect_error(recipe_survival_km(d, v3c_spec("survival_km", time = "time", event = "event", x = "arm")),
+               "holds 'alive', 'dead'")
+  expect_error(recipe_cox_forest(d, v3c_spec("cox_forest", time = "time", event = "event", covariates = "arm")),
+               "holds 'alive', 'dead'")
+  s <- data.frame(patient = c("P1", "P2"), months = c(4, 7), ended = c("yes", "no"))
+  expect_error(recipe_swimmer(s, v3c_spec("swimmer", id = "patient", time = "months", event = "ended")),
+               "must be coded 1 = the course ended, 0 = ongoing, but it holds 'no', 'yes'", fixed = TRUE)
+})
