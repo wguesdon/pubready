@@ -1,8 +1,8 @@
 type,sets,degree,size
-set,apoptosis,,36
-set,inflammation,,37
-set,metabolism,,35
-set,cell_cycle,,25
+set,apoptosis,NA,36
+set,inflammation,NA,37
+set,metabolism,NA,35
+set,cell_cycle,NA,25
 intersection,metabolism,1,10
 intersection,apoptosis & inflammation,2,10
 intersection,inflammation,1,8

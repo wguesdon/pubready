@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "forest_meta",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "Hazard ratio (95% CI, log scale)",
     "y": "hazard_ratio",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": "trial",
+    "positive": null,
+    "se": null,
+    "ci_low": "ci_low",
+    "ci_high": "ci_high",
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Hazard ratio (95% CI, log scale)",
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_hazard_ratio.csv",
@@ -24,29 +56,29 @@
     "measure": "ratio",
     "k": 9,
     "fixed": {
-      "estimate": 0.762567,
-      "ci_low": 0.702872,
-      "ci_high": 0.827331,
-      "p_value": 7.144729e-11
+      "estimate": 0.762566518860223,
+      "ci_low": 0.702872222840633,
+      "ci_high": 0.82733059692764,
+      "p_value": 7.14472941581627e-11
     },
     "random": {
-      "estimate": 0.765724,
-      "ci_low": 0.698654,
-      "ci_high": 0.839233,
-      "p_value": 1.146999e-08
+      "estimate": 0.765724295475695,
+      "ci_low": 0.698654055933635,
+      "ci_high": 0.83923322523078,
+      "p_value": 1.14699896312483e-08
     },
     "heterogeneity": {
-      "q": 9.643453,
+      "q": 9.64345262989938,
       "df": 8,
-      "p_value": 0.290948,
-      "i2": 17.04216,
-      "tau2": 0.003308
+      "p_value": 0.290947659275638,
+      "i2": 17.0421600330558,
+      "tau2": 0.00330800912023779
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -72,7 +104,7 @@
     {
       "file": "figure_hazard_ratio_meta.pdf",
       "bytes": 15455,
-      "sha256": "b24fe62f58ec701221336436ace8b74f8f0f419568a55969cbff79e69a525c6c"
+      "sha256": "e32f4d02f0636a90d6b1d3a6c3dc88b1f12be8024345302da4feb74d1b512085"
     },
     {
       "file": "figure_hazard_ratio_meta.png",
@@ -91,18 +123,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4997,
-      "sha256": "8429d0812e913f3a8b023186ab957b9e38734534fce066c8f1c3def8d7740f58"
+      "bytes": 5015,
+      "sha256": "ff2e8a3d8c235757ab0f668bdb955eafa97524d7225733b746d324c222b89ea0"
     },
     {
       "file": "report.html",
-      "bytes": 1421712,
-      "sha256": "01976ef4dd7c743d1b30e7bad6dc5537517a6e19554c715eb71e5d373726191a"
+      "bytes": 1421730,
+      "sha256": "b9a86918ac562252b1be2ca5a3c8b70555d38efc03526e0c9b862e2fa06f322a"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2074,
-      "sha256": "14d9524041582a720895c36ac30ae62ce28af1c2cb1fa01edd0e865f007f58a1"
+      "bytes": 2100,
+      "sha256": "c532811c07c1cad22dc6a9a98db6f6a6127a3eb8fd7de148cbdda592a5fb2484"
     }
   ]
 }

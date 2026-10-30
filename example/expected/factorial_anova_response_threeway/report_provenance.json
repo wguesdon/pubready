@@ -1,14 +1,14 @@
 {
   "repository": "pubready",
-  "repository_version": "3.0.0",
-  "git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "repository_version": "4.0.0",
+  "git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "git_dirty": false,
   "llm_provider": "none",
   "llm_model": "none",
   "agent_harness": "manual",
   "agent_harness_version": "not_recorded",
-  "container_image": "localhost/pubready:3.0.0",
-  "container_digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+  "container_image": "localhost/pubready:4.0.0",
+  "container_digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
   "input": {
     "file": "input_response.csv",
     "md5": "b1ab1ae1731e3311d49a8727536cd99f",
@@ -38,13 +38,14 @@
       "ref": null,
       "cause": null,
       "levels": null,
+      "visit_levels": null,
+      "features": null,
       "markers": null,
       "covariates": null
     },
     "test": {
       "method": "auto",
-      "paired": false,
-      "p_adjust": "none"
+      "paired": false
     },
     "appearance": {
       "theme": "pubready_house",

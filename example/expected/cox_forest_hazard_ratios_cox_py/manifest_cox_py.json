@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "cox_forest",
@@ -17,7 +17,37 @@
       "age",
       "sex",
       "stage"
-    ]
+    ],
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_hazard_ratios.csv",
@@ -46,42 +76,47 @@
         "HR": 0.5446495910272949,
         "ci_low": 0.3372095343625995,
         "ci_high": 0.879699850619351,
-        "p_value": 0.012993515964860746
+        "p_value": 0.012993515964860746,
+        "note": "estimated"
       },
       {
         "term": "age",
         "HR": 1.004515095790653,
         "ci_low": 0.983062836058313,
         "ci_high": 1.0264354837348875,
-        "p_value": 0.6825276288126748
+        "p_value": 0.6825276288126748,
+        "note": "estimated"
       },
       {
         "term": "sexmale",
         "HR": 1.2092289747884706,
         "ci_low": 0.7549859866379953,
         "ci_high": 1.936770667730414,
-        "p_value": 0.4292316420949487
+        "p_value": 0.4292316420949487,
+        "note": "estimated"
       },
       {
         "term": "stageII",
         "HR": 0.9628789620278184,
         "ci_low": 0.5588367376954668,
         "ci_high": 1.6590460737049886,
-        "p_value": 0.8916075543126436
+        "p_value": 0.8916075543126436,
+        "note": "estimated"
       },
       {
         "term": "stageIII",
         "HR": 0.7385650617304216,
         "ci_low": 0.3943575846309485,
         "ci_high": 1.383207453507801,
-        "p_value": 0.3438311323080432
+        "p_value": 0.3438311323080432,
+        "note": "estimated"
       }
     ]
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -110,7 +145,7 @@
     {
       "file": "figure_hazard_ratios_cox_py.pdf",
       "bytes": 21470,
-      "sha256": "fb24cbfa90a59e6bd2c08a9ac3a6ba6243f651955decbfcfb3656958ce677772"
+      "sha256": "5c564bd75e59eea1187cb1456cae34c398727cb2b50471b2880d5ea0ffb5e6ef"
     },
     {
       "file": "figure_hazard_ratios_cox_py.png",
@@ -120,7 +155,7 @@
     {
       "file": "figure_hazard_ratios_cox_py.svg",
       "bytes": 48520,
-      "sha256": "047c5ce57058aa6e6238ff3adb9b6a25ed0afd85cf48765f0b02373823d8bc7c"
+      "sha256": "5ab7f7a59d133eb3eb6653beb2d7646dc2ab501301e8cb1ae4e540fd264abdcd"
     },
     {
       "file": "packages_cox_py.txt",
@@ -129,18 +164,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3418,
-      "sha256": "359f4b9dcf51f171261a1d4c6643976048f17db6788c626e90cb25bbc92fec8a"
+      "bytes": 3511,
+      "sha256": "7b2fb3e843b38d7a69917663fb3d7f3d0ba25d2effd55705c8bdc3182942395b"
     },
     {
       "file": "report.html",
-      "bytes": 1400853,
-      "sha256": "45437d8e32e29bb954b1b6d29a4f7daaa742f8c03d0c9919a091dea3d7d9d73f"
+      "bytes": 1401007,
+      "sha256": "ec93cc040c72e24eff1f2394fd36e0208b309548f28825d9053984564f7447d6"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2075,
-      "sha256": "73ee3d104cac963cd30673089ee411a350dec6e0ef8d749a05506d516d4c28f8"
+      "bytes": 2101,
+      "sha256": "cea9b459700590c0317cf4462d1f0597dc7732745a7017573d06127ee51432b1"
     }
   ]
 }

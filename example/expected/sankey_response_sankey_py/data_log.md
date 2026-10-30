@@ -7,6 +7,12 @@
 - Analyzed rows: 188
 - Columns: 3
 
+## Read rule
+
+Each cell was read as text, and the spaces around each value were removed. Only an empty cell or "NA" was read as missing. A column was read as numeric when each present cell is a number with "." as the decimal mark, and as logical when each present cell is TRUE or FALSE.
+
+- No value changed at read.
+
 ## Column types (analyzed data)
 
 - `id`: object
@@ -16,4 +22,5 @@
 ## Cleaning steps
 
 - Kept 188 row(s) of 188: 80 patient(s), 3 visit(s) (8, 16, 24), 4 state(s) (complete response, partial response, stable disease, progressive disease).
+- The visits of 'week' are in numeric order: 8, 16, 24.
 - 31 patient(s) are missing at one visit or more and take no part in the transitions into or out of that visit.

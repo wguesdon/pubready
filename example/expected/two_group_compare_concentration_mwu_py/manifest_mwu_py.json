@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "two_group_compare",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Group",
+    "ylab": "IL-6 (pg/mL)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_concentration.csv",
@@ -25,7 +55,6 @@
     "name": "Mann-Whitney U test",
     "statistic": 11.0,
     "p_value": 0.00014422244870488242,
-    "adjustment": "none",
     "effect_size": {
       "name": "rank-biserial r",
       "value": -0.8472222222222222
@@ -40,12 +69,13 @@
         "test": "Levene",
         "p": 0.5591467798686465
       }
-    }
+    },
+    "rank_test_attainable_p": 7.39602301050679e-07
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -76,7 +106,7 @@
     {
       "file": "figure_concentration_mwu_py.pdf",
       "bytes": 13145,
-      "sha256": "17f5c1c44bd2336bc77c67ef978ba14ddcc1f09c9d66f269a4b20f00af609e3b"
+      "sha256": "6969a7c38d71ac7cd201a54d9dcafe7f4ccf40d4c2a686343cb319663fb91a46"
     },
     {
       "file": "figure_concentration_mwu_py.png",
@@ -86,7 +116,7 @@
     {
       "file": "figure_concentration_mwu_py.svg",
       "bytes": 26749,
-      "sha256": "e86961a9695a6035b6e92813d4572829c320a7c572b3f743141e1cf8beeaf9b0"
+      "sha256": "1372e10540d3849d90de16c8b8c0fa6195245088c648980f1c81de4b3e182720"
     },
     {
       "file": "packages_mwu_py.txt",
@@ -95,28 +125,28 @@
     },
     {
       "file": "qc_normality_mwu_py.png",
-      "bytes": 83388,
-      "sha256": "09792dbcffff47e28fa8bea20668bc92beaade513bfa246a0e1bdc3d87f40494"
+      "bytes": 84317,
+      "sha256": "db6d403f5d90664ed8b2bae5e21b7c0119c649c720141aa9aae83166759e2ad9"
     },
     {
       "file": "qc_normality_mwu_py.pdf",
-      "bytes": 24933,
-      "sha256": "3200144abacddf5600f0ca1477fd06b186986b848ab69defad971053a8b5d2b8"
+      "bytes": 24942,
+      "sha256": "534de1d506aaa4b0c92e31460b5bc1a2af6ec54492bc31ca9d85dfc55818b044"
     },
     {
       "file": "report.qmd",
-      "bytes": 3371,
-      "sha256": "11981dd7834c3d1dbd94663979af2de038ffc99e5574e3aa8103399bc38193fa"
+      "bytes": 3381,
+      "sha256": "ec4a20b9c427c8b576470cc5c2f6d88c54eb0dfc9c5c608b0e32517b86b60091"
     },
     {
       "file": "report.html",
-      "bytes": 1264717,
-      "sha256": "b1bdc95542a643317fb9fe5e0f5f1af4f172b65ccca8743538fc5efa78d45751"
+      "bytes": 1264727,
+      "sha256": "0394befbe38f5ae0f299dd608df1bfbe6514c5e7a6d0e3098abcad3a9f01d11b"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2045,
-      "sha256": "b229c45a7e1f23cad05a1e9fda59dbf7e163ddb1bb0d14c231be058b43352b9e"
+      "bytes": 2071,
+      "sha256": "dda82f8db1e3b270f8955500e8b4032f4972ab5044ae5d7a2074517cbceda315"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "two_group_compare",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "group",
     "y": "volume",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Group",
+    "ylab": "Tumor volume (mm^3)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_volume.csv",
@@ -20,30 +52,30 @@
     "n_rows": 24
   },
   "statistical_test": {
-    "name": "Student's two-sample t-test",
-    "statistic": 10.059451,
-    "p_value": 1.083621e-09,
-    "adjustment": "none",
+    "name": "Welch two-sample t-test",
+    "statistic": 10.0594513176191,
+    "p_value": 1.87788767184241e-09,
     "effect_size": {
       "name": "Cohen's d",
-      "value": 4.106754
+      "value": 4.10675380342244
     },
     "assumptions": {
       "normality": {
         "test": "shapiro-wilk",
-        "p_group1": 0.999977,
-        "p_group2": 0.989004
+        "p_group1": 0.999977135402283,
+        "p_group2": 0.98900356297023
       },
       "equal_variance": {
         "test": "Levene",
-        "p": 0.456075
+        "p": 0.456074848950434
       }
-    }
+    },
+    "rank_test_attainable_p": 7.39602301050679e-07
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -71,17 +103,17 @@
     {
       "file": "figure_volume_ttest.pdf",
       "bytes": 7310,
-      "sha256": "0dbcd398a78f971eea7224d0647ebe9420281a0507390d03f12b170be8b098ef"
+      "sha256": "f85c035d630a06f6c6841a7d410e5ea1a973c7dd2f1e782c6f87811abb631aa7"
     },
     {
       "file": "figure_volume_ttest.png",
-      "bytes": 51271,
-      "sha256": "41bc90cf8588186581ab9a82979dc42a1cf5b3b0275f9e8d560d667e4919aac1"
+      "bytes": 51130,
+      "sha256": "91d341e9df6c497e2211d0263dd596650fb5570d7766ec5aa507cde92852ac23"
     },
     {
       "file": "figure_volume_ttest.svg",
       "bytes": 8826,
-      "sha256": "16097a661e85aabe817a2ef9d1d69084a16240700257541cbe610bc48dcae518"
+      "sha256": "49852f8b70cf80a2e20afa8a8371cc6cc983f999d1dc25507803483633c8d0e9"
     },
     {
       "file": "packages_ttest.txt",
@@ -96,22 +128,22 @@
     {
       "file": "qc_normality_ttest.pdf",
       "bytes": 28025,
-      "sha256": "a2832ee71b1442bbaedf5b55ebcb8eb1eee8a45e146d2e19ee1795c1cadd7c03"
+      "sha256": "677f5bac5a6e93074b735623d6768a180bc217da93485bcfa4f6e49f6fb83a49"
     },
     {
       "file": "report.qmd",
-      "bytes": 3170,
-      "sha256": "dbe4e2dddbbcdb315976273bfe6561e6f584bfed11005c8b0d5e435c5558e8ee"
+      "bytes": 3324,
+      "sha256": "1c151aedf0db9c7d97826021744164dc8ef293f39548c83568c1c76c780abfda"
     },
     {
       "file": "report.html",
-      "bytes": 1261600,
-      "sha256": "a2d405c710a959b857f33f3615916f4bba59cd905b021583fb1499cac975a760"
+      "bytes": 1261566,
+      "sha256": "e1f5eb4c4e5aad6cdcc58e70afd3137d86389bf7f938fec32070062eab538c67"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2026,
-      "sha256": "3993f96b8cbc47d9ad4182c2b60f39a06e88c70273ce0c81caddff72c1e60b8b"
+      "bytes": 2052,
+      "sha256": "30fd2e2f67a9a8f0be3911178702b39c7485d975e6de1e5b88f3d7e08e6f479a"
     }
   ]
 }

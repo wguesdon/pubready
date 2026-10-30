@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "two_group_compare",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "group",
     "y": "volume",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "violin",
+    "theme": "pubready_house",
+    "xlab": "Group",
+    "ylab": "Tumor volume (mm^3)",
+    "title": null,
+    "palette": ["#2E8B57", "#7A5195"]
   },
   "input": {
     "file": "input_volume.csv",
@@ -20,30 +52,30 @@
     "n_rows": 24
   },
   "statistical_test": {
-    "name": "Student's two-sample t-test",
-    "statistic": 10.059451,
-    "p_value": 1.083621e-09,
-    "adjustment": "none",
+    "name": "Welch two-sample t-test",
+    "statistic": 10.0594513176191,
+    "p_value": 1.87788767184241e-09,
     "effect_size": {
       "name": "Cohen's d",
-      "value": 4.106754
+      "value": 4.10675380342244
     },
     "assumptions": {
       "normality": {
         "test": "shapiro-wilk",
-        "p_group1": 0.999977,
-        "p_group2": 0.989004
+        "p_group1": 0.999977135402283,
+        "p_group2": 0.98900356297023
       },
       "equal_variance": {
         "test": "Levene",
-        "p": 0.456075
+        "p": 0.456074848950434
       }
-    }
+    },
+    "rank_test_attainable_p": 7.39602301050679e-07
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -70,18 +102,18 @@
   "output_checksums": [
     {
       "file": "figure_volume_violin.pdf",
-      "bytes": 18019,
-      "sha256": "0e737fee659a748408d359f1895b7e06cfc346522057bbee152489711dab1b57"
+      "bytes": 18022,
+      "sha256": "1ac3aae2ed4a3b6558cc864e41c7090b7a5ee46e2fcdad3b10714c2a14aad9cc"
     },
     {
       "file": "figure_volume_violin.png",
-      "bytes": 86121,
-      "sha256": "0844234e8d611c7e06ca810e246f62eae23649a3ea1e92a7e77dbb9bca13a013"
+      "bytes": 86124,
+      "sha256": "5811eba4b55134e1b3372e9507a1517408269c320694d2f696613478efbb4da5"
     },
     {
       "file": "figure_volume_violin.svg",
       "bytes": 35768,
-      "sha256": "0e941dfefeb1544ccc307fe79bccd673391d11841d3c22b1b206e20b6cec03d9"
+      "sha256": "d9f1fa45cd4b53b7efbe4dbb1265770a51c3a017c861a710905f6a49c87f639e"
     },
     {
       "file": "packages_violin.txt",
@@ -96,22 +128,22 @@
     {
       "file": "qc_normality_violin.pdf",
       "bytes": 28025,
-      "sha256": "2eeb33480e726f5d48467ff1857f80f06746b5530bd4822256509383c7689694"
+      "sha256": "5418696370c027505f59f9e6b731beb1a64f2331f8f9c432a1a796762f3ae556"
     },
     {
       "file": "report.qmd",
-      "bytes": 2954,
-      "sha256": "6b1480c3706a40c2e356f11fd6986e5be74d3707e2d7eeff4ec6bbc747c9ac0c"
+      "bytes": 3072,
+      "sha256": "1f3d8cae3bd5ea6b3ca5b475b1f6752dc261b9c1552ff66560ab4d2b9d3807f4"
     },
     {
       "file": "report.html",
-      "bytes": 1307783,
-      "sha256": "cbfa8584278c0cd65769643749861715abdce0463e5028bef7efc6f79b4957d7"
+      "bytes": 1307897,
+      "sha256": "08080b12fb3ada4d18223d19f093d68049caa069e3a7f507c2e648a7a51006eb"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1666,
-      "sha256": "1d792fed05446eaeef76312bd5dc659a69f52cda4adf834fb77c760a5b77d973"
+      "bytes": 1640,
+      "sha256": "07953c8cde5c6cb81bfe37f8d8a2802cf539cebce5efaef56a7c3662e11d3d95"
     }
   ]
 }

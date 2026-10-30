@@ -6,6 +6,7 @@ suppressPackageStartupMessages(library(ggplot2))
 raw <- read.csv("input_cytokine_panel.csv", check.names = FALSE)
 d <- data.frame(feature = as.character(raw[["cytokine"]]), group = as.character(raw[["group"]]), value = as.numeric(raw[["concentration_pg_ml"]]))
 d <- d[is.finite(d$value) & !is.na(d$group), ]
+d$group <- factor(d$group, levels = c("Healthy control", "Mild disease", "Severe disease"))
 feats <- unique(d$feature)
 test_one <- function(f) kruskal.test(value ~ group, data = d[d$feature == f, ])$p.value
 p <- vapply(feats, test_one, numeric(1))

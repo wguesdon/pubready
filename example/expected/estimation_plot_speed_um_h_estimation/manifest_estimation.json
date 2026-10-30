@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "estimation_plot",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "treatment",
     "y": "speed_um_h",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": "vehicle",
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": "Migration speed (um/h)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_speed_um_h.csv",
@@ -32,38 +64,38 @@
     "test": "Welch two-sample t-test",
     "comparisons": {
       "compound_A": {
-        "mean_diff": -2.696429,
-        "ci_low": -5.139286,
-        "ci_high": 0.013502,
-        "hedges_g": -0.733391,
-        "statistic": -1.937391,
-        "df": 23.84203,
-        "p_value": 0.064632
+        "mean_diff": -2.69642857142857,
+        "ci_low": -5.13928571428571,
+        "ci_high": 0.0135015665113431,
+        "hedges_g": -0.733390897453763,
+        "statistic": -1.93739070207139,
+        "df": 23.842029616839,
+        "p_value": 0.0646318318440856
       },
       "compound_B": {
-        "mean_diff": -7.221429,
-        "ci_low": -9.761612,
-        "ci_high": -4.515173,
-        "hedges_g": -1.981405,
-        "statistic": -5.243057,
-        "df": 23.913387,
-        "p_value": 0.000023
+        "mean_diff": -7.22142857142857,
+        "ci_low": -9.76161223432283,
+        "ci_high": -4.51517332291688,
+        "hedges_g": -1.98140529987675,
+        "statistic": -5.24305698725035,
+        "df": 23.9133874585312,
+        "p_value": 2.27309347361684e-05
       },
       "compound_C": {
-        "mean_diff": 1.198571,
-        "ci_low": -3.649934,
-        "ci_high": 4.022126,
-        "hedges_g": 0.264273,
-        "statistic": 0.623579,
-        "df": 15.21964,
-        "p_value": 0.542138
+        "mean_diff": 1.19857142857143,
+        "ci_low": -3.64993360055881,
+        "ci_high": 4.02212625890843,
+        "hedges_g": 0.264272685148162,
+        "statistic": 0.623578653982167,
+        "df": 15.2196403061645,
+        "p_value": 0.542137803274161
       }
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -91,7 +123,7 @@
     {
       "file": "figure_speed_um_h_estimation.pdf",
       "bytes": 22033,
-      "sha256": "34067ba187035628a6068a722808113af5cdbd57fb61ed8d9147001242075a57"
+      "sha256": "eb95093f2d268cfe304064600dd8333da48cb2e88762de96cb7f5a3c8522c91c"
     },
     {
       "file": "figure_speed_um_h_estimation.png",
@@ -116,22 +148,22 @@
     {
       "file": "qc_normality_estimation.pdf",
       "bytes": 29635,
-      "sha256": "e9809894df34def936a3535563666fbd57e3ca592a2664cd12e783ea649ae49f"
+      "sha256": "e2c10a3e71cf48b9394a9197a2ac27aed0bf266092d002384b344c3a627304ca"
     },
     {
       "file": "report.qmd",
-      "bytes": 4535,
-      "sha256": "e8c20fff48fb7f42f6db20205a4f08707ddc932592091ed6ea53e8626ddc0841"
+      "bytes": 4553,
+      "sha256": "2db49dcd49be4aee0a2367e49733e20c91e7472777f341ed2bc54d05e6284ea5"
     },
     {
       "file": "report.html",
-      "bytes": 1372994,
-      "sha256": "90ba16151bcfe1754e923c744f8a01a0c55d50e3cdebdc164ffce0a1d150a64c"
+      "bytes": 1373012,
+      "sha256": "058e5f828e50dd6166b971b247daf975019867ad1f1730973865f19b712c2f15"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2042,
-      "sha256": "640b4eefeab3ae9989277d9f303896e573b7504a74a9aeb669462f7b4d66c328"
+      "bytes": 2068,
+      "sha256": "bab43b9005865c3daffe9881ff2511447fb3130c5eba1fa11b4d209ca6069af7"
     }
   ]
 }

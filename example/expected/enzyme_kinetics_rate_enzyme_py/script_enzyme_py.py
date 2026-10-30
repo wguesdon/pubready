@@ -31,6 +31,11 @@ for g, p0 in starts.items():
     print(g, "Vmax, Km:", popt, "SE:", np.sqrt(np.diag(pcov)))
     ax.plot(grid, mm(grid, *popt), label=g)
     ax.scatter(s["s"], s["v"], s=14, alpha=0.6)
+# A curve that is not determined is drawn as points only, as in the figure.
+for g in d["group"].unique():
+    if g not in starts:
+        s = d[d["group"] == g]
+        ax.scatter(s["s"], s["v"], s=14, alpha=0.6, label=f"{g} (not determined)")
 ax.set_xlim(left=0); ax.set_ylim(bottom=0)
 ax.set_xlabel("Substrate (uM)"); ax.set_ylabel("Rate (nmol/min/mg)")
 for side in ("top", "right"): ax.spines[side].set_visible(False)

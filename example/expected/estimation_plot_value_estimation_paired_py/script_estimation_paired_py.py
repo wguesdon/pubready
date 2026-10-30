@@ -42,9 +42,16 @@ def bca(r, g, paired):
     return est, *np.quantile(boot, stats.norm.cdf(z0 + (z0 + zq) / (1 - acc * (z0 + zq))))
 
 
+def label(v):
+    """Write a group value as the figure does: a whole number with no decimal point."""
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    return str(v)
+
+
 d = pd.read_csv("input_value.csv")
 d = d[d["condition"].notna() & np.isfinite(pd.to_numeric(d["value"], errors="coerce"))]
-d["condition"] = d["condition"].astype(str)
+d["condition"] = d["condition"].map(label)
 lv = ['pre', 'post']
 res = []
 for g in lv[1:]:

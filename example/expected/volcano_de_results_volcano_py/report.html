@@ -2243,18 +2243,11 @@ Important
 <section id="statistical-results" class="level2">
 <h2 class="anchored" data-anchor-id="statistical-results">Statistical results</h2>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>gene</th>
 <th>log2FC</th>
-<th>p_value</th>
+<th>padj</th>
 <th>neg_log10_p</th>
 <th>direction</th>
 </tr>
@@ -2263,14 +2256,14 @@ Important
 <tr class="odd">
 <td>GENE1117</td>
 <td>5.5536</td>
-<td>4.9140000000000006e-26</td>
+<td>4.914e-26</td>
 <td>25.308564847855937</td>
 <td>up</td>
 </tr>
 <tr class="even">
 <td>GENE1176</td>
 <td>-4.5902</td>
-<td>3.3140000000000005e-26</td>
+<td>3.314e-26</td>
 <td>25.479647495916684</td>
 <td>down</td>
 </tr>
@@ -2333,14 +2326,14 @@ Important
 <tr class="odd">
 <td>GENE1193</td>
 <td>2.7555</td>
-<td>6.6110000000000005e-28</td>
+<td>6.611e-28</td>
 <td>27.179732842839037</td>
 <td>up</td>
 </tr>
 <tr class="even">
 <td>GENE1052</td>
 <td>-2.5663</td>
-<td>6.6110000000000005e-28</td>
+<td>6.611e-28</td>
 <td>27.179732842839037</td>
 <td>down</td>
 </tr>
@@ -2396,15 +2389,15 @@ Important
 </tr>
 <tr class="even">
 <td>repository_version</td>
-<td>3.0.0</td>
+<td>4.0.0</td>
 </tr>
 <tr class="odd">
 <td>git_commit</td>
-<td>4657df8148b43cbd66ec3a2bc04a756a38e7843c</td>
+<td>567ce8900bdb5db88369d131c8d787b042b3af57</td>
 </tr>
 <tr class="even">
 <td>git_dirty</td>
-<td>False</td>
+<td>FALSE</td>
 </tr>
 <tr class="odd">
 <td>llm_provider</td>
@@ -2424,11 +2417,11 @@ Important
 </tr>
 <tr class="odd">
 <td>container_image</td>
-<td>localhost/pubready:3.0.0</td>
+<td>localhost/pubready:4.0.0</td>
 </tr>
 <tr class="even">
 <td>container_digest</td>
-<td>sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290</td>
+<td>sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483</td>
 </tr>
 <tr class="odd">
 <td>input</td>
@@ -2440,7 +2433,7 @@ Important
 </tr>
 <tr class="odd">
 <td>analysis_options</td>
-<td>{“engine”: “python”, “recipe”: “volcano”, “data”: {“file”: “de_results.csv”, “x”: null, “y”: “padj”, “fill”: null, “facet”: null, “time”: null, “event”: null, “annotation”: null, “covariates”: null, “id”: null, “group”: null, “label”: null, “positive”: null, “se”: null, “ci_low”: null, “ci_high”: null, “measure”: null, “ref”: null, “cause”: null, “levels”: null, “markers”: null}, “test”: {“method”: “auto”, “paired”: false, “p_adjust”: “none”}, “appearance”: {“theme”: “pubready_house”, “palette”: null, “x_label”: null, “y_label”: “-log10 adjusted p”, “title”: null, “y_limits”: [null, null], “show_points”: true, “geom”: “box”, “bracket”: {“show”: true, “label”: “p.signif”}, “scale”: “row”, “cluster”: “both”, “fc_cutoff”: 1.0, “p_cutoff”: 0.05, “top_n”: 15, “pd_threshold”: 20.0, “pr_threshold”: -30.0}}</td>
+<td>{“engine”: “python”, “recipe”: “volcano”, “data”: {“file”: “de_results.csv”, “x”: null, “y”: “padj”, “fill”: null, “facet”: null, “time”: null, “event”: null, “annotation”: null, “covariates”: null, “id”: null, “group”: null, “label”: null, “positive”: null, “se”: null, “ci_low”: null, “ci_high”: null, “measure”: null, “ref”: null, “cause”: null, “levels”: null, “visit_levels”: null, “features”: null, “markers”: null}, “test”: {“method”: “auto”, “paired”: false}, “appearance”: {“theme”: “pubready_house”, “palette”: null, “x_label”: null, “y_label”: “-log10 adjusted p”, “title”: null, “y_limits”: [null, null], “show_points”: true, “geom”: “box”, “bracket”: {“show”: true, “label”: “p.signif”}, “scale”: “row”, “cluster”: “both”, “fc_cutoff”: 1.0, “p_cutoff”: 0.05, “top_n”: 15, “pd_threshold”: 20.0, “pr_threshold”: -30.0}}</td>
 </tr>
 <tr class="even">
 <td>random_seeds</td>

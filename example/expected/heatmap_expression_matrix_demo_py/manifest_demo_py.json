@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "heatmap",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": "example/expression_annotation.csv",
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "welch_t",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_expression_matrix.csv",
@@ -31,6 +61,7 @@
     "n_samples": 20,
     "per_feature_test": "per-feature Welch t-test (control vs treated), BH-adjusted",
     "n_significant": 20,
+    "n_untested": 0,
     "row_order": [
       "gene_05",
       "gene_02",
@@ -87,9 +118,9 @@
     ]
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -118,7 +149,7 @@
     {
       "file": "figure_expression_matrix_demo_py.pdf",
       "bytes": 33501,
-      "sha256": "48bcc99e856fdf32dd0166e4fe4bd5d38fb7b649a13b8060d49f78f0c0ae1305"
+      "sha256": "e9e7c3213548f0f24f2308341dd5cba5dacb30d9847f54f150633510fca16be5"
     },
     {
       "file": "figure_expression_matrix_demo_py.png",
@@ -128,7 +159,7 @@
     {
       "file": "figure_expression_matrix_demo_py.svg",
       "bytes": 193063,
-      "sha256": "92d074ebbb074a6c211db7fb59a064f034c417526d7739ba7227ee200bd690f6"
+      "sha256": "398c8465d5a409f0172c03fdb097149265d57e048a63849e8f0955d671aaf72b"
     },
     {
       "file": "packages_demo_py.txt",
@@ -137,18 +168,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 6074,
-      "sha256": "f41b7dc2608c1a82c5da07f85ea68d47428cc98aff0aa987e8486ef5fbc1c1ce"
+      "bytes": 6104,
+      "sha256": "4f1c4f83566dd54dacf20f4050cbec15a01df5939e170a9d512e8d16e0480e2e"
     },
     {
       "file": "report.html",
-      "bytes": 1485344,
-      "sha256": "71e2a36c63a1b2d397c03c3275266e0ce5de5bf9787227436158fdef30a87e1b"
+      "bytes": 1485374,
+      "sha256": "49f6f8d1a8af6b405fce8fa622fd47e6a7e08ffdfe24a56ae2f13b753b4bc255"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2036,
-      "sha256": "288a5ecf5979a278cab895bd56c4e6115425279e0fa8a6afa42941243c78e4b3"
+      "bytes": 2065,
+      "sha256": "112157dcfe068a095c8cd785d1a809b2916dcade914e0f7de00d1c7321a52c70"
     }
   ]
 }

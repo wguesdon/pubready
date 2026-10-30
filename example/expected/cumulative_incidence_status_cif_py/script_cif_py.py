@@ -228,9 +228,9 @@ def gray_statistic(s, v):
 raw = pd.read_csv("input_status.csv")
 st = raw["status"].astype(str).str.replace(r"\.0$", "", regex=True).str.strip()
 d = pd.DataFrame({"time": pd.to_numeric(raw["months"], errors="coerce"), "status": st,
-                   "group": raw["arm"].astype(str).str.strip()}).dropna()
+                   "group": raw["arm"].astype(str).str.replace(r"\.0$", "", regex=True).str.strip()}).dropna()
 d = d[d["time"] >= 0].sort_values("time", kind="stable").reset_index(drop=True)
-lv = sorted(d["group"].unique())
+lv = ['intensified', 'standard']
 causes = sorted(d.loc[d["status"] != "0", "status"].unique())
 fig, axes = plt.subplots(1, len(causes), figsize=(9.35, 5.60), squeeze=False)
 for ax, cause in zip(axes[0], causes):

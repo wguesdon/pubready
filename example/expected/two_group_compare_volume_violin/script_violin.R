@@ -6,12 +6,16 @@ suppressPackageStartupMessages({
 })
 
 df <- as.data.frame(read_csv("input_volume.csv", show_col_types = FALSE))
-df[["group"]] <- factor(df[["group"]])
+df[["group"]] <- factor(df[["group"]], levels = c("control", "treated"))
 df[["volume"]] <- as.numeric(df[["volume"]])
+# The test runs on a copy with syntactic column names.
+sdf <- data.frame(.x = df[["group"]], .y = df[["volume"]])
 
-stat <- rstatix::t_test(df, volume ~ group, paired = FALSE, var.equal = TRUE)
+stat <- rstatix::t_test(sdf, .y ~ .x, paired = FALSE, var.equal = FALSE)
 stat <- rstatix::add_significance(stat)
-stat <- rstatix::add_xy_position(stat, x = "group")
+stat <- rstatix::add_xy_position(stat, x = ".x")
+# The bracket sits 6% of the data span above the largest value.
+stat$y.position <- max(sdf$.y) + 0.06 * diff(range(sdf$.y))
 stat$plabel <- paste0("p = ", formatC(stat$p, format = "g", digits = 2))
 
 point_k <- ave(seq_len(nrow(df)), df[["group"]], FUN = seq_along)

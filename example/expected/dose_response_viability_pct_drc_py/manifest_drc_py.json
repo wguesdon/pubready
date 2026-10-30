@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "dose_response",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": "compound",
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Concentration (uM)",
+    "ylab": "Viability (%)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_viability_pct.csv",
@@ -28,10 +58,10 @@
     "not_determined": [],
     "curves": {
       "cmpd_A": {
-        "midpoint": "IC50",
+        "midpoint_type": "IC50",
         "fit_status": "fitted",
         "status_reason": null,
-        "ec50": 0.044961802553668995,
+        "midpoint": 0.044961802553668995,
         "ci_low": 0.034800349893635465,
         "ci_high": 0.058090326535620095,
         "hill": -1.0752644847906188,
@@ -40,10 +70,10 @@
         "r_squared": 0.9876140221913577
       },
       "cmpd_B": {
-        "midpoint": "IC50",
+        "midpoint_type": "IC50",
         "fit_status": "fitted",
         "status_reason": null,
-        "ec50": 0.299519955253651,
+        "midpoint": 0.299519955253651,
         "ci_low": 0.2349631958046305,
         "ci_high": 0.3818138550930498,
         "hill": -1.065387798072742,
@@ -52,10 +82,10 @@
         "r_squared": 0.9866298643569151
       },
       "cmpd_C": {
-        "midpoint": "IC50",
+        "midpoint_type": "IC50",
         "fit_status": "fitted",
         "status_reason": null,
-        "ec50": 1.6309248460144736,
+        "midpoint": 1.6309248460144736,
         "ci_low": 0.8795222862922365,
         "ci_high": 3.0242733979608696,
         "hill": -0.8902615068755195,
@@ -75,9 +105,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -105,18 +135,18 @@
   "output_checksums": [
     {
       "file": "figure_viability_pct_drc_py.pdf",
-      "bytes": 22940,
-      "sha256": "4e4c20d6f22c44b601eaeb0778c1fd7b4368d26764588126ce720f184f03f4fa"
+      "bytes": 22944,
+      "sha256": "ee0b6d14f76a34be78b0ad301f0b8b537edeabc34f8bf403b1a43e003ce183c1"
     },
     {
       "file": "figure_viability_pct_drc_py.png",
-      "bytes": 169104,
-      "sha256": "64bc7c68fe7fe60cb6a9e69b8742ddac6281db3810ec7f6aecd9f5a024de6d31"
+      "bytes": 169565,
+      "sha256": "f6365d066486607bbe10d70b3b1a21970e0b76ae59b829955bc799f1b403a4d9"
     },
     {
       "file": "figure_viability_pct_drc_py.svg",
-      "bytes": 62215,
-      "sha256": "f292ae8c3f40d2882597caca82ef3e8790a1574272cf706630079a555544f7ed"
+      "bytes": 62228,
+      "sha256": "0074652f8612f04d7cfd8e80ce619b5491b7de28607aa19a1735c7cc5e48ff94"
     },
     {
       "file": "packages_drc_py.txt",
@@ -125,18 +155,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4884,
-      "sha256": "05bcce6b5ab508d96498c9f4b25294ea020c75ad341b6cf12a5c2eb8bbd86774"
+      "bytes": 4929,
+      "sha256": "7263e7e984619888229c0fbb5aa61d68175028a4c024c26840f3bd1884a46464"
     },
     {
       "file": "report.html",
-      "bytes": 1420723,
-      "sha256": "066df31bfa46537cabcec2edc4667c4de3a4b7e1ba8fb29ffd12a7d73baf13d2"
+      "bytes": 1421384,
+      "sha256": "1d7fec695b29a8305176f00011cecc6943779c2c3d1998e00e5def8ff4bc0897"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2067,
-      "sha256": "c829583bf61c0e5949b4656687fc84a036567b057aa28721c903519d0184c07e"
+      "bytes": 2093,
+      "sha256": "98aa9d61ff6fb74b0b77fe4a3a7b2c09b9943618fe2d622716f4ae9eb90b14e1"
     }
   ]
 }

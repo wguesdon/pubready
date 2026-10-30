@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "enzyme_kinetics",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": "inhibitor",
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Substrate (uM)",
+    "ylab": "Rate (nmol/min/mg)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_rate.csv",
@@ -26,6 +56,8 @@
     "n_curves": 3,
     "curves": {
       "0 uM": {
+        "fit_status": "fitted",
+        "status_reason": null,
         "vmax": 119.42072174260247,
         "vmax_ci_low": 115.96314714644924,
         "vmax_ci_high": 122.87829633875569,
@@ -35,6 +67,8 @@
         "r_squared": 0.9913520831684726
       },
       "2 uM": {
+        "fit_status": "fitted",
+        "status_reason": null,
         "vmax": 121.18455734002796,
         "vmax_ci_low": 118.15965703119797,
         "vmax_ci_high": 124.20945764885796,
@@ -44,6 +78,8 @@
         "r_squared": 0.995525965155346
       },
       "10 uM": {
+        "fit_status": "fitted",
+        "status_reason": null,
         "vmax": 120.98568787615388,
         "vmax_ci_low": 116.41723704023002,
         "vmax_ci_high": 125.55413871207773,
@@ -73,9 +109,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -104,7 +140,7 @@
     {
       "file": "figure_rate_enzyme_py.pdf",
       "bytes": 20909,
-      "sha256": "40ddbe81af3dc0348553a9285ad061d3df526b999f62aeab851bc9f2c18e4d8b"
+      "sha256": "f3ca68d703e8ad9ef0413ed13a200da461250393dbd9315cb0de2ad45ab7717c"
     },
     {
       "file": "figure_rate_enzyme_py.png",
@@ -114,7 +150,7 @@
     {
       "file": "figure_rate_enzyme_py.svg",
       "bytes": 58946,
-      "sha256": "3733b8400ac0d3bee7431ee24342383d75766c94fbe833da608b14621deb2cba"
+      "sha256": "a8ff592f8ef8f2d41d2ac2125d5c2f4bc7edd4ec1d5220beb034fd753b9d20e1"
     },
     {
       "file": "packages_enzyme_py.txt",
@@ -123,18 +159,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4500,
-      "sha256": "e177aec5dec17041fa89cb7992734f6196253ab882a2d0aa8991fba860b1817b"
+      "bytes": 4767,
+      "sha256": "9413ff3f9b120fd442a8a2adafb685ea15222a7e5c83e9b9c541186da0912db0"
     },
     {
       "file": "report.html",
-      "bytes": 1434234,
-      "sha256": "0255f91dca92ba79833f0b2147175e5475a30a3bf51e2079b968bccc309b3832"
+      "bytes": 1434593,
+      "sha256": "6c74d62e17bc67258a6a51884c9cddb02d7fb9a2b59a08f874392963bbc9308d"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2053,
-      "sha256": "6176d37e5f29865e882c0c2a765e393dae68e86550803ce68414de92072abdcb"
+      "bytes": 2079,
+      "sha256": "f366671f5b7bc729fb784f1068942f2c8ae5630492ec511636c9b63e9f92a250"
     }
   ]
 }

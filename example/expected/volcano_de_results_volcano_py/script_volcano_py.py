@@ -9,8 +9,8 @@ raw = pd.read_csv("input_de_results.csv")
 fc = pd.to_numeric(raw["log2FoldChange"], errors="coerce").to_numpy()
 p = pd.to_numeric(raw["padj"], errors="coerce").to_numpy()
 lab = raw["gene"].astype(str).to_numpy()
-m = np.isfinite(fc) & np.isfinite(p) & (p > 0)
-fc, p, lab = fc[m], p[m], lab[m]
+m = np.isfinite(fc) & np.isfinite(p)
+fc, p, lab = fc[m], np.where(p[m] == 0, np.finfo(float).tiny, p[m]), lab[m]
 neglog = -np.log10(p)
 fcc, pcc = 1.0, 0.05
 cat = np.where((np.abs(fc) >= fcc) & (p <= pcc), "FC and p",

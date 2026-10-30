@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "two_group_compare",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "group",
     "y": "concentration",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Group",
+    "ylab": "IL-6 (pg/mL)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_concentration.csv",
@@ -22,28 +54,28 @@
   "statistical_test": {
     "name": "Mann-Whitney U test",
     "statistic": 11,
-    "p_value": 0.000144,
-    "adjustment": "none",
+    "p_value": 0.000144222448704882,
     "effect_size": {
       "name": "rank-biserial r",
-      "value": -0.847222
+      "value": -0.847222222222222
     },
     "assumptions": {
       "normality": {
         "test": "shapiro-wilk",
-        "p_group1": 7.385806e-06,
-        "p_group2": 7.854417e-06
+        "p_group1": 7.38580643594827e-06,
+        "p_group2": 7.85441727548186e-06
       },
       "equal_variance": {
         "test": "Levene",
-        "p": 0.559147
+        "p": 0.559146779868646
       }
-    }
+    },
+    "rank_test_attainable_p": 7.39602301050679e-07
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -70,18 +102,18 @@
   "output_checksums": [
     {
       "file": "figure_concentration_mwu.pdf",
-      "bytes": 7330,
-      "sha256": "94f7815734b403a5a13e706cd73c977d7fe2e16267ad29aede5f6ca34cc1ec0f"
+      "bytes": 7344,
+      "sha256": "87171edf8b3bf8358def8d798393d9dee3a234806ea28ba26ade85be532b67e7"
     },
     {
       "file": "figure_concentration_mwu.png",
-      "bytes": 43169,
-      "sha256": "946c5406f310d3c8087615b4d762ce43ce5f06dfaabf5ea220e23b54257512ad"
+      "bytes": 43225,
+      "sha256": "bf432eccb8b113749e29296044f5f8262b5e652da9489875653ad5756f346c57"
     },
     {
       "file": "figure_concentration_mwu.svg",
       "bytes": 8827,
-      "sha256": "577e3bf2051f13f2ba77b91cab75c8e6fb54b8ef8cf4cd397b1d43dedad027f2"
+      "sha256": "b3a31bfbcd0659d05801cccdd0a23dac2f975b30c30227f39e073d9dbc9dc31b"
     },
     {
       "file": "packages_mwu.txt",
@@ -96,22 +128,22 @@
     {
       "file": "qc_normality_mwu.pdf",
       "bytes": 27978,
-      "sha256": "3224ce58d148e5a23f9cdd86cfd929f71ae631e7e2fc83639a64aaef5c5123db"
+      "sha256": "c7c5a27815143a8769dc0cb867e7df0605550865e0cd73654a564f5d1aaae9e9"
     },
     {
       "file": "report.qmd",
-      "bytes": 3221,
-      "sha256": "481c2f035eca3aa341ed729e0760ccc62a136f2773efb5e1cdab4d2e1724c2c3"
+      "bytes": 3234,
+      "sha256": "220df87a454969d2a33b2a067f957ca2e03ae382a5fa73ea440281a276d6ff83"
     },
     {
       "file": "report.html",
-      "bytes": 1250834,
-      "sha256": "5140e1206119ad865a4ae7af3214fa54dce917e0f440277e72ed7da5ed046b4b"
+      "bytes": 1250923,
+      "sha256": "77da67987fc7c28b44d54a525dabdd35a9f9be7504cfd5455a50061aa10d9bc4"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2035,
-      "sha256": "27a256621cd6734baa486b0ee336e55df73a87937c79e1fcd4b3914e48353a3d"
+      "bytes": 2061,
+      "sha256": "228a9eaa2bed0f9d4314d72d70b702071be49e88ffdb44588b10375dd982fb11"
     }
   ]
 }

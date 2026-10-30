@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "manhattan",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": "chr",
+    "label": "snp",
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_gwas_summary.csv",
@@ -28,7 +58,7 @@
     "lambda_gc": 1.081650316664911,
     "n_genome_wide": 45,
     "n_suggestive": 75,
-    "min_p": 9.606999999999999e-22,
+    "min_p": 9.607e-22,
     "genome_wide_threshold": 5e-08,
     "suggestive_threshold": 1e-05,
     "n_zero_p": 0,
@@ -37,9 +67,9 @@
     "n_drawn": 20000
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -68,7 +98,7 @@
     {
       "file": "figure_gwas_summary_manhattan_py.pdf",
       "bytes": 310004,
-      "sha256": "4a2d7063c32f117f1517a08fa8479f690ced14e5b7b309d1b3d08e495dd910d6"
+      "sha256": "3417eaf2a251596caba02627f8bdcaf78b613dfdc26c1c0a30f0b11bcd9d6d94"
     },
     {
       "file": "figure_gwas_summary_manhattan_py.png",
@@ -78,7 +108,7 @@
     {
       "file": "figure_gwas_summary_manhattan_py.svg",
       "bytes": 3021781,
-      "sha256": "4dc79ff1068dd65f6b557bccc50a1b813b1d401228fbb5a39d6c93b66ffd3e48"
+      "sha256": "fb92726d5e62a2ea43537346d7c47f76598bf11561b2bd3bd91b50cdeac8ff8d"
     },
     {
       "file": "packages_manhattan_py.txt",
@@ -87,18 +117,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3946,
-      "sha256": "09d21cb68284ee198a7e23b16787f50b70f942f20fd409db3c5c93e64880a60b"
+      "bytes": 3877,
+      "sha256": "f144edca861f4a4c1d9bb3148d1a7f9432b8853e510d2f9c24f7eeddf1d00ee3"
     },
     {
       "file": "report.html",
-      "bytes": 1585325,
-      "sha256": "64923c6560083e8515b76211072369a62bd695124cfe4767af756c8695925a52"
+      "bytes": 1585256,
+      "sha256": "2cdf36397f2f8c23094a5cc33341821939cc30a1bf6da6328cfdf821405c3d54"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2001,
-      "sha256": "0a81570c23e22eb1e22e157165fbb2ca74702f34f53258ae72fc0df224d90394"
+      "bytes": 2027,
+      "sha256": "7a1f5b103ce5c2f4e54f1f41bfae9bbd12cba00ed70b00aea66f98d25597a951"
     }
   ]
 }

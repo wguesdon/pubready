@@ -6,7 +6,8 @@ suppressPackageStartupMessages({ library(ggplot2); library(ggrepel) })
 raw <- read.csv("input_de_results.csv", check.names = FALSE)
 fc <- as.numeric(raw[["log2FoldChange"]]); p <- as.numeric(raw[["padj"]])
 lab <- as.character(raw[["gene"]])
-keep <- is.finite(fc) & is.finite(p) & p > 0; fc <- fc[keep]; p <- p[keep]; lab <- lab[keep]
+keep <- is.finite(fc) & is.finite(p); fc <- fc[keep]; p <- p[keep]; lab <- lab[keep]
+p[p == 0] <- .Machine$double.xmin
 fcc <- 1; pcc <- 0.05
 cat <- ifelse(abs(fc) >= fcc & p <= pcc, "FC and p", ifelse(p <= pcc, "p", ifelse(abs(fc) >= fcc, "FC", "NS")))
 cat <- factor(cat, levels = c("NS", "FC", "p", "FC and p"))

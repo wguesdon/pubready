@@ -20,7 +20,7 @@ for (g in sort(unique(d$group), method = "radix")) {
   idx <- pmin(pmax(floor((vg - start) / w) + 1, 1), nb)
   bars <- rbind(bars, data.frame(group = g, xmin = start + (seq_len(nb) - 1) * w,
                                  xmax = start + seq_len(nb) * w, count = tabulate(idx, nb)))
-  if (length(vg) < 2) next
+  if (length(vg) < 2 || sd(vg) == 0) next
   bw <- bw.nrd0(vg)
   grid <- seq(min(vg) - 3 * bw, max(vg) + 3 * bw, length.out = 512)
   dens <- rowSums(dnorm(outer(grid, vg, "-") / bw)) / (length(vg) * bw)

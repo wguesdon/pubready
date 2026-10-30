@@ -8,7 +8,7 @@ data:
   facet: ~
   time: ~
   event: ~
-  annotation: example/expression_annotation.csv
+  annotation: expression_annotation.csv
   id: ~
   group: ~
   label: ~
@@ -20,12 +20,13 @@ data:
   ref: ~
   cause: ~
   levels: ~
+  visit_levels: ~
+  features: ~
   markers: ~
   covariates: ~
 test:
-  method: auto
+  method: welch_t
   paired: no
-  p_adjust: none
 appearance:
   theme: pubready_house
   palette: ~

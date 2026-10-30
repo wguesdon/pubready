@@ -22,7 +22,7 @@ for ax, g in zip(axes[:, 0], groups):
     vg = d.loc[d["group"] == g, "value"].to_numpy()
     idx = np.clip(np.floor((vg - start) / w).astype(int), 0, nb - 1)
     ax.bar(start + w * np.arange(nb), np.bincount(idx, minlength=nb), width=w, align="edge", alpha=0.65, edgecolor="white")
-    if len(vg) >= 2:
+    if len(vg) >= 2 and vg.std() > 0:
         sd = vg.std(ddof=1); iq = np.quantile(vg, 0.75) - np.quantile(vg, 0.25)
         bw = 0.9 * (min(sd, iq / 1.34) or sd or 1.0) * len(vg) ** -0.2
         grid = np.linspace(vg.min() - 3 * bw, vg.max() + 3 * bw, 512)

@@ -1,16 +1,48 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "cumulative_incidence",
   "recipe_version": "1",
   "arguments": {
     "x": "arm",
-    "y": {},
+    "y": null,
+    "fill": null,
+    "facet": null,
+    "time": "months",
+    "event": "status",
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Months after transplant",
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_status.csv",
@@ -37,21 +69,21 @@
     ],
     "gray": {
       "1": {
-        "statistic": 5.1519,
+        "statistic": 5.15190034741018,
         "df": 1,
-        "p_value": 0.023221
+        "p_value": 0.0232209466876597
       },
       "2": {
-        "statistic": 10.980745,
+        "statistic": 10.9807448210859,
         "df": 1,
-        "p_value": 0.000921
+        "p_value": 0.000920634219058265
       }
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -77,7 +109,7 @@
     {
       "file": "figure_status_cif.pdf",
       "bytes": 21135,
-      "sha256": "fa3d6f23c5a9604966dbca30597b2ed1a8eaa6fc647bde9d305b52b266a8b694"
+      "sha256": "3037b9eb73b8f9e3e7f775330f7e0b42efd6c2d7be16e8c5f9f677543a52c6ef"
     },
     {
       "file": "figure_status_cif.png",
@@ -96,18 +128,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3665,
-      "sha256": "6f6e172da5caa4be71f144dd6432278e39aa135812cfee3cbf08aa2d4776116c"
+      "bytes": 3683,
+      "sha256": "f03cd27f73958e59f4ffa879792dd79f134ee24176853ff0757ca8e05240b125"
     },
     {
       "file": "report.html",
-      "bytes": 1339500,
-      "sha256": "2e8aa3bc46717e208f3ac801633cd666ecd1ed544c3514cb12a5a0cb133addaa"
+      "bytes": 1339518,
+      "sha256": "651dee87255b0d8203167967e1d7bee1205d08cc43e6a0cbb5ad8267b458082d"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2043,
-      "sha256": "b713c6eb1423aa5492a241d9b07b57a3e8ccabf398c19362095bd66b3e5d8ef4"
+      "bytes": 2069,
+      "sha256": "ed7058ba8c36a18cb3780ad7c29dc2d6a3d5549a4c9af0dd1030368f928eb932"
     }
   ]
 }

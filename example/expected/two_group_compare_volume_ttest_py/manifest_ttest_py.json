@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "two_group_compare",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Group",
+    "ylab": "Tumor volume (mm^3)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_volume.csv",
@@ -22,10 +52,9 @@
     "n_rows": 24
   },
   "statistical_test": {
-    "name": "Student's two-sample t-test",
+    "name": "Welch two-sample t-test",
     "statistic": 10.059451317619061,
-    "p_value": 1.0836205482623198e-09,
-    "adjustment": "none",
+    "p_value": 1.8778876718424126e-09,
     "effect_size": {
       "name": "Cohen's d",
       "value": 4.106753803422436
@@ -40,12 +69,13 @@
         "test": "Levene",
         "p": 0.45607484895043426
       }
-    }
+    },
+    "rank_test_attainable_p": 7.39602301050679e-07
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -76,7 +106,7 @@
     {
       "file": "figure_volume_ttest_py.pdf",
       "bytes": 12731,
-      "sha256": "07fc0fdba1c24cab875c6d0721ca928de2fef0a7580ddcf030f0ad9e8d1f87a6"
+      "sha256": "35a850caa0030cf93cfd8f858a545169be17e024af45c0a0a83361cde8fa5d4f"
     },
     {
       "file": "figure_volume_ttest_py.png",
@@ -86,7 +116,7 @@
     {
       "file": "figure_volume_ttest_py.svg",
       "bytes": 27202,
-      "sha256": "d1ef8b1956d63241f77b1e336099ea55c2e94d3103a8ce7ca9b8efd71a62fe81"
+      "sha256": "4749c75265f859a090bbe9e840c316811a19ae9030af747743479e9faccb4991"
     },
     {
       "file": "packages_ttest_py.txt",
@@ -95,28 +125,28 @@
     },
     {
       "file": "qc_normality_ttest_py.png",
-      "bytes": 92813,
-      "sha256": "12e8dec7984142e9e7be5ea45151529fbef19b405ffddb0343044c9c272be01c"
+      "bytes": 96664,
+      "sha256": "f0dd20083a1540067cd47efb39e9a8ec4bce81e6620f18f466b10382412ea43d"
     },
     {
       "file": "qc_normality_ttest_py.pdf",
-      "bytes": 25226,
-      "sha256": "a3e38cd6fb29dacc52660c20bf3ff28da11579c476506eafb225b00701f6972f"
+      "bytes": 25309,
+      "sha256": "043749ac780016fa3625e8a0f38322d298ad782c7e7bdc56b70a6e2bb53c8d59"
     },
     {
       "file": "report.qmd",
-      "bytes": 3321,
-      "sha256": "58e8150749b449cadacc4bb87c8e37b86d379ebb304b8a3aabfb97ba9d0437c1"
+      "bytes": 3477,
+      "sha256": "299cf35103b16c80210f48183b7f02a674f37f1fe28e8dfb6fb7d97e5abb5f6a"
     },
     {
       "file": "report.html",
-      "bytes": 1279168,
-      "sha256": "0cd31d4e5c0fe26bd29b3a65edc49899dfcca2f1bb0399651c9d80ca75e5af7c"
+      "bytes": 1279324,
+      "sha256": "b6895591c84990a6e4c1af806c9f9c0262a648c94fb6878e19330ba7bcb9fe8e"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2036,
-      "sha256": "2942d4fe1450daf4eac1e27e1c8341675f124a533f0c37c0dc363883c3fb9d18"
+      "bytes": 2062,
+      "sha256": "067a6db496855b81cf7fd73c08fc8e5dc5cb06df4fe2506e3e5000621c0e320e"
     }
   ]
 }

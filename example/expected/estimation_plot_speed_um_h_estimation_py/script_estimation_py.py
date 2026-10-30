@@ -42,9 +42,16 @@ def bca(r, g, paired):
     return est, *np.quantile(boot, stats.norm.cdf(z0 + (z0 + zq) / (1 - acc * (z0 + zq))))
 
 
+def label(v):
+    """Write a group value as the figure does: a whole number with no decimal point."""
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    return str(v)
+
+
 d = pd.read_csv("input_speed_um_h.csv")
 d = d[d["treatment"].notna() & np.isfinite(pd.to_numeric(d["speed_um_h"], errors="coerce"))]
-d["treatment"] = d["treatment"].astype(str)
+d["treatment"] = d["treatment"].map(label)
 lv = ['vehicle', 'compound_A', 'compound_B', 'compound_C']
 res = []
 for g in lv[1:]:

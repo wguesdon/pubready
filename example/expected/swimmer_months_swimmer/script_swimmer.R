@@ -12,5 +12,5 @@ p <- ggplot(d) + geom_segment(aes(x = 0, xend = duration, y = rank, yend = rank,
   geom_point(data = d[d$ongoing, ], aes(x = duration, y = rank), shape = 62, size = 4) +
   scale_y_continuous(breaks = d$rank, labels = d$patient) +
   labs(x = "Months on treatment", y = "Patient") + theme_classic()
-ggsave("figure_months_swimmer.pdf", p, width = 6.4, height = max(3.6, min(10, 1.6 + 0.18 * nrow(d))))
+ggsave("figure_months_swimmer.pdf", p, width = 6.40, height = max(3.6, min(10, 1.6 + 0.18 * nrow(d))))
 cat("Reproduced figure.\n")

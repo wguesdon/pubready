@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "correlation",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "gene_a",
     "y": "gene_b",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Gene A (a.u.)",
+    "ylab": "Gene B (a.u.)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_gene_b_vs_gene_a.csv",
@@ -23,27 +55,27 @@
     "name": "Pearson correlation",
     "estimate": {
       "name": "r",
-      "value": 0.710179
+      "value": 0.71017903169005
     },
-    "statistic": 7.682386,
+    "statistic": 7.68238648814607,
     "df": 58,
-    "p_value": 2.089797e-10,
+    "p_value": 2.08979664330358e-10,
     "conf_int": {
-      "low": 0.556633,
-      "high": 0.816807
+      "low": 0.556633086665529,
+      "high": 0.816807249728976
     },
     "assumptions": {
       "normality": {
         "test": "shapiro-wilk",
-        "p_x": 0.19355,
-        "p_y": 0.598488
+        "p_x": 0.193549995149016,
+        "p_y": 0.598487747579009
       }
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -71,7 +103,7 @@
     {
       "file": "figure_gene_b_vs_gene_a_corr.pdf",
       "bytes": 10609,
-      "sha256": "9526c41055bd5383027fd1fcf4255d85c9599a7e7927dd13541e2b5b18e2ba9b"
+      "sha256": "081d1d08e3b114930b8529182c36af287aee50b3c057850e62c2860fa616255a"
     },
     {
       "file": "figure_gene_b_vs_gene_a_corr.png",
@@ -96,22 +128,22 @@
     {
       "file": "qc_normality_corr.pdf",
       "bytes": 31705,
-      "sha256": "ccb7abf70a29bcb5696b2a145caebcbbbc9fbcf3337f7cd55d4cac1c0f9e27d5"
+      "sha256": "676f35f6c99b1abb26f6db2a8d1059e155c41465b673103520ccb3df26fe02b4"
     },
     {
       "file": "report.qmd",
-      "bytes": 2985,
-      "sha256": "7188c112324273f34620803300f91c825e7eca727fd2620ae79328042f0f54eb"
+      "bytes": 3003,
+      "sha256": "e4156c22fc70b79a3be7cf9cbce435fe288c3b66f67042d4683cf27fa7df5566"
     },
     {
       "file": "report.html",
-      "bytes": 1329262,
-      "sha256": "7ef76508f3f0f4db484f5a0b0620ed9aec7745d7e18614e7fb18ad266be97375"
+      "bytes": 1329280,
+      "sha256": "1c4a655f32e4b1fefccf25773d546ad82bcfa93ef9eec5922c62e91c29651934"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2029,
-      "sha256": "561c2f5b69eb5dbfbb6e0ccf485a16e0b92ad2e033d381395fe28dde5f22f1b4"
+      "bytes": 2055,
+      "sha256": "402e345be58a9ba8fd04c3de2d0840bc9aa93ee0f857cfef6d0dbcbf7ed643af"
     }
   ]
 }

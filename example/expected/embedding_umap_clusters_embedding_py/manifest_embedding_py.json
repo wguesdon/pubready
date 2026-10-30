@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "embedding",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": "cell_type",
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_umap_clusters.csv",
@@ -33,9 +63,9 @@
     "drawing_step": 1
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -64,7 +94,7 @@
     {
       "file": "figure_umap_clusters_embedding_py.pdf",
       "bytes": 65939,
-      "sha256": "22bb5e9286fb48bcc2a76ed744bb18df30a5c54819b6629e75e3d74fd5f2bda8"
+      "sha256": "09152b72f9621f9d7a5129b1e7f11de72ae690fed7a568a3847a012e06feb4b3"
     },
     {
       "file": "figure_umap_clusters_embedding_py.png",
@@ -74,7 +104,7 @@
     {
       "file": "figure_umap_clusters_embedding_py.svg",
       "bytes": 474869,
-      "sha256": "578920517f6345411da4c8edda049ccae5e9f06133b8c419619ce2ae701b767d"
+      "sha256": "e30fe1748e5194d7dec95432bc8f5f878ef841e3937c40f20ca8476c9a764fd2"
     },
     {
       "file": "packages_embedding_py.txt",
@@ -83,18 +113,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3826,
-      "sha256": "d54d953aa763d93cca6582e1366067651fc706618856f0d28dc9b3df27540e36"
+      "bytes": 3846,
+      "sha256": "dca8508093662779122c47a43ce92034db4f3d09814d0b5b4a6c03a02254d6ce"
     },
     {
       "file": "report.html",
-      "bytes": 1746250,
-      "sha256": "cf8d47caec92982fb9a77f536805b29b97ad578ed760aa2012366f323cdbda70"
+      "bytes": 1746270,
+      "sha256": "451432f641182bb14cd19e589d274aba5e462cf43c9e871dc3830d78dcfd09c8"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2016,
-      "sha256": "dffe7d68bbefc83c18bdbb2bdfda34bdb170e1907d29e59d6bc299bbde481b13"
+      "bytes": 2042,
+      "sha256": "0f6b84626422231158ccb760f33cce55d8a3706a4bf6a0ce20420eb737ca7488"
     }
   ]
 }

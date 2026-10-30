@@ -1,16 +1,48 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "correlation_heatmap",
   "recipe_version": "1",
   "arguments": {
-    "x": {},
-    "y": {},
+    "x": null,
+    "y": null,
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_correlation_vars.csv",
@@ -48,9 +80,9 @@
     ]
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -76,7 +108,7 @@
     {
       "file": "figure_correlation_vars_corrhm.pdf",
       "bytes": 11982,
-      "sha256": "483d167f52806b7740141cde80a3d3ad2b264a09b2324ebcc2e54c0b02fc43d2"
+      "sha256": "1e9abff6c32127a75a7b2bb17e0b3426585fcac844b73b85624122aec2fb1e6e"
     },
     {
       "file": "figure_correlation_vars_corrhm.png",
@@ -95,18 +127,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 5093,
-      "sha256": "9dd357c410ec4202c64bfe38745a73f3270810be2de302eea686667716e3d221"
+      "bytes": 5111,
+      "sha256": "fadd6b48075fef97e1a176c685014a8c77f6a0f7a5ea30550d3fa20ec7686b70"
     },
     {
       "file": "report.html",
-      "bytes": 1372641,
-      "sha256": "f91f776efe0689764b8bfc01b73c0b89221bc16cb9c80dda63a3ea5ae88d8f73"
+      "bytes": 1372659,
+      "sha256": "4026d358797cd3de3c4441d8cdb571bf16dbfd70eda7ece70fbf8a242160089a"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2017,
-      "sha256": "0c5dd2d71ee04ddc6ef2008b06c0216d53d94f501162221cc1fa897b340f2229"
+      "bytes": 2043,
+      "sha256": "9137585cfaf9ee0ae9ce8deecbcab7693ea12fa6f9119fd6c6e86b637d4019df"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "roc_curve",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "marker_a,marker_b",
     "y": "status",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": "disease",
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_status_marker_a_marker_b.csv",
@@ -27,31 +59,35 @@
     "n_controls": 80,
     "markers": {
       "marker_a": {
-        "auc": 0.833958,
-        "ci_low": 0.767586,
-        "ci_high": 0.900331,
+        "auc": 0.833958333333333,
+        "ci_low": 0.767585790501013,
+        "ci_high": 0.900330876165654,
         "direction": "<",
         "youden_threshold": 3.975,
-        "sensitivity": 0.783333,
+        "sensitivity": 0.783333333333333,
         "specificity": 0.7875,
-        "delong_p_vs_first": null
+        "delong_p_vs_first": null,
+        "constant_marker": false,
+        "complete_separation": false
       },
       "marker_b": {
-        "auc": 0.621354,
-        "ci_low": 0.526665,
-        "ci_high": 0.716043,
+        "auc": 0.621354166666667,
+        "ci_low": 0.52666517609812,
+        "ci_high": 0.716043157235213,
         "direction": "<",
         "youden_threshold": 10.835,
-        "sensitivity": 0.316667,
+        "sensitivity": 0.316666666666667,
         "specificity": 0.9,
-        "delong_p_vs_first": 0.000011
+        "delong_p_vs_first": 1.06127592072159e-05,
+        "constant_marker": false,
+        "complete_separation": false
       }
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -77,7 +113,7 @@
     {
       "file": "figure_status_marker_a_marker_b_roc.pdf",
       "bytes": 17341,
-      "sha256": "6484ceaad1bc13d071bfac601e747eea6a1f9124e14b498ef866d0014afe539e"
+      "sha256": "d46c14d48c89434f822caf589f53607e9f99113f0281eaf1735404a321965b98"
     },
     {
       "file": "figure_status_marker_a_marker_b_roc.png",
@@ -96,18 +132,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3588,
-      "sha256": "63136c0b67ac1de9baecaf5ec8a03e665054fd16037234737de489eed9b2dea4"
+      "bytes": 3690,
+      "sha256": "5b543a1740b69821e49c0dfe0de117d9130f61131e48897d0c28c283a9dc92ad"
     },
     {
       "file": "report.html",
-      "bytes": 1316381,
-      "sha256": "852c21b5c087e04b5fccbae9b7c931d555f7040af859e91512382d0d1cb0488b"
+      "bytes": 1316561,
+      "sha256": "5d87ccda4820544762754ae7ca4a58b49b11b482a721478fe082fc2ccfb7a009"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2026,
-      "sha256": "b5ca9d2b7df7002c063ed05f12c35a26bb710b5099e239e4639e53fbcdb7ac3d"
+      "bytes": 2052,
+      "sha256": "9ea9e04d64b358ba6b23b7dea6e3aefc85a84dd3f3efd14f9528fbdc120a34a6"
     }
   ]
 }

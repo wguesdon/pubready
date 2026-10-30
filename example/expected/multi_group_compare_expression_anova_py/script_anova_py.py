@@ -15,7 +15,14 @@ def bracket_key(row):
     return (abs(i2 - i1), min(i1, i2))
 
 
-df = pd.read_csv("input_expression.csv"); df["genotype"] = df["genotype"].astype(str)
+def label(v):
+    """Write a group value as the figure does: a whole number with no decimal point."""
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    return str(v)
+
+
+df = pd.read_csv("input_expression.csv"); df["genotype"] = df["genotype"].map(label)
 order = ['het', 'ko', 'rescue', 'wt']
 row = pg.anova(data=df, dv="expression", between="genotype").iloc[0]; omni_p = float(row.p_unc)
 ph = pg.pairwise_tukey(data=df, dv="expression", between="genotype"); pairs = [(str(r.A), str(r.B), float(r.p_tukey)) for r in ph.itertuples()]

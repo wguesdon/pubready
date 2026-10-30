@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "multi_group_compare",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "genotype",
     "y": "expression",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "bar",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": "Expression (a.u.)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_expression.csv",
@@ -22,20 +54,20 @@
   "statistical_test": {
     "name": "one-way ANOVA",
     "omnibus": {
-      "statistic": 235.832113,
+      "statistic": 235.832112676056,
       "df1": 3,
       "df2": 36,
-      "p_value": 1.021419e-23,
+      "p_value": 1.02141936948119e-23,
       "effect_size": {
         "name": "partial eta-squared",
-        "value": 0.95158
+        "value": 0.95158012466413
       }
     },
     "post_hoc": "Tukey's HSD",
     "n_comparisons": 6,
     "n_significant": 5,
     "display": "brackets",
-    "letters": {},
+    "letters": null,
     "assumptions": {
       "normality": {
         "test": "shapiro-wilk",
@@ -43,14 +75,15 @@
       },
       "equal_variance": {
         "test": "Levene",
-        "p": 0.749824
+        "p": 0.749823789080748
       }
-    }
+    },
+    "rank_test_attainable_p": 5.63119883769775e-08
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -78,7 +111,7 @@
     {
       "file": "figure_expression_bar.pdf",
       "bytes": 15998,
-      "sha256": "93b8b162b71e92cd4495f760de105ac128d2e257dab873bb59f4923a0447abce"
+      "sha256": "0f8b5ac85604600d8f03e5dbbd4b74937329d7e6d86d347cf42bba559c59b188"
     },
     {
       "file": "figure_expression_bar.png",
@@ -103,22 +136,22 @@
     {
       "file": "qc_normality_bar.pdf",
       "bytes": 28983,
-      "sha256": "7a7c5ecb39149b4e16707a04b070cf41708b11217657fc03c584a630847e5ef8"
+      "sha256": "68491761e71ec48fceb99d4e9223becf330130a1a70886004aff01ce7a00b36b"
     },
     {
       "file": "report.qmd",
-      "bytes": 4292,
-      "sha256": "89c8fd9c3014d3ac6283d6a581a60d6fc5253f87b5176b860b2caedb2c36f457"
+      "bytes": 4328,
+      "sha256": "b6ad26838afbc48edff17b989eb6edeb81adf2671d40bc46a85f4e05b26d42d7"
     },
     {
       "file": "report.html",
-      "bytes": 1287668,
-      "sha256": "899b40b88449de09b1cc52c87bfc5fd6102e9f4c92d7164151b25851fb2f6feb"
+      "bytes": 1287713,
+      "sha256": "be57bfa9cd3ff843add8ee6a4aab4d3c1c452683bdcf5a52cfea01e5e49fb7f6"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2039,
-      "sha256": "392c48dca79f954921ebe402af327cbc963ea98cd04340e1f26c9eb29f5ebe15"
+      "bytes": 2065,
+      "sha256": "38e5a6defe9083cb85702c72e06c136980c6cd61bdba67f7920f6561bdb5e07c"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "estimation_plot",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": "subject",
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": "pre",
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": true,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": "Marker (a.u.)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_value.csv",
@@ -45,9 +75,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -78,7 +108,7 @@
     {
       "file": "figure_value_estimation_paired_py.pdf",
       "bytes": 18470,
-      "sha256": "7af6e21d8654b3bd429defb6d8a97e29f768f6b7085ec30ae64d16a1590af8ff"
+      "sha256": "0c382811dd36a0815a52cb9fdfc80f46a77ef9e6587172e48d8a19a09b90c77e"
     },
     {
       "file": "figure_value_estimation_paired_py.png",
@@ -88,7 +118,7 @@
     {
       "file": "figure_value_estimation_paired_py.svg",
       "bytes": 53685,
-      "sha256": "71bee0dd7760df105eb5ba03c7fc0e4389eab981b5036fb8f63eecede2548976"
+      "sha256": "228bd9a9e760a291a5bd2d53517d7488b9b3d4d6960addecb7b727c848678e15"
     },
     {
       "file": "packages_estimation_paired_py.txt",
@@ -97,28 +127,28 @@
     },
     {
       "file": "qc_normality_estimation_paired_py.png",
-      "bytes": 65567,
-      "sha256": "d8310d55896c81a41b078ccef019eedab97cca2b6beec67355053f4023b12f21"
+      "bytes": 72739,
+      "sha256": "b2d5c1db5f433bb94c18846212e7305c79c3f975e0ee371a62ad5916f25b4a42"
     },
     {
       "file": "qc_normality_estimation_paired_py.pdf",
-      "bytes": 24326,
-      "sha256": "f9c768ec9f6371ae86f4b625c49f29cb50c296ae75190a072c5c8724157999a4"
+      "bytes": 24374,
+      "sha256": "e6d4209b3088c7051085ba96303d0ad3b980ee9c4538b0ebedd81df1c644ce87"
     },
     {
       "file": "report.qmd",
-      "bytes": 3904,
-      "sha256": "0a28e07d3fa13c599ae0f74372a3059da4b94d67d63c662379ff9df70802a304"
+      "bytes": 3922,
+      "sha256": "1de693dfc2e419d485897f817ec77af59af64e936bf2337c70082d751d670b84"
     },
     {
       "file": "report.html",
-      "bytes": 1456959,
-      "sha256": "062242b44efc222d04b902a0ede04e24452cfa65bf4cd4c7559902648e375020"
+      "bytes": 1456977,
+      "sha256": "d1dfe6f980fe343d6e149a1ae4756f4f09e9a56583be0587327bc50481c65322"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2033,
-      "sha256": "59533c4dbedab5308ed5c96a5892f81c6dd4bd5f15c8f6be61f5acdffdeaaecc"
+      "bytes": 2059,
+      "sha256": "9d66c7aa868a707771436eb9765831e3d2eaa5f038eaa7fed48e29eca4d74330"
     }
   ]
 }

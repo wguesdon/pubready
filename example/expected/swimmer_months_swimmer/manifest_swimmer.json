@@ -1,16 +1,48 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "swimmer",
   "recipe_version": "1",
   "arguments": {
     "x": "Months on treatment",
-    "y": {},
+    "y": null,
+    "fill": null,
+    "facet": null,
+    "time": "months",
+    "event": "ended",
+    "covariates": null,
+    "annotation": null,
+    "id": "patient",
+    "group": "arm",
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": ["response_month", "progression_month"],
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Months on treatment",
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_months.csv",
@@ -41,9 +73,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -69,7 +101,7 @@
     {
       "file": "figure_months_swimmer.pdf",
       "bytes": 8757,
-      "sha256": "5d3853827801c4d853f43466197fe44b1e659b389fc81f3c63cfec6df82dc34a"
+      "sha256": "e291a7c2cc9a928e08e40bb77eb0c026868111e8be5fad68fe6691ffa7bb7f17"
     },
     {
       "file": "figure_months_swimmer.png",
@@ -88,18 +120,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3908,
-      "sha256": "9ea87bf29dbb28ba626a681a44b7017495c7140e59ea6d141c9360215c2adeea"
+      "bytes": 3926,
+      "sha256": "0686f614a9c434cfff3822e4304ef39f38fe7503687e8d8fd68102e0fd1ba9ed"
     },
     {
       "file": "report.html",
-      "bytes": 1351476,
-      "sha256": "27df09a4fa5976d5598e66b44c3d66cd372c0fd55202e6bbe558c2cc8939b0cb"
+      "bytes": 1351494,
+      "sha256": "77e56e617abe22c0c710a628e7b4303e21ddd6b361568a88457948af0b4fc375"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2065,
-      "sha256": "64d828e3b6f6708a8266b7c409b00a5d4e2208c6b5fc50658cc7aa1a6914d518"
+      "bytes": 2091,
+      "sha256": "641d148902892d01295972afbdb242b07ee4254422af134cb36deebe09f36a37"
     }
   ]
 }

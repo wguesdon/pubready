@@ -2273,12 +2273,12 @@ Important
 <th>statistic</th>
 <th>df</th>
 <th>p_value</th>
-<th>p_adjust_method</th>
 <th>effect_size_name</th>
 <th>effect_size</th>
 <th>shapiro_p_group1</th>
 <th>shapiro_p_group2</th>
 <th>var_equal_p</th>
+<th>shapiro_p_diff</th>
 </tr>
 </thead>
 <tbody>
@@ -2290,15 +2290,15 @@ Important
 <td>12</td>
 <td>12</td>
 <td>Mann-Whitney U test</td>
-<td>11.0</td>
-<td>nan</td>
+<td>11</td>
+<td></td>
 <td>0.00014422244870488242</td>
-<td>none</td>
 <td>rank-biserial r</td>
 <td>-0.8472222222222222</td>
 <td>7.385806425474998e-06</td>
 <td>7.854417264035744e-06</td>
 <td>0.5591467798686465</td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -2331,15 +2331,15 @@ Important
 </tr>
 <tr class="even">
 <td>repository_version</td>
-<td>3.0.0</td>
+<td>4.0.0</td>
 </tr>
 <tr class="odd">
 <td>git_commit</td>
-<td>4657df8148b43cbd66ec3a2bc04a756a38e7843c</td>
+<td>567ce8900bdb5db88369d131c8d787b042b3af57</td>
 </tr>
 <tr class="even">
 <td>git_dirty</td>
-<td>False</td>
+<td>FALSE</td>
 </tr>
 <tr class="odd">
 <td>llm_provider</td>
@@ -2359,11 +2359,11 @@ Important
 </tr>
 <tr class="odd">
 <td>container_image</td>
-<td>localhost/pubready:3.0.0</td>
+<td>localhost/pubready:4.0.0</td>
 </tr>
 <tr class="even">
 <td>container_digest</td>
-<td>sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290</td>
+<td>sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483</td>
 </tr>
 <tr class="odd">
 <td>input</td>
@@ -2375,7 +2375,7 @@ Important
 </tr>
 <tr class="odd">
 <td>analysis_options</td>
-<td>{“engine”: “python”, “recipe”: “two_group_compare”, “data”: {“file”: “cytokine_pg_ml.csv”, “x”: “group”, “y”: “concentration”, “fill”: null, “facet”: null, “time”: null, “event”: null, “annotation”: null, “covariates”: null, “id”: null, “group”: null, “label”: null, “positive”: null, “se”: null, “ci_low”: null, “ci_high”: null, “measure”: null, “ref”: null, “cause”: null, “levels”: null, “markers”: null}, “test”: {“method”: “auto”, “paired”: false, “p_adjust”: “none”}, “appearance”: {“theme”: “pubready_house”, “palette”: null, “x_label”: “Group”, “y_label”: “IL-6 (pg/mL)”, “title”: null, “y_limits”: [null, null], “show_points”: true, “geom”: “box”, “bracket”: {“show”: true, “label”: “p.signif”}, “scale”: “row”, “cluster”: “both”, “fc_cutoff”: 1.0, “p_cutoff”: 0.05, “top_n”: 15, “pd_threshold”: 20.0, “pr_threshold”: -30.0}}</td>
+<td>{“engine”: “python”, “recipe”: “two_group_compare”, “data”: {“file”: “cytokine_pg_ml.csv”, “x”: “group”, “y”: “concentration”, “fill”: null, “facet”: null, “time”: null, “event”: null, “annotation”: null, “covariates”: null, “id”: null, “group”: null, “label”: null, “positive”: null, “se”: null, “ci_low”: null, “ci_high”: null, “measure”: null, “ref”: null, “cause”: null, “levels”: null, “visit_levels”: null, “features”: null, “markers”: null}, “test”: {“method”: “auto”, “paired”: false}, “appearance”: {“theme”: “pubready_house”, “palette”: null, “x_label”: “Group”, “y_label”: “IL-6 (pg/mL)”, “title”: null, “y_limits”: [null, null], “show_points”: true, “geom”: “box”, “bracket”: {“show”: true, “label”: “p.signif”}, “scale”: “row”, “cluster”: “both”, “fc_cutoff”: 1.0, “p_cutoff”: 0.05, “top_n”: 15, “pd_threshold”: 20.0, “pr_threshold”: -30.0}}</td>
 </tr>
 <tr class="even">
 <td>random_seeds</td>

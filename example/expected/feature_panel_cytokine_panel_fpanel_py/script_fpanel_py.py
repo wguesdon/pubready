@@ -8,11 +8,19 @@ import numpy as np, pandas as pd
 from scipy import stats
 from statsmodels.stats.multitest import multipletests
 
+
+def label(v):
+    """Write a group value as the figure does: a whole number with no decimal point."""
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    return str(v)
+
+
 raw = pd.read_csv("input_cytokine_panel.csv")
-d = pd.DataFrame({"feature": raw["cytokine"].astype(str), "group": raw["group"].astype(str), "value": pd.to_numeric(raw["concentration_pg_ml"], errors="coerce")})
+d = pd.DataFrame({"feature": raw["cytokine"].astype(str), "group": raw["group"].map(label), "value": pd.to_numeric(raw["concentration_pg_ml"], errors="coerce")})
 d = d[np.isfinite(d["value"])]
 feats = list(pd.unique(d["feature"]))
-levels = sorted(pd.unique(d["group"]))
+levels = ['Healthy control', 'Mild disease', 'Severe disease']
 p = []
 for f in feats:
     g = [d.loc[(d["feature"] == f) & (d["group"] == lv), "value"].to_numpy() for lv in levels]

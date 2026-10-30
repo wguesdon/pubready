@@ -8,7 +8,7 @@ import numpy as np, pandas as pd
 raw = pd.read_csv("input_months.csv").sort_values("months").reset_index(drop=True)
 raw["ongoing"] = raw["ended"] == 0
 raw["colour"] = raw["arm"].astype("category").cat.codes
-fig, ax = plt.subplots(figsize=(6.4, max(3.6, min(10, 1.6 + 0.18 * len(raw)))))
+fig, ax = plt.subplots(figsize=(6.40, max(3.6, min(10, 1.6 + 0.18 * len(raw)))))
 ax.barh(np.arange(1, len(raw) + 1), raw["months"], color=plt.cm.tab10(raw["colour"]))
 ongoing = raw[raw["ongoing"]]
 ax.scatter(ongoing["months"], ongoing.index + 1, marker=">", color="black")

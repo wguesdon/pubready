@@ -24,12 +24,13 @@ data:
   - partial response
   - stable disease
   - progressive disease
+  visit_levels: ~
+  features: ~
   markers: ~
   covariates: ~
 test:
   method: auto
   paired: no
-  p_adjust: none
 appearance:
   theme: pubready_house
   palette: ~

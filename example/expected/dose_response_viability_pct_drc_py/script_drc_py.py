@@ -17,6 +17,8 @@ d = pd.DataFrame({"dose": pd.to_numeric(raw["concentration_um"], errors="coerce"
                    "group": raw["compound"].astype(str)})
 d = d[np.isfinite(d["dose"]) & np.isfinite(d["y"]) & (d["dose"] > 0)]
 d["lx"] = np.log10(d["dose"])
+# The fit runs on the response divided by a power of ten, as in the figure.
+rs = 1.0
 methods = {'cmpd_A': 'lm', 'cmpd_B': 'lm', 'cmpd_C': 'lm'}
 starts = {
     "cmpd_A": [2.966666666666667, 98.86666666666667, -1.5228787452803376, -1.0],
@@ -26,11 +28,11 @@ starts = {
 fig, ax = plt.subplots(figsize=(6.2, 4.2))
 for g, p0 in starts.items():
     s = d[d["group"] == g]
-    popt, pcov = curve_fit(fpl, s["lx"], s["y"], p0=p0, method=methods[g], maxfev=20000,
+    popt, pcov = curve_fit(fpl, s["lx"], s["y"] / rs, p0=p0, method=methods[g], maxfev=20000,
                            ftol=1e-12, xtol=1e-12, gtol=1e-12)
     print(g, "bottom, top, log10 EC50, hill:", popt)
     grid = np.linspace(s["lx"].min(), s["lx"].max(), 200)
-    ax.plot(10 ** grid, fpl(grid, *popt), label=g)
+    ax.plot(10 ** grid, fpl(grid, *popt) * rs, label=g)
     ax.scatter(s["dose"], s["y"], s=14, alpha=0.6)
 # A curve whose midpoint is not determined is drawn as points only, as in the figure.
 for g in d["group"].unique():

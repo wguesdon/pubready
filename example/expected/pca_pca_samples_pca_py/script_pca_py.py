@@ -6,9 +6,14 @@ import matplotlib.pyplot as plt
 import numpy as np, pandas as pd
 
 raw = pd.read_csv("input_pca_samples.csv")
-grp = raw["group"].astype(str).to_numpy()
-num = raw.select_dtypes(include="number")
-X = num.to_numpy(float); X = X[:, X.std(0, ddof=1) > 0]
+# The features of the figure; a cell that does not read as a number is NaN,
+# and a sample with a missing feature or group is dropped, as in the figure.
+feats = ['feature01', 'feature02', 'feature03', 'feature04', 'feature05', 'feature06', 'feature07', 'feature08', 'feature09', 'feature10', 'feature11', 'feature12', 'feature13', 'feature14', 'feature15', 'feature16', 'feature17', 'feature18', 'feature19', 'feature20', 'feature21', 'feature22', 'feature23', 'feature24', 'feature25', 'feature26', 'feature27', 'feature28', 'feature29', 'feature30', 'feature31', 'feature32', 'feature33', 'feature34', 'feature35', 'feature36', 'feature37', 'feature38', 'feature39', 'feature40']
+num = raw[feats].apply(pd.to_numeric, errors="coerce")
+g = raw["group"]
+keep = (num.notna().all(axis=1) & g.notna() & (g.astype(str).str.strip() != "")).to_numpy()
+grp = g.astype(str).to_numpy()[keep]
+X = num.to_numpy(float)[keep]
 Xs = (X - X.mean(0)) / X.std(0, ddof=1)
 U, S, Vt = np.linalg.svd(Xs, full_matrices=False)
 sc = U * S; ve = S**2 / np.sum(S**2) * 100

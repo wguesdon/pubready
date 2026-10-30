@@ -6,9 +6,17 @@ import numpy as np
 import pandas as pd, seaborn as sns
 import statsmodels.api as sm, statsmodels.formula.api as smf
 
+
+def label(v):
+    """Write a group value as the figure does: a whole number with no decimal point."""
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    return str(v)
+
+
 df = pd.read_csv("input_response.csv")
 factors = ['genotype', 'treatment', 'sex']
-for f in factors: df[f] = df[f].astype(str)
+for f in factors: df[f] = df[f].map(label)
 ren = {"response": "_y_"}; ren.update({f: "_f%d_" % i for i, f in enumerate(factors)})
 d2 = df.rename(columns=ren)
 rhs = "*".join("C(_f%d_)" % i for i in range(len(factors)))
@@ -21,7 +29,7 @@ sig = [(clean(t), r["PR(>F)"]) for t, r in aov.iterrows() if t != "Residual" and
 subtitle = "\n".join("%s: %s" % (t.replace(":", " × "), plab(p)) for t, p in sig) or "No significant effects (P ≥ 0.05)"
 
 f1_lv, f2_lv = ['ko', 'wt'], ['drug', 'vehicle']
-facet_lv = sorted(df["sex"].unique())
+facet_lv = ['female', 'male']
 fig, axes = plt.subplots(1, len(facet_lv), figsize=(6.8, 4.4), sharey=True, squeeze=False)
 axes = axes[0]
 for ax, fl in zip(axes, facet_lv):

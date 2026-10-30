@@ -2244,21 +2244,23 @@ Important
 <h2 class="anchored" data-anchor-id="statistical-results">Statistical results</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -2277,6 +2279,8 @@ Important
 <th>r_squared</th>
 <th>rss</th>
 <th>df_resid</th>
+<th>fit_status</th>
+<th>status_reason</th>
 </tr>
 </thead>
 <tbody>
@@ -2296,6 +2300,8 @@ Important
 <td>0.991352083168473</td>
 <td>259.288178735485</td>
 <td>22</td>
+<td>fitted</td>
+<td></td>
 </tr>
 <tr class="even">
 <td>2 uM</td>
@@ -2313,6 +2319,8 @@ Important
 <td>0.995525965155346</td>
 <td>143.041253358075</td>
 <td>22</td>
+<td>fitted</td>
+<td></td>
 </tr>
 <tr class="odd">
 <td>10 uM</td>
@@ -2330,13 +2338,15 @@ Important
 <td>0.995461099372303</td>
 <td>126.902734100966</td>
 <td>22</td>
+<td>fitted</td>
+<td></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
-<p>Rate (nmol/min/mg) was modelled as a function of Substrate (uM) with the Michaelis-Menten equation v = Vmax S / (Km + S), fitted by nonlinear least squares to each level of inhibitor (3 curves) (n = 72 points). The starting values were the largest rate for Vmax and, for Km, the substrate concentration whose mean rate is nearest half of it. Each 95% confidence interval is the estimate plus or minus t(0.975, n - 2) times its asymptotic standard error. Large points show the mean +/- SEM of the replicates at each concentration, and small points show each replicate. 0 uM: Vmax = 119 (95% CI 116 to 123), Km = 18.5 (95% CI 16.5 to 20.5), R2 = 0.991; 2 uM: Vmax = 121 (95% CI 118 to 124), Km = 27.7 (95% CI 25.3 to 30.1), R2 = 0.996; 10 uM: Vmax = 121 (95% CI 116 to 126), Km = 65.1 (95% CI 58.4 to 71.9), R2 = 0.995. Extra-sum-of-squares F tests compared the separate fits with one shared Km (a Vmax for each curve) and with one shared Vmax (a Km for each curve): shared Km F(2, 66) = 151.84, P = 2.0e-25; shared Vmax F(2, 66) = 0.39, P = 0.68. Fitted in R 4.4.1 with stats::nls and drawn with ggplot2 3.5.1.</p>
+<p>Rate (nmol/min/mg) was modelled as a function of Substrate (uM) with the Michaelis-Menten equation v = Vmax S / (Km + S), fitted by nonlinear least squares to each level of inhibitor (3 curves) (n = 72 points). The starting values were the largest rate for Vmax and, for Km, the substrate concentration whose mean rate is nearest half of it. Each 95% confidence interval is the estimate plus or minus t(0.975, n - 2) times its asymptotic standard error. Large points show the mean +/- SEM of the replicates at each concentration, and small points show each replicate. A fit was reported as not determined when Vmax or Km was not positive, when Km lay above the highest substrate concentration, or when the 95% CI of Km or of Vmax held 0. 0 uM: Vmax = 119 (95% CI 116 to 123), Km = 18.5 (95% CI 16.5 to 20.5), R2 = 0.991; 2 uM: Vmax = 121 (95% CI 118 to 124), Km = 27.7 (95% CI 25.3 to 30.1), R2 = 0.996; 10 uM: Vmax = 121 (95% CI 116 to 126), Km = 65.1 (95% CI 58.4 to 71.9), R2 = 0.995. Extra-sum-of-squares F tests compared the separate fits with one shared Km (a Vmax for each curve) and with one shared Vmax (a Km for each curve): shared Km F(2, 66) = 151.84, P = 2.0e-25; shared Vmax F(2, 66) = 0.39, P = 0.68. Fitted in R 4.4.1 with stats::nls and drawn with ggplot2 3.5.1.</p>
 </section>
 <section id="plot-configuration" class="level2">
 <h2 class="anchored" data-anchor-id="plot-configuration">Plot configuration</h2>
@@ -2362,11 +2372,11 @@ Important
 </tr>
 <tr class="even">
 <td>repository_version</td>
-<td>3.0.0</td>
+<td>4.0.0</td>
 </tr>
 <tr class="odd">
 <td>git_commit</td>
-<td>4657df8148b43cbd66ec3a2bc04a756a38e7843c</td>
+<td>567ce8900bdb5db88369d131c8d787b042b3af57</td>
 </tr>
 <tr class="even">
 <td>git_dirty</td>
@@ -2390,11 +2400,11 @@ Important
 </tr>
 <tr class="odd">
 <td>container_image</td>
-<td>localhost/pubready:3.0.0</td>
+<td>localhost/pubready:4.0.0</td>
 </tr>
 <tr class="even">
 <td>container_digest</td>
-<td>sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290</td>
+<td>sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483</td>
 </tr>
 <tr class="odd">
 <td>input</td>
@@ -2406,7 +2416,7 @@ Important
 </tr>
 <tr class="odd">
 <td>analysis_options</td>
-<td>{“engine”:“r”,“recipe”:“enzyme_kinetics”,“data”:{“file”:“enzyme_kinetics.csv”,“x”:“substrate_um”,“y”:“rate”,“fill”:null,“facet”:null,“time”:null,“event”:null,“annotation”:null,“id”:null,“group”:“inhibitor”,“label”:null,“positive”:null,“se”:null,“ci_low”:null,“ci_high”:null,“measure”:null,“ref”:null,“cause”:null,“levels”:null,“markers”:null,“covariates”:null},“test”:{“method”:“auto”,“paired”:false,“p_adjust”:“none”},“appearance”:{“theme”:“pubready_house”,“palette”:null,“x_label”:“Substrate (uM)”,“y_label”:“Rate (nmol/min/mg)”,“title”:null,“y_limits”:[null,null],“show_points”:true,“geom”:“box”,“bracket”:{“show”:true,“label”:“p.signif”},“scale”:“row”,“cluster”:“both”,“fc_cutoff”:1,“p_cutoff”:0.05,“top_n”:15,“pd_threshold”:20,“pr_threshold”:-30}}</td>
+<td>{“engine”:“r”,“recipe”:“enzyme_kinetics”,“data”:{“file”:“enzyme_kinetics.csv”,“x”:“substrate_um”,“y”:“rate”,“fill”:null,“facet”:null,“time”:null,“event”:null,“annotation”:null,“id”:null,“group”:“inhibitor”,“label”:null,“positive”:null,“se”:null,“ci_low”:null,“ci_high”:null,“measure”:null,“ref”:null,“cause”:null,“levels”:null,“visit_levels”:null,“features”:null,“markers”:null,“covariates”:null},“test”:{“method”:“auto”,“paired”:false},“appearance”:{“theme”:“pubready_house”,“palette”:null,“x_label”:“Substrate (uM)”,“y_label”:“Rate (nmol/min/mg)”,“title”:null,“y_limits”:[null,null],“show_points”:true,“geom”:“box”,“bracket”:{“show”:true,“label”:“p.signif”},“scale”:“row”,“cluster”:“both”,“fc_cutoff”:1,“p_cutoff”:0.05,“top_n”:15,“pd_threshold”:20,“pr_threshold”:-30}}</td>
 </tr>
 <tr class="even">
 <td>random_seeds</td>

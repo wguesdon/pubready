@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "upset",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_set_membership.csv",
@@ -30,9 +60,9 @@
     "largest_intersection": 10
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -61,7 +91,7 @@
     {
       "file": "figure_set_membership_upset_py.pdf",
       "bytes": 21607,
-      "sha256": "51097c71744d4912d64bf891cb216d12fd0de246d4ba3bd1404c7c34a8cbc20d"
+      "sha256": "2b309e160e30f52f8635a24dd027b80f440a7a56d3eac04e0a05699014bcff19"
     },
     {
       "file": "figure_set_membership_upset_py.png",
@@ -71,7 +101,7 @@
     {
       "file": "figure_set_membership_upset_py.svg",
       "bytes": 39933,
-      "sha256": "e7d594d4e10543518419b7545e14157660b30aee50635f77341227e6f35fa103"
+      "sha256": "feceed1e88961db5ac9769d8c456f01883db456313fbce6d0593c90c88044379"
     },
     {
       "file": "packages_upset_py.txt",
@@ -80,18 +110,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3667,
-      "sha256": "81e1650e48420ad6b361f8b3c64a72de1d04879038a46a5e6ac27bd917193dac"
+      "bytes": 3645,
+      "sha256": "d4a510b9e5da3727f6d974936574779a273e36bd08779405b86726157f082919"
     },
     {
       "file": "report.html",
-      "bytes": 1297716,
-      "sha256": "672539751ea116d0061dd1e5c1aeb77cc8442b5831cff4c37334cf912141c5e7"
+      "bytes": 1297694,
+      "sha256": "12456792ddd60dc0eb75a98857631bd3c4e1718840293366357f622c73256bdb"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1995,
-      "sha256": "66c5498fa79b67d450f7d5826d173fbbee14d97d5118e07647b8056e6648d2d6"
+      "bytes": 2021,
+      "sha256": "e26c5bbebd01aca0bdba63c01dee1f849df0d4a1e0b54a756dce7fdb876a7cbf"
     }
   ]
 }

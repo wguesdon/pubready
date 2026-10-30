@@ -16,7 +16,9 @@ starts <- list(
   "cmpd_C" = list(bottom = 23.13333333, top = 102.3, log_ec50 = 0, hill = -1)
 )
 algos <- c("cmpd_A" = "default", "cmpd_B" = "port", "cmpd_C" = "port")
-fml <- y ~ bottom + (top - bottom) / (1 + 10^((log_ec50 - lx) * hill))
+# The fit runs on the response divided by a power of ten, as in the figure.
+rs <- 1e+00; d$ys <- d$y / rs
+fml <- ys ~ bottom + (top - bottom) / (1 + 10^((log_ec50 - lx) * hill))
 ctrl <- nls.control(maxiter = 1000, tol = 1e-8, minFactor = 1e-12)
 curves <- NULL
 for (g in names(starts)) {
@@ -25,7 +27,7 @@ for (g in names(starts)) {
   print(summary(fit))
   grid <- seq(min(d$lx[d$group == g]), max(d$lx[d$group == g]), length.out = 200)
   curves <- rbind(curves, data.frame(group = g, dose = 10^grid,
-                                     y = predict(fit, data.frame(lx = grid))))
+                                     y = predict(fit, data.frame(lx = grid)) * rs))
 }
 p <- ggplot() + geom_point(data = d, aes(dose, y, colour = group), alpha = 0.6) +
   scale_x_log10() + labs(x = "Concentration (uM)", y = "Viability (%)") + theme_classic()

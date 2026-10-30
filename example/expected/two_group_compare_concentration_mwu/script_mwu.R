@@ -6,12 +6,16 @@ suppressPackageStartupMessages({
 })
 
 df <- as.data.frame(read_csv("input_concentration.csv", show_col_types = FALSE))
-df[["group"]] <- factor(df[["group"]])
+df[["group"]] <- factor(df[["group"]], levels = c("control", "treated"))
 df[["concentration"]] <- as.numeric(df[["concentration"]])
+# The test runs on a copy with syntactic column names.
+sdf <- data.frame(.x = df[["group"]], .y = df[["concentration"]])
 
-stat <- rstatix::wilcox_test(df, concentration ~ group, paired = FALSE)
+stat <- rstatix::wilcox_test(sdf, .y ~ .x, paired = FALSE)
 stat <- rstatix::add_significance(stat)
-stat <- rstatix::add_xy_position(stat, x = "group")
+stat <- rstatix::add_xy_position(stat, x = ".x")
+# The bracket sits 6% of the data span above the largest value.
+stat$y.position <- max(sdf$.y) + 0.06 * diff(range(sdf$.y))
 
 point_k <- ave(seq_len(nrow(df)), df[["group"]], FUN = seq_along)
 df$.point_x <- as.integer(df[["group"]]) + -0.12 + 0.24 * ((point_k * 0.6180339887498949) %% 1)

@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "calibration",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "risk_clinical,risk_extended",
     "y": "event_1y",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": "yes",
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_event_1y_risk_clinical_risk_extended.csv",
@@ -30,37 +62,39 @@
       "risk_clinical": {
         "n": 500,
         "n_events": 130,
-        "brier": 0.171785,
-        "intercept": -0.143969,
-        "slope": 0.821409,
+        "brier": 0.17178516214,
+        "slope_estimable": true,
+        "intercept": -0.143969399796984,
+        "slope": 0.821408830166909,
         "hosmer_lemeshow": {
-          "statistic": 9.021356,
+          "statistic": 9.02135569634209,
           "df": 8,
-          "p_value": 0.340498,
+          "p_value": 0.340497619229566,
           "groups": 10
         },
-        "oe_ratio": 0.916281
+        "oe_ratio": 0.916280830206819
       },
       "risk_extended": {
         "n": 500,
         "n_events": 130,
-        "brier": 0.168798,
-        "intercept": -0.012445,
-        "slope": 0.621632,
+        "brier": 0.16879814044,
+        "slope_estimable": true,
+        "intercept": -0.0124451030580843,
+        "slope": 0.6216320036108,
         "hosmer_lemeshow": {
-          "statistic": 26.955512,
+          "statistic": 26.9555120651225,
           "df": 8,
-          "p_value": 0.00072,
+          "p_value": 0.00071960033699251,
           "groups": 10
         },
-        "oe_ratio": 0.993606
+        "oe_ratio": 0.993605764747785
       }
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -86,7 +120,7 @@
     {
       "file": "figure_event_1y_risk_clinical_risk_extended_cal.pdf",
       "bytes": 24333,
-      "sha256": "1e76fcd3b50bc7706c7fd96cabadd9d1dda2808562f1893742fbe553901fbe35"
+      "sha256": "d246ee80f0105256536e98e67595ce17838410ce520448a52149e36119a7d80b"
     },
     {
       "file": "figure_event_1y_risk_clinical_risk_extended_cal.png",
@@ -105,18 +139,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4471,
-      "sha256": "e3c3f569dabd446a9ac0cdaf36f680fd928b2a9bae01e334ad78c064cf76d577"
+      "bytes": 4489,
+      "sha256": "6aad67bea40150079b0f972474ffb0bb47f4948bdf2b933941d92780fbd36b8e"
     },
     {
       "file": "report.html",
-      "bytes": 1430715,
-      "sha256": "1582b60e2c3bf24ecff7712b2e8e6f6e2c618f07bd17549e45c9bc81daa3c16c"
+      "bytes": 1430733,
+      "sha256": "c3ad4c38512e4ac2b406ea15efee356d02cf9df74192bec89305f7a04c7bd4ce"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2048,
-      "sha256": "05392382f9a498b52ceea4ec011751fc38118a26b2b397e86f329021e024eafd"
+      "bytes": 2074,
+      "sha256": "3cc910add66e38a801de4352ecf8327c624d0b80ad97bde586bb774f7402bd08"
     }
   ]
 }

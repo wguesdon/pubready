@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "spider_response",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": "patient",
+    "group": "arm",
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Week",
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_target_lesion_mm.csv",
@@ -34,9 +64,9 @@
     "progressive_disease": 5
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -65,7 +95,7 @@
     {
       "file": "figure_target_lesion_mm_spider_py.pdf",
       "bytes": 21220,
-      "sha256": "e581a7bddc1b106061e7add592a947224d33c709f090d456d54d771d75425981"
+      "sha256": "cfdaeccbd51d97689b6f8e9ad8468cda006b51374f0d6ce9c9582b77b0df9bc2"
     },
     {
       "file": "figure_target_lesion_mm_spider_py.png",
@@ -75,7 +105,7 @@
     {
       "file": "figure_target_lesion_mm_spider_py.svg",
       "bytes": 46780,
-      "sha256": "f6ec41fbcfaa1664b74ba7a645a5da6c89e97cc9f33bab44473e77641b9c8163"
+      "sha256": "80a731e3c13d0a1c1c1b5c5914e42388dd73324b753b0e4b645ce9e87ea06833"
     },
     {
       "file": "packages_spider_py.txt",
@@ -84,18 +114,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 5506,
-      "sha256": "6f3473f2277a3cec1e003a84a36d45689457ab962329379c148c559f92501bd3"
+      "bytes": 5526,
+      "sha256": "b90a55a46e2dd607e02a63ecca039888d212e1f84793e74cc039aa5bbf562a4a"
     },
     {
       "file": "report.html",
-      "bytes": 1538250,
-      "sha256": "deb3dcdc6d41db86e889a14bb4342062b2fa5990a31445f2127e7719d1e8bf8c"
+      "bytes": 1538270,
+      "sha256": "6f1f03288917a32662133240bdb776ce1cc18476faad208980ee44e899c4597c"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2042,
-      "sha256": "bc89e35db4742580661dddd9eebcd2a23b19ab65fd16b5a2de1e1b036546fadb"
+      "bytes": 2068,
+      "sha256": "d84b334dddf257947822a934a077b93523221882c1b518474ba2e628de2ccbe0"
     }
   ]
 }

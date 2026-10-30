@@ -6,14 +6,16 @@ suppressPackageStartupMessages({
 })
 
 df <- as.data.frame(read_csv("input_expression.csv", show_col_types = FALSE))
-df[["genotype"]] <- factor(df[["genotype"]])
+df[["genotype"]] <- factor(df[["genotype"]], levels = c("het", "ko", "rescue", "wt"))
 df[["expression"]] <- as.numeric(df[["expression"]])
+# The tests run on a copy with syntactic column names.
+sdf <- data.frame(.x = df[["genotype"]], .y = df[["expression"]])
 
-ph <- rstatix::tukey_hsd(df, expression ~ genotype)
+ph <- rstatix::tukey_hsd(sdf, .y ~ .x)
 ph$group1 <- as.character(ph$group1); ph$group2 <- as.character(ph$group2)
 sig <- ph[which(ph$p.adj < 0.05), , drop = FALSE]
 
-omni <- as.data.frame(rstatix::anova_test(df, expression ~ genotype))
+omni <- as.data.frame(rstatix::anova_test(sdf, .y ~ .x))
 subtitle_txt <- paste0("One-way ANOVA, P = ", formatC(omni$p[1], format = "g", digits = 2))
 
 point_k <- ave(seq_len(nrow(df)), df[["genotype"]], FUN = seq_along)

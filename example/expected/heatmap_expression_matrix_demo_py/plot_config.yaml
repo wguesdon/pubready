@@ -8,7 +8,7 @@ data:
   facet: null
   time: null
   event: null
-  annotation: example/expression_annotation.csv
+  annotation: expression_annotation.csv
   covariates: null
   id: null
   group: null
@@ -21,11 +21,12 @@ data:
   ref: null
   cause: null
   levels: null
+  visit_levels: null
+  features: null
   markers: null
 test:
-  method: auto
+  method: welch_t
   paired: false
-  p_adjust: none
 appearance:
   theme: pubready_house
   palette: null

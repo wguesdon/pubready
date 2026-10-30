@@ -24,17 +24,17 @@ The report records the selected recipe and does not claim a new statistical meth
 
 | row_type | label | estimate | ci_low | ci_high | yi | se | weight_fixed_pct | weight_random_pct | z | p_value | q | q_df | q_p | i2 | tau2 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| study | Trial A | 0.968 | 0.597 | 1.568 | -0.03252319170556006 | 0.24634102849200012 | 2.8503711211872163 | 3.4182179814378943 | nan | nan | nan | nan | nan | nan | nan |
-| study | Trial B | 0.71 | 0.578 | 0.871 | -0.342490308946776 | 0.10461113352456737 | 15.805895050729482 | 15.348442427029369 | nan | nan | nan | nan | nan | nan | nan |
-| study | Trial C | 0.831 | 0.666 | 1.036 | -0.18512548412668892 | 0.11271450796141143 | 13.614925549351273 | 13.66041242587432 | nan | nan | nan | nan | nan | nan | nan |
-| study | Trial D | 0.764 | 0.617 | 0.947 | -0.2691874898156165 | 0.109295393349085 | 14.480087794142065 | 14.340211442540234 | nan | nan | nan | nan | nan | nan | nan |
-| study | Trial E | 0.597 | 0.488 | 0.73 | -0.515838165589535 | 0.10273891037436544 | 16.38720924280755 | 15.778235741341677 | nan | nan | nan | nan | nan | nan | nan |
-| study | Trial F | 0.806 | 0.644 | 1.009 | -0.2156715364755087 | 0.11454707785220505 | 13.182776242025287 | 13.314123863911298 | nan | nan | nan | nan | nan | nan | nan |
-| study | Trial G | 0.908 | 0.627 | 1.315 | -0.09651090038084373 | 0.18894362595972697 | 4.8451856114832905 | 5.607566865582227 | nan | nan | nan | nan | nan | nan | nan |
-| study | Trial H | 0.801 | 0.449 | 1.428 | -0.22189433191377778 | 0.2951603356703493 | 1.9854498359626547 | 2.418932082995152 | nan | nan | nan | nan | nan | nan | nan |
-| study | Trial I | 0.838 | 0.687 | 1.022 | -0.17673717850005405 | 0.10132392270322951 | 16.84809955231117 | 16.11385716928782 | nan | nan | nan | nan | nan | nan | nan |
-| pooled | Fixed effect | 0.7625665188602225 | 0.7028722228406328 | 0.8273305969276402 | -0.27106553645609816 | 0.041589859664296555 | 100.0 | nan | -6.517587186974773 | 7.144729415816091e-11 | 9.643452629899386 | 8.0 | 0.2909476592756377 | 17.04216003305585 | 0.003308009120237801 |
-| pooled | Random effects (DerSimonian-Laird) | 0.7657242954756952 | 0.6986540559336346 | 0.8392332252307797 | -0.26693310160844447 | 0.046769466786191025 | nan | 100.0 | -5.707422383683411 | 1.1469989631248274e-08 | 9.643452629899386 | 8.0 | 0.2909476592756377 | 17.04216003305585 | 0.003308009120237801 |
+| study | Trial A | 0.968 | 0.597 | 1.568 | -0.03252319170556006 | 0.24634102849200012 | 2.8503711211872163 | 3.4182179814378943 |  |  |  |  |  |  |  |
+| study | Trial B | 0.71 | 0.578 | 0.871 | -0.342490308946776 | 0.10461113352456737 | 15.805895050729482 | 15.348442427029369 |  |  |  |  |  |  |  |
+| study | Trial C | 0.831 | 0.666 | 1.036 | -0.18512548412668892 | 0.11271450796141143 | 13.614925549351273 | 13.66041242587432 |  |  |  |  |  |  |  |
+| study | Trial D | 0.764 | 0.617 | 0.947 | -0.2691874898156165 | 0.109295393349085 | 14.480087794142065 | 14.340211442540234 |  |  |  |  |  |  |  |
+| study | Trial E | 0.597 | 0.488 | 0.73 | -0.515838165589535 | 0.10273891037436544 | 16.38720924280755 | 15.778235741341677 |  |  |  |  |  |  |  |
+| study | Trial F | 0.806 | 0.644 | 1.009 | -0.2156715364755087 | 0.11454707785220505 | 13.182776242025287 | 13.314123863911298 |  |  |  |  |  |  |  |
+| study | Trial G | 0.908 | 0.627 | 1.315 | -0.09651090038084373 | 0.18894362595972697 | 4.8451856114832905 | 5.607566865582227 |  |  |  |  |  |  |  |
+| study | Trial H | 0.801 | 0.449 | 1.428 | -0.22189433191377778 | 0.2951603356703493 | 1.9854498359626547 | 2.418932082995152 |  |  |  |  |  |  |  |
+| study | Trial I | 0.838 | 0.687 | 1.022 | -0.17673717850005405 | 0.10132392270322951 | 16.84809955231117 | 16.11385716928782 |  |  |  |  |  |  |  |
+| pooled | Fixed effect | 0.7625665188602225 | 0.7028722228406328 | 0.8273305969276402 | -0.27106553645609816 | 0.041589859664296555 | 100.0 |  | -6.517587186974773 | 7.144729415816091e-11 | 9.643452629899386 | 8 | 0.2909476592756377 | 17.04216003305585 | 0.003308009120237801 |
+| pooled | Random effects (DerSimonian-Laird) | 0.7657242954756952 | 0.6986540559336346 | 0.8392332252307797 | -0.26693310160844447 | 0.046769466786191025 |  | 100.0 | -5.707422383683411 | 1.1469989631248274e-08 | 9.643452629899386 | 8 | 0.2909476592756377 | 17.04216003305585 | 0.003308009120237801 |
 
 ## Methods
 
@@ -49,18 +49,18 @@ The complete plot configuration is in `plot_config.yaml`.
 | field | value |
 | --- | --- |
 | repository | pubready |
-| repository_version | 3.0.0 |
-| git_commit | 4657df8148b43cbd66ec3a2bc04a756a38e7843c |
-| git_dirty | False |
+| repository_version | 4.0.0 |
+| git_commit | 567ce8900bdb5db88369d131c8d787b042b3af57 |
+| git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |
 | agent_harness | manual |
 | agent_harness_version | not_recorded |
-| container_image | localhost/pubready:3.0.0 |
-| container_digest | sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290 |
+| container_image | localhost/pubready:4.0.0 |
+| container_digest | sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483 |
 | input | {"file": "input_hazard_ratio.csv", "md5": "24320e4211da4db9bf76c9a1fedeb1e9", "sha256": "01b10b5db2fbcdca95bb708eb109ab543a00c92557e91fbc44d75ad98d46acc6"} |
 | command | figkit plot --recipe forest_meta |
-| analysis_options | {"engine": "python", "recipe": "forest_meta", "data": {"file": "meta_trials.csv", "x": null, "y": "hazard_ratio", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": null, "group": null, "label": "trial", "positive": null, "se": null, "ci_low": "ci_low", "ci_high": "ci_high", "measure": null, "ref": null, "cause": null, "levels": null, "markers": null}, "test": {"method": "auto", "paired": false, "p_adjust": "none"}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": "Hazard ratio (95% CI, log scale)", "y_label": null, "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
+| analysis_options | {"engine": "python", "recipe": "forest_meta", "data": {"file": "meta_trials.csv", "x": null, "y": "hazard_ratio", "fill": null, "facet": null, "time": null, "event": null, "annotation": null, "covariates": null, "id": null, "group": null, "label": "trial", "positive": null, "se": null, "ci_low": "ci_low", "ci_high": "ci_high", "measure": null, "ref": null, "cause": null, "levels": null, "visit_levels": null, "features": null, "markers": null}, "test": {"method": "auto", "paired": false}, "appearance": {"theme": "pubready_house", "palette": null, "x_label": "Hazard ratio (95% CI, log scale)", "y_label": null, "title": null, "y_limits": [null, null], "show_points": true, "geom": "box", "bracket": {"show": true, "label": "p.signif"}, "scale": "row", "cluster": "both", "fc_cutoff": 1.0, "p_cutoff": 0.05, "top_n": 15, "pd_threshold": 20.0, "pr_threshold": -30.0}} |
 | random_seeds | not_applicable |
 | session_record | session_info.txt |
 | created_utc | 2026-07-18T00:00:00Z |

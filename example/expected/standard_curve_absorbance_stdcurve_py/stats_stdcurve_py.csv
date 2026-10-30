@@ -1,6 +1,6 @@
 id,signal,concentration,flag
-Serum_01,0.079,,below range
-Serum_02,0.11,,below range
+Serum_01,0.079,NA,below range
+Serum_02,0.11,NA,below range
 Serum_03,2.168,4.411700130204095,in range
 Serum_04,0.899,1.0738086236914093,in range
 Serum_05,1.794,2.9106163663461087,in range
@@ -18,4 +18,4 @@ Serum_16,2.12,4.1690387211352355,in range
 Serum_17,0.274,0.2965758430693014,in range
 Serum_18,0.287,0.3116544886423706,in range
 Serum_19,2.21,4.640891456042025,in range
-Serum_20,2.924,,above range
+Serum_20,2.924,NA,above range

@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "proportions",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_response.csv",
@@ -33,9 +63,9 @@
     "any_expected_below_5": false
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -64,7 +94,7 @@
     {
       "file": "figure_response_prop_py.pdf",
       "bytes": 13478,
-      "sha256": "8c0d4ce0a21a9eabd703de07a99c0290995213d6e73455a920180f1a66c4daad"
+      "sha256": "f765b5b96da456f53543dc048d9af921f91e0ab9f103e38028cd95db80ac16b1"
     },
     {
       "file": "figure_response_prop_py.png",
@@ -74,7 +104,7 @@
     {
       "file": "figure_response_prop_py.svg",
       "bytes": 29812,
-      "sha256": "8e10dba13818eba8acfcb91f0ac3bafdd9bf74a52641045e38a78b99ff1e064e"
+      "sha256": "faa0531c5093f0398fd67b95bd5d6828d4b7ece013deda5fc880b8acc2a396bf"
     },
     {
       "file": "packages_prop_py.txt",
@@ -83,18 +113,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3457,
-      "sha256": "75fabd93db3c70fb54c7cb3a951ea5bc2da9dfc3752a7af6e1f2cd48c19be817"
+      "bytes": 3465,
+      "sha256": "1c223057c21ffbd087cd58bc90128b6c608d885947f4be73776a113293e2f679"
     },
     {
       "file": "report.html",
-      "bytes": 1320827,
-      "sha256": "3cdbbc4bbc3a84705ff547e00f6f80d87d8626933500f72c04f804318ef42bf0"
+      "bytes": 1320835,
+      "sha256": "4b48c96a67dcba6720d463a919f202fc41472e3ac812ae046baba80f738c4be7"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2009,
-      "sha256": "fe069f99ffb615d66bc44a8200c59f9e1e26e3fa15dc498c5e6892782ee7bd8e"
+      "bytes": 2035,
+      "sha256": "8d5727abbb050b8711a9e4de27f4c9ce758df3aa94115e1233831a9931aeeddb"
     }
   ]
 }

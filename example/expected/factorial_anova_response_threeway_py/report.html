@@ -2244,14 +2244,15 @@ Important
 <h2 class="anchored" data-anchor-id="statistical-results">Statistical results</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -2263,6 +2264,7 @@ Important
 <th>effect_size</th>
 <th>effect_size_name</th>
 <th>significant</th>
+<th>residual_shapiro_p</th>
 </tr>
 </thead>
 <tbody>
@@ -2274,7 +2276,8 @@ Important
 <td>4.034754681085697e-13</td>
 <td>0.7356194029600359</td>
 <td>partial eta squared</td>
-<td>True</td>
+<td>TRUE</td>
+<td>0.05005220875977767</td>
 </tr>
 <tr class="even">
 <td>treatment</td>
@@ -2284,7 +2287,8 @@ Important
 <td>4.8090104894002654e-17</td>
 <td>0.8312321021236497</td>
 <td>partial eta squared</td>
-<td>True</td>
+<td>TRUE</td>
+<td>0.05005220875977767</td>
 </tr>
 <tr class="odd">
 <td>sex</td>
@@ -2294,7 +2298,8 @@ Important
 <td>0.0027343973072734788</td>
 <td>0.20322773098196714</td>
 <td>partial eta squared</td>
-<td>True</td>
+<td>TRUE</td>
+<td>0.05005220875977767</td>
 </tr>
 <tr class="even">
 <td>genotype:treatment</td>
@@ -2304,7 +2309,8 @@ Important
 <td>0.002890120529548012</td>
 <td>0.2011857234677134</td>
 <td>partial eta squared</td>
-<td>True</td>
+<td>TRUE</td>
+<td>0.05005220875977767</td>
 </tr>
 <tr class="odd">
 <td>genotype:sex</td>
@@ -2314,7 +2320,8 @@ Important
 <td>0.624195816399937</td>
 <td>0.006057364579680232</td>
 <td>partial eta squared</td>
-<td>False</td>
+<td>FALSE</td>
+<td>0.05005220875977767</td>
 </tr>
 <tr class="even">
 <td>treatment:sex</td>
@@ -2324,7 +2331,8 @@ Important
 <td>0.47851267962764477</td>
 <td>0.012633546941608786</td>
 <td>partial eta squared</td>
-<td>False</td>
+<td>FALSE</td>
+<td>0.05005220875977767</td>
 </tr>
 <tr class="odd">
 <td>genotype:treatment:sex</td>
@@ -2334,7 +2342,8 @@ Important
 <td>0.7869780803081738</td>
 <td>0.0018469489872182567</td>
 <td>partial eta squared</td>
-<td>False</td>
+<td>FALSE</td>
+<td>0.05005220875977767</td>
 </tr>
 </tbody>
 </table>
@@ -2367,15 +2376,15 @@ Important
 </tr>
 <tr class="even">
 <td>repository_version</td>
-<td>3.0.0</td>
+<td>4.0.0</td>
 </tr>
 <tr class="odd">
 <td>git_commit</td>
-<td>4657df8148b43cbd66ec3a2bc04a756a38e7843c</td>
+<td>567ce8900bdb5db88369d131c8d787b042b3af57</td>
 </tr>
 <tr class="even">
 <td>git_dirty</td>
-<td>False</td>
+<td>FALSE</td>
 </tr>
 <tr class="odd">
 <td>llm_provider</td>
@@ -2395,11 +2404,11 @@ Important
 </tr>
 <tr class="odd">
 <td>container_image</td>
-<td>localhost/pubready:3.0.0</td>
+<td>localhost/pubready:4.0.0</td>
 </tr>
 <tr class="even">
 <td>container_digest</td>
-<td>sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290</td>
+<td>sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483</td>
 </tr>
 <tr class="odd">
 <td>input</td>
@@ -2411,7 +2420,7 @@ Important
 </tr>
 <tr class="odd">
 <td>analysis_options</td>
-<td>{“engine”: “python”, “recipe”: “factorial_anova”, “data”: {“file”: “threeway_response.csv”, “x”: “genotype”, “y”: “response”, “fill”: “treatment”, “facet”: “sex”, “time”: null, “event”: null, “annotation”: null, “covariates”: null, “id”: null, “group”: null, “label”: null, “positive”: null, “se”: null, “ci_low”: null, “ci_high”: null, “measure”: null, “ref”: null, “cause”: null, “levels”: null, “markers”: null}, “test”: {“method”: “auto”, “paired”: false, “p_adjust”: “none”}, “appearance”: {“theme”: “pubready_house”, “palette”: null, “x_label”: null, “y_label”: “Response (a.u.)”, “title”: null, “y_limits”: [null, null], “show_points”: true, “geom”: “box”, “bracket”: {“show”: true, “label”: “p.signif”}, “scale”: “row”, “cluster”: “both”, “fc_cutoff”: 1.0, “p_cutoff”: 0.05, “top_n”: 15, “pd_threshold”: 20.0, “pr_threshold”: -30.0}}</td>
+<td>{“engine”: “python”, “recipe”: “factorial_anova”, “data”: {“file”: “threeway_response.csv”, “x”: “genotype”, “y”: “response”, “fill”: “treatment”, “facet”: “sex”, “time”: null, “event”: null, “annotation”: null, “covariates”: null, “id”: null, “group”: null, “label”: null, “positive”: null, “se”: null, “ci_low”: null, “ci_high”: null, “measure”: null, “ref”: null, “cause”: null, “levels”: null, “visit_levels”: null, “features”: null, “markers”: null}, “test”: {“method”: “auto”, “paired”: false}, “appearance”: {“theme”: “pubready_house”, “palette”: null, “x_label”: null, “y_label”: “Response (a.u.)”, “title”: null, “y_limits”: [null, null], “show_points”: true, “geom”: “box”, “bracket”: {“show”: true, “label”: “p.signif”}, “scale”: “row”, “cluster”: “both”, “fc_cutoff”: 1.0, “p_cutoff”: 0.05, “top_n”: 15, “pd_threshold”: 20.0, “pr_threshold”: -30.0}}</td>
 </tr>
 <tr class="even">
 <td>random_seeds</td>

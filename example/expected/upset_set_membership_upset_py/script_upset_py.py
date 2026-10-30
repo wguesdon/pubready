@@ -8,7 +8,11 @@ import numpy as np, pandas as pd
 
 raw = pd.read_csv("input_set_membership.csv", index_col=0)
 set_cols = ['apoptosis', 'inflammation', 'metabolism', 'cell_cycle']
-bin_df = raw[set_cols].apply(pd.to_numeric, errors="coerce") == 1
+# 1, TRUE, T, yes or y is a member; any other code or an empty cell is not.
+codes = raw[set_cols].astype(str)
+for c in set_cols:
+    codes[c] = codes[c].str.strip().str.lower().str.replace(r"\.0$", "", regex=True)
+bin_df = codes.isin(["1", "true", "t", "yes", "y"])
 bin_df = bin_df[bin_df.any(axis=1)].reset_index(drop=True)
 combo = bin_df.groupby(set_cols, sort=False).size().reset_index(name="size")
 combo["sets"] = [" & ".join(c for c in set_cols if r[c]) for _, r in combo.iterrows()]

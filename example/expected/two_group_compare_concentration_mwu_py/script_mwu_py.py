@@ -9,8 +9,16 @@ import pandas as pd, seaborn as sns, pingouin as pg
 from scipy import stats as ss
 from statannotations.Annotator import Annotator
 
+
+def label(v):
+    """Write a group value as the figure does: a whole number with no decimal point."""
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    return str(v)
+
+
 df = pd.read_csv("input_concentration.csv")
-df["group"] = df["group"].astype(str)
+df["group"] = df["group"].map(label)
 order = ['control', 'treated']
 a = df.loc[df["group"] == order[0], "concentration"].to_numpy()
 b = df.loc[df["group"] == order[1], "concentration"].to_numpy()

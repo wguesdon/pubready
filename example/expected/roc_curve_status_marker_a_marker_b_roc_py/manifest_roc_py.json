@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "roc_curve",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": "disease",
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_status_marker_a_marker_b.csv",
@@ -36,7 +66,9 @@
         "youden_threshold": 3.975,
         "sensitivity": 0.7833333333333333,
         "specificity": 0.7875,
-        "delong_p_vs_first": NaN
+        "delong_p_vs_first": null,
+        "constant_marker": false,
+        "complete_separation": false
       },
       "marker_b": {
         "auc": 0.6213541666666667,
@@ -46,14 +78,16 @@
         "youden_threshold": 10.835,
         "sensitivity": 0.31666666666666665,
         "specificity": 0.9,
-        "delong_p_vs_first": 1.0612759207215801e-05
+        "delong_p_vs_first": 1.0612759207215801e-05,
+        "constant_marker": false,
+        "complete_separation": false
       }
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -82,7 +116,7 @@
     {
       "file": "figure_status_marker_a_marker_b_roc_py.pdf",
       "bytes": 18770,
-      "sha256": "293b9b6efadfc2ae7987fa08ab1a5b36482c379fecabe1f37b4a3d31f2ea4135"
+      "sha256": "f3d4a3454d8d5688f8068a56ad67018dac9709ed8440ac86d05234cb9c21ab55"
     },
     {
       "file": "figure_status_marker_a_marker_b_roc_py.png",
@@ -92,7 +126,7 @@
     {
       "file": "figure_status_marker_a_marker_b_roc_py.svg",
       "bytes": 44255,
-      "sha256": "08d2215c6130a372c6cf158f8dbba6ec26b3c1682abd86604ec45da2c127cafa"
+      "sha256": "d3562cfa2cd3901da6827373d771cd91ec1c5469ad5bcd8abff8f3c6dc98403d"
     },
     {
       "file": "packages_roc_py.txt",
@@ -101,18 +135,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3786,
-      "sha256": "f134b674260e41eb2d32c9a7887438a340223a53342a50c29a2f655da9e5f9a4"
+      "bytes": 3884,
+      "sha256": "90cf624694dfcfab90e0022bc517ca162a1a15a25ae38b4d8fa768740b9de203"
     },
     {
       "file": "report.html",
-      "bytes": 1350040,
-      "sha256": "4492a3f3b1dc8a99188f84d42e289d19c165f084f000df4f5eeb7e3876b90e34"
+      "bytes": 1350216,
+      "sha256": "8756d62926ac661f2835c8262298d86b7e06982376f0e3d0fc08757d1083507f"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2036,
-      "sha256": "80b5ad0491efec3165ac4215baaeb953041491c71579cf193ec3d85c99c5f7ad"
+      "bytes": 2062,
+      "sha256": "71ebf69ffb60e87bc284d6517a409fe850451a42d28a74996f063f5ab2f48817"
     }
   ]
 }

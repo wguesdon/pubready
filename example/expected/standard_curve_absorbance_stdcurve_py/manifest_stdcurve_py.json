@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "standard_curve",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": "sample",
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "IL-6 (ng/mL)",
+    "ylab": "Absorbance at 450 nm",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_absorbance.csv",
@@ -98,12 +128,14 @@
       "min_pct": 97.22094938535132,
       "max_pct": 102.14978227110133,
       "n_within_80_120": 7
-    }
+    },
+    "standards_monotonic": true,
+    "hook_turn": null
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -132,7 +164,7 @@
     {
       "file": "figure_absorbance_stdcurve_py.pdf",
       "bytes": 19785,
-      "sha256": "75617abbfa7d2f7090cbff58b058fe6e523185e1ebfb7072633f6e9ac2551956"
+      "sha256": "f3754991ac92a6d222bd5a1241ebb5fed9ba18f9467eaa2a2bde3c6465c91f5b"
     },
     {
       "file": "figure_absorbance_stdcurve_py.png",
@@ -142,7 +174,7 @@
     {
       "file": "figure_absorbance_stdcurve_py.svg",
       "bytes": 51040,
-      "sha256": "445ed22163a9ebfd70902a96527507a500fb6a43dc7a695dd65b1f9b46fab750"
+      "sha256": "8fa89228df6ca87dff71769d27ecafb78f15c64ff913efb7470841aa93b29c62"
     },
     {
       "file": "packages_stdcurve_py.txt",
@@ -151,18 +183,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4671,
-      "sha256": "6680679765957f5a8637c7c6cec77127a196835b311416348b64431340d1b193"
+      "bytes": 4682,
+      "sha256": "eff080eacf71f33824599868f998e37d58ca483f27bc459a5eaa49fab9bbc3bb"
     },
     {
       "file": "report.html",
-      "bytes": 1380478,
-      "sha256": "df684f6d2ab745650c361cdf32e32fed17aaf3d46860dd057f3f832276148676"
+      "bytes": 1380489,
+      "sha256": "7f5d34985c5d851dabbb124e32a625772960a3cfeaf8442c7c65cfee42888d09"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2057,
-      "sha256": "796f22f3405a2998b87c7abf2b63fdd957ac9c7f00a64913c360ccf2d21ca24c"
+      "bytes": 2083,
+      "sha256": "abf691e97f2bf1ebab7ebf17137f0b938093b58ca665d109f4529e599bebb1b5"
     }
   ]
 }

@@ -6,12 +6,19 @@ suppressPackageStartupMessages({
 })
 
 df <- as.data.frame(read_csv("input_response.csv", show_col_types = FALSE))
-df[["genotype"]] <- factor(df[["genotype"]]); df[["treatment"]] <- factor(df[["treatment"]]); 
+df[["genotype"]] <- factor(df[["genotype"]], levels = c("ko", "wt"))
+df[["treatment"]] <- factor(df[["treatment"]], levels = c("high", "low", "vehicle"))
 df[["response"]] <- as.numeric(df[["response"]])
 
-at <- as.data.frame(car::Anova(lm(`response` ~ `genotype` * `treatment`, data = df), type = 2))
+# The models run on a copy with syntactic column names; the effects take the
+# names of the columns back.
+safe <- c(".f1" = "genotype", ".f2" = "treatment")
+sdf <- setNames(data.frame(df[["response"]], df[c("genotype", "treatment")]), c(".y", names(safe)))
+at <- as.data.frame(car::Anova(lm(.y ~ .f1 * .f2, data = sdf), type = 2))
 at <- at[rownames(at) != "Residuals", ]
-eff <- data.frame(effect = gsub("`", "", rownames(at)), p = at[["Pr(>F)"]])
+eff <- data.frame(effect = rownames(at), p = at[["Pr(>F)"]])
+term_name <- function(t) paste(safe[strsplit(t, ":", fixed = TRUE)[[1]]], collapse = ":")
+eff$effect <- vapply(eff$effect, term_name, character(1), USE.NAMES = FALSE)
 plab <- function(p) if (is.na(p)) "P = NA" else if (p < 0.001) "P < 0.001" else paste0("P = ", formatC(p, format = "g", digits = 2))
 sig <- eff[which(eff$p < 0.05), , drop = FALSE]
 subtitle_txt <- if (nrow(sig) > 0) paste(sprintf("%s: %s", gsub(":", " × ", sig$effect), vapply(sig$p, plab, character(1))), collapse = "\n") else "No significant effects (P ≥ 0.05)"

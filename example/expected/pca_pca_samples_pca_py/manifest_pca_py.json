@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "pca",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": "group",
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_pca_samples.csv",
@@ -23,8 +53,8 @@
   },
   "statistical_test": {
     "name": "PCA with PERMANOVA",
-    "pc1_variance_pct": 48.49666066472838,
-    "pc2_variance_pct": 21.544966207566947,
+    "pc1_variance_pct": 48.496660664728395,
+    "pc2_variance_pct": 21.544966207566933,
     "n_samples": 36,
     "n_features": 40,
     "permanova": {
@@ -35,9 +65,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -66,7 +96,7 @@
     {
       "file": "figure_pca_samples_pca_py.pdf",
       "bytes": 19485,
-      "sha256": "3c54ce832c897ac25a32a8d9287e7378b07d1eefef89f87382a2f63c8ab70cc8"
+      "sha256": "01853a6f7c64cc36b03a97864d82fff9708036baefc6c2c4056018ec085e6375"
     },
     {
       "file": "figure_pca_samples_pca_py.png",
@@ -76,7 +106,7 @@
     {
       "file": "figure_pca_samples_pca_py.svg",
       "bytes": 41899,
-      "sha256": "30cb364438037cad25fe0400f4ee6d0b195c6528646ffc5d3f5e573efbb1f5c7"
+      "sha256": "e87a7f73c4977a813aabcb490e6c3c83dc12e5f4f92456f5e40abcae5af9d91c"
     },
     {
       "file": "packages_pca_py.txt",
@@ -85,18 +115,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3361,
-      "sha256": "071d2cc8d196314c750b69c47523e0cc0ca3fa1255995ca4d9c02f3a3aa736ff"
+      "bytes": 3381,
+      "sha256": "c76cc79fd2233bd2431993e49ab6c945c0b4e8bb39a9850d837570ac77cca46b"
     },
     {
       "file": "report.html",
-      "bytes": 1440477,
-      "sha256": "ba3845dc09eec7c268f6b76540052a0ba949a2ceff3bb62a1ac4564fabe69506"
+      "bytes": 1440497,
+      "sha256": "5b8f5a3849c5a15728e5a246e255460db3c3971861afd6584cff5e8d8f62015f"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1988,
-      "sha256": "91d25545a62a30ce93f1d4d0750b6894d01eedf54b2213432c752870e8603a6c"
+      "bytes": 2014,
+      "sha256": "ae39ef7f297e6676241127627b3f0ec4fddd8d2d0dc9a461b008304252489f97"
     }
   ]
 }

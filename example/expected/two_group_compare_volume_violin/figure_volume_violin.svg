@@ -56,7 +56,7 @@
 <circle cx='194.75' cy='191.31' r='1.81' style='stroke-width: 0.43; stroke: #000000; stroke-opacity: 0.70; fill: #7A5195; fill-opacity: 0.70;' />
 <circle cx='208.98' cy='174.30' r='1.81' style='stroke-width: 0.43; stroke: #000000; stroke-opacity: 0.70; fill: #7A5195; fill-opacity: 0.70;' />
 <circle cx='200.19' cy='202.65' r='1.81' style='stroke-width: 0.43; stroke: #000000; stroke-opacity: 0.70; fill: #7A5195; fill-opacity: 0.70;' />
-<text x='154.16' y='18.36' text-anchor='middle' style='font-size: 11.04px; font-weight: 0; font-family: "TeX Gyre Heros";' textLength='56.12px' lengthAdjust='spacingAndGlyphs'>p = 1.1e-09</text>
+<text x='154.16' y='18.36' text-anchor='middle' style='font-size: 11.04px; font-weight: 0; font-family: "TeX Gyre Heros";' textLength='56.12px' lengthAdjust='spacingAndGlyphs'>p = 1.9e-09</text>
 <line x1='106.21' y1='22.60' x2='106.21' y2='20.73' style='stroke-width: 0.85;' />
 <line x1='106.21' y1='20.73' x2='202.11' y2='20.73' style='stroke-width: 0.85;' />
 <line x1='202.11' y1='20.73' x2='202.11' y2='22.60' style='stroke-width: 0.85;' />

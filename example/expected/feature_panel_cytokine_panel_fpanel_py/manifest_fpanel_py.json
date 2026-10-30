@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "feature_panel",
@@ -12,7 +12,37 @@
     "facet": "cytokine",
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Group",
+    "ylab": "Concentration (pg/mL)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_cytokine_panel.csv",
@@ -34,7 +64,11 @@
     ],
     "n_significant": 6,
     "n_untested": 0,
+    "n_constant": 0,
+    "n_tested": 9,
     "forced": false,
+    "kept_parametric": false,
+    "rank_test_attainable_p": 8.397144824858468e-10,
     "assumptions": {
       "normality": {
         "test": "shapiro-wilk",
@@ -45,9 +79,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -78,7 +112,7 @@
     {
       "file": "figure_cytokine_panel_fpanel_py.pdf",
       "bytes": 37822,
-      "sha256": "cb689641aa21842df854631993ab5131a544c40fb540fb66eb6bb611c3764ced"
+      "sha256": "efb815bb35fbc0fdac858d65379903c135bca93d6e1449dd348c525730eddfc7"
     },
     {
       "file": "figure_cytokine_panel_fpanel_py.png",
@@ -88,7 +122,7 @@
     {
       "file": "figure_cytokine_panel_fpanel_py.svg",
       "bytes": 179750,
-      "sha256": "edb7fbbe697aca496d6fe4635dcdae1545a1a739919ce9bec271e5d208d92e2a"
+      "sha256": "a77b12a87c7e4ba5874622f435cabc8427cd22c7b7750740a157384b83b01776"
     },
     {
       "file": "packages_fpanel_py.txt",
@@ -97,28 +131,28 @@
     },
     {
       "file": "qc_normality_fpanel_py.png",
-      "bytes": 871132,
-      "sha256": "182aa2757d38f80503295d11d423d1c26e3f51bd1c0d61fd28d2a1386963b356"
+      "bytes": 914440,
+      "sha256": "eb99a895e2b9ec08e2f54ddfdb01de9cd33be3b245cc00945b7a7d6777f127ff"
     },
     {
       "file": "qc_normality_fpanel_py.pdf",
-      "bytes": 50802,
-      "sha256": "26d2dfd8ebe2e4ea95df68f6b29a660aa7f4bce366fd6617fd2cf40298e68cea"
+      "bytes": 51174,
+      "sha256": "e2ed1a44c13606aa908af0d3f86b2c0324b07dcde73868feba58b79c56067480"
     },
     {
       "file": "report.qmd",
-      "bytes": 4920,
-      "sha256": "a982006cd2bf009822153bcb3ef23dfc963752225a95030bf4761b058e5af856"
+      "bytes": 4935,
+      "sha256": "659a730476e3ee02fd4a72d567bb7dad52b4822d68779e86343bbdb52de563c4"
     },
     {
       "file": "report.html",
-      "bytes": 1697950,
-      "sha256": "83c628375b4556d6305ca6084b2a6adc7a9a9539386e4cbcc6b2720e744437a8"
+      "bytes": 1698053,
+      "sha256": "e5aad8e1220dcd096b1861c554711300f4237ede38089fe11fc9f7f587f0b224"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2059,
-      "sha256": "0b151182d0313130b68cac846b107cd11c4aaaedf95869e1e1a4ba2df25e1427"
+      "bytes": 2085,
+      "sha256": "da9ae0865d81092b00c07758dbebc33bd1ae586916c0648a642370ada44b5047"
     }
   ]
 }

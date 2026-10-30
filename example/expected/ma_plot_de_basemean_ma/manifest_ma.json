@@ -1,16 +1,48 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "ma_plot",
   "recipe_version": "1",
   "arguments": {
-    "x": {},
-    "y": {},
+    "x": null,
+    "y": null,
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_de_basemean.csv",
@@ -34,9 +66,9 @@
     "n_grey_drawn": 5653
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -62,7 +94,7 @@
     {
       "file": "figure_de_basemean_ma.pdf",
       "bytes": 183144,
-      "sha256": "9d636aecbd6b901ed1d247be56d0856a571e2ab45a429153979589b55cd3f396"
+      "sha256": "141244a854d596a9f138caf11e1606dd9b17c3042c700ae0944e0d906f1eb397"
     },
     {
       "file": "figure_de_basemean_ma.png",
@@ -81,18 +113,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 8745,
-      "sha256": "6d8876733ba907b77d11026095727dbf5a71fed711a2d253a2cf8cfac30c5327"
+      "bytes": 8763,
+      "sha256": "a0d269219d2bfe020c2d302f4091367ab6d456078ab2f17c38c174895d74a464"
     },
     {
       "file": "report.html",
-      "bytes": 1397743,
-      "sha256": "96dcb4faa7d60bf082aec760113994c8b72ff6ee5ee9919b8c083cde1f5456ba"
+      "bytes": 1397761,
+      "sha256": "782fdffa1e0154a5e479197c40cdfb01a9036a65b7f2ad56481db19352881822"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1983,
-      "sha256": "1c8bb5ede75602f6a21839645a3235b44694a9ec6ef82b6d55ad1c13cde12c38"
+      "bytes": 2009,
+      "sha256": "e4b6e1c35cf67d9dee80c8dc02bfd85f8fb460de582294d19f0cfefbc27d6b86"
     }
   ]
 }

@@ -6,9 +6,17 @@ import numpy as np
 import pandas as pd, seaborn as sns
 import statsmodels.api as sm, statsmodels.formula.api as smf
 
+
+def label(v):
+    """Write a group value as the figure does: a whole number with no decimal point."""
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    return str(v)
+
+
 df = pd.read_csv("input_response.csv")
 factors = ['genotype', 'treatment']
-for f in factors: df[f] = df[f].astype(str)
+for f in factors: df[f] = df[f].map(label)
 ren = {"response": "_y_"}; ren.update({f: "_f%d_" % i for i, f in enumerate(factors)})
 d2 = df.rename(columns=ren)
 rhs = "*".join("C(_f%d_)" % i for i in range(len(factors)))

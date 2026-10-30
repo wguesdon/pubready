@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "cumulative_incidence",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": "months",
     "event": "status",
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Months after transplant",
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_status.csv",
@@ -51,9 +81,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -82,7 +112,7 @@
     {
       "file": "figure_status_cif_py.pdf",
       "bytes": 20938,
-      "sha256": "ca4494b095dcc1efbf879c43926b427e256ad0bafe02ebd8db20da8dddb23eab"
+      "sha256": "95ef12c16b182fb5aecf5c5694f43fece8360e1753e67a29ddaf00619f4f753c"
     },
     {
       "file": "figure_status_cif_py.png",
@@ -92,7 +122,7 @@
     {
       "file": "figure_status_cif_py.svg",
       "bytes": 61442,
-      "sha256": "95bb8b21cccd96e0bce32741180ca555a2061c8f685d0e2f73cb2f0473ac91d7"
+      "sha256": "5653c5eee4e45551cd92bfd40d2cddd8fb64a58c4a52e984fc475c13de3c86dd"
     },
     {
       "file": "packages_cif_py.txt",
@@ -101,18 +131,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3895,
-      "sha256": "f9b1b9fd8197c8a62b5feb1a40376c4ac822a97969ffa6984fda4ec76582a2af"
+      "bytes": 3907,
+      "sha256": "d4930f056570b5ee983f4b3a96c717d904250c73b9fb8fd99c6f87cb1a523d2d"
     },
     {
       "file": "report.html",
-      "bytes": 1371643,
-      "sha256": "2366a2238b770dcf965636c0a84a14c570a7dbd2b3664107cbc13fb999bd1475"
+      "bytes": 1371655,
+      "sha256": "e1f282c579f8fad37fa1aad019870749ca3ddb07935ed82fcc70d55b8411ddea"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2053,
-      "sha256": "8706d34aa0b93351b79f5db62e7475bf8b70c8347296aee107d2d9e72ec8bcb7"
+      "bytes": 2079,
+      "sha256": "5ec60e7222deb57228748264f98e93fa943668a9092c33209cc233aa4515d390"
     }
   ]
 }

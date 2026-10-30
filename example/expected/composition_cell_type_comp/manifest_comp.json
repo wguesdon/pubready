@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "composition",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "cell_type",
     "y": "n_cells",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": "sample",
+    "group": "condition",
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_cell_type.csv",
@@ -32,50 +64,50 @@
     "categories": {
       "CD4 T": {
         "statistic": 24,
-        "p_value": 0.393939,
-        "p_adj": 0.630303
+        "p_value": 0.393939393939394,
+        "p_adj": 0.63030303030303
       },
       "CD8 T": {
         "statistic": 2,
-        "p_value": 0.008658,
-        "p_adj": 0.023088
+        "p_value": 0.00865800865800866,
+        "p_adj": 0.0230880230880231
       },
       "B": {
         "statistic": 36,
-        "p_value": 0.002165,
-        "p_adj": 0.017316
+        "p_value": 0.00216450216450216,
+        "p_adj": 0.0173160173160173
       },
       "NK": {
         "statistic": 9,
-        "p_value": 0.179654,
-        "p_adj": 0.359307
+        "p_value": 0.17965367965368,
+        "p_adj": 0.359307359307359
       },
       "classical monocyte": {
         "statistic": 17,
-        "p_value": 0.937229,
-        "p_adj": 0.937229
+        "p_value": 0.937229437229437,
+        "p_adj": 0.937229437229437
       },
       "non-classical monocyte": {
         "statistic": 16,
-        "p_value": 0.818182,
-        "p_adj": 0.935065
+        "p_value": 0.818181818181818,
+        "p_adj": 0.935064935064935
       },
       "cDC": {
         "statistic": 35,
-        "p_value": 0.004329,
-        "p_adj": 0.017316
+        "p_value": 0.00432900432900433,
+        "p_adj": 0.0173160173160173
       },
       "pDC": {
         "statistic": 15,
-        "p_value": 0.699134,
-        "p_adj": 0.932179
+        "p_value": 0.699134199134199,
+        "p_adj": 0.932178932178932
       }
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -101,7 +133,7 @@
     {
       "file": "figure_cell_type_comp.pdf",
       "bytes": 16400,
-      "sha256": "d1c8a56ca30dbc11ea2c70e7a55ae3022ddcdf78a2b92c4e8bb809a4870ccd17"
+      "sha256": "c7d44548f605e29831304d2eeec599fa8615c80a52913958465df7a49f4bb934"
     },
     {
       "file": "figure_cell_type_comp.png",
@@ -120,18 +152,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 5927,
-      "sha256": "44db1dbe20498a41e6a82a9b1d6a2c8477f9c3d1f91af5d145b7abb34233868d"
+      "bytes": 5945,
+      "sha256": "e485f1661017fb7aa942b42061657cdb080a6c47db8bdf87e36cb78562724abc"
     },
     {
       "file": "report.html",
-      "bytes": 1342782,
-      "sha256": "44a304b490979e596d3c32cd80e04b3dd0c8f67691122818de4b395a1136bf21"
+      "bytes": 1342800,
+      "sha256": "d7fb126098c6c690bb70b260f4a61f97db4697003ca301ddef39011f141cf337"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2012,
-      "sha256": "2f33a44dc29a34ef6bace84f46d0e87d5f248b872e7c686af34394520cf64595"
+      "bytes": 2038,
+      "sha256": "3b2f5ec30ea8f812766b49525ee58658b8a6861ccb20558a253d3b4d70ebb604"
     }
   ]
 }

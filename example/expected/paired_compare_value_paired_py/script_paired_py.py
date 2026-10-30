@@ -6,10 +6,18 @@ import matplotlib.pyplot as plt
 import numpy as np, pandas as pd
 from scipy import stats as ss
 
+
+def label(v):
+    """Write a group value as the figure does: a whole number with no decimal point."""
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    return str(v)
+
+
 raw = pd.read_csv("input_value.csv")
 raw["value"] = pd.to_numeric(raw["value"], errors="coerce")
 raw = raw.dropna(subset=["subject", "condition", "value"])
-raw["condition"] = raw["condition"].astype(str)
+raw["condition"] = raw["condition"].map(label)
 lv = ['pre', 'post']
 a = raw[raw["condition"] == lv[0]][["subject", "value"]].drop_duplicates("subject").rename(columns={"value": "v1"})
 b = raw[raw["condition"] == lv[1]][["subject", "value"]].drop_duplicates("subject").rename(columns={"value": "v2"})

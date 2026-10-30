@@ -4,7 +4,11 @@
 suppressPackageStartupMessages({ library(ComplexHeatmap); library(circlize) })
 
 raw <- read.csv("input_correlation_vars.csv", check.names = FALSE)
-mat <- as.matrix(raw[, sapply(raw, is.numeric), drop = FALSE])
+# The variables of the figure; a cell that does not read as a number is NA.
+vars <- c("il6", "tnf", "crp", "il1b", "il10", "tgfb", "il4", "ifng")
+num <- raw[vars]
+for (v in vars) num[[v]] <- suppressWarnings(as.numeric(as.character(num[[v]])))
+mat <- as.matrix(num)
 M <- cor(mat, method = "pearson", use = "pairwise.complete.obs")
 # The leaf order of the figure: complete linkage on the Euclidean distance of
 # the matrix rows, and at each merge the branch with the higher mean correlation

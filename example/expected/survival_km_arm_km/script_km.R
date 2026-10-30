@@ -6,12 +6,15 @@ suppressPackageStartupMessages({
 })
 
 df <- as.data.frame(read_csv("input_arm.csv", show_col_types = FALSE))
-df[["arm"]] <- factor(df[["arm"]])
-fit <- surv_fit(Surv(`time`, `event`) ~ `arm`, data = df)
+# Syntactic copies of the columns: survival cannot find a strata column whose
+# name holds a space.
+df <- data.frame(.time = df[["time"]], .event = df[["event"]],
+                 .group = factor(df[["arm"]], levels = c("control", "treated")))
+fit <- surv_fit(Surv(.time, .event) ~ .group, data = df)
 
-sd <- survdiff(Surv(`time`, `event`) ~ `arm`, data = df)
+sd <- survdiff(Surv(.time, .event) ~ .group, data = df)
 p_lr <- pchisq(sd$chisq, length(sd$n) - 1, lower.tail = FALSE)
-tmax <- max(df[["time"]])
+tmax <- max(df$.time)
 # The risk table of survminer counts the subjects with a time at or after each break.
 g <- ggsurvplot(fit, data = df, pval = FALSE, risk.table = TRUE, conf.int = FALSE,
                 censor = TRUE, palette = c("#3B6DB3", "#C1432B"), legend = "right", legend.title = "arm",

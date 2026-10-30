@@ -2244,12 +2244,13 @@ Important
 <h2 class="anchored" data-anchor-id="statistical-results">Statistical results</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -2259,6 +2260,7 @@ Important
 <th>ci_high</th>
 <th>z</th>
 <th>p_value</th>
+<th>note</th>
 </tr>
 </thead>
 <tbody>
@@ -2269,6 +2271,7 @@ Important
 <td>0.879699850619351</td>
 <td>-2.48394696006471</td>
 <td>0.012993515964860746</td>
+<td>estimated</td>
 </tr>
 <tr class="even">
 <td>age</td>
@@ -2277,6 +2280,7 @@ Important
 <td>1.0264354837348875</td>
 <td>0.4090163959255735</td>
 <td>0.6825276288126748</td>
+<td>estimated</td>
 </tr>
 <tr class="odd">
 <td>sexmale</td>
@@ -2285,6 +2289,7 @@ Important
 <td>1.936770667730414</td>
 <td>0.7905071605099686</td>
 <td>0.4292316420949487</td>
+<td>estimated</td>
 </tr>
 <tr class="even">
 <td>stageII</td>
@@ -2293,6 +2298,7 @@ Important
 <td>1.6590460737049886</td>
 <td>-0.13627036032893464</td>
 <td>0.8916075543126436</td>
+<td>estimated</td>
 </tr>
 <tr class="odd">
 <td>stageIII</td>
@@ -2301,6 +2307,7 @@ Important
 <td>1.383207453507801</td>
 <td>-0.9466225827526437</td>
 <td>0.3438311323080432</td>
+<td>estimated</td>
 </tr>
 </tbody>
 </table>
@@ -2333,15 +2340,15 @@ Important
 </tr>
 <tr class="even">
 <td>repository_version</td>
-<td>3.0.0</td>
+<td>4.0.0</td>
 </tr>
 <tr class="odd">
 <td>git_commit</td>
-<td>4657df8148b43cbd66ec3a2bc04a756a38e7843c</td>
+<td>567ce8900bdb5db88369d131c8d787b042b3af57</td>
 </tr>
 <tr class="even">
 <td>git_dirty</td>
-<td>False</td>
+<td>FALSE</td>
 </tr>
 <tr class="odd">
 <td>llm_provider</td>
@@ -2361,11 +2368,11 @@ Important
 </tr>
 <tr class="odd">
 <td>container_image</td>
-<td>localhost/pubready:3.0.0</td>
+<td>localhost/pubready:4.0.0</td>
 </tr>
 <tr class="even">
 <td>container_digest</td>
-<td>sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290</td>
+<td>sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483</td>
 </tr>
 <tr class="odd">
 <td>input</td>
@@ -2377,7 +2384,7 @@ Important
 </tr>
 <tr class="odd">
 <td>analysis_options</td>
-<td>{“engine”: “python”, “recipe”: “cox_forest”, “data”: {“file”: “survival_trial.csv”, “x”: null, “y”: null, “fill”: null, “facet”: null, “time”: “time”, “event”: “event”, “annotation”: null, “covariates”: [“arm”, “age”, “sex”, “stage”], “id”: null, “group”: null, “label”: null, “positive”: null, “se”: null, “ci_low”: null, “ci_high”: null, “measure”: null, “ref”: null, “cause”: null, “levels”: null, “markers”: null}, “test”: {“method”: “auto”, “paired”: false, “p_adjust”: “none”}, “appearance”: {“theme”: “pubready_house”, “palette”: null, “x_label”: null, “y_label”: null, “title”: null, “y_limits”: [null, null], “show_points”: true, “geom”: “box”, “bracket”: {“show”: true, “label”: “p.signif”}, “scale”: “row”, “cluster”: “both”, “fc_cutoff”: 1.0, “p_cutoff”: 0.05, “top_n”: 15, “pd_threshold”: 20.0, “pr_threshold”: -30.0}}</td>
+<td>{“engine”: “python”, “recipe”: “cox_forest”, “data”: {“file”: “survival_trial.csv”, “x”: null, “y”: null, “fill”: null, “facet”: null, “time”: “time”, “event”: “event”, “annotation”: null, “covariates”: [“arm”, “age”, “sex”, “stage”], “id”: null, “group”: null, “label”: null, “positive”: null, “se”: null, “ci_low”: null, “ci_high”: null, “measure”: null, “ref”: null, “cause”: null, “levels”: null, “visit_levels”: null, “features”: null, “markers”: null}, “test”: {“method”: “auto”, “paired”: false}, “appearance”: {“theme”: “pubready_house”, “palette”: null, “x_label”: null, “y_label”: null, “title”: null, “y_limits”: [null, null], “show_points”: true, “geom”: “box”, “bracket”: {“show”: true, “label”: “p.signif”}, “scale”: “row”, “cluster”: “both”, “fc_cutoff”: 1.0, “p_cutoff”: 0.05, “top_n”: 15, “pd_threshold”: 20.0, “pr_threshold”: -30.0}}</td>
 </tr>
 <tr class="even">
 <td>random_seeds</td>

@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "volcano",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": "-log10 adjusted p",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_de_results.csv",
@@ -28,12 +58,13 @@
     "n_total": 1200,
     "n_up": 75,
     "n_down": 75,
-    "n_significant": 150
+    "n_significant": 150,
+    "n_zero_p": 0
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -62,7 +93,7 @@
     {
       "file": "figure_de_results_volcano_py.pdf",
       "bytes": 30909,
-      "sha256": "2a38f40e1076d8497c0302c8fe4b525beb73976fd33ae70c4966dd9cd527b72d"
+      "sha256": "9d0a55a5a9c113b8ede87177592f735e66f74399a5bd528976a1a1ad02f65d2e"
     },
     {
       "file": "figure_de_results_volcano_py.png",
@@ -72,7 +103,7 @@
     {
       "file": "figure_de_results_volcano_py.svg",
       "bytes": 237822,
-      "sha256": "2b96bdfb9b032cfc5a52fa7a5ba96160eb8fe4c620ac4b9861fd829a93e66ccb"
+      "sha256": "78043885d387f66998c9edf6e9fd7c713b7872b8401fcc4f12d848486273db96"
     },
     {
       "file": "packages_volcano_py.txt",
@@ -81,18 +112,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3836,
-      "sha256": "f91d1f722c642b077f888c8a6c3c244d26ba1093bd93362c2723da910b971246"
+      "bytes": 3801,
+      "sha256": "df68f0bdfbef93f56bbb5d34448dcbf430486b1e0c3b34e71b1a6299cce7e14d"
     },
     {
       "file": "report.html",
-      "bytes": 1441920,
-      "sha256": "89e599084dc43b186c6ff85242ed0d936d6ebc8bea3c4b04859924f2e60b7b9b"
+      "bytes": 1441737,
+      "sha256": "ec818dbdfaa26c3087cf673d6d8a3947a7bee30cf77101893b6c664e7fb946fe"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2008,
-      "sha256": "1b3f4d3fc9a07845bf7e6440907865fb6d131db0542a8500487bdb56a782c4d1"
+      "bytes": 2034,
+      "sha256": "d5c83555b236832e75ff38b35bb4725177234c014885dd4e1c4fad6a31cbdef3"
     }
   ]
 }

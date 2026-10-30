@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "estimation_plot",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "condition",
     "y": "value",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": "subject",
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": "pre",
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": true,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": "Marker (a.u.)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_value.csv",
@@ -32,20 +64,20 @@
     "test": "paired t-test",
     "comparisons": {
       "post": {
-        "mean_diff": -11.190909,
-        "ci_low": -13.29653,
-        "ci_high": -9.019616,
-        "hedges_g": -0.668975,
-        "statistic": -9.972925,
+        "mean_diff": -11.1909090909091,
+        "ci_low": -13.2965302865438,
+        "ci_high": -9.01961570119179,
+        "hedges_g": -0.66897463112033,
+        "statistic": -9.97292541186761,
         "df": 21,
-        "p_value": 2.03158e-09
+        "p_value": 2.03157966031198e-09
       }
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -73,7 +105,7 @@
     {
       "file": "figure_value_estimation_paired.pdf",
       "bytes": 12483,
-      "sha256": "2413705ce1169b09183b0f6dbbbcb8f2adbd0600b51e08bbdd3aab61c3ff8029"
+      "sha256": "75846bddad522ae612ef689bbb2f2e8eccc2df28329128b4f5d80c860b60602a"
     },
     {
       "file": "figure_value_estimation_paired.png",
@@ -92,28 +124,28 @@
     },
     {
       "file": "qc_normality_estimation_paired.png",
-      "bytes": 56254,
-      "sha256": "b97d040be32155c780eae8f9645150f0fc399d65944a63d7d0b1abb72248d93c"
+      "bytes": 64639,
+      "sha256": "2639ad51a36f11e3edc86dbc95edefb7c10e1184d094f4f9e4ca94d6030168b8"
     },
     {
       "file": "qc_normality_estimation_paired.pdf",
-      "bytes": 21943,
-      "sha256": "e2cc9fcf8895435bc7db53d96e41be17a0dd8003305ec7e345ff6d1c3507c373"
+      "bytes": 21959,
+      "sha256": "0cefa38ac5c566541fde2a5193da1cc38a030c2dceaeb1f2c98e5805592c633a"
     },
     {
       "file": "report.qmd",
-      "bytes": 3724,
-      "sha256": "21fb7a930d06c8ee60e94a3829ef0c837ee22f59d6ae1ee2819295bedeaea6b8"
+      "bytes": 3742,
+      "sha256": "d67c42c9e645ad5ad6adec9f3f33d0bb35a2375d345a523fea000578f1351c85"
     },
     {
       "file": "report.html",
-      "bytes": 1408698,
-      "sha256": "c411ceb60c97940134f5e80cbbfdb775ab76efedc8ea7146a406cdb3a76459ba"
+      "bytes": 1408716,
+      "sha256": "3d421337dcd95b9ca6f1c4d3e97ee6056f48fdd2017b95306253f521c9d7aaee"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2023,
-      "sha256": "81fd6e57fbcaae231252c5311f18aba204478d2fbcfde2ebcc0e2fb8c971a535"
+      "bytes": 2049,
+      "sha256": "e0622d6453470699be26a4ffe05ec6f34b953d0c21500345df9cd9323af06099"
     }
   ]
 }

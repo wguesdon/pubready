@@ -22,8 +22,10 @@ for (g in names(starts)) {
   grid <- seq(0, max(d$s), length.out = 200)
   curves <- rbind(curves, data.frame(group = g, s = grid, v = predict(fit, data.frame(s = grid))))
 }
-p <- ggplot() + geom_line(data = curves, aes(s, v, colour = group)) +
+# A curve that is not determined is drawn as points only, as in the figure.
+p <- ggplot() +
   geom_point(data = d, aes(s, v, colour = group), alpha = 0.6) +
   expand_limits(x = 0, y = 0) + labs(x = "Substrate (uM)", y = "Rate (nmol/min/mg)") + theme_classic()
+if (!is.null(curves)) p <- p + geom_line(data = curves, aes(s, v, colour = group))
 ggsave("figure_rate_enzyme.pdf", p, width = 6.6, height = 4.4)
 cat("Reproduced figure.\n")

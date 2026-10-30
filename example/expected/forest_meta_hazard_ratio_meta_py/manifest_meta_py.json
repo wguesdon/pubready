@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "forest_meta",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": "trial",
+    "positive": null,
+    "se": null,
+    "ci_low": "ci_low",
+    "ci_high": "ci_high",
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Hazard ratio (95% CI, log scale)",
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_hazard_ratio.csv",
@@ -46,9 +76,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -77,7 +107,7 @@
     {
       "file": "figure_hazard_ratio_meta_py.pdf",
       "bytes": 26884,
-      "sha256": "e093579190fcb6608c9a0f572228d0d441199b4b8e16c0ded9b3a05c20b17aa6"
+      "sha256": "ec1f42a6e4902450f015d72016758e478539008898f9b611c6542bbe27bb0835"
     },
     {
       "file": "figure_hazard_ratio_meta_py.png",
@@ -87,7 +117,7 @@
     {
       "file": "figure_hazard_ratio_meta_py.svg",
       "bytes": 72558,
-      "sha256": "052eaae614bac15a3d2994075b663ac31a6cb976c162a9c10bfd6a98a42849ec"
+      "sha256": "2d6b8f92cf67a501869d9c4c90dd3972f3b6fda7f7ba52a031384268c854a966"
     },
     {
       "file": "packages_meta_py.txt",
@@ -96,18 +126,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 5435,
-      "sha256": "3a76bb528cb2e15d90b46d81864685b2f303c6423306ea9651092166d658bb50"
+      "bytes": 5256,
+      "sha256": "d99f19cb6bde529eba88ee8881736a157f6fc74c9126a6a1e71315fbb4bf8988"
     },
     {
       "file": "report.html",
-      "bytes": 1495971,
-      "sha256": "7cf7d037ce60fe6e348f985b047e0c66608f54e670aa1c2e2cea1d09aa3303df"
+      "bytes": 1495792,
+      "sha256": "5472015df92c73db38b245bbffffe5ebef70ffc6c6577c81e4a3126dea3f0c46"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2054,
-      "sha256": "da3fe49b3c0522ff06b6a6deeffc5cf79b3519eadd9d6347242b148e65b0b219"
+      "bytes": 2080,
+      "sha256": "12129cb0b056377e8d8c8e1949fef4f6bd13f7d54dcc0b5b6b54bc84e341d078"
     }
   ]
 }

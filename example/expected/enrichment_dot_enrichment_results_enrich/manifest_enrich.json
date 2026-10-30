@@ -1,16 +1,48 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "enrichment_dot",
   "recipe_version": "1",
   "arguments": {
-    "x": {},
-    "y": {},
+    "x": null,
+    "y": null,
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_enrichment_results.csv",
@@ -23,12 +55,15 @@
     "name": "ORA dot plot",
     "n_terms_total": 20,
     "n_terms_shown": 15,
-    "x_axis": "gene ratio"
+    "x_axis": "gene ratio",
+    "n_zero_p": 0,
+    "p_column": "p.adjust",
+    "p_adjusted": true
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -53,18 +88,18 @@
   "output_checksums": [
     {
       "file": "figure_enrichment_results_enrich.pdf",
-      "bytes": 19363,
-      "sha256": "5d6ca87bd764b7605c7a516b900328ee4da23b56984d1c93d5b6cb2418f42c59"
+      "bytes": 19293,
+      "sha256": "e0d66f9b85fb8fdd6bb2864caa415a96d9207d0c31aa8e0f83bba3a3d14be6f0"
     },
     {
       "file": "figure_enrichment_results_enrich.png",
-      "bytes": 172709,
-      "sha256": "3e818b08e71f1d2c92064ec5926aa125df9e081abb48f39984cc4697e513d516"
+      "bytes": 160434,
+      "sha256": "79c3105032548ada4a9a2528fa6e88cbf58bd8929dbfcd28e6bfa9c38a4ce0ad"
     },
     {
       "file": "figure_enrichment_results_enrich.svg",
-      "bytes": 12806,
-      "sha256": "8f6eb8f1ad173466bbe3e50b5bac534d4dc9c90a60979eb7685402b24080b41c"
+      "bytes": 12761,
+      "sha256": "1f6f9ee8f73b77d5d5cba56be0488f8347c41810d61da0b7962b14ca5e45dee6"
     },
     {
       "file": "packages_enrich.txt",
@@ -73,18 +108,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3351,
-      "sha256": "fba1cba6d5c3d7d060d2d9f0dfbe5c4fae90125dca3e87f7ca3590dd06fc9393"
+      "bytes": 3369,
+      "sha256": "ad7361c9e09c0ed81dd02bad2313e3f2bd78a24d3895f33a5216e42a61741dc7"
     },
     {
       "file": "report.html",
-      "bytes": 1423847,
-      "sha256": "9536f8281eb7b1e210f5b088b0bbc1f4f2c71f1811120b17d1f5af9e7d18be9d"
+      "bytes": 1407497,
+      "sha256": "1887da761f009ba5cc7f691783ee583e5b4372978dc8021bb2f9be39af23c770"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2011,
-      "sha256": "bd4c98bb129bac97e1cb756a4fe0331a67569b54b233418404fb8b553d61da74"
+      "bytes": 2037,
+      "sha256": "05d5aac0c40e7a694fed986d08eb22c52b8a8c24071c701cfff4accd51ba84da"
     }
   ]
 }

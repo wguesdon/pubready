@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "embedding",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "UMAP_1",
     "y": "UMAP_2",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": "cell_type",
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_umap_clusters.csv",
@@ -24,16 +56,16 @@
     "n_cells": 2590,
     "n_clusters": 8,
     "continuous": false,
-    "mean_silhouette": 0.396769,
+    "mean_silhouette": 0.396768548543966,
     "silhouette_n": 2590,
     "silhouette_step": 1,
     "n_drawn": 2590,
     "drawing_step": 1
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -59,7 +91,7 @@
     {
       "file": "figure_umap_clusters_embedding.pdf",
       "bytes": 92433,
-      "sha256": "0106307f149e11ae91f1df72cd95f2ff384fd4b6b301500186fa5bdfa9da91df"
+      "sha256": "19a345e7db4401018e98fd94587703cd7d9c1ef33b82aaa2be9e7f7959f4a8a0"
     },
     {
       "file": "figure_umap_clusters_embedding.png",
@@ -78,18 +110,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3658,
-      "sha256": "19103c43f142f06d173e025e7544980cc20c9e8416777c97a50c320d885b2841"
+      "bytes": 3676,
+      "sha256": "a7714eae22fd300ced36c83033a1bb900ceeaa71c99015034245fd03e3acad72"
     },
     {
       "file": "report.html",
-      "bytes": 1417253,
-      "sha256": "2fb7c0ee7b8ebe0ccb90608cd5772b88e1cc6960f8771721b808f1261366cc20"
+      "bytes": 1417271,
+      "sha256": "96d870f83a7dae217cc5e329aa7166734a52d638520b6db9a9157d454a0b9823"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2006,
-      "sha256": "66fa2d0b0a0cc383cf72f3af81f81e6ff9ac3b3285b627059ee559c7abc03bd8"
+      "bytes": 2032,
+      "sha256": "e1af41278927fa4de1418b0e3f048d7a65d9f5c0d5a49d5d79dc5dd306b9d599"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "enzyme_kinetics",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "substrate_um",
     "y": "rate",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": "inhibitor",
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Substrate (uM)",
+    "ylab": "Rate (nmol/min/mg)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_rate.csv",
@@ -24,56 +56,62 @@
     "n_curves": 3,
     "curves": {
       "0 uM": {
-        "vmax": 119.420722,
-        "vmax_ci_low": 115.963147,
-        "vmax_ci_high": 122.878296,
-        "km": 18.454309,
-        "km_ci_low": 16.456241,
-        "km_ci_high": 20.452377,
-        "r_squared": 0.991352
+        "fit_status": "fitted",
+        "status_reason": null,
+        "vmax": 119.420721778837,
+        "vmax_ci_low": 115.963147121474,
+        "vmax_ci_high": 122.8782964362,
+        "km": 18.4543092239766,
+        "km_ci_low": 16.4562410376005,
+        "km_ci_high": 20.4523774103527,
+        "r_squared": 0.991352083168473
       },
       "2 uM": {
-        "vmax": 121.184557,
-        "vmax_ci_low": 118.159657,
-        "vmax_ci_high": 124.209458,
-        "km": 27.694701,
-        "km_ci_low": 25.334198,
-        "km_ci_high": 30.055203,
-        "r_squared": 0.995526
+        "fit_status": "fitted",
+        "status_reason": null,
+        "vmax": 121.184557299952,
+        "vmax_ci_low": 118.15965707212,
+        "vmax_ci_high": 124.209457527784,
+        "km": 27.6947005620092,
+        "km_ci_low": 25.3341983738383,
+        "km_ci_high": 30.05520275018,
+        "r_squared": 0.995525965155346
       },
       "10 uM": {
-        "vmax": 120.985688,
-        "vmax_ci_low": 116.417237,
-        "vmax_ci_high": 125.554139,
-        "km": 65.139068,
-        "km_ci_low": 58.406953,
-        "km_ci_high": 71.871183,
-        "r_squared": 0.995461
+        "fit_status": "fitted",
+        "status_reason": null,
+        "vmax": 120.985687826055,
+        "vmax_ci_low": 116.417237040006,
+        "vmax_ci_high": 125.554138612103,
+        "km": 65.1390679372729,
+        "km_ci_low": 58.4069533628311,
+        "km_ci_high": 71.8711825117148,
+        "r_squared": 0.995461099372303
       }
     },
     "shared_km_test": {
-      "statistic": 151.842716,
+      "statistic": 151.842716448373,
       "df1": 2,
       "df2": 66,
-      "p_value": 2.025269e-25,
-      "shared_value": 28.21103,
-      "rss_shared": 2964.385189,
-      "rss_separate": 529.232166
+      "p_value": 2.02526902512244e-25,
+      "shared_value": 28.2110296691135,
+      "rss_shared": 2964.38518882585,
+      "rss_separate": 529.232166194525
     },
     "shared_vmax_test": {
-      "statistic": 0.389914,
+      "statistic": 0.389914139004628,
       "df1": 2,
       "df2": 66,
-      "p_value": 0.678664,
-      "shared_value": 120.290631,
-      "rss_shared": 535.485351,
-      "rss_separate": 529.232166
+      "p_value": 0.678664356540711,
+      "shared_value": 120.290630833726,
+      "rss_shared": 535.485351176807,
+      "rss_separate": 529.232166194525
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -99,7 +137,7 @@
     {
       "file": "figure_rate_enzyme.pdf",
       "bytes": 15627,
-      "sha256": "d08fbed39d1f5d0b4a9720d47ae97733e7fed2142aaf87e2d55f11cc6ea05213"
+      "sha256": "6f71d72636d41ff7926c0ee64d7a4892529aac0a6c866cc2b315c8325875643f"
     },
     {
       "file": "figure_rate_enzyme.png",
@@ -118,18 +156,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4290,
-      "sha256": "3e464a63f9c1a6af9bc17cddb53f9592a952db4641ca92a31ffb7ddcf2c09115"
+      "bytes": 4555,
+      "sha256": "a20fbe6207b99fbeb49b522490a7d7f70bd5a6ae63a6f67ab8339ae9a13f93c6"
     },
     {
       "file": "report.html",
-      "bytes": 1414311,
-      "sha256": "cbeaa014ffe7b7c70ed71c277ec9816eae5aa554db0d86513c6d8118286a50c7"
+      "bytes": 1414668,
+      "sha256": "fe3c072837f6dc8a6ad3a7c5789265cf25f98981ded40791877c22366aaac541"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2043,
-      "sha256": "7d9f0f8884a90d83b2283e719b04e528d0c56df486bcd249e278e2e15d03e18b"
+      "bytes": 2069,
+      "sha256": "86ab8bec08e986b0ef919bb151c7eb2d4b1347a4e1488cbd1a7d20bd405c4a81"
     }
   ]
 }

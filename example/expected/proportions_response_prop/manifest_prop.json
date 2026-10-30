@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "proportions",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "arm",
     "y": "response",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_response.csv",
@@ -21,19 +53,19 @@
   },
   "statistical_test": {
     "name": "Pearson's chi-squared test",
-    "statistic": 5.630165,
+    "statistic": 5.63016496465043,
     "df": 1,
-    "p_value": 0.017654,
-    "odds_ratio": 2.387755,
+    "p_value": 0.0176539700146907,
+    "odds_ratio": 2.38775510204082,
     "or_conf_low": null,
     "or_conf_high": null,
     "n": 124,
     "any_expected_below_5": false
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -59,7 +91,7 @@
     {
       "file": "figure_response_prop.pdf",
       "bytes": 6918,
-      "sha256": "b3e7a34a2576497f12c45f1c78cc20f67976ab4558e07dad60c8657a96243df7"
+      "sha256": "c356eedefde578411e4f411ad2b31bdf947a792d10d0445033e258b086037638"
     },
     {
       "file": "figure_response_prop.png",
@@ -78,18 +110,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3232,
-      "sha256": "269f5e6cf6bd02500de0efee42cf8475f51121708e3b34fb2058991a06ec25b3"
+      "bytes": 3250,
+      "sha256": "6932868ee561db93cc90107b47e92dd783475c4aca6c2c4b8c1de4a286b7fd7a"
     },
     {
       "file": "report.html",
-      "bytes": 1287057,
-      "sha256": "00b8ebc56f439e3ac1270d51017f3b7bbd163002fe5d9ac79eab51b780f7652b"
+      "bytes": 1287075,
+      "sha256": "32d96df86c25d74dbc42effddaf8332c334e76f26a2f2f2fd05ae26b239538d4"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1999,
-      "sha256": "5df18d13b52a7111c1175602279370e8866b0c360768d7b3bb6cc8902e7d5267"
+      "bytes": 2025,
+      "sha256": "394f446769799c6ee109f85707f7592a0e0f02b3517ff92f8a8fb59e8416f431"
     }
   ]
 }

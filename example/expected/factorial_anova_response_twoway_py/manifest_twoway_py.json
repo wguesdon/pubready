@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "factorial_anova",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": "Response (a.u.)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_response.csv",
@@ -28,6 +58,10 @@
       "genotype",
       "treatment"
     ],
+    "residual_normality": {
+      "test": "shapiro-wilk",
+      "p": 0.3400458289193262
+    },
     "effects": [
       {
         "effect": "genotype",
@@ -56,9 +90,9 @@
     ]
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -89,7 +123,7 @@
     {
       "file": "figure_response_twoway_py.pdf",
       "bytes": 16707,
-      "sha256": "e32048955a95895485baf775a6c93166cc51a51100199d656a0ba5f4de142f7e"
+      "sha256": "2f4a600e9aebfc8f0cfb35d3763f82af58fa1723f668506d5d2da1b46618884b"
     },
     {
       "file": "figure_response_twoway_py.png",
@@ -99,7 +133,7 @@
     {
       "file": "figure_response_twoway_py.svg",
       "bytes": 48334,
-      "sha256": "8806eb76fde9cb4e55f142bd83f826c0c3f02bce8b96dbd27b7475cfccee4e9d"
+      "sha256": "4734cfb5710004cfdc8731218c9ff25e487530d553a4879a8472c04a4d9e6ad6"
     },
     {
       "file": "packages_twoway_py.txt",
@@ -108,28 +142,28 @@
     },
     {
       "file": "qc_normality_twoway_py.png",
-      "bytes": 66209,
-      "sha256": "986d06bd3aa8e7fb1a40ba5286efa50213c6292287fdbf1ab265b54508987787"
+      "bytes": 73825,
+      "sha256": "2a9c9c1f74da7271473feb94327f5a4b610716ff4ebdfe7f3a42c4107126ddd9"
     },
     {
       "file": "qc_normality_twoway_py.pdf",
-      "bytes": 23419,
-      "sha256": "2bd076da790207fc1dcc51c01c594d0c1f50e0f7d10cda011cd3e55277ce3d88"
+      "bytes": 23450,
+      "sha256": "3b96a3ec827cea5483225f1e20c3b78c36804457413233a51fbab0265b6f7ec4"
     },
     {
       "file": "report.qmd",
-      "bytes": 3376,
-      "sha256": "026c0457afe79290f9416ed1487113de43b3ec6c4cff2693fe8b13a115ca09db"
+      "bytes": 3486,
+      "sha256": "ac7500a51542460f7d84e7fcf7f8b9f2e0e4a30e9e5a3a24308f8a5d14efb6e9"
     },
     {
       "file": "report.html",
-      "bytes": 1357872,
-      "sha256": "d756760922d3dbde44cb102675723644dbb69dc1175ff6b326682862b8bdb2d4"
+      "bytes": 1358029,
+      "sha256": "3a2e4aa1ec0d266d014a5269b9ab046ee5c3f78ebafa4938079a5aa261091650"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2042,
-      "sha256": "55e544b6dbf365940be88d73ea6716ce13ead405f4bca7d2ea1875d9f8d8cd6f"
+      "bytes": 2068,
+      "sha256": "acdac93544cc2519f814d4f21b44161604084676121d5f2b0f24e4ef69dfcc6a"
     }
   ]
 }

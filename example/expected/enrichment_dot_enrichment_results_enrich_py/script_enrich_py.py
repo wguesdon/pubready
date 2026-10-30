@@ -9,6 +9,8 @@ import numpy as np, pandas as pd
 raw = pd.read_csv("input_enrichment_results.csv")
 term = raw["Description"].astype(str).to_numpy()
 padj = pd.to_numeric(raw["p.adjust"], errors="coerce").to_numpy()
+# An adjusted p of exactly 0 is set to the smallest positive double, as in the figure.
+padj = np.where(padj == 0, np.finfo(float).tiny, padj)
 ct = pd.to_numeric(raw["Count"], errors="coerce").to_numpy()
 x = np.array([float(s.split("/")[0]) / float(s.split("/")[1]) if "/" in s else float(s) for s in raw["GeneRatio"].astype(str)]); xlab = "gene ratio"
 idx = np.argsort(padj, kind="stable")[:15]

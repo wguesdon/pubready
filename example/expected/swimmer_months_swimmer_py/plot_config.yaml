@@ -21,13 +21,14 @@ data:
   ref: null
   cause: null
   levels: null
+  visit_levels: null
+  features: null
   markers:
   - response_month
   - progression_month
 test:
   method: auto
   paired: false
-  p_adjust: none
 appearance:
   theme: pubready_house
   palette: null

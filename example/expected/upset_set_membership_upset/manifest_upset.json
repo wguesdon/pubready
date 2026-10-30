@@ -1,16 +1,48 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "upset",
   "recipe_version": "1",
   "arguments": {
-    "x": {},
-    "y": {},
+    "x": null,
+    "y": null,
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_set_membership.csv",
@@ -28,9 +60,9 @@
     "largest_intersection": 10
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -56,7 +88,7 @@
     {
       "file": "figure_set_membership_upset.pdf",
       "bytes": 10603,
-      "sha256": "24dd8cefa1d528182be7ce252a252ff70734f1a1bdf5ab473fd4af6aa018441f"
+      "sha256": "743b1f6bc1067b428df9ee3fb235e710e230c2d19d482195d39de638303de4e0"
     },
     {
       "file": "figure_set_membership_upset.png",
@@ -75,18 +107,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3489,
-      "sha256": "d217cc30f977eb95a34d9c1df392b44b00a5f365ee33ed0a83c19f8159d8af18"
+      "bytes": 3507,
+      "sha256": "214603e57911156e7b28b52b055275bf89af8a22e819e88e3aed34aa91ac3e56"
     },
     {
       "file": "report.html",
-      "bytes": 1243157,
-      "sha256": "22decf6b2436004b4084e9e45b948136986a79b1311bae1248ebbc27cafb25cf"
+      "bytes": 1243175,
+      "sha256": "ca2794324d13b19032a32439a8539007f0198dc4b44f2ac43782ae8bc0478e25"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 1985,
-      "sha256": "c2c9e8d771f1305f880c4fd20d2dc595e99894c2745d5ea4c5b5c92d6171ed18"
+      "bytes": 2011,
+      "sha256": "ed0724ef5d427674702f4030c47e7f6f1dbd8d8f58512b4fea1f54ec4582b95c"
     }
   ]
 }

@@ -41,7 +41,8 @@ def ordered_linkage(values, weights):
 
 
 raw = pd.read_csv("input_correlation_vars.csv")
-num = raw.select_dtypes(include="number")
+# The variables of the figure; a cell that does not read as a number is NaN.
+num = raw[['il6', 'tnf', 'crp', 'il1b', 'il10', 'tgfb', 'il4', 'ifng']].apply(pd.to_numeric, errors="coerce")
 M = num.corr(method="pearson")
 # The leaf order of the figure: complete linkage on the Euclidean distance of
 # the matrix rows, and at each merge the branch with the higher mean correlation

@@ -1,7 +1,7 @@
 outcome,group1,group2,contrast,n1,n2,post_hoc,estimate,p_adj,p_adj_signif,displayed,omnibus_test,omnibus_statistic,omnibus_df1,omnibus_df2,omnibus_p,omnibus_effect_size_name,omnibus_effect_size
-expression,het,ko,ko - het,10,10,Tukey's HSD,3.910000000000002,4.9960036108132044e-15,****,True,one-way ANOVA,235.83211267605637,3,36,1.0214193694811828e-23,partial eta-squared,0.9515801246641298
-expression,het,rescue,rescue - het,10,10,Tukey's HSD,-1.549999999999999,1.2967871768632122e-06,****,True,one-way ANOVA,235.83211267605637,3,36,1.0214193694811828e-23,partial eta-squared,0.9515801246641298
-expression,het,wt,wt - het,10,10,Tukey's HSD,-1.8200000000000003,4.561359057131398e-08,****,True,one-way ANOVA,235.83211267605637,3,36,1.0214193694811828e-23,partial eta-squared,0.9515801246641298
-expression,ko,rescue,rescue - ko,10,10,Tukey's HSD,-5.460000000000001,4.884981308350689e-15,****,True,one-way ANOVA,235.83211267605637,3,36,1.0214193694811828e-23,partial eta-squared,0.9515801246641298
-expression,ko,wt,wt - ko,10,10,Tukey's HSD,-5.730000000000002,4.884981308350689e-15,****,True,one-way ANOVA,235.83211267605637,3,36,1.0214193694811828e-23,partial eta-squared,0.9515801246641298
-expression,rescue,wt,wt - rescue,10,10,Tukey's HSD,-0.27000000000000135,0.6857947897299388,ns,False,one-way ANOVA,235.83211267605637,3,36,1.0214193694811828e-23,partial eta-squared,0.9515801246641298
+expression,het,ko,ko - het,10,10,Tukey's HSD,3.910000000000002,< 1e-12,****,TRUE,one-way ANOVA,235.83211267605637,3,36,1.0214193694811828e-23,partial eta-squared,0.9515801246641298
+expression,het,rescue,rescue - het,10,10,Tukey's HSD,-1.549999999999999,1.29678717686321e-06,****,TRUE,one-way ANOVA,235.83211267605637,3,36,1.0214193694811828e-23,partial eta-squared,0.9515801246641298
+expression,het,wt,wt - het,10,10,Tukey's HSD,-1.8200000000000003,4.5613590571314e-08,****,TRUE,one-way ANOVA,235.83211267605637,3,36,1.0214193694811828e-23,partial eta-squared,0.9515801246641298
+expression,ko,rescue,rescue - ko,10,10,Tukey's HSD,-5.460000000000001,< 1e-12,****,TRUE,one-way ANOVA,235.83211267605637,3,36,1.0214193694811828e-23,partial eta-squared,0.9515801246641298
+expression,ko,wt,wt - ko,10,10,Tukey's HSD,-5.730000000000002,< 1e-12,****,TRUE,one-way ANOVA,235.83211267605637,3,36,1.0214193694811828e-23,partial eta-squared,0.9515801246641298
+expression,rescue,wt,wt - rescue,10,10,Tukey's HSD,-0.27000000000000135,0.685794789729939,ns,FALSE,one-way ANOVA,235.83211267605637,3,36,1.0214193694811828e-23,partial eta-squared,0.9515801246641298

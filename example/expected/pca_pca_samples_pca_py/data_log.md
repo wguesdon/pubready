@@ -7,6 +7,12 @@
 - Analyzed rows: 36
 - Columns: 42
 
+## Read rule
+
+Each cell was read as text, and the spaces around each value were removed. Only an empty cell or "NA" was read as missing. A column was read as numeric when each present cell is a number with "." as the decimal mark, and as logical when each present cell is TRUE or FALSE.
+
+- No value changed at read.
+
 ## Column types (analyzed data)
 
 - `sample`: object
@@ -54,4 +60,5 @@
 
 ## Cleaning steps
 
-- Used 36 samples and 40 numeric features.
+- Used 36 samples and 40 numeric features: 'feature01', 'feature02', 'feature03', 'feature04', 'feature05', 'feature06', 'feature07', 'feature08', 'feature09', 'feature10', 'feature11', 'feature12', 'feature13', 'feature14', 'feature15', 'feature16', 'feature17', 'feature18', 'feature19', 'feature20', and 20 more.
+- Left out the text column(s) 'sample'.

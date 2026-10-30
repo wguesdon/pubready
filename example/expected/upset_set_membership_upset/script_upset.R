@@ -4,7 +4,12 @@
 suppressPackageStartupMessages(library(ComplexHeatmap))
 
 raw <- read.csv("input_set_membership.csv", check.names = FALSE, row.names = 1)
-bin <- as.data.frame(lapply(raw, as.numeric)) == 1
+# 1, TRUE, T, yes or y is a member; any other code or an empty cell is not.
+bin <- raw
+for (cn in names(raw)) {
+  s <- tolower(trimws(as.character(raw[[cn]])))
+  bin[[cn]] <- !is.na(s) & s %in% c("1", "true", "t", "yes", "y")
+}
 bin <- as.data.frame(bin[rowSums(bin) > 0, , drop = FALSE])
 m <- make_comb_mat(bin)
 cs <- comb_size(m); cd <- comb_degree(m); cn <- comb_name(m)

@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "enrichment_dot",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_enrichment_results.csv",
@@ -25,12 +55,15 @@
     "name": "ORA dot plot",
     "n_terms_total": 20,
     "n_terms_shown": 15,
-    "x_axis": "gene ratio"
+    "x_axis": "gene ratio",
+    "n_zero_p": 0,
+    "p_column": "p.adjust",
+    "p_adjusted": true
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -59,7 +92,7 @@
     {
       "file": "figure_enrichment_results_enrich_py.pdf",
       "bytes": 23093,
-      "sha256": "10659bb3ffe5050c261b69b60380cf1fd78df7b6c22644ab28300f5353952055"
+      "sha256": "100f790c66985c9343b995b623bd22d433059d2e356e8eb7b0044520037633b4"
     },
     {
       "file": "figure_enrichment_results_enrich_py.png",
@@ -69,7 +102,7 @@
     {
       "file": "figure_enrichment_results_enrich_py.svg",
       "bytes": 74514,
-      "sha256": "88377ca791e35e0c2085e1808834e2058acc1c3b76e2454b73fd8f5acfbd9e4d"
+      "sha256": "e955233a74f47de81e2282352b4b6989702f6e8166523fa61add7f8b32edd17a"
     },
     {
       "file": "packages_enrich_py.txt",
@@ -78,18 +111,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 3483,
-      "sha256": "bbbd999e6da088c8bbd39c840013754c0a171310a47ae86656305cc7d162935f"
+      "bytes": 3503,
+      "sha256": "3781c82ab806605acd4d291a6085543fe6aa8336f74b411cf22d5fa0c4eb0d60"
     },
     {
       "file": "report.html",
-      "bytes": 1497668,
-      "sha256": "48c80b6a26b6b1017ad8442854c1af6d578d05164745b6c2ad4361a9c9513046"
+      "bytes": 1497688,
+      "sha256": "769cba4afa7d384e015a7d618d3b5d8a820ea5bdc0882bf1d7db37559c6d1a3f"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2021,
-      "sha256": "a4ee5869fad7065bdc81962b00257ec6f167d7762b3939bbbb9a74946091dc0e"
+      "bytes": 2047,
+      "sha256": "80916ff374f0de22f832c04ecf14d6c7ab65e63c6d79046b04de82166381ca5d"
     }
   ]
 }

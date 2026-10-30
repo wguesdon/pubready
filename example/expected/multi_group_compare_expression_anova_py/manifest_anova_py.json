@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "multi_group_compare",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Genotype",
+    "ylab": "Expression (a.u.)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_expression.csv",
@@ -47,12 +77,13 @@
         "test": "Levene",
         "p": 0.7498237890807486
       }
-    }
+    },
+    "rank_test_attainable_p": 5.631198837697744e-08
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -83,7 +114,7 @@
     {
       "file": "figure_expression_anova_py.pdf",
       "bytes": 16460,
-      "sha256": "c544a72fda33c292cf4c93e5b0096427d83f93fc929c4589f52834a1e3e3ae34"
+      "sha256": "2636d0fee9eab19f585179aa743c723fc555833fde854d1ea06fa29e1e9da03f"
     },
     {
       "file": "figure_expression_anova_py.png",
@@ -93,7 +124,7 @@
     {
       "file": "figure_expression_anova_py.svg",
       "bytes": 41844,
-      "sha256": "e66865653890609fb187832f2f57532ab6b01f237cfa259fdff122e2a924b874"
+      "sha256": "67b146f6c5ff0d135f5e340e646bb0964c851cdf40d0d4b077bcc22631f8854c"
     },
     {
       "file": "packages_anova_py.txt",
@@ -102,28 +133,28 @@
     },
     {
       "file": "qc_normality_anova_py.png",
-      "bytes": 158120,
-      "sha256": "7dd7f1f7649577fda8ae9b13a186ee5e01610a00d327de585e86d3b1f5e1bfb8"
+      "bytes": 156667,
+      "sha256": "a2ff66aace8aa5e2b2216eb6a3b911adc0a0d7561539e8c99414d8084f8abe4d"
     },
     {
       "file": "qc_normality_anova_py.pdf",
-      "bytes": 26691,
-      "sha256": "a1af4927a56c55b9aeb32f5ede6e56c196f46daa5f6505621ff363d6ad9ed14c"
+      "bytes": 26685,
+      "sha256": "f8d2bd88a5e4cda375703b169186f82091b521d2ef4c8180635b3f3f144110aa"
     },
     {
       "file": "report.qmd",
-      "bytes": 4623,
-      "sha256": "64c6800decf9f1759a11b73573ab986fbfdabd1c27da9921e5c73bb3a27d55f8"
+      "bytes": 4595,
+      "sha256": "d0a82041aa75f8998a02cc022bf77cbaa7053f9304a0002dc0c2296e0d35e265"
     },
     {
       "file": "report.html",
-      "bytes": 1331066,
-      "sha256": "8d81bd97e7349a6536dd77bc39aa743c3872f6a5ff7583847e56d3792a7b5d47"
+      "bytes": 1331047,
+      "sha256": "0cd081d508216df43460c79e53f96b1dadc3e4f02df8c38f242e3463312c0613"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2055,
-      "sha256": "3dd56f781ad655fc2fe6a79757aba5f17087d5029443ff3b5484a855f4917c3f"
+      "bytes": 2081,
+      "sha256": "6871f2dbcd6969e88e26d7a9ac1d1c1595218e03af004bca37d54dbcdf1f10ee"
     }
   ]
 }

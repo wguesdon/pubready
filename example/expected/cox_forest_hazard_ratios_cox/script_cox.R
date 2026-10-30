@@ -7,7 +7,8 @@ suppressPackageStartupMessages({
 
 df <- as.data.frame(read_csv("input_hazard_ratios.csv", show_col_types = FALSE))
 covs <- c("arm", "age", "sex", "stage")
-for (c in covs) if (is.character(df[[c]])) df[[c]] <- factor(df[[c]])
+# The first level of each text covariate, in code-point order, is the reference.
+for (c in covs) if (is.character(df[[c]])) df[[c]] <- factor(df[[c]], levels = sort(unique(df[[c]]), method = "radix"))
 
 cox <- coxph(Surv(`time`, `event`) ~ `arm` + `age` + `sex` + `stage`, data = df)
 ci <- exp(confint(cox)); pv <- summary(cox)$coefficients[, "Pr(>|z|)"]

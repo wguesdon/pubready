@@ -4,6 +4,8 @@ suppressPackageStartupMessages(library(ggplot2))
 
 raw <- read.csv("input_enrichment_results.csv", check.names = FALSE)
 d <- data.frame(term = as.character(raw[["Description"]]), padj = as.numeric(raw[["p.adjust"]]))
+# An adjusted p of exactly 0 is set to the smallest positive double, as in the figure.
+d$padj[!is.na(d$padj) & d$padj == 0] <- .Machine$double.xmin
 d$count <- as.numeric(raw[["Count"]])
 d$x <- sapply(strsplit(as.character(raw[["GeneRatio"]]), "/"), function(a) as.numeric(a[1])/as.numeric(a[2])); xlab <- "gene ratio"
 d <- d[order(d$padj), ][seq_len(min(15, nrow(d))), ]

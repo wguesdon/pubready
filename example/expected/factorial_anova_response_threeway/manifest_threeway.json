@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "factorial_anova",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "genotype",
     "y": "response",
+    "fill": "treatment",
+    "facet": "sex",
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": "Response (a.u.)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_response.csv",
@@ -29,71 +61,71 @@
     "type": "type_II_anova",
     "residual_normality": {
       "test": "shapiro-wilk",
-      "p": 0.050052
+      "p": 0.0500522087021456
     },
     "effects": [
       {
         "effect": "genotype",
         "df1": 1,
         "df2": 40,
-        "statistic": 111.297033,
-        "p_value": 4.034755e-13,
-        "effect_size": 0.735619
+        "statistic": 111.297033321827,
+        "p_value": 4.03475468108602e-13,
+        "effect_size": 0.735619402960035
       },
       {
         "effect": "treatment",
         "df1": 1,
         "df2": 40,
-        "statistic": 197.011899,
-        "p_value": 4.80901e-17,
-        "effect_size": 0.831232
+        "statistic": 197.011899201982,
+        "p_value": 4.80901048940054e-17,
+        "effect_size": 0.831232102123649
       },
       {
         "effect": "sex",
         "df1": 1,
         "df2": 40,
-        "statistic": 10.20255,
-        "p_value": 0.002734,
-        "effect_size": 0.203228
+        "statistic": 10.202550409162,
+        "p_value": 0.00273439730727323,
+        "effect_size": 0.20322773098197
       },
       {
         "effect": "genotype:treatment",
         "df1": 1,
         "df2": 40,
-        "statistic": 10.074218,
-        "p_value": 0.00289,
-        "effect_size": 0.201186
+        "statistic": 10.0742177188458,
+        "p_value": 0.00289012052954796,
+        "effect_size": 0.201185723467714
       },
       {
         "effect": "genotype:sex",
         "df1": 1,
         "df2": 40,
-        "statistic": 0.243771,
-        "p_value": 0.624196,
-        "effect_size": 0.006057
+        "statistic": 0.243771194184417,
+        "p_value": 0.624195816399933,
+        "effect_size": 0.00605736457968046
       },
       {
         "effect": "treatment:sex",
         "df1": 1,
         "df2": 40,
-        "statistic": 0.511808,
-        "p_value": 0.478513,
-        "effect_size": 0.012634
+        "statistic": 0.511807825857418,
+        "p_value": 0.478512679627639,
+        "effect_size": 0.0126335469416091
       },
       {
         "effect": "genotype:treatment:sex",
         "df1": 1,
         "df2": 40,
-        "statistic": 0.074015,
-        "p_value": 0.786978,
-        "effect_size": 0.001847
+        "statistic": 0.0740146607915223,
+        "p_value": 0.786978080308169,
+        "effect_size": 0.00184694898721835
       }
     ]
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -121,7 +153,7 @@
     {
       "file": "figure_response_threeway.pdf",
       "bytes": 17027,
-      "sha256": "d8e8d103213e8d275a0aa74f4f6115abf728ce776f9e51112bf15c2287412d8a"
+      "sha256": "e1e526d3bb1ce81a41b449513c18c89ff6df4eca91ae8d96b8de1f9a88d54781"
     },
     {
       "file": "figure_response_threeway.png",
@@ -135,33 +167,33 @@
     },
     {
       "file": "packages_threeway.txt",
-      "bytes": 3604,
-      "sha256": "b90479163b92dfe99e4967a52ca9fa3b44aa970b9d0dd639f1b34c78c90fcf75"
+      "bytes": 3615,
+      "sha256": "50bde1e04f10e8fb9311a383de7821d237f70f1b6ddc57a2a5b5caac6cce1f6d"
     },
     {
       "file": "qc_normality_threeway.png",
-      "bytes": 57508,
-      "sha256": "81e18648c0c029744c6dc033b5cdc57c0f4039b6c68272931d571d55fbd97e5b"
+      "bytes": 64785,
+      "sha256": "4563d47af86b6cbeab53f4562b3fbb5ea1fa9d6d46daab126d99fa3e7d805332"
     },
     {
       "file": "qc_normality_threeway.pdf",
-      "bytes": 20286,
-      "sha256": "26e8538d766780f4e3c7fb0e5428fb6f95b48f6096b865f9b4d213edccc4f3ec"
+      "bytes": 20240,
+      "sha256": "f216745a3ffecf74b6d03468b1cd4136d9b1ef6a8d7bd46ff2c714264612931d"
     },
     {
       "file": "report.qmd",
-      "bytes": 3807,
-      "sha256": "93c831f45d8cfcc84e300785d95f32939413b206b43e2fa0ca8b28beb41aa233"
+      "bytes": 3999,
+      "sha256": "8ccb3628669bc6208bde62e849c9995d5b82f3c4c0a8695fad9e656583828eef"
     },
     {
       "file": "report.html",
-      "bytes": 1328583,
-      "sha256": "c8609bf90c38e2b431f2c06360c987fff4a1142cd1e2af629869b114f4d2bb4d"
+      "bytes": 1328850,
+      "sha256": "f038a91822f352f804983ddf5bcaed802b11785c5320ed01171289d3ed250352"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2035,
-      "sha256": "1cd7df328e892fda9092ab48caa10e836b6ac1ef48acbc57b17f64cec564b8bd"
+      "bytes": 2061,
+      "sha256": "f50d2092a9ffc65c4e3a967da7c995c8d663b6585e148072a56efab6573f44a7"
     }
   ]
 }

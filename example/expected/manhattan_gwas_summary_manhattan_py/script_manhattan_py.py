@@ -7,7 +7,9 @@ import numpy as np, pandas as pd
 from scipy import stats
 
 raw = pd.read_csv("input_gwas_summary.csv")
-chrs = raw["chr"].astype(str).str.replace(r"^(?i:chr)", "", regex=True).to_numpy()
+# A numeric chromosome reads "1" and not "1.0", as in the figure.
+chrs = (raw["chr"].astype(str).str.replace(r"\.0$", "", regex=True)
+        .str.replace(r"^(?i:chr)", "", regex=True).to_numpy())
 pos = pd.to_numeric(raw["pos"], errors="coerce").to_numpy(float)
 p = pd.to_numeric(raw["p"], errors="coerce").to_numpy(float)
 keep = np.isfinite(pos) & np.isfinite(p)

@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "factorial_anova",
@@ -12,7 +12,37 @@
     "facet": "sex",
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": "Response (a.u.)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_response.csv",
@@ -29,6 +59,10 @@
       "treatment",
       "sex"
     ],
+    "residual_normality": {
+      "test": "shapiro-wilk",
+      "p": 0.05005220875977767
+    },
     "effects": [
       {
         "effect": "genotype",
@@ -89,9 +123,9 @@
     ]
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -122,7 +156,7 @@
     {
       "file": "figure_response_threeway_py.pdf",
       "bytes": 18762,
-      "sha256": "44bf54564f9d5d62a734f12edf89ef2fd857471b365af239f1ab9f167e99bc57"
+      "sha256": "dc8f2daa62d127c0e492e6aef04588fb53b4cf684798b85605a19c6491fbd660"
     },
     {
       "file": "figure_response_threeway_py.png",
@@ -132,7 +166,7 @@
     {
       "file": "figure_response_threeway_py.svg",
       "bytes": 56350,
-      "sha256": "5e469681d4d69f404a2137a5072671d43da7709eecc76a3f1a951fe522fb8fb0"
+      "sha256": "77cece41b055f4bdf442462ce54879a041a41560cf7652bda2bc7697d1ba7e2b"
     },
     {
       "file": "packages_threeway_py.txt",
@@ -141,28 +175,28 @@
     },
     {
       "file": "qc_normality_threeway_py.png",
-      "bytes": 65897,
-      "sha256": "d3d90a57712ee0c605b4cab4bcfa2349614dac630d302ac90c14a54fb81f4603"
+      "bytes": 73537,
+      "sha256": "4639c9a9904bb0b60573f6ff0f1a61b15fef0dbc066306a750795c3755d6f59c"
     },
     {
       "file": "qc_normality_threeway_py.pdf",
-      "bytes": 23716,
-      "sha256": "d516d2e955ddc4ec4b9cf5586cd6d5e82bb0cb09507f0f81eb3f0f4ca4827c7a"
+      "bytes": 23745,
+      "sha256": "ab2547844349ed036dc3a75af8938da18542ee75eb0e4001970db56e41541bb6"
     },
     {
       "file": "report.qmd",
-      "bytes": 4061,
-      "sha256": "e36abfcecbbd443d4726010ac42afcb86d2e8ffe2998cecfbc688b3b68bc884a"
+      "bytes": 4262,
+      "sha256": "d4640ee97eac27ff3e91dd59111095462d4ba0e434ff8f20ef0061016fbf2972"
     },
     {
       "file": "report.html",
-      "bytes": 1372602,
-      "sha256": "18743d2aa5d5d6988662b45c62fb21049c39882cb0b88258500a1d7598f3229c"
+      "bytes": 1372878,
+      "sha256": "60809d72d817bb6fd261db5d1e8ed30b405ed7387194b89705e4ac56f2712ef9"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2045,
-      "sha256": "b0fe944cec715e54faa7021b139d8333994ce13a00184e1dff8e2f2662a10067"
+      "bytes": 2071,
+      "sha256": "c61144a17a9f4fbec5557720da30409d3f14827149c6cb62b908dfb264b8810d"
     }
   ]
 }

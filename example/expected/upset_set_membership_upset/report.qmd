@@ -57,18 +57,18 @@ The complete plot configuration is in `plot_config.yaml`.
 | field | value |
 | --- | --- |
 | repository | pubready |
-| repository_version | 3.0.0 |
-| git_commit | 4657df8148b43cbd66ec3a2bc04a756a38e7843c |
+| repository_version | 4.0.0 |
+| git_commit | 567ce8900bdb5db88369d131c8d787b042b3af57 |
 | git_dirty | FALSE |
 | llm_provider | none |
 | llm_model | none |
 | agent_harness | manual |
 | agent_harness_version | not_recorded |
-| container_image | localhost/pubready:3.0.0 |
-| container_digest | sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290 |
+| container_image | localhost/pubready:4.0.0 |
+| container_digest | sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483 |
 | input | {"file":"input_set_membership.csv","md5":"62b68d6ca9159eb4de4ff4c2d35ded26","sha256":"5aabbab60c65f2af913bb91fd373a32c42ec6ded5459b606e3f5d099b1c70528"} |
 | command | figkit plot --recipe upset |
-| analysis_options | {"engine":"r","recipe":"upset","data":{"file":"set_membership.csv","x":null,"y":null,"fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":null,"cause":null,"levels":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false,"p_adjust":"none"},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
+| analysis_options | {"engine":"r","recipe":"upset","data":{"file":"set_membership.csv","x":null,"y":null,"fill":null,"facet":null,"time":null,"event":null,"annotation":null,"id":null,"group":null,"label":null,"positive":null,"se":null,"ci_low":null,"ci_high":null,"measure":null,"ref":null,"cause":null,"levels":null,"visit_levels":null,"features":null,"markers":null,"covariates":null},"test":{"method":"auto","paired":false},"appearance":{"theme":"pubready_house","palette":null,"x_label":null,"y_label":null,"title":null,"y_limits":[null,null],"show_points":true,"geom":"box","bracket":{"show":true,"label":"p.signif"},"scale":"row","cluster":"both","fc_cutoff":1,"p_cutoff":0.05,"top_n":15,"pd_threshold":20,"pr_threshold":-30}} |
 | random_seeds | not_applicable |
 | session_record | session_info.txt |
 | created_utc | 2026-07-18T00:00:00Z |

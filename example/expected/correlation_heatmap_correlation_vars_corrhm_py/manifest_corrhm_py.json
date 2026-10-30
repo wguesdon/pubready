@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "correlation_heatmap",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_correlation_vars.csv",
@@ -50,9 +80,9 @@
     ]
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -81,7 +111,7 @@
     {
       "file": "figure_correlation_vars_corrhm_py.pdf",
       "bytes": 16309,
-      "sha256": "74ab0b7dce471e7b380942f5db539fb2ac3f435ddc3eaee7d7439ad7f0d33622"
+      "sha256": "279fa12503cb66ae93fb839fa6511e1e3e776902acf6f292cde85340f8463398"
     },
     {
       "file": "figure_correlation_vars_corrhm_py.png",
@@ -91,7 +121,7 @@
     {
       "file": "figure_correlation_vars_corrhm_py.svg",
       "bytes": 75360,
-      "sha256": "a6f00e3977894fa3640ad63f5f201f88b17f37392f8aca80f16af1f1cd756538"
+      "sha256": "35165677e7215147a51925172eca1b7a4fbfad9a68f246a98aedfcc938b15a78"
     },
     {
       "file": "packages_corrhm_py.txt",
@@ -100,18 +130,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 5314,
-      "sha256": "8bcd950912fdfab7a62b4b614420dc20425335383212d064102f5b0c8fa604cd"
+      "bytes": 5334,
+      "sha256": "0514a267691b51b1b975f8af775e53525093d41646da11de6b97c5877866e5b3"
     },
     {
       "file": "report.html",
-      "bytes": 1430211,
-      "sha256": "659312b487856d1210935653c3932db62c82d7413f732751b5b9f73b6995f1eb"
+      "bytes": 1430231,
+      "sha256": "9b47313e9b9ab28784d6426821b6add7d70c8a449ec39804057adf6dcd8607d2"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2027,
-      "sha256": "9a158f6e408dc5cde27ac0646544d6fe8ab3d7660b085e0917109521e90ac9fc"
+      "bytes": 2053,
+      "sha256": "e21166643207d913ad44e279cdc01289c00691e9b7e47e6af91250eaaa36f8eb"
     }
   ]
 }

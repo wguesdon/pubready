@@ -7,7 +7,9 @@ import pandas as pd
 from lifelines import KaplanMeierFitter
 from lifelines.statistics import multivariate_logrank_test
 
-df = pd.read_csv("input_arm.csv"); df["arm"] = df["arm"].astype(str)
+df = pd.read_csv("input_arm.csv")
+# The group labels as the recipe writes them: a whole number with no ".0".
+df["arm"] = df["arm"].astype(str).str.replace(r"\.0$", "", regex=True)
 order, pal = ['control', 'treated'], ['#3B6DB3', '#C1432B']
 tmax = df["time"].max()
 breaks = [5.0 * k for k in range(int(np.floor(tmax / 5.0 + 1e-9)) + 1)]

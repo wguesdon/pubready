@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "sankey",
@@ -12,7 +12,42 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": "patient",
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": [
+      "complete response",
+      "partial response",
+      "stable disease",
+      "progressive disease"
+    ],
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Week",
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_response.csv",
@@ -40,9 +75,9 @@
     "no_test_reason": "more than two visits"
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -71,7 +106,7 @@
     {
       "file": "figure_response_sankey_py.pdf",
       "bytes": 25427,
-      "sha256": "da09a1835bd9c0646ea1745701104b0cdc868e789f07b0e7d99104f943f789e0"
+      "sha256": "30b0cfaa8bb923ceea66897041a9c190b2d7d2fff0712f9f325b23e4e38eb5d2"
     },
     {
       "file": "figure_response_sankey_py.png",
@@ -81,7 +116,7 @@
     {
       "file": "figure_response_sankey_py.svg",
       "bytes": 87012,
-      "sha256": "6a56f190143c1227c5a454c612a36b313ce4c96ed7c5ad62e9e77515f247c7f9"
+      "sha256": "74f18572c23e14b50884e99df52e1db4b45da41b571776feb5420abcaa8157cd"
     },
     {
       "file": "packages_sankey_py.txt",
@@ -90,18 +125,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4685,
-      "sha256": "e5b330dab730d9996e3d10cc20913176e3d89932cb831138639206d27b43e31c"
+      "bytes": 4436,
+      "sha256": "8dc7bb3eabe5297c27e452d27de0eb49114f1104bca87e486de6a7d5e4a79679"
     },
     {
       "file": "report.html",
-      "bytes": 1607448,
-      "sha256": "00663fc4528eb84b3ca4efac71fbe54c5af6a99d275dea67861b8abf65d9dc8d"
+      "bytes": 1607199,
+      "sha256": "23a69f5d9ea81b9a561097848cfb29c2820797921dff65d01cad3df76d115044"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2116,
-      "sha256": "daa134a2ade96efbbb75fb66ef5beb49d39f6378fe9a9a3eab1e68153ca15e71"
+      "bytes": 2142,
+      "sha256": "77e7a08b8ea9ed3a8cbb785a25fa11bd78d22d4532a74727b34c986ff38bffff"
     }
   ]
 }

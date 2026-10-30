@@ -21,11 +21,12 @@ data:
   ref: null
   cause: null
   levels: null
+  visit_levels: null
+  features: null
   markers: null
 test:
   method: auto
   paired: false
-  p_adjust: none
 appearance:
   theme: pubready_house
   palette: null

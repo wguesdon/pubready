@@ -9,12 +9,20 @@ import pandas as pd, seaborn as sns, pingouin as pg
 from scipy import stats as ss
 from statannotations.Annotator import Annotator
 
+
+def label(v):
+    """Write a group value as the figure does: a whole number with no decimal point."""
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    return str(v)
+
+
 df = pd.read_csv("input_volume.csv")
-df["group"] = df["group"].astype(str)
+df["group"] = df["group"].map(label)
 order = ['control', 'treated']
 a = df.loc[df["group"] == order[0], "volume"].to_numpy()
 b = df.loc[df["group"] == order[1], "volume"].to_numpy()
-res = pg.ttest(a, b, paired=False, correction=False); p = float(res["p_val"].iloc[0])
+res = pg.ttest(a, b, paired=False, correction=True); p = float(res["p_val"].iloc[0])
 
 fig, ax = plt.subplots(figsize=(3.8, 4.0))
 sns.boxplot(data=df, x="group", y="volume", hue="group", order=order, hue_order=order, palette=['#3B6DB3', '#C1432B'], ax=ax, legend=False, width=0.6, fliersize=0)

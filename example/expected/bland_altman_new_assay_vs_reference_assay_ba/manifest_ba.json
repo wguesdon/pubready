@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "bland_altman",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "new_assay",
     "y": "reference_assay",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_new_assay_vs_reference_assay.csv",
@@ -23,23 +55,24 @@
     "name": "Bland-Altman agreement analysis",
     "n": 40,
     "bias": 5.9325,
-    "bias_ci_low": 4.416928,
-    "bias_ci_high": 7.448072,
-    "sd_diff": 4.738895,
-    "loa_low": -3.355563,
-    "loa_high": 15.220563,
-    "loa_low_ci_low": -5.967443,
-    "loa_low_ci_high": -0.743682,
-    "loa_high_ci_low": 12.608682,
-    "loa_high_ci_high": 17.832443,
-    "prop_bias_slope": 0.044878,
-    "prop_bias_p": 0.001026,
-    "shapiro_p_diff": 0.665289
+    "bias_ci_low": 4.41692798856558,
+    "bias_ci_high": 7.44807201143442,
+    "sd_diff": 4.73889457520125,
+    "loa_low": -3.35556269392668,
+    "loa_high": 15.2205626939267,
+    "loa_low_ci_low": -5.96744291775781,
+    "loa_low_ci_high": -0.743682470095552,
+    "loa_high_ci_low": 12.6086824700956,
+    "loa_high_ci_high": 17.8324429177578,
+    "prop_bias_slope": 0.0448782324974291,
+    "prop_bias_p": 0.00102562860425819,
+    "shapiro_p_diff": 0.665288545663233,
+    "differences_constant": false
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -67,7 +100,7 @@
     {
       "file": "figure_new_assay_vs_reference_assay_ba.pdf",
       "bytes": 18381,
-      "sha256": "dcb1672871fd0fd7914a17ffa103bff8ab208b50c760a305b19eaf1e14fb67d9"
+      "sha256": "6bafc1cb8966e9b9391e91c2f3771b1776628f902bb214b87a6c80da527c5e36"
     },
     {
       "file": "figure_new_assay_vs_reference_assay_ba.png",
@@ -86,28 +119,28 @@
     },
     {
       "file": "qc_normality_ba.png",
-      "bytes": 61188,
-      "sha256": "3e041980c10f029e06020a588cfaccce91b2f91fff6836bbd66ee287280031a0"
+      "bytes": 70316,
+      "sha256": "4e78e61e65af87b0dfcedd91030cb572dff570d04cc8b08957210ed61af7f0bb"
     },
     {
       "file": "qc_normality_ba.pdf",
-      "bytes": 30914,
-      "sha256": "2ae2b81763c758f237422bdc83774d60bd19d3fae6e6ed2cda37ad84c99d8ed0"
+      "bytes": 30931,
+      "sha256": "22ea6b73a3f9b2641818727919974509e23de8871dbfacdf4808818d3be2af58"
     },
     {
       "file": "report.qmd",
-      "bytes": 3599,
-      "sha256": "185ad447acbc4bd2d48ee5a7b6268787006dcdefbc58624190e1289b7d643196"
+      "bytes": 3654,
+      "sha256": "18146fbc3dafb3d6fd4176acdfefeefbca14675bf21d8837300b74f915aeca81"
     },
     {
       "file": "report.html",
-      "bytes": 1356415,
-      "sha256": "e133360d27a274fa576c53a9df226ec70582a7afa5cbef181d0ba02c2d29e4b4"
+      "bytes": 1356502,
+      "sha256": "0f493d44fdf0a40bc79c8c686f6320c88462dc089103357335e5e3ea6ba613a2"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2035,
-      "sha256": "48fc289e22bff3976e6c00819e593073b6e953e08025eadc0f69276181afee1b"
+      "bytes": 2061,
+      "sha256": "397dea0cf4ca1661c746dcc15ce0b670b41847925fbfbeece2dc0b7f901d6524"
     }
   ]
 }

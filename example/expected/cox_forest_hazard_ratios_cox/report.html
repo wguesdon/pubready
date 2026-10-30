@@ -2244,12 +2244,13 @@ Important
 <h2 class="anchored" data-anchor-id="statistical-results">Statistical results</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -2259,6 +2260,7 @@ Important
 <th>ci_high</th>
 <th>z</th>
 <th>p_value</th>
+<th>note</th>
 </tr>
 </thead>
 <tbody>
@@ -2269,6 +2271,7 @@ Important
 <td>0.879699610491522</td>
 <td>-2.48394806021021</td>
 <td>0.0129934758234395</td>
+<td>estimated</td>
 </tr>
 <tr class="even">
 <td>age</td>
@@ -2277,6 +2280,7 @@ Important
 <td>1.02643549497616</td>
 <td>0.409017380540824</td>
 <td>0.682526906244195</td>
+<td>estimated</td>
 </tr>
 <tr class="odd">
 <td>sexmale</td>
@@ -2285,6 +2289,7 @@ Important
 <td>1.93677086709</td>
 <td>0.790507593100903</td>
 <td>0.429231389559849</td>
+<td>estimated</td>
 </tr>
 <tr class="even">
 <td>stageII</td>
@@ -2293,6 +2298,7 @@ Important
 <td>1.65904601971029</td>
 <td>-0.136270425100656</td>
 <td>0.891607503109909</td>
+<td>estimated</td>
 </tr>
 <tr class="odd">
 <td>stageIII</td>
@@ -2301,6 +2307,7 @@ Important
 <td>1.38320705661023</td>
 <td>-0.946623527113498</td>
 <td>0.343830650922065</td>
+<td>estimated</td>
 </tr>
 </tbody>
 </table>
@@ -2333,11 +2340,11 @@ Important
 </tr>
 <tr class="even">
 <td>repository_version</td>
-<td>3.0.0</td>
+<td>4.0.0</td>
 </tr>
 <tr class="odd">
 <td>git_commit</td>
-<td>4657df8148b43cbd66ec3a2bc04a756a38e7843c</td>
+<td>567ce8900bdb5db88369d131c8d787b042b3af57</td>
 </tr>
 <tr class="even">
 <td>git_dirty</td>
@@ -2361,11 +2368,11 @@ Important
 </tr>
 <tr class="odd">
 <td>container_image</td>
-<td>localhost/pubready:3.0.0</td>
+<td>localhost/pubready:4.0.0</td>
 </tr>
 <tr class="even">
 <td>container_digest</td>
-<td>sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290</td>
+<td>sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483</td>
 </tr>
 <tr class="odd">
 <td>input</td>
@@ -2377,7 +2384,7 @@ Important
 </tr>
 <tr class="odd">
 <td>analysis_options</td>
-<td>{“engine”:“r”,“recipe”:“cox_forest”,“data”:{“file”:“survival_trial.csv”,“x”:null,“y”:null,“fill”:null,“facet”:null,“time”:“time”,“event”:“event”,“annotation”:null,“id”:null,“group”:null,“label”:null,“positive”:null,“se”:null,“ci_low”:null,“ci_high”:null,“measure”:null,“ref”:null,“cause”:null,“levels”:null,“markers”:null,“covariates”:[“arm”,“age”,“sex”,“stage”]},“test”:{“method”:“auto”,“paired”:false,“p_adjust”:“none”},“appearance”:{“theme”:“pubready_house”,“palette”:null,“x_label”:null,“y_label”:null,“title”:null,“y_limits”:[null,null],“show_points”:true,“geom”:“box”,“bracket”:{“show”:true,“label”:“p.signif”},“scale”:“row”,“cluster”:“both”,“fc_cutoff”:1,“p_cutoff”:0.05,“top_n”:15,“pd_threshold”:20,“pr_threshold”:-30}}</td>
+<td>{“engine”:“r”,“recipe”:“cox_forest”,“data”:{“file”:“survival_trial.csv”,“x”:null,“y”:null,“fill”:null,“facet”:null,“time”:“time”,“event”:“event”,“annotation”:null,“id”:null,“group”:null,“label”:null,“positive”:null,“se”:null,“ci_low”:null,“ci_high”:null,“measure”:null,“ref”:null,“cause”:null,“levels”:null,“visit_levels”:null,“features”:null,“markers”:null,“covariates”:[“arm”,“age”,“sex”,“stage”]},“test”:{“method”:“auto”,“paired”:false},“appearance”:{“theme”:“pubready_house”,“palette”:null,“x_label”:null,“y_label”:null,“title”:null,“y_limits”:[null,null],“show_points”:true,“geom”:“box”,“bracket”:{“show”:true,“label”:“p.signif”},“scale”:“row”,“cluster”:“both”,“fc_cutoff”:1,“p_cutoff”:0.05,“top_n”:15,“pd_threshold”:20,“pr_threshold”:-30}}</td>
 </tr>
 <tr class="even">
 <td>random_seeds</td>

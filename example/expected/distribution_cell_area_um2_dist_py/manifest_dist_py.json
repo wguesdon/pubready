@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "distribution",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Cell area (um^2)",
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_cell_area_um2.csv",
@@ -84,9 +114,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -117,7 +147,7 @@
     {
       "file": "figure_cell_area_um2_dist_py.pdf",
       "bytes": 26398,
-      "sha256": "7072bfe062363ec5fda1e5075192f8329d08f68af9b1e5aa5df2b4dd213f46c8"
+      "sha256": "dbe461ae44706a868b9823650933ccfc947965d5e90d64f584097fd92bc727cd"
     },
     {
       "file": "figure_cell_area_um2_dist_py.png",
@@ -127,7 +157,7 @@
     {
       "file": "figure_cell_area_um2_dist_py.svg",
       "bytes": 112851,
-      "sha256": "3464b680402cff852616fef44113e81edd2a01ede6523fa8bde27d9305fbddda"
+      "sha256": "812e2ec0f4d4a644e6b7e7d6f2b5da039f4f1202d16ddd79ccc60a88bced3819"
     },
     {
       "file": "packages_dist_py.txt",
@@ -136,28 +166,28 @@
     },
     {
       "file": "qc_normality_dist_py.png",
-      "bytes": 156253,
-      "sha256": "c8c339e7be6a463fb9f58b95643be797f8fd77210c1dc53c1f54d76b6081e028"
+      "bytes": 158931,
+      "sha256": "398f6d505ed30607e81e26f71ec5c80bdb1f9a8ef6fb9b75701af2d892476c1f"
     },
     {
       "file": "qc_normality_dist_py.pdf",
-      "bytes": 32102,
-      "sha256": "e352457b0ada74362ff708a0cfd7e13517fa29341a69da9911416ed4dc98f6ae"
+      "bytes": 32131,
+      "sha256": "65a31f5e2476e35fd34c2beba679e3014cf5de814ae502402d3e83463693266c"
     },
     {
       "file": "report.qmd",
-      "bytes": 4280,
-      "sha256": "39b89cba05ac3e0d2a5db080110dc25196d780e0e52919d4483d70936e616bf3"
+      "bytes": 4300,
+      "sha256": "c14da5236b312931077a493992bec75f20313a8223dab348b4467b5546e9325d"
     },
     {
       "file": "report.html",
-      "bytes": 1493356,
-      "sha256": "1c3f0ffa2fd360cca27c30382b3c469541d00fab2eaf59178030a009d6b3e4fc"
+      "bytes": 1493376,
+      "sha256": "cb61e4e6b06ddd775bf3a1e4d90349580c4ea35f2225df001a82a3a061a11ab3"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2038,
-      "sha256": "98c54fcb6d43775fe6bdf955d7d899867de6db283540b20fb23002acda792924"
+      "bytes": 2064,
+      "sha256": "a8f6f0166fa33ee7fd564a286c1f7767ef68cb23a9a5e403f57617327261a1f9"
     }
   ]
 }

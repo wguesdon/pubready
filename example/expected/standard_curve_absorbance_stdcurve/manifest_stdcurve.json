@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "standard_curve",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "conc_ng_ml",
     "y": "absorbance",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": "sample",
+    "group": null,
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "IL-6 (ng/mL)",
+    "ylab": "Absorbance at 450 nm",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_absorbance.csv",
@@ -24,18 +56,18 @@
     "model": "four-parameter logistic",
     "model_choice": "auto",
     "parameters": {
-      "bottom": 0.048092,
-      "top": 3.187025,
-      "ec50": 2.418247,
-      "log_ec50": 0.383501,
-      "hill": 1.218406
+      "bottom": 0.0480920914018335,
+      "top": 3.18702462341628,
+      "ec50": 2.41824721710708,
+      "log_ec50": 0.383500696664246,
+      "hill": 1.21840625208593
     },
-    "r_squared": 0.998561,
+    "r_squared": 0.99856057018632,
     "n_standards": 16,
     "n_fitted": 14,
     "n_levels": 8,
     "concentration_range": [0.15625, 10],
-    "signal_range": [0.155766, 2.714171],
+    "signal_range": [0.15576555610156, 2.71417130307369],
     "n_unknowns": 20,
     "n_in_range": 17,
     "n_below": 2,
@@ -45,57 +77,59 @@
         {
           "concentration": 0.15625,
           "mean_signal": 0.1565,
-          "back_calculated": 0.157155,
-          "recovery_pct": 100.579492
+          "back_calculated": 0.157155456684287,
+          "recovery_pct": 100.579492277944
         },
         {
           "concentration": 0.3125,
           "mean_signal": 0.292,
-          "back_calculated": 0.317447,
-          "recovery_pct": 101.583071
+          "back_calculated": 0.317447095564938,
+          "recovery_pct": 101.58307058078
         },
         {
           "concentration": 0.625,
           "mean_signal": 0.54,
-          "back_calculated": 0.607631,
-          "recovery_pct": 97.220949
+          "back_calculated": 0.607630932589168,
+          "recovery_pct": 97.2209492142669
         },
         {
           "concentration": 1.25,
           "mean_signal": 1.036,
-          "back_calculated": 1.276872,
-          "recovery_pct": 102.149782
+          "back_calculated": 1.27687227814923,
+          "recovery_pct": 102.149782251938
         },
         {
           "concentration": 2.5,
           "mean_signal": 1.637,
-          "back_calculated": 2.467925,
-          "recovery_pct": 98.717012
+          "back_calculated": 2.46792530807986,
+          "recovery_pct": 98.7170123231943
         },
         {
           "concentration": 5,
           "mean_signal": 2.2755,
-          "back_calculated": 5.034719,
-          "recovery_pct": 100.694377
+          "back_calculated": 5.03471882768363,
+          "recovery_pct": 100.694376553673
         },
         {
           "concentration": 10,
           "mean_signal": 2.713,
-          "back_calculated": 9.976116,
-          "recovery_pct": 99.761165
+          "back_calculated": 9.97611646809085,
+          "recovery_pct": 99.7611646809085
         }
       ],
       "n_levels": 7,
       "n_read_back": 7,
-      "min_pct": 97.220949,
-      "max_pct": 102.149782,
+      "min_pct": 97.2209492142669,
+      "max_pct": 102.149782251938,
       "n_within_80_120": 7
-    }
+    },
+    "standards_monotonic": true,
+    "hook_turn": null
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -121,7 +155,7 @@
     {
       "file": "figure_absorbance_stdcurve.pdf",
       "bytes": 20414,
-      "sha256": "e52c1d16706703cb58d8c7609b95c3403345f63f979ade6e34913298edf2dfd6"
+      "sha256": "c5e3f8378820a64c141e730d4a579544c7296c668192578691756be24cb29af3"
     },
     {
       "file": "figure_absorbance_stdcurve.png",
@@ -140,18 +174,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4490,
-      "sha256": "dba09c0fe5ebe6733e0448072eb161048aa24e3007f999c5d104ad050103154a"
+      "bytes": 4508,
+      "sha256": "bb37fbef2e9d59c46a105221af10a798c4848eab06c9005e13ff3d5ae9da1ec9"
     },
     {
       "file": "report.html",
-      "bytes": 1356240,
-      "sha256": "29a4bc56e68131b911014833cdf8855ac810d39063caa8a700f54af7ddf34d7b"
+      "bytes": 1356258,
+      "sha256": "7617d2ccbfbf56fef99cf4bf8375e56abdd5fbd937d423c4b33931db1dfc4294"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2047,
-      "sha256": "88f0afca453e33e0c34502842c9b9a6cc762cac7a566d9bf64f0bc3a1bbb605d"
+      "bytes": 2073,
+      "sha256": "daf0ad88684def414415e5674c185564304787cda011e8157e52e75b29d2df5d"
     }
   ]
 }

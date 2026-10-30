@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "dose_response",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "concentration_um",
     "y": "viability_pct",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": null,
+    "group": "compound",
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Concentration (uM)",
+    "ylab": "Viability (%)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_viability_pct.csv",
@@ -26,56 +58,56 @@
     "not_determined": [],
     "curves": {
       "cmpd_A": {
-        "midpoint": "IC50",
+        "midpoint_type": "IC50",
         "fit_status": "fitted",
         "status_reason": null,
-        "ec50": 0.044962,
-        "ci_low": 0.0348,
-        "ci_high": 0.05809,
-        "hill": -1.075264,
-        "bottom": 3.865347,
-        "top": 105.17813,
-        "r_squared": 0.987614
+        "midpoint": 0.0449618025348884,
+        "ci_low": 0.0348003503152443,
+        "ci_high": 0.0580903257833226,
+        "hill": -1.07526448528466,
+        "bottom": 3.86534727236066,
+        "top": 105.178129885971,
+        "r_squared": 0.987614022191358
       },
       "cmpd_B": {
-        "midpoint": "IC50",
+        "midpoint_type": "IC50",
         "fit_status": "fitted",
         "status_reason": null,
-        "ec50": 0.29952,
-        "ci_low": 0.234963,
-        "ci_high": 0.381814,
-        "hill": -1.065388,
-        "bottom": 7.822125,
-        "top": 99.624491,
-        "r_squared": 0.98663
+        "midpoint": 0.299519970637304,
+        "ci_low": 0.234963191978491,
+        "ci_high": 0.381813900531211,
+        "hill": -1.06538771230869,
+        "bottom": 7.82212504156196,
+        "top": 99.6244909050535,
+        "r_squared": 0.986629864356914
       },
       "cmpd_C": {
-        "midpoint": "IC50",
+        "midpoint_type": "IC50",
         "fit_status": "fitted",
         "status_reason": null,
-        "ec50": 1.630925,
-        "ci_low": 0.879522,
-        "ci_high": 3.024273,
-        "hill": -0.890262,
-        "bottom": 8.149302,
-        "top": 100.750498,
-        "r_squared": 0.977555
+        "midpoint": 1.63092452199143,
+        "ci_low": 0.879522189075189,
+        "ci_high": 3.02427253055417,
+        "hill": -0.890261817522493,
+        "bottom": 8.14930162400738,
+        "top": 100.750498389634,
+        "r_squared": 0.977555408994383
       }
     },
     "shared_ec50_test": {
-      "statistic": 97.817165,
+      "statistic": 97.8171648223156,
       "df1": 2,
       "df2": 60,
-      "p_value": 1.306057e-19,
-      "shared_ec50": 0.969002,
-      "rss_shared": 5217.01414,
-      "rss_separate": 1224.486746
+      "p_value": 1.30605733092939e-19,
+      "shared_ec50": 0.969002380282971,
+      "rss_shared": 5217.01414022323,
+      "rss_separate": 1224.486745769
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -100,18 +132,18 @@
   "output_checksums": [
     {
       "file": "figure_viability_pct_drc.pdf",
-      "bytes": 13726,
-      "sha256": "a41122d21644da05c9c7d2730d828b176ba0fa439db2e1b39845f30e910e5f4d"
+      "bytes": 13492,
+      "sha256": "c5e92b557f1781982eed6a90c517ed42ae2ade4b29a4f20813833559a5be90d1"
     },
     {
       "file": "figure_viability_pct_drc.png",
-      "bytes": 146466,
-      "sha256": "6af161b9ccb930ac35c999db8362f01564a423b04653d6284a0fe39e5166ecc2"
+      "bytes": 147269,
+      "sha256": "8dd4874165009a9aaa43cb75f0c6d4c0fa8041aadeac9acb8e0b16c092327058"
     },
     {
       "file": "figure_viability_pct_drc.svg",
-      "bytes": 26219,
-      "sha256": "2c5fd47f23ad9cab9a7ee00736e36eaee702a6f6641bae1b61662f67be398f76"
+      "bytes": 26221,
+      "sha256": "a34a7346c5995f07da4ee61ef0f1665f307b9396403faa43f6898fc8ec034605"
     },
     {
       "file": "packages_drc.txt",
@@ -120,18 +152,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4701,
-      "sha256": "1521b8c03b7427a86176515c9979e1b6c40c9511734dda69acd65c4c888ba28d"
+      "bytes": 4744,
+      "sha256": "b9444c5c85c4b0cda8c1d5ea632ac3c96522365ed14e4962f3fbd391db363fca"
     },
     {
       "file": "report.html",
-      "bytes": 1390359,
-      "sha256": "b79ccd4db562d61621b56d9915e75b3cb4fad002d60a724cff922fc559e9936d"
+      "bytes": 1391474,
+      "sha256": "4681e97f3013b3d352649a2b41f69827286bfcdc5b0acd447a6784a99dcfd22f"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2057,
-      "sha256": "59c684fdffeb6f2eb5e6e7648388626be2b05686ff4ce8e663f98760f381bb16"
+      "bytes": 2083,
+      "sha256": "167ab68fc2d49d6bff3f70d62bfd525e5455d1dca2d15387c4685eb0988c4b30"
     }
   ]
 }

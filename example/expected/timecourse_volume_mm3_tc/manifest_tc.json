@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "r",
   "recipe": "timecourse",
@@ -8,9 +8,41 @@
   "arguments": {
     "x": "day",
     "y": "volume_mm3",
+    "fill": null,
+    "facet": null,
+    "time": null,
+    "event": null,
+    "covariates": null,
+    "annotation": null,
+    "id": "mouse",
+    "group": "arm",
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
     "test": "auto",
     "paired": false,
-    "p_adjust": "none"
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20,
+    "pr_threshold": -30,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": "Day",
+    "ylab": "Tumour volume (mm^3)",
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_volume_mm3.csv",
@@ -26,47 +58,48 @@
     "n_dropped_subjects": 1,
     "sphericity": {
       "test": "Mauchly",
-      "W": 2.120734e-06,
-      "statistic": 232.244416,
+      "W": 2.12073377743637e-06,
+      "statistic": 232.244416137499,
       "df": 20,
-      "p_value": 2.147927e-37
+      "p_value": 2.14792685859302e-37,
+      "available": true
     },
-    "gg_epsilon": 0.195129,
+    "gg_epsilon": 0.195129099189663,
     "correction_applied": true,
     "effects": {
       "arm": {
-        "F": 28.430557,
+        "F": 28.4305574531025,
         "df1": 2,
         "df2": 20,
-        "p_value": 1.423093e-06,
+        "p_value": 1.42309259382063e-06,
         "p_gg": null,
-        "p_reported": 1.423093e-06,
-        "partial_eta2": 0.73979
+        "p_reported": 1.42309259382063e-06,
+        "partial_eta2": 0.739790399548506
       },
       "day": {
-        "F": 236.199203,
+        "F": 236.199202991279,
         "df1": 6,
         "df2": 120,
-        "p_value": 5.681091e-64,
-        "p_gg": 2.607148e-14,
-        "p_reported": 2.607148e-14,
-        "partial_eta2": 0.921936
+        "p_value": 5.68109139700991e-64,
+        "p_gg": 2.60714830706083e-14,
+        "p_reported": 2.60714830706083e-14,
+        "partial_eta2": 0.921935744660842
       },
       "arm:day": {
-        "F": 28.825839,
+        "F": 28.825839325367,
         "df1": 12,
         "df2": 120,
-        "p_value": 8.619432e-30,
-        "p_gg": 2.003973e-07,
-        "p_reported": 2.003973e-07,
-        "partial_eta2": 0.74244
+        "p_value": 8.61943233377385e-30,
+        "p_gg": 2.00397336096481e-07,
+        "p_reported": 2.00397336096481e-07,
+        "partial_eta2": 0.74243956669685
       }
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -94,7 +127,7 @@
     {
       "file": "figure_volume_mm3_tc.pdf",
       "bytes": 16198,
-      "sha256": "915c1b44cef8863c9cefd64cc23c7822283be9980c947de0181f882c84ef963e"
+      "sha256": "446dbc4072fb0c9c352e049eddd40f99fb650369984292240bf05a163dde45de"
     },
     {
       "file": "figure_volume_mm3_tc.png",
@@ -113,28 +146,28 @@
     },
     {
       "file": "qc_normality_tc.png",
-      "bytes": 53332,
-      "sha256": "6dfe82c8f9e6ed645d85282ced477c7a49e5723932bea3b6a0e5eeb5bec39f0d"
+      "bytes": 67086,
+      "sha256": "f7b970c29678d0c8fc7169d97e14cd9a76dd125137ecdddcd19af58e08ef1ef8"
     },
     {
       "file": "qc_normality_tc.pdf",
-      "bytes": 25199,
-      "sha256": "3b4f775625b4c76f06c94dc050d34313fea0fb8b99bb43619088556aae592a27"
+      "bytes": 25197,
+      "sha256": "332fc2a91990c7b1482221c32c4e45e4de26a80f741bc7eff074a9c79a104520"
     },
     {
       "file": "report.qmd",
-      "bytes": 3653,
-      "sha256": "4fbb914ed3501d3b38187c6baf8e240c9f102182c9d3527c57d0c2547091ac02"
+      "bytes": 3671,
+      "sha256": "3479129fb7cf3a81682399c2cfad679d63943d37b198ddd8f05b5a170e243528"
     },
     {
       "file": "report.html",
-      "bytes": 1472371,
-      "sha256": "074096fee52b285dac795aa5d061376f5b93c9bfc200fa4d3591c10aba92bfc4"
+      "bytes": 1472389,
+      "sha256": "1bcd62e5ac2d215c814f8c7c338c94000a967ab1a45a09a52f99e2ee69f4cc83"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2021,
-      "sha256": "974424e222ecea91edc4db035923fa8bda1c58b1453325b97fd52c8c1908f72c"
+      "bytes": 2047,
+      "sha256": "bf5303b1e682e06d48cdce5af6fc24cda07a7300916cd6b96d337271e1f22e46"
     }
   ]
 }

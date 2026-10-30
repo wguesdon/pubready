@@ -1,6 +1,6 @@
 {
-  "pubready_version": "3.0.0",
-  "pubready_git_commit": "4657df8148b43cbd66ec3a2bc04a756a38e7843c",
+  "pubready_version": "4.0.0",
+  "pubready_git_commit": "567ce8900bdb5db88369d131c8d787b042b3af57",
   "created_utc": "2026-07-18T00:00:00Z",
   "engine": "python",
   "recipe": "waterfall",
@@ -12,7 +12,37 @@
     "facet": null,
     "time": null,
     "event": null,
-    "covariates": null
+    "covariates": null,
+    "annotation": null,
+    "id": "patient",
+    "group": "arm",
+    "label": null,
+    "positive": null,
+    "se": null,
+    "ci_low": null,
+    "ci_high": null,
+    "measure": null,
+    "markers": null,
+    "ref": null,
+    "cause": null,
+    "levels": null,
+    "visit_levels": null,
+    "features": null,
+    "test": "auto",
+    "paired": false,
+    "scale": "row",
+    "cluster": "both",
+    "fc_cutoff": 1.0,
+    "p_cutoff": 0.05,
+    "top_n": 15,
+    "pd_threshold": 20.0,
+    "pr_threshold": -30.0,
+    "geom": "box",
+    "theme": "pubready_house",
+    "xlab": null,
+    "ylab": null,
+    "title": null,
+    "palette": null
   },
   "input": {
     "file": "input_target_lesion_mm.csv",
@@ -41,9 +71,9 @@
     }
   },
   "container": {
-    "image": "localhost/pubready:3.0.0",
-    "image_id": "0511fa40d3aa87e86b6e5e4b4852cf88897b4ef8dabb1d2646f211c7c72b8cf6",
-    "digest": "sha256:6af675049bd5433b2d94050941a2f5aaa8644e1656f74e21f139a93e36308290",
+    "image": "localhost/pubready:4.0.0",
+    "image_id": "e76db7ec4edffd2951b7bef6a38a1e4abf91499f706c57fa73d8b8efcdac01b5",
+    "digest": "sha256:0f57027a3fbca5ec9d41d74ca91226fbdf45d94b1a85f271637d12733db5d483",
     "podman_version": "5.7.0"
   },
   "environment": {
@@ -72,7 +102,7 @@
     {
       "file": "figure_target_lesion_mm_waterfall_py.pdf",
       "bytes": 16420,
-      "sha256": "b46c38a9784b076a68285e65e70cb046c3e6ad6eb2be837a6c059cd1f9699e2c"
+      "sha256": "fa71c416bba452c650ed08cdde56aae8e10e3bc8893eb274101bfd7d58217155"
     },
     {
       "file": "figure_target_lesion_mm_waterfall_py.png",
@@ -82,7 +112,7 @@
     {
       "file": "figure_target_lesion_mm_waterfall_py.svg",
       "bytes": 48667,
-      "sha256": "b5e89ece84f666ba146a7a649b687e165bc4726ffa5ed3b021b416d827538aa1"
+      "sha256": "bf9ba4e180b84e03ccb9a36c4f51bb65129b1c09b9dbbf1a7f1b688f1910c0f3"
     },
     {
       "file": "packages_waterfall_py.txt",
@@ -91,18 +121,18 @@
     },
     {
       "file": "report.qmd",
-      "bytes": 4759,
-      "sha256": "ab7c7a4043d916d4123ae68c09b0497b3f67a79e932e69d63b03791687b48c35"
+      "bytes": 4779,
+      "sha256": "0f00822d951e140dcc5c18acc1ed7e5672caa99ead96653143fccf0e10ac79e7"
     },
     {
       "file": "report.html",
-      "bytes": 1327182,
-      "sha256": "a87c6c35511bbfc0f39f3e93a92995ca9c6c79a5da9914154618196ff36dd0ba"
+      "bytes": 1327202,
+      "sha256": "4c62c83e7d36aa6fcfa6e32b13f27eb95212f9db84e5b9d2ca8ce185a9b8137b"
     },
     {
       "file": "report_provenance.json",
-      "bytes": 2028,
-      "sha256": "2ea7b2aa3dd1d3b7cab7ba5ab3092d94a78a2c6a02c3a42a15317a498eb5348c"
+      "bytes": 2054,
+      "sha256": "78b33495368c9167491701e9d1eff6adeb9893d592b211636b3e9f5b267a4f2c"
     }
   ]
 }
