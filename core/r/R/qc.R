@@ -48,21 +48,23 @@ qc_normality <- function(qc) {
     data.frame(panel = strip(k), value = v, stringsAsFactors = FALSE)
   }))
 
+  lay <- qc_layout(qc$quantity, length(nm))
   p <- ggplot2::ggplot(long, ggplot2::aes(sample = value)) +
     ggplot2::stat_qq(colour = pubready_palette[1], size = 1.2, alpha = 0.75) +
     ggplot2::stat_qq_line(colour = "#333333", linewidth = 0.5) +
     ggplot2::facet_wrap(~ panel, scales = "free") +
     ggplot2::labs(
       x = "Theoretical quantiles", y = "Sample quantiles",
-      title = sprintf("Normality QC: %s", qc$quantity),
-      subtitle = "Points near the line support normality; mild, judged deviation is usually acceptable."
+      title = paste(lay$title, collapse = "\n"),
+      subtitle = paste(lay$subtitle, collapse = "\n")
     ) +
     theme_pubready(12) +
     ggplot2::theme(
       strip.text    = ggplot2::element_text(size = 8.5, lineheight = 1.05),
       plot.subtitle = ggplot2::element_text(size = 9, colour = "grey30")
     )
-  list(plot = p, panels = panels_df, quantity = qc$quantity)
+  list(plot = p, panels = panels_df, quantity = qc$quantity,
+       width = lay$width, height = lay$height)
 }
 
 # Size a QC figure to the number of panels (up to three across).
@@ -70,4 +72,29 @@ qc_dims <- function(n_panels) {
   ncol <- min(max(n_panels, 1), 3)
   nrow <- ceiling(n_panels / ncol)
   list(width = 2.9 * ncol + 0.4, height = 2.9 * nrow + 1.0)
+}
+
+# The subtitle of the QC figure, and the characters per inch of the title and
+# the subtitle. Both engines wrap the two lines with this rule to the width of
+# the figure less its axis margin, so a one-panel figure does not cut them.
+QC_SUBTITLE <- "Points near the line support normality; mild, judged deviation is usually acceptable."
+QC_TITLE_CPI <- 8.5
+QC_SUBTITLE_CPI <- 15
+QC_AXIS_MARGIN_IN <- 0.5
+
+# Wrap one header line of the QC figure. Returns the lines, each of
+# floor((width - margin) * cpi) characters or fewer, as Python textwrap gives.
+qc_wrap <- function(text, width_in, cpi) {
+  strwrap(text, width = floor((width_in - QC_AXIS_MARGIN_IN) * cpi) + 1)
+}
+
+# The size of the QC figure and its wrapped title and subtitle. Each line past
+# the first adds height, so the panels keep their size.
+qc_layout <- function(quantity, n_panels) {
+  d <- qc_dims(n_panels)
+  title <- qc_wrap(sprintf("Normality QC: %s", quantity), d$width, QC_TITLE_CPI)
+  subtitle <- qc_wrap(QC_SUBTITLE, d$width, QC_SUBTITLE_CPI)
+  list(width = d$width,
+       height = d$height + 0.25 * (length(title) - 1) + 0.18 * (length(subtitle) - 1),
+       title = title, subtitle = subtitle)
 }

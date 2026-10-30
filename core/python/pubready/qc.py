@@ -5,6 +5,7 @@ so the test choice is shown to the scientist, not just asserted. The QQ plot is
 the tiebreaker the Shapiro p-value cannot be alone: Shapiro is underpowered at
 small n and over-rejects at large n."""
 import math
+import textwrap
 
 import matplotlib
 matplotlib.use("Agg")  # headless container
@@ -58,7 +59,8 @@ def qc_normality(qc):
     n = len(names)
     ncol = min(max(n, 1), 3)
     nrow = math.ceil(n / ncol)
-    w, h = qc_dims(n)
+    lay = qc_layout(qc["quantity"], n)
+    w, h = lay["width"], lay["height"]
     fig, axes = plt.subplots(nrow, ncol, figsize=(w, h), squeeze=False)
     flat = [ax for row in axes for ax in row]
 
@@ -79,9 +81,61 @@ def qc_normality(qc):
     for ax in flat[n:]:
         ax.set_visible(False)
 
-    fig.suptitle(f"Normality QC: {qc['quantity']}", fontweight="bold", fontsize=12, y=1.0)
-    fig.text(0.5, 0.925,
-             "Points near the line support normality; mild, judged deviation is usually acceptable.",
-             ha="center", fontsize=8, color="#4d4d4d")
-    fig.tight_layout(rect=[0, 0, 1, 0.88])
+    # Figure text, not a suptitle, so tight_layout keeps the header space of
+    # the rect and does not reserve it a second time.
+    n_title, n_sub = len(lay["title"]), len(lay["subtitle"])
+    sub_top = 0.12 + 0.22 * n_title
+    fig.text(0.5, 1 - 0.08 / h, "\n".join(lay["title"]), ha="center", va="top",
+             fontweight="bold", fontsize=12)
+    fig.text(0.5, 1 - sub_top / h, "\n".join(lay["subtitle"]),
+             ha="center", va="top", fontsize=8, color="#4d4d4d")
+    header_in = sub_top + 0.15 * n_sub + 0.1
+    fig.tight_layout(rect=[0, 0, 1, 1 - header_in / h])
     return fig, panels
+
+
+#: The subtitle of the QC figure, and the characters per inch of the title and
+#: the subtitle. Both engines wrap the two lines with this rule to the width of
+#: the figure less its axis margin, so a one-panel figure does not cut them.
+QC_SUBTITLE = ("Points near the line support normality; mild, judged deviation is "
+               "usually acceptable.")
+QC_TITLE_CPI = 8.5
+QC_SUBTITLE_CPI = 15
+QC_AXIS_MARGIN_IN = 0.5
+
+
+def qc_wrap(text, width_in, cpi):
+    """Wrap one header line of the QC figure, as R strwrap() does.
+
+    Args:
+        text: The line.
+        width_in: The width of the figure in inches.
+        cpi: The characters per inch of the font.
+
+    Returns:
+        list: The lines, each of floor((width - margin) * cpi) characters or
+        fewer.
+    """
+    width = int(math.floor((width_in - QC_AXIS_MARGIN_IN) * cpi))
+    return textwrap.wrap(text, width=width, break_long_words=False, break_on_hyphens=False)
+
+
+def qc_layout(quantity, n_panels):
+    """The size of the QC figure and its wrapped title and subtitle.
+
+    Each line past the first adds height, so the panels keep their size. The R
+    engine (qc.R) has the same rule.
+
+    Args:
+        quantity: The checked quantity, for the title.
+        n_panels: The number of QQ panels.
+
+    Returns:
+        dict: The width and the height in inches, and the title and subtitle
+        lines.
+    """
+    w, h = qc_dims(n_panels)
+    title = qc_wrap(f"Normality QC: {quantity}", w, QC_TITLE_CPI)
+    subtitle = qc_wrap(QC_SUBTITLE, w, QC_SUBTITLE_CPI)
+    h = h + 0.25 * (len(title) - 1) + 0.18 * (len(subtitle) - 1)
+    return {"width": w, "height": h, "title": title, "subtitle": subtitle}

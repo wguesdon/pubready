@@ -117,3 +117,21 @@ test_that("the stats CSV writes NA, booleans, infinity and integers in one form 
   write_stats_csv(df, path)
   expect_equal(readLines(path), stats_csv_expected)
 })
+
+# The wrap rule of the QC header, the same lines in both engines (F119).
+test_that("a one-panel QC figure wraps its title and subtitle (F119)", {
+  lay <- qc_layout("differences between the methods (new_assay - reference_assay)", 1)
+  expect_equal(lay$subtitle, c("Points near the line support normality;",
+                               "mild, judged deviation is usually",
+                               "acceptable."))
+  expect_equal(lay$title, c("Normality QC:", "differences between the", "methods (new_assay -",
+                            "reference_assay)"))
+  expect_true(all(nchar(lay$title) <= 23))
+  expect_equal(lay$width, 3.3)
+  expect_equal(lay$height, 3.9 + 0.25 * 3 + 0.18 * 2)
+  three <- qc_layout("group values", 3)
+  expect_equal(length(three$subtitle), 1)
+  expect_equal(three$title, "Normality QC: group values")
+  res <- qc_normality(list(quantity = "x", panels = list(a = rnorm(10))))
+  expect_equal(c(res$width, res$height), c(3.3, 3.9 + 0.18 * 2))
+})

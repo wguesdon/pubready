@@ -537,7 +537,7 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
   # assumption behind the test rather than trust a single Shapiro-Wilk p-value.
   if (!is.null(qc)) {
     qcres <- qc_normality(qc)
-    d <- qc_dims(nrow(qcres$panels))
+    d <- list(width = qcres$width, height = qcres$height)
     ggplot2::ggsave(file.path(bdir, sprintf("qc_normality_%s.png", ts)), qcres$plot,
                     width = d$width, height = d$height, dpi = 200, bg = "white")
     ggplot2::ggsave(file.path(bdir, sprintf("qc_normality_%s.pdf", ts)), qcres$plot,

@@ -44,7 +44,7 @@ cat(sprintf("Recommended test:  %s\n", rec))
 
 if (!is.null(res$qc)) {
   qcres <- qc_normality(res$qc)
-  d <- qc_dims(nrow(qcres$panels))
+  d <- list(width = qcres$width, height = qcres$height)
   png_path <- file.path(ddir, "qc_normality.png")
   ggplot2::ggsave(png_path, qcres$plot, width = d$width, height = d$height, dpi = 200, bg = "white")
   ggplot2::ggsave(file.path(ddir, "qc_normality.pdf"), qcres$plot,

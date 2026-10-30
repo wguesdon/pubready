@@ -51,6 +51,10 @@ tag move together.
   whole numbers. Before, Python wrote an empty cell, `True`, `inf` and `2.0`,
   and R wrote `NaN` apart from `NA`. The report table of Python uses the same
   forms (F126).
+- The QC panel wraps its title and subtitle to the width of the figure, with
+  one rule in both engines, and adds height for each extra line. Before, a
+  one-panel QC figure cut its title and subtitle at the edges, in R and in
+  Python (F119).
 
 ## [3.0.0] - 2026-10-29
 

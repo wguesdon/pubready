@@ -12,6 +12,7 @@ import pytest
 from pubready.bundle import (_markdown_value, manifest_arguments, reproduce_md, write_json,
                              write_stats_csv)
 from pubready.io import read_tidy, read_tidy_logged
+from pubready.qc import qc_layout, qc_normality
 from pubready.spec import spec_from_args
 
 
@@ -153,3 +154,20 @@ def test_report_table_writes_the_r_forms():
     assert _markdown_value(float("nan")) == ""
     assert _markdown_value(np.bool_(True)) == "TRUE"
     assert _markdown_value(float("-inf")) == "-Inf"
+
+
+def test_one_panel_qc_figure_wraps_its_title_and_subtitle():
+    lay = qc_layout("differences between the methods (new_assay - reference_assay)", 1)
+    assert lay["subtitle"] == ["Points near the line support normality;",
+                               "mild, judged deviation is usually",
+                               "acceptable."]
+    assert lay["title"] == ["Normality QC:", "differences between the", "methods (new_assay -",
+                            "reference_assay)"]
+    assert all(len(s) <= 23 for s in lay["title"])
+    assert lay["width"] == pytest.approx(3.3)
+    assert lay["height"] == pytest.approx(3.9 + 0.25 * 3 + 0.18 * 2)
+    three = qc_layout("group values", 3)
+    assert len(three["subtitle"]) == 1
+    assert three["title"] == ["Normality QC: group values"]
+    fig, _ = qc_normality({"quantity": "x", "panels": {"a": np.arange(10.0)}})
+    assert tuple(fig.get_size_inches()) == pytest.approx((3.3, 3.9 + 0.18 * 2))
