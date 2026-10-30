@@ -77,8 +77,10 @@
 # The Gaussian kernel density at one grid point.
 .dist_kde_point <- function(g, v, bw) sum(stats::dnorm((g - v) / bw)) / (length(v) * bw)
 
+# formatC() pads a short number to a fixed width, which put two spaces in
+# "bin width  1.3"; each formatted number is trimmed (F127).
 .dist_p_label <- function(p) {
-  if (is.na(p)) "P = NA" else if (p < 0.001) "P < 0.001" else paste0("P = ", formatC(p, format = "g", digits = 2))
+  if (is.na(p)) "P = NA" else if (p < 0.001) "P < 0.001" else paste0("P = ", trimws(formatC(p, format = "g", digits = 2)))
 }
 
 # One row of the stats table: the summary of one group.
@@ -232,7 +234,7 @@ recipe_distribution <- function(df, spec) {
                                length = grid::unit(0.04, "npc"), alpha = 0.6, linewidth = 0.3)
   }
   sub <- if (has_group) {
-    sprintf("Shapiro-Wilk normality test per group; bin width %s", formatC(bins$width, format = "g", digits = 3))
+    sprintf("Shapiro-Wilk normality test per group; bin width %s", trimws(formatC(bins$width, format = "g", digits = 3)))
   } else {
     r <- stats_df[1, ]
     paste0(sprintf("n = %d", r$n),
@@ -300,7 +302,7 @@ recipe_distribution <- function(df, spec) {
   paste0(
     sprintf("The distribution of %s was described %s.", y_lab, scope),
     sprintf(" The histogram uses a bin width of %s from %s, with bins anchored at a multiple of the width.",
-            formatC(bins$width, format = "g", digits = 4), bin_txt),
+            trimws(formatC(bins$width, format = "g", digits = 4)), bin_txt),
     cap_txt,
     " The solid curve is a Gaussian kernel density with the bandwidth of Silverman's rule of thumb (stats::bw.nrd0),",
     " and the dashed curve is a normal distribution with the sample mean and SD; both are scaled to counts.",

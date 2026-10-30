@@ -74,3 +74,13 @@ test_that("a group with no spread gets no density curve", {
   expect_null(.dist_group_curves("pair", data.frame(group = df$condition, value = df$value),
                                  .dist_bins(df$value)))
 })
+
+# A short number such as 1.3 has no padding in the subtitle (F127).
+test_that("the distribution subtitle has one space before the bin width", {
+  v <- (1:8) * 1.3 / 3.5
+  df <- data.frame(condition = rep(c("a", "b"), 4), value = v)
+  res <- recipe_distribution(df, dist_spec(y = "value", x = "condition"))
+  expect_equal(res$stats$bin_width[1], 1.3, tolerance = 1e-9)
+  expect_match(res$plot$labels$subtitle, "bin width 1.3$")
+  expect_false(grepl("  ", res$methods, fixed = TRUE))
+})

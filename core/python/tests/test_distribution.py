@@ -113,3 +113,13 @@ def test_a_group_with_no_spread_gets_no_density_curve():
     assert np.isfinite(st.loc["ctrl", "bandwidth"])
     assert "The group(s) pair have no spread" in res["methods"]
     assert _curves(np.array([12.0, 12.0]), fd_bins(df["value"].to_numpy())) is None
+
+
+def test_the_distribution_subtitle_has_one_space_before_the_bin_width():
+    """The subtitle reads "bin width 1.3", as the R engine now writes it (F127)."""
+    v = np.arange(1, 9) * 1.3 / 3.5
+    df = pd.DataFrame({"condition": ["a", "b"] * 4, "value": v})
+    res = recipe_distribution(df, dist_spec(y="value", x="condition"))
+    texts = [t.get_text() for t in res["fig"].texts]
+    assert any(t.endswith("bin width 1.3") for t in texts)
+    assert "  " not in res["methods"]

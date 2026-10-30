@@ -69,6 +69,8 @@ tag move together.
 - `distribution` draws no density curve and reports no bandwidth for a group
   with no spread, so a group of equal values no longer stretches the shared x
   axis. The methods text names the group (F125).
+- The R `distribution` subtitle reads "bin width 1.3" with one space; each
+  formatted number of the recipe is trimmed (F127).
 
 ## [3.0.0] - 2026-10-29
 
