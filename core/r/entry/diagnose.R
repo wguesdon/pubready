@@ -71,7 +71,7 @@ if (!is.null(res$qc)) {
     }),
     qq_plot = "qc_normality.png"
   )
-  writeLines(jsonlite::toJSON(report, auto_unbox = TRUE, pretty = TRUE, na = "null", digits = 6),
+  writeLines(jsonlite::toJSON(report, auto_unbox = TRUE, pretty = TRUE, na = "null", digits = NA),
              file.path(ddir, "diagnostics.json"))
 } else {
   cat("\nThis recipe does not choose its test from a normality check, so there is\n")

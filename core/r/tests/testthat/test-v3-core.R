@@ -63,3 +63,16 @@ test_that("a subnormal p value keeps its value (F128)", {
   expect_true(df$p[1] > 0 && df$p[1] < .Machine$double.xmin)
   expect_identical(df$p[3], 2.5e-10)
 })
+
+test_that("the manifest keeps the full precision of each number (F68)", {
+  txt <- manifest_json(list(intercept = 0.00508612345678912, p = 1.5e-12))
+  expect_match(txt, "0.00508612345678912", fixed = TRUE)
+  back <- jsonlite::fromJSON(txt)
+  expect_identical(back$intercept, 0.00508612345678912)
+  expect_identical(back$p, 1.5e-12)
+})
+
+test_that("the manifest writes NaN, infinity and NA as null (F69)", {
+  txt <- manifest_json(list(a = NaN, b = Inf, c = NA_real_, d = c(1.5, -Inf)))
+  expect_equal(gsub("\\s", "", as.character(txt)), '{"a":null,"b":null,"c":null,"d":[1.5,null]}')
+})

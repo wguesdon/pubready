@@ -35,6 +35,12 @@ tag move together.
 - R reads a number below the smallest normal double, such as p = 1e-320, with
   its value, as Python does. Both engines now read every number with one
   pattern and the standard parser of the language (F128).
+- The R manifest, `report_provenance.json` and the `diagnose` report keep the
+  full precision of each number. Before, the manifest rounded each number to 6
+  decimal places, for example the standard-curve intercept (F68).
+- The Python manifest, `report_provenance.json` and the `diagnose` report are
+  valid JSON: NaN and infinity are written as `null`, as R writes them. Before,
+  the manifest held bare `NaN` and `Infinity` (F69).
 
 ## [3.0.0] - 2026-10-29
 

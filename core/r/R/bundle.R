@@ -141,6 +141,12 @@ build_manifest <- function(spec, resolved, in_name, orig_name, sums, n_rows,
   )
 }
 
+# The JSON text of a manifest. Each number keeps its full precision, because
+# some values, such as the standard-curve intercept, are only in the manifest.
+manifest_json <- function(manifest) {
+  jsonlite::toJSON(manifest, auto_unbox = TRUE, pretty = TRUE, na = "null", digits = NA)
+}
+
 methods_paragraph <- function(resolved, stats_df, test_meta, spec) {
   y_label <- spec$appearance$y_label %||% spec$data$y
   v <- pkg_versions(c("rstatix", "ggpubr", "ggprism"))
@@ -390,7 +396,8 @@ write_quarto_report <- function(bdir, spec, stats_df, methods_text, fig_stub,
     file.path(bdir, "report_provenance.json"),
     pretty = TRUE,
     auto_unbox = TRUE,
-    null = "null"
+    null = "null",
+    digits = NA
   )
   provenance_frame <- data.frame(
     field = names(provenance),
@@ -555,16 +562,7 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
   output_paths <- file.path(bdir, unlist(manifest$outputs))
   output_paths <- output_paths[file.exists(output_paths)]
   manifest$output_checksums <- lapply(output_paths, report_output_record)
-  writeLines(
-    jsonlite::toJSON(
-      manifest,
-      auto_unbox = TRUE,
-      pretty = TRUE,
-      na = "null",
-      digits = 6
-    ),
-    file.path(bdir, sprintf("manifest_%s.json", ts))
-  )
+  writeLines(manifest_json(manifest), file.path(bdir, sprintf("manifest_%s.json", ts)))
 
   bdir
 }

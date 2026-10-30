@@ -13,6 +13,7 @@ from importlib.metadata import distributions
 from importlib.metadata import version as _pkgver
 
 import numpy as np
+import pandas as pd
 
 from .io import file_checksums
 from .spec import write_config
@@ -57,6 +58,48 @@ def _json_default(o):
     if isinstance(o, float) and np.isnan(o):
         return None
     return str(o)
+
+
+def json_safe(o):
+    """Make a value valid JSON, as the R engine writes it.
+
+    NaN and infinity become None, which JSON writes as null, and the numpy
+    scalars and arrays become the Python types.
+
+    Args:
+        o: The value: a dict, a list or a scalar.
+
+    Returns:
+        The value with each part made valid JSON.
+    """
+    if isinstance(o, dict):
+        return {k: json_safe(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple)):
+        return [json_safe(v) for v in o]
+    if isinstance(o, np.ndarray):
+        return json_safe(o.tolist())
+    if isinstance(o, (bool, np.bool_)):
+        return bool(o)
+    if isinstance(o, np.integer):
+        return int(o)
+    if isinstance(o, (float, np.floating)):
+        return float(o) if np.isfinite(o) else None
+    if o is None or isinstance(o, (int, str)):
+        return o
+    if o is pd.NA or o is pd.NaT:
+        return None
+    return _json_default(o)
+
+
+def write_json(obj, path):
+    """Write a value as indented, valid JSON, with null for NaN and infinity.
+
+    Args:
+        obj: The value.
+        path: The output file.
+    """
+    with open(path, "w") as f:
+        json.dump(json_safe(obj), f, indent=2, allow_nan=False, default=_json_default)
 
 
 def save_figure(fig, d, stub, w, h):
@@ -182,12 +225,10 @@ def _provenance_frame(provenance):
     Returns:
         A pandas data frame.
     """
-    import pandas as pd
-
     values = []
     for value in provenance.values():
         if isinstance(value, (dict, list)):
-            values.append(json.dumps(value, default=_json_default))
+            values.append(json.dumps(json_safe(value), allow_nan=False, default=_json_default))
         else:
             values.append(value)
     return pd.DataFrame({"field": provenance.keys(), "value": values})
@@ -210,9 +251,7 @@ def write_quarto_report(bdir, spec, stats_df, methods_text, fig_stub, provenance
     Raises:
         RuntimeError: If Quarto does not render the report.
     """
-    provenance_path = os.path.join(bdir, "report_provenance.json")
-    with open(provenance_path, "w") as stream:
-        json.dump(provenance, stream, indent=2, default=_json_default)
+    write_json(provenance, os.path.join(bdir, "report_provenance.json"))
     model = json.dumps(provenance["llm_model"])
     harness = json.dumps(provenance["agent_harness"])
     if provenance["llm_model"] == "none":
@@ -515,8 +554,7 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
     )
     manifest["outputs"] += report_outputs
     manifest["output_checksums"] = output_checksums(bdir, manifest["outputs"])
-    with open(os.path.join(bdir, f"manifest_{ts}.json"), "w") as f:
-        json.dump(manifest, f, indent=2, default=_json_default)
+    write_json(manifest, os.path.join(bdir, f"manifest_{ts}.json"))
 
     open(os.path.join(bdir, f"methods_{ts}.md"), "w").write(result["methods"].rstrip() + "\n")
 

@@ -4,27 +4,16 @@ the test choice so a scientist can confirm or override it. Writes a normality QQ
 panel per checked quantity plus a machine-readable report, and prints the
 recommended test. It does not draw the final figure."""
 import argparse
-import json
 import math
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.environ.get("PUBREADY_CORE", "/opt/pubready/core"), "python"))
-from pubready.bundle import _ts, slugify   # noqa: E402
+from pubready.bundle import _ts, slugify, write_json   # noqa: E402
 from pubready.io import read_tidy          # noqa: E402
 from pubready.qc import qc_normality       # noqa: E402
 from pubready.recipes import get_recipe    # noqa: E402
 from pubready.spec import spec_from_args   # noqa: E402
-
-
-def _clean(o):
-    if isinstance(o, dict):
-        return {k: _clean(v) for k, v in o.items()}
-    if isinstance(o, list):
-        return [_clean(v) for v in o]
-    if isinstance(o, float) and math.isnan(o):
-        return None
-    return o
 
 
 def _fmt(x, g=False):
@@ -84,8 +73,7 @@ def main():
         report = {"recipe": spec["recipe"], "engine": "python", "recommended_test": rec,
                   "normality_quantity": None}
 
-    with open(os.path.join(ddir, "diagnostics.json"), "w") as fh:
-        json.dump(_clean(report), fh, indent=2)
+    write_json(report, os.path.join(ddir, "diagnostics.json"))
 
     print(f"\nWrote diagnostics: {ddir}")
     print("Confirm or override the test, then run `figkit plot` to draw the figure.")

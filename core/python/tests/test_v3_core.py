@@ -1,11 +1,13 @@
 """Tests of the area B fixes of the v3 findings: the read rule, the bundle, the
 spec and the inspect report. The R suite (tests/testthat/test-v3-core.R) holds
 the same cases with the same expected values."""
+import json
 import sys
 
 import numpy as np
 import pytest
 
+from pubready.bundle import write_json
 from pubready.io import read_tidy, read_tidy_logged
 
 
@@ -73,3 +75,19 @@ def test_subnormal_p_value_keeps_its_value(tmp_path):
     assert 0 < df["p"][0] < sys.float_info.min
     assert df["p"][2] == 2.5e-10
     assert np.isfinite(df["p"]).all()
+
+
+def test_manifest_writes_null_for_nan_and_infinity(tmp_path):
+    path = str(tmp_path / "manifest.json")
+    write_json({"a": float("nan"), "b": float("inf"), "c": None,
+                "d": [np.float64(1.5), np.float64("-inf")], "e": np.int64(3)}, path)
+    txt = open(path).read()
+    assert "NaN" not in txt and "Infinity" not in txt
+    assert json.loads(txt) == {"a": None, "b": None, "c": None, "d": [1.5, None], "e": 3}
+
+
+def test_manifest_keeps_the_full_precision_of_each_number(tmp_path):
+    path = str(tmp_path / "manifest.json")
+    write_json({"intercept": 0.00508612345678912, "p": 1.5e-12}, path)
+    back = json.loads(open(path).read())
+    assert back == {"intercept": 0.00508612345678912, "p": 1.5e-12}
