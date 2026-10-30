@@ -22,6 +22,85 @@ default_appearance <- function() {
   )
 }
 
+# The options of figkit plot and figkit diagnose, one list for both commands, so
+# diagnose accepts every option that plot accepts. An option that the user does
+# not give stays NULL, and spec_from_opt() fills its default. The Python engine
+# (spec.add_plot_arguments) defines the same options.
+plot_option_list <- function() {
+  chr <- c("recipe", "data", "x", "y", "fill", "facet", "time", "event", "covariates",
+           "annotation", "id", "group", "label", "scale", "cluster")
+  opts <- lapply(paste0("--", chr), optparse::make_option, type = "character", default = NULL)
+  c(opts, list(
+    optparse::make_option("--fc_cutoff", type = "double",   default = NULL),
+    optparse::make_option("--p_cutoff",  type = "double",   default = NULL),
+    optparse::make_option("--top_n",     type = "integer",  default = NULL),
+    optparse::make_option("--pd_threshold", type = "double", default = NULL),
+    optparse::make_option("--pr_threshold", type = "double", default = NULL),
+    optparse::make_option("--positive", type = "character", default = NULL),
+    optparse::make_option("--se",       type = "character", default = NULL),
+    optparse::make_option("--ci_low",   type = "character", default = NULL),
+    optparse::make_option("--ci_high",  type = "character", default = NULL),
+    optparse::make_option("--measure",  type = "character", default = NULL),
+    optparse::make_option("--markers",  type = "character", default = NULL),
+    optparse::make_option("--ref",      type = "character", default = NULL),
+    optparse::make_option("--cause",    type = "character", default = NULL),
+    optparse::make_option("--levels",   type = "character", default = NULL),
+    optparse::make_option("--visit_levels", type = "character", default = NULL),
+    optparse::make_option("--features", type = "character", default = NULL),
+    optparse::make_option("--test",     type = "character", default = NULL),
+    optparse::make_option("--paired",   action = "store_true", default = FALSE),
+    optparse::make_option("--geom",     type = "character", default = NULL),
+    optparse::make_option("--theme",    type = "character", default = NULL),
+    optparse::make_option("--xlab",     type = "character", default = NULL),
+    optparse::make_option("--ylab",     type = "character", default = NULL),
+    optparse::make_option("--title",    type = "character", default = NULL),
+    optparse::make_option("--palette",  type = "character", default = NULL),
+    optparse::make_option("--sheet",    type = "character", default = NULL),
+    optparse::make_option("--stamp",    type = "character", default = NULL),
+    # Read by the figkit dispatcher for routing; ignored here.
+    optparse::make_option("--engine",   type = "character", default = NULL),
+    optparse::make_option("--out",      type = "character", default = "pubready_output")
+  ))
+}
+
+# The table of the options that each recipe reads, core/recipe_options.txt. Both
+# engines read this one file. Returns a named list: one character vector of
+# option names for each recipe, and "always" for the options of every recipe.
+read_recipe_options <- function(path = file.path(Sys.getenv("PUBREADY_CORE", "/opt/pubready/core"),
+                                                 "recipe_options.txt")) {
+  lines <- trimws(readLines(path, warn = FALSE))
+  lines <- lines[nzchar(lines) & !startsWith(lines, "#")]
+  parts <- strsplit(lines, "[[:space:]]+")
+  stats::setNames(lapply(parts, `[`, -1), vapply(parts, `[`, character(1), 1))
+}
+
+# The options that the user gave, from the argument list and not from the
+# defaults of the parser: the name of each "--name" or "--name=value" token.
+given_options <- function(args) {
+  flags <- args[startsWith(args, "--")]
+  unique(sub("=.*$", "", substring(flags, 3)))
+}
+
+# The message for an option that a recipe does not read.
+unread_option_message <- function(opt, recipe, table) {
+  readers <- setdiff(names(table)[vapply(table, is.element, logical(1), el = opt)], "always")
+  if (length(readers) == 0) {
+    return(sprintf("--%s is not an option of %s; no recipe reads it", opt, recipe))
+  }
+  sprintf("--%s is not an option of %s; it is read by: %s", opt, recipe,
+          paste(readers, collapse = ", "))
+}
+
+# Stop when the user gave an option that the recipe does not read. An unknown
+# recipe passes, so the run stops later with "unknown recipe".
+check_recipe_options <- function(recipe, given, table = read_recipe_options()) {
+  if (is.null(recipe) || !recipe %in% names(table)) return(invisible(NULL))
+  extra <- setdiff(given, c(table[["always"]], table[[recipe]]))
+  if (length(extra) == 0) return(invisible(NULL))
+  msgs <- vapply(extra, unread_option_message, character(1), recipe = recipe, table = table)
+  stop(paste(msgs, collapse = "\n"), call. = FALSE)
+}
+
 # Split a list option such as --levels into its items. The items are split on
 # "|" when the value holds one, so an item can hold a comma, for example
 # --levels "edema, no diuretics|edema despite diuretics". Else they are split on
@@ -67,8 +146,7 @@ spec_from_opt <- function(opt) {
                   covariates = split_list_option(opt$covariates)),
     test   = list(
       method   = opt$test %||% "auto",
-      paired   = isTRUE(opt$paired),
-      p_adjust = opt$p_adjust %||% "none"
+      paired   = isTRUE(opt$paired)
     ),
     appearance = ap
   )
@@ -91,9 +169,19 @@ spec_from_config <- function(path) {
   cfg <- yaml::read_yaml(path)
   cfg$data <- fix_axis_keys(cfg$data)
   cfg$appearance <- modifyList(default_appearance(), cfg$appearance %||% list())
-  cfg$test <- modifyList(list(method = "auto", paired = FALSE, p_adjust = "none"),
-                         cfg$test %||% list())
+  cfg$test <- modifyList(list(method = "auto", paired = FALSE), cfg$test %||% list())
+  # --p_adjust was removed: no recipe applied it. An old config drops the key.
+  cfg$test$p_adjust <- NULL
   cfg
+}
+
+# The path of a file that a plot_config.yaml names. A relative path is found in
+# the folder of the config first, so a bundle renders from any folder, and else
+# in the current folder, as before. NULL stays NULL.
+resolve_config_path <- function(path, config) {
+  if (is.null(path) || !nzchar(path) || grepl("^(/|~|[A-Za-z]:)", path)) return(path)
+  near <- file.path(dirname(config), path)
+  if (file.exists(near)) near else path
 }
 
 # Write a spec back out as plot_config.yaml.

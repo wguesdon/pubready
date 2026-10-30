@@ -18,7 +18,7 @@ df   <- read_tidy(opt$data, opt$sheet)
 info <- inspect_data(df)
 
 if (identical(opt$format, "json")) {
-  cat(jsonlite::toJSON(info, auto_unbox = TRUE, pretty = TRUE, na = "null"))
+  cat(jsonlite::toJSON(info, auto_unbox = TRUE, pretty = TRUE, na = "null", digits = NA))
   cat("\n")
 } else {
   print_inspect(info)

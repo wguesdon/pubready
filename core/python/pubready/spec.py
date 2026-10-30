@@ -1,6 +1,8 @@
 """The figure spec: one dict that both `plot` (CLI args) and `render` (config)
 build, then hand to a recipe. Mirrors the R spec structure."""
 import os
+import re
+
 import yaml
 
 
@@ -23,6 +25,135 @@ def default_appearance():
         "pd_threshold": 20.0,
         "pr_threshold": -30.0,
     }
+
+
+#: The text options of figkit plot and figkit diagnose, in the order of the R
+#: list (spec.R plot_option_list).
+PLOT_TEXT_OPTIONS = ("x", "y", "fill", "facet", "time", "event", "covariates", "annotation",
+                     "id", "group", "label", "scale", "cluster")
+#: The other options with a value, and their types.
+PLOT_VALUE_OPTIONS = (("fc_cutoff", float), ("p_cutoff", float), ("top_n", int),
+                      ("pd_threshold", float), ("pr_threshold", float), ("positive", str),
+                      ("se", str), ("ci_low", str), ("ci_high", str), ("measure", str),
+                      ("markers", str), ("ref", str), ("cause", str), ("levels", str),
+                      ("visit_levels", str), ("features", str), ("test", str),
+                      ("geom", str), ("theme", str), ("xlab", str),
+                      ("ylab", str), ("title", str), ("palette", str), ("sheet", str),
+                      ("stamp", str))
+
+
+def add_plot_arguments(p):
+    """Add the options of figkit plot and figkit diagnose to a parser.
+
+    One list serves both commands, so diagnose accepts every option that plot
+    accepts. An option that the user does not give stays None, and
+    spec_from_args() fills its default. The R engine (spec.R) defines the same
+    options.
+
+    Args:
+        p: An argparse.ArgumentParser.
+
+    Returns:
+        argparse.ArgumentParser: The parser.
+    """
+    p.add_argument("--recipe", required=True)
+    p.add_argument("--data", required=True)
+    for name in PLOT_TEXT_OPTIONS:
+        p.add_argument(f"--{name}")
+    for name, kind in PLOT_VALUE_OPTIONS:
+        p.add_argument(f"--{name}", type=kind)
+    p.add_argument("--paired", action="store_true")
+    p.add_argument("--engine")  # consumed by the figkit dispatcher; ignored here
+    p.add_argument("--out", default="pubready_output")
+    return p
+
+
+#: The table of the options that each recipe reads, shared by both engines.
+RECIPE_OPTIONS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir,
+                                   os.pardir, "recipe_options.txt")
+
+
+def read_recipe_options(path=RECIPE_OPTIONS_PATH):
+    """Read the table of the options that each recipe reads.
+
+    Both engines read this one file, core/recipe_options.txt.
+
+    Args:
+        path: The table file.
+
+    Returns:
+        dict: One list of option names for each recipe, and "always" for the
+        options of every recipe.
+    """
+    table = {}
+    with open(path) as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split()
+            table[parts[0]] = parts[1:]
+    return table
+
+
+def given_options(args):
+    """The options that the user gave, from the argument list.
+
+    The names come from the "--name" and "--name=value" tokens, not from the
+    defaults of the parser.
+
+    Args:
+        args: The command-line arguments.
+
+    Returns:
+        list: The option names without the leading "--", each once.
+    """
+    out = []
+    for a in args:
+        if a.startswith("--"):
+            name = a[2:].split("=", 1)[0]
+            if name not in out:
+                out.append(name)
+    return out
+
+
+def unread_option_message(opt, recipe, table):
+    """The message for an option that a recipe does not read.
+
+    Args:
+        opt: The option name.
+        recipe: The recipe.
+        table: The table of read_recipe_options().
+
+    Returns:
+        str: The message, as the R engine writes it.
+    """
+    readers = [r for r, opts in table.items() if r != "always" and opt in opts]
+    if not readers:
+        return f"--{opt} is not an option of {recipe}; no recipe reads it"
+    return f"--{opt} is not an option of {recipe}; it is read by: {', '.join(readers)}"
+
+
+def check_recipe_options(recipe, given, table=None):
+    """Stop when the user gave an option that the recipe does not read.
+
+    An unknown recipe passes, so the run stops later with "unknown recipe".
+
+    Args:
+        recipe: The recipe.
+        given: The option names that the user gave.
+        table: The table of read_recipe_options(), or None to read it.
+
+    Raises:
+        ValueError: If an option is not on the line of the recipe.
+    """
+    table = read_recipe_options() if table is None else table
+    if recipe not in table:
+        return
+    allowed = set(table["always"]) | set(table[recipe])
+    extra = [g for g in given if g not in allowed]
+    if extra:
+        raise ValueError("\n".join(unread_option_message(o, recipe, table) for o in extra))
 
 
 def split_list_option(x):
@@ -98,7 +229,6 @@ def spec_from_args(a):
         "test": {
             "method": getattr(a, "test", None) or "auto",
             "paired": bool(getattr(a, "paired", False)),
-            "p_adjust": getattr(a, "p_adjust", None) or "none",
         },
         "appearance": ap,
     }
@@ -109,12 +239,34 @@ def spec_from_config(path):
     ap = default_appearance()
     ap.update(cfg.get("appearance") or {})
     cfg["appearance"] = ap
-    t = {"method": "auto", "paired": False, "p_adjust": "none"}
+    t = {"method": "auto", "paired": False}
     t.update(cfg.get("test") or {})
+    # --p_adjust was removed: no recipe applied it. An old config drops the key.
+    t.pop("p_adjust", None)
     cfg["test"] = t
     cfg.setdefault("engine", "python")
     cfg.setdefault("data", {})
     return cfg
+
+
+def resolve_config_path(path, config):
+    """The path of a file that a plot_config.yaml names.
+
+    A relative path is found in the folder of the config first, so a bundle
+    renders from any folder, and else in the current folder, as before. The R
+    engine has the same rule.
+
+    Args:
+        path: The path in the config, or None.
+        config: The path of the config.
+
+    Returns:
+        str or None: The path to read.
+    """
+    if not path or re.match(r"^(/|~|[A-Za-z]:)", path):
+        return path
+    near = os.path.join(os.path.dirname(config), path)
+    return near if os.path.exists(near) else path
 
 
 def write_config(spec, path):

@@ -47,12 +47,86 @@ tag move together.
 - The volcano command of `example/README.md` failed in R, because its `--ylab`
   value starts with "-". It now uses the `--ylab=VALUE` form, and
   `docs/how_it_works.md` states the rule (F99).
+- `figkit inspect` prints the same words in both engines. Each level is in
+  quotes with its count of rows. A numeric column with 2 to 6 distinct values
+  is a candidate group, marked as a numeric code, and not a candidate outcome.
+  A column whose values repeat across the levels of another column, at most
+  once in each level, is a possible subject id. The type names are numeric,
+  text, logical, date and other in both engines. The JSON output adds
+  `level_counts`, `group_candidates`, `outcome_candidates` and
+  `id_candidates` (F72).
+- `figkit plot` and `figkit diagnose` stop with an error when the user gives
+  an option that the recipe does not read, for example "--title is not an
+  option of survival_km; it is read by: ...". The new table
+  `core/recipe_options.txt` lists the options of each recipe, and both
+  engines read it. The Python engine also stops on an unknown option. Before,
+  `--facet` on `proportions` or `--title` on `survival_km` ran with exit code
+  0 and no message (F71).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of
   the items, so an item can hold a comma, for example
   `--levels "none|edema, no diuretics"`. A value with no "|" splits on commas
   as before (F96).
+- Both engines read a CSV file with one rule. A cell that is a number with a
+  comma, such as "85,45" or "4,380", stops the run with a message that names
+  the column. Before, R read "85,45" as 8545 with no log entry, and Python
+  stopped with an error that did not name the column (F40).
+- Only an empty cell or "NA" reads as missing, and the spaces around each value
+  and each column name are removed, in both engines. Before, pandas read
+  "None", "N/A", "NULL" and "nan" as missing and kept the spaces, so a response
+  "None" gave P = 0.011 in R and P = 1.0 in Python. The data log has a new
+  "Read rule" section that states the rule and counts each value that the read
+  changed (F41).
+- R reads a number below the smallest normal double, such as p = 1e-320, with
+  its value, as Python does. Both engines now read every number with one
+  pattern and the standard parser of the language (F128).
+- The R manifest, `report_provenance.json` and the `diagnose` report keep the
+  full precision of each number. Before, the manifest rounded each number to 6
+  decimal places, for example the standard-curve intercept (F68).
+- The Python manifest, `report_provenance.json` and the `diagnose` report are
+  valid JSON. NaN and infinity are written as `null`, as R writes them. Before,
+  the manifest held bare `NaN` and `Infinity` (F69).
+- The `arguments` block of the manifest records every plot option, with the
+  command-line name and `null` for an option that the run did not set, in the
+  same order in both engines. Before, R recorded five options and Python seven,
+  and neither recorded `--group`, `--id` or `--levels`. The Python
+  `REPRODUCE.md` names the image digest, as the R file does (F101).
+- The stats CSV files use one form in both engines. A missing value is `NA`, a
+  boolean is `TRUE` or `FALSE`, an infinite value is `Inf` or `-Inf`, and a
+  column of whole numbers has no decimal part. Before, Python wrote an empty
+  cell, `True`, `inf` and `2.0`, and R wrote `NaN` apart from `NA`. The report
+  tables of both engines use the same forms (F126).
+- The QC panel wraps its title and subtitle to the width of the figure, with
+  one rule in both engines, and adds height for each extra line. Before, a
+  one-panel QC figure cut its title and subtitle at the edges, in R and in
+  Python (F119).
+- The R report table turns each column into text before it writes a missing
+  value as an empty cell, so `proportions` no longer prints "invalid factor
+  level, NA generated" twice after the bundle. A "|" in a cell is escaped with
+  one backslash, as in Python, so it no longer splits the cell (F120).
+- The Python engine prints a data error as one line, "Error: " and the
+  message, and exits with status 1, as R does. Before, it printed a full
+  traceback. Other exceptions keep their traceback (F70).
+- `figkit diagnose` accepts every option of `figkit plot`, from one option list
+  that both commands share in each engine. Before, it accepted 11 options. R
+  stopped on `--time`, and Python dropped `--ref` with no message (F73).
+- `figkit render` finds the input file and the annotation file of a config in
+  the folder of the config first, and else in the current folder. The bundle
+  config names the annotation copy by its bare file name, as it names the
+  input copy. Before, `render` of a bundle config from the repository root
+  stopped with "input file not found" (F74).
+- `figkit render` with no `--engine` runs the engine that the `engine:` line
+  of the config names, and the manifest and `plot_config.yaml` of the new
+  bundle record the engine that ran. Before, R redrew a Python bundle and the
+  manifest still said python (F60).
+
+### Removed
+- `--p_adjust` is gone from both engines. No recipe applied it, and the R
+  methods text of `two_group_compare` said that the P values were adjusted.
+  The `two_group_compare` stats table loses its `p_adjust_method` column, the
+  manifest loses `p_adjust`, and a config that holds `test: p_adjust` drops the
+  key (F75).
 
 ## [3.0.0] - 2026-10-29
 

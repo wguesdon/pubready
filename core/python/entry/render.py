@@ -5,8 +5,8 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.environ.get("PUBREADY_CORE", "/opt/pubready/core"), "python"))
-from pubready.run import run_recipe          # noqa: E402
-from pubready.spec import spec_from_config    # noqa: E402
+from pubready.run import run_entry, run_recipe                   # noqa: E402
+from pubready.spec import resolve_config_path, spec_from_config   # noqa: E402
 
 
 def main():
@@ -17,11 +17,15 @@ def main():
     p.add_argument("--out", default="pubready_output")
     a, _ = p.parse_known_args()
     spec = spec_from_config(a.config)
-    raw = a.data or spec.get("data", {}).get("file")
+    # The config of a bundle names its input and its annotation by the bare
+    # file name, so each is found in the folder of the config first.
+    data = spec.setdefault("data", {})
+    data["annotation"] = resolve_config_path(data.get("annotation"), a.config)
+    raw = a.data or resolve_config_path(data.get("file"), a.config)
     if not raw:
         raise SystemExit("no input data: pass --data or set data.file in the config")
     run_recipe(spec, raw, a.out, sheet=a.sheet, stamp=a.stamp)
 
 
 if __name__ == "__main__":
-    main()
+    run_entry(main)

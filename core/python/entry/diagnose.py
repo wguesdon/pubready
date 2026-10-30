@@ -4,27 +4,18 @@ the test choice so a scientist can confirm or override it. Writes a normality QQ
 panel per checked quantity plus a machine-readable report, and prints the
 recommended test. It does not draw the final figure."""
 import argparse
-import json
 import math
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.environ.get("PUBREADY_CORE", "/opt/pubready/core"), "python"))
-from pubready.bundle import _ts, slugify   # noqa: E402
+from pubready.bundle import _ts, slugify, write_json   # noqa: E402
 from pubready.io import read_tidy          # noqa: E402
 from pubready.qc import qc_normality       # noqa: E402
 from pubready.recipes import get_recipe    # noqa: E402
-from pubready.spec import spec_from_args   # noqa: E402
-
-
-def _clean(o):
-    if isinstance(o, dict):
-        return {k: _clean(v) for k, v in o.items()}
-    if isinstance(o, list):
-        return [_clean(v) for v in o]
-    if isinstance(o, float) and math.isnan(o):
-        return None
-    return o
+from pubready.run import run_entry         # noqa: E402
+from pubready.spec import (add_plot_arguments, check_recipe_options,  # noqa: E402
+                           given_options, spec_from_args)
 
 
 def _fmt(x, g=False):
@@ -34,18 +25,10 @@ def _fmt(x, g=False):
 
 
 def main():
-    p = argparse.ArgumentParser()
-    p.add_argument("--recipe", required=True)
-    p.add_argument("--data", required=True)
-    p.add_argument("--x"); p.add_argument("--y")
-    p.add_argument("--fill"); p.add_argument("--facet")
-    p.add_argument("--id"); p.add_argument("--group")
-    p.add_argument("--test", default="auto")
-    p.add_argument("--paired", action="store_true")
-    p.add_argument("--sheet"); p.add_argument("--stamp")
-    p.add_argument("--engine")  # consumed by the figkit dispatcher; ignored here
-    p.add_argument("--out", default="pubready_output")
-    a, _ = p.parse_known_args()
+    # diagnose accepts every option of figkit plot, so the recipe sees the same spec.
+    p = add_plot_arguments(argparse.ArgumentParser(allow_abbrev=False))
+    a = p.parse_args()
+    check_recipe_options(a.recipe, given_options(sys.argv[1:]))
 
     spec = spec_from_args(a)
     df = read_tidy(a.data, a.sheet)
@@ -84,12 +67,11 @@ def main():
         report = {"recipe": spec["recipe"], "engine": "python", "recommended_test": rec,
                   "normality_quantity": None}
 
-    with open(os.path.join(ddir, "diagnostics.json"), "w") as fh:
-        json.dump(_clean(report), fh, indent=2)
+    write_json(report, os.path.join(ddir, "diagnostics.json"))
 
     print(f"\nWrote diagnostics: {ddir}")
     print("Confirm or override the test, then run `figkit plot` to draw the figure.")
 
 
 if __name__ == "__main__":
-    main()
+    run_entry(main)

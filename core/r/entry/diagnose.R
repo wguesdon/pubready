@@ -5,26 +5,12 @@
 # does not draw the final figure; run `figkit plot` once the test is agreed.
 suppressPackageStartupMessages(library(optparse))
 
-opts <- list(
-  make_option("--recipe", type = "character"),
-  make_option("--data",   type = "character"),
-  make_option("--x",      type = "character", default = NULL),
-  make_option("--y",      type = "character", default = NULL),
-  make_option("--fill",   type = "character", default = NULL),
-  make_option("--facet",  type = "character", default = NULL),
-  make_option("--id",     type = "character", default = NULL),
-  make_option("--group",  type = "character", default = NULL),
-  make_option("--test",   type = "character", default = "auto"),
-  make_option("--paired", action = "store_true", default = FALSE),
-  make_option("--sheet",  type = "character", default = NULL),
-  make_option("--stamp",  type = "character", default = NULL),
-  make_option("--engine", type = "character", default = NULL),  # routing only; ignored here
-  make_option("--out",    type = "character", default = "pubready_output")
-)
-opt <- parse_args(OptionParser(option_list = opts))
-for (req in c("recipe", "data")) if (is.null(opt[[req]])) stop(sprintf("missing required --%s", req))
-
 source(file.path(Sys.getenv("PUBREADY_CORE", "/opt/pubready/core"), "r", "bootstrap.R"))
+
+# diagnose accepts every option of figkit plot, so the recipe sees the same spec.
+opt <- parse_args(OptionParser(option_list = plot_option_list()))
+for (req in c("recipe", "data")) if (is.null(opt[[req]])) stop(sprintf("missing required --%s", req))
+check_recipe_options(opt$recipe, given_options(commandArgs(trailingOnly = TRUE)))
 
 spec <- spec_from_opt(opt)
 df   <- read_tidy(opt$data, opt$sheet)
@@ -44,7 +30,7 @@ cat(sprintf("Recommended test:  %s\n", rec))
 
 if (!is.null(res$qc)) {
   qcres <- qc_normality(res$qc)
-  d <- qc_dims(nrow(qcres$panels))
+  d <- list(width = qcres$width, height = qcres$height)
   png_path <- file.path(ddir, "qc_normality.png")
   ggplot2::ggsave(png_path, qcres$plot, width = d$width, height = d$height, dpi = 200, bg = "white")
   ggplot2::ggsave(file.path(ddir, "qc_normality.pdf"), qcres$plot,
@@ -71,7 +57,7 @@ if (!is.null(res$qc)) {
     }),
     qq_plot = "qc_normality.png"
   )
-  writeLines(jsonlite::toJSON(report, auto_unbox = TRUE, pretty = TRUE, na = "null", digits = 6),
+  writeLines(jsonlite::toJSON(report, auto_unbox = TRUE, pretty = TRUE, na = "null", digits = NA),
              file.path(ddir, "diagnostics.json"))
 } else {
   cat("\nThis recipe does not choose its test from a normality check, so there is\n")

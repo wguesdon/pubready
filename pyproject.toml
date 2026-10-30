@@ -40,6 +40,7 @@ packages = ["src/pubready_cli"]
 "cli/figkit" = "pubready_cli/tree/cli/figkit"
 "container" = "pubready_cli/tree/container"
 "core/r" = "pubready_cli/tree/core/r"
+"core/recipe_options.txt" = "pubready_cli/tree/core/recipe_options.txt"
 "core/python/pubready" = "pubready_cli/tree/core/python/pubready"
 "core/python/entry" = "pubready_cli/tree/core/python/entry"
 "core/python/tests" = "pubready_cli/tree/core/python/tests"

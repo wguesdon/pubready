@@ -35,7 +35,8 @@ echo "[3] figkit where holds the adapters, the reference notes and the example"
 where="$("$fk" where)"
 for f in skills/claude-code/SKILL.md skills/codex/AGENTS.md skills/opencode/AGENTS.md \
          reference/decision_tree.md docs/how_it_works.md container/Containerfile \
-         core/r/bootstrap.R core/python/pubready/run.py example/tumor_volume.csv; do
+         core/r/bootstrap.R core/python/pubready/run.py core/recipe_options.txt \
+         example/tumor_volume.csv; do
   if [ ! -f "$where/$f" ]; then echo "  MISSING: $f"; fail=1; fi
 done
 [ "$fail" -eq 0 ] && echo "PASS: the installed tree is complete -> $where"

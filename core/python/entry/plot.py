@@ -5,41 +5,18 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.environ.get("PUBREADY_CORE", "/opt/pubready/core"), "python"))
-from pubready.run import run_recipe          # noqa: E402
-from pubready.spec import spec_from_args     # noqa: E402
+from pubready.run import run_entry, run_recipe            # noqa: E402
+from pubready.spec import (add_plot_arguments, check_recipe_options,  # noqa: E402
+                           given_options, spec_from_args)
 
 
 def main():
-    p = argparse.ArgumentParser()
-    p.add_argument("--recipe", required=True)
-    p.add_argument("--data", required=True)
-    p.add_argument("--x"); p.add_argument("--y")
-    p.add_argument("--fill"); p.add_argument("--facet")
-    p.add_argument("--time"); p.add_argument("--event"); p.add_argument("--covariates")
-    p.add_argument("--annotation"); p.add_argument("--scale"); p.add_argument("--cluster")
-    p.add_argument("--id"); p.add_argument("--group"); p.add_argument("--label")
-    p.add_argument("--fc_cutoff", type=float); p.add_argument("--p_cutoff", type=float)
-    p.add_argument("--top_n", type=int)
-    p.add_argument("--pd_threshold", type=float)
-    p.add_argument("--pr_threshold", type=float)
-    p.add_argument("--positive")
-    p.add_argument("--se"); p.add_argument("--ci_low"); p.add_argument("--ci_high")
-    p.add_argument("--measure")
-    p.add_argument("--markers")
-    p.add_argument("--ref"); p.add_argument("--cause"); p.add_argument("--levels")
-    p.add_argument("--visit_levels"); p.add_argument("--features")
-    p.add_argument("--test", default="auto")
-    p.add_argument("--paired", action="store_true")
-    p.add_argument("--p_adjust", default="none")
-    p.add_argument("--geom"); p.add_argument("--theme")
-    p.add_argument("--xlab"); p.add_argument("--ylab"); p.add_argument("--title")
-    p.add_argument("--palette"); p.add_argument("--sheet"); p.add_argument("--stamp")
-    p.add_argument("--engine")  # consumed by the figkit dispatcher; ignored here
-    p.add_argument("--out", default="pubready_output")
-    a, _ = p.parse_known_args()
+    p = add_plot_arguments(argparse.ArgumentParser(allow_abbrev=False))
+    a = p.parse_args()
+    check_recipe_options(a.recipe, given_options(sys.argv[1:]))
     spec = spec_from_args(a)
     run_recipe(spec, a.data, a.out, sheet=a.sheet, stamp=a.stamp)
 
 
 if __name__ == "__main__":
-    main()
+    run_entry(main)

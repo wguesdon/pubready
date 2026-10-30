@@ -13,6 +13,7 @@ from importlib.metadata import distributions
 from importlib.metadata import version as _pkgver
 
 import numpy as np
+import pandas as pd
 
 from .io import file_checksums
 from .spec import write_config
@@ -59,6 +60,48 @@ def _json_default(o):
     return str(o)
 
 
+def json_safe(o):
+    """Make a value valid JSON, as the R engine writes it.
+
+    NaN and infinity become None, which JSON writes as null, and the numpy
+    scalars and arrays become the Python types.
+
+    Args:
+        o: The value: a dict, a list or a scalar.
+
+    Returns:
+        The value with each part made valid JSON.
+    """
+    if isinstance(o, dict):
+        return {k: json_safe(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple)):
+        return [json_safe(v) for v in o]
+    if isinstance(o, np.ndarray):
+        return json_safe(o.tolist())
+    if isinstance(o, (bool, np.bool_)):
+        return bool(o)
+    if isinstance(o, np.integer):
+        return int(o)
+    if isinstance(o, (float, np.floating)):
+        return float(o) if np.isfinite(o) else None
+    if o is None or isinstance(o, (int, str)):
+        return o
+    if o is pd.NA or o is pd.NaT:
+        return None
+    return _json_default(o)
+
+
+def write_json(obj, path):
+    """Write a value as indented, valid JSON, with null for NaN and infinity.
+
+    Args:
+        obj: The value.
+        path: The output file.
+    """
+    with open(path, "w") as f:
+        json.dump(json_safe(obj), f, indent=2, allow_nan=False, default=_json_default)
+
+
 def save_figure(fig, d, stub, w, h):
     fig.set_size_inches(w, h)
     for ext in ("pdf", "png", "svg"):
@@ -75,9 +118,80 @@ def _markdown_value(value):
     Returns:
         The escaped text.
     """
+    value = stats_cell(value)
     if value is None:
         return ""
     return str(value).replace("|", r"\|").replace("\n", " ")
+
+
+def stats_cell(value):
+    """Give one stats value the form that the R engine writes.
+
+    Args:
+        value: One cell of a stats table.
+
+    Returns:
+        "TRUE" or "FALSE" for a boolean, "Inf" or "-Inf" for an infinite
+        number, None for a missing value, else the value.
+    """
+    if isinstance(value, (bool, np.bool_)):
+        return "TRUE" if value else "FALSE"
+    if value is None or value is pd.NA or value is pd.NaT:
+        return None
+    if isinstance(value, (float, np.floating)):
+        if np.isnan(value):
+            return None
+        if np.isinf(value):
+            return "Inf" if value > 0 else "-Inf"
+    return value
+
+
+def stats_csv_frame(frame):
+    """Give a stats table the CSV form that both engines share.
+
+    A missing value is NA, a boolean is TRUE or FALSE, an infinite number is
+    Inf or -Inf, and a column of whole numbers has no decimal part. The R
+    engine writes the same forms.
+
+    Args:
+        frame: The stats table.
+
+    Returns:
+        pandas.DataFrame: A copy to write with na_rep="NA".
+    """
+    out = integer_columns(frame)
+    for col in out.columns:
+        values = out[col]
+        if values.dtype == bool:
+            out[col] = values.map(stats_cell)
+        elif values.dtype == object:
+            out[col] = values.map(stats_cell).astype(object)
+        elif values.dtype.kind == "f" and np.isinf(values.to_numpy()).any():
+            finite = values[np.isfinite(values.to_numpy())]
+            whole = len(finite) and bool(np.all(finite == np.round(finite))
+                                         and np.all(np.abs(finite) < 1e15))
+            cells = values.astype(object).map(stats_cell)
+            if whole:
+                cells = cells.map(_whole_text_or_keep)
+            out[col] = cells
+    return out
+
+
+def _whole_text_or_keep(value):
+    """Write a finite float of a whole-number column with no decimal part."""
+    if isinstance(value, (float, np.floating)):
+        return str(int(value))
+    return value
+
+
+def write_stats_csv(frame, path):
+    """Write a stats table in the CSV form that both engines share.
+
+    Args:
+        frame: The stats table.
+        path: The output file.
+    """
+    stats_csv_frame(frame).to_csv(path, index=False, na_rep="NA")
 
 
 def integer_columns(frame):
@@ -115,7 +229,7 @@ def dataframe_markdown(frame, limit=100):
     Returns:
         A Markdown table.
     """
-    shown = frame.head(limit)
+    shown = integer_columns(frame.head(limit))
     headers = [_markdown_value(column) for column in shown.columns]
     lines = [
         "| " + " | ".join(headers) + " |",
@@ -182,12 +296,10 @@ def _provenance_frame(provenance):
     Returns:
         A pandas data frame.
     """
-    import pandas as pd
-
     values = []
     for value in provenance.values():
         if isinstance(value, (dict, list)):
-            values.append(json.dumps(value, default=_json_default))
+            values.append(json.dumps(json_safe(value), allow_nan=False, default=_json_default))
         else:
             values.append(value)
     return pd.DataFrame({"field": provenance.keys(), "value": values})
@@ -210,9 +322,7 @@ def write_quarto_report(bdir, spec, stats_df, methods_text, fig_stub, provenance
     Raises:
         RuntimeError: If Quarto does not render the report.
     """
-    provenance_path = os.path.join(bdir, "report_provenance.json")
-    with open(provenance_path, "w") as stream:
-        json.dump(provenance, stream, indent=2, default=_json_default)
+    write_json(provenance, os.path.join(bdir, "report_provenance.json"))
     model = json.dumps(provenance["llm_model"])
     harness = json.dumps(provenance["agent_harness"])
     if provenance["llm_model"] == "none":
@@ -301,12 +411,23 @@ def output_checksums(bdir, names):
     return records
 
 
-def write_data_log(path, raw, in_name, sums, df_used, steps):
+#: The read rule of io.py, as the data log states it. The R engine writes the
+#: same text.
+READ_RULE_TEXT = (
+    "Each cell was read as text, and the spaces around each value were removed. "
+    "Only an empty cell or \"NA\" was read as missing. A column was read as numeric "
+    "when each present cell is a number with \".\" as the decimal mark, and as "
+    "logical when each present cell is TRUE or FALSE."
+)
+
+
+def write_data_log(path, raw, in_name, sums, df_used, steps, read_steps=None):
     types = "\n".join(f"- `{c}`: {df_used[c].dtype}" for c in df_used.columns)
     if isinstance(steps, (list, tuple)):
         steps = "\n".join(f"- {s}" for s in steps)
     else:
         steps = f"- {steps}"
+    read_txt = "\n".join(f"- {s}" for s in (read_steps or ["No value changed at read."]))
     txt = (
         "# Data provenance log\n\n"
         f"- Original file: `{os.path.basename(raw)}`\n"
@@ -315,6 +436,9 @@ def write_data_log(path, raw, in_name, sums, df_used, steps):
         f"- sha256: `{sums['sha256']}`\n"
         f"- Analyzed rows: {len(df_used)}\n"
         f"- Columns: {df_used.shape[1]}\n\n"
+        "## Read rule\n\n"
+        f"{READ_RULE_TEXT}\n\n"
+        f"{read_txt}\n\n"
         "## Column types (analyzed data)\n\n"
         f"{types}\n\n"
         "## Cleaning steps\n\n"
@@ -393,6 +517,45 @@ def write_packages(path, script_text=None):
     open(path, "w").write("\n".join(lines) + "\n")
 
 
+#: The plot options that the manifest records, in this order, with the spec
+#: field that holds each one. Each option is recorded, with null when the run
+#: did not set it. The R engine records the same options in the same order.
+MANIFEST_DATA_ARGS = ("x", "y", "fill", "facet", "time", "event", "covariates",
+                      "annotation", "id", "group", "label", "positive", "se",
+                      "ci_low", "ci_high", "measure", "markers", "ref", "cause",
+                      "levels", "visit_levels", "features")
+MANIFEST_APPEARANCE_ARGS = (("scale", "scale"), ("cluster", "cluster"),
+                            ("fc_cutoff", "fc_cutoff"), ("p_cutoff", "p_cutoff"),
+                            ("top_n", "top_n"), ("pd_threshold", "pd_threshold"),
+                            ("pr_threshold", "pr_threshold"), ("geom", "geom"),
+                            ("theme", "theme"), ("xlab", "x_label"), ("ylab", "y_label"),
+                            ("title", "title"), ("palette", "palette"))
+MANIFEST_LIST_ARGS = ("covariates", "markers", "levels", "visit_levels", "features",
+                      "palette")
+
+
+def manifest_arguments(spec):
+    """The arguments block of the manifest.
+
+    Args:
+        spec: The figure spec.
+
+    Returns:
+        dict: Every plot option, named as the command line names it, with None
+        for an option that the run did not set.
+    """
+    data, test, ap = spec.get("data") or {}, spec.get("test") or {}, spec.get("appearance") or {}
+    out = {k: data.get(k) for k in MANIFEST_DATA_ARGS}
+    out["test"] = test.get("method") or "auto"
+    out["paired"] = bool(test.get("paired", False))
+    for k, field in MANIFEST_APPEARANCE_ARGS:
+        out[k] = ap.get(field)
+    for k in MANIFEST_LIST_ARGS:
+        if out[k] is not None:
+            out[k] = [str(v) for v in (out[k] if isinstance(out[k], (list, tuple)) else [out[k]])]
+    return out
+
+
 def build_manifest(spec, in_name, orig, sums, n_rows, test_meta, container, git_commit, created, fig_stub):
     return {
         "pubready_version": PUBREADY_VERSION,
@@ -401,8 +564,7 @@ def build_manifest(spec, in_name, orig, sums, n_rows, test_meta, container, git_
         "engine": "python",
         "recipe": spec["recipe"],
         "recipe_version": "1",
-        "arguments": {k: spec["data"].get(k) for k in
-                      ("x", "y", "fill", "facet", "time", "event", "covariates")},
+        "arguments": manifest_arguments(spec),
         "input": {"file": in_name, "original_name": orig, "md5": sums["md5"],
                   "sha256": sums["sha256"], "n_rows": n_rows},
         "statistical_test": test_meta,
@@ -426,6 +588,7 @@ def reproduce_md(container, git_commit, script_name):
         "## 1. Get the pinned environment\n\n"
         f"- Container image: `{img}`\n"
         f"- Image id: `{container.get('image_id', 'unknown')}`\n"
+        f"- Image digest: `{container.get('digest') or 'n/a (local build)'}`\n"
         f"- pubready commit: `{git_commit}`\n\n"
         "## 2. Run the standalone script\n\n"
         "From inside this folder:\n\n"
@@ -439,7 +602,8 @@ def reproduce_md(container, git_commit, script_name):
     )
 
 
-def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp=None):
+def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp=None,
+                 read_steps=None):
     ts = _ts(stamp)
     created = _created()
     base = slugify(result.get("label") or spec["data"].get("y") or
@@ -461,7 +625,7 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
         qfig.savefig(os.path.join(bdir, f"qc_normality_{ts}.pdf"), facecolor="white")
         plt.close(qfig)
 
-    integer_columns(result["stats"]).to_csv(os.path.join(bdir, f"stats_{ts}.csv"), index=False)
+    write_stats_csv(result["stats"], os.path.join(bdir, f"stats_{ts}.csv"))
 
     ext = os.path.splitext(raw_input)[1].lstrip(".") or "csv"
     in_name = f"input_{base}.{ext}"
@@ -474,10 +638,15 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
             shutil.copyfile(ex, os.path.join(bdir, os.path.basename(ex)))
 
     write_data_log(os.path.join(bdir, "data_log.md"), raw_input, in_name, sums,
-                   result["df_used"], result["clean_steps"])
+                   result["df_used"], result["clean_steps"], read_steps)
 
+    # The config names the input copy and the annotation copy by the bare file
+    # name; render finds them in the folder of the config.
     cfg = copy.deepcopy(spec)
     cfg["data"]["file"] = in_name
+    ann = cfg["data"].get("annotation")
+    if ann and os.path.exists(os.path.join(bdir, os.path.basename(ann))):
+        cfg["data"]["annotation"] = os.path.basename(ann)
     write_config(cfg, os.path.join(bdir, "plot_config.yaml"))
 
     write_session_info(os.path.join(bdir, "session_info.txt"))
@@ -500,8 +669,7 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
     )
     manifest["outputs"] += report_outputs
     manifest["output_checksums"] = output_checksums(bdir, manifest["outputs"])
-    with open(os.path.join(bdir, f"manifest_{ts}.json"), "w") as f:
-        json.dump(manifest, f, indent=2, default=_json_default)
+    write_json(manifest, os.path.join(bdir, f"manifest_{ts}.json"))
 
     open(os.path.join(bdir, f"methods_{ts}.md"), "w").write(result["methods"].rstrip() + "\n")
 
