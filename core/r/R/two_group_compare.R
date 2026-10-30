@@ -23,7 +23,11 @@ recipe_two_group_compare <- function(df, spec) {
 
   # Assumption checks. Equal variance uses Levene's test, as the multi-group
   # recipe and both Python recipes do, so the column compares across engines.
-  fml <- stats::as.formula(sprintf("`%s` ~ `%s`", y, x))
+  # The tests run on a copy with syntactic column names (.x, .y), so a column
+  # name with a space or a symbol cannot break a formula. The labels and the
+  # tables keep the original names.
+  sdf <- data.frame(.x = df[[x]], .y = df[[y]])
+  fml <- .y ~ .x
   by_group <- split(df[[y]], df[[x]])
   norm <- lapply(by_group, shapiro_safe)
   all_normal <- all(vapply(norm, is_normal_check, logical(1)))
@@ -38,7 +42,7 @@ recipe_two_group_compare <- function(df, spec) {
     all_normal <- isTRUE(norm_diff$normal)
   }
   var_p <- tryCatch(
-    rstatix::levene_test(df, fml)$p[1],
+    rstatix::levene_test(sdf, fml)$p[1],
     error = na_on_error
   )
   equal_var <- is.na(var_p) || var_p > 0.05
@@ -49,13 +53,13 @@ recipe_two_group_compare <- function(df, spec) {
   .tg_check_variance(resolved, by_group, lvls)
 
   if (resolved$family == "t") {
-    stat <- rstatix::t_test(df, fml, paired = paired, var.equal = isTRUE(resolved$var_equal))
+    stat <- rstatix::t_test(sdf, fml, paired = paired, var.equal = isTRUE(resolved$var_equal))
     # Cohen's d over the pooled SD (paired: dz), as the Python engine and
     # feature_panel compute it; rstatix::cohens_d uses the average variance.
     eff_name <- if (paired) "Cohen's dz" else "Cohen's d"
     eff_val <- cohens_d_signed(by_group[[lvls[1]]], by_group[[lvls[2]]], paired)
   } else {
-    stat <- rstatix::wilcox_test(df, fml, paired = paired)
+    stat <- rstatix::wilcox_test(sdf, fml, paired = paired)
     eff_name <- "rank-biserial r"
     eff_val <- if (paired) {
       rank_biserial_paired(by_group[[lvls[1]]] - by_group[[lvls[2]]])
@@ -87,7 +91,7 @@ recipe_two_group_compare <- function(df, spec) {
 
   stat <- rstatix::add_significance(stat)
   xy <- tryCatch(
-    rstatix::add_xy_position(stat, x = x),
+    rstatix::add_xy_position(stat, x = ".x"),
     error = null_on_error
   )
   if (!is.null(xy)) stat <- xy
@@ -310,10 +314,10 @@ recipe_two_group_compare <- function(df, spec) {
   }
 
   test_line <- if (resolved$family == "t") {
-    sprintf('stat <- rstatix::t_test(df, %s ~ %s, paired = %s, var.equal = %s)',
-            y, x, paired, if (isTRUE(resolved$var_equal)) "TRUE" else "FALSE")
+    sprintf('stat <- rstatix::t_test(sdf, .y ~ .x, paired = %s, var.equal = %s)',
+            paired, if (isTRUE(resolved$var_equal)) "TRUE" else "FALSE")
   } else {
-    sprintf('stat <- rstatix::wilcox_test(df, %s ~ %s, paired = %s)', y, x, paired)
+    sprintf('stat <- rstatix::wilcox_test(sdf, .y ~ .x, paired = %s)', paired)
   }
   gl <- script_geom_lines(x, geom, spec$appearance$show_points %||% TRUE)
 
@@ -329,10 +333,12 @@ recipe_two_group_compare <- function(df, spec) {
     sprintf('df[["%s"]] <- factor(df[["%s"]], levels = c(%s))', x, x,
             paste(sprintf('"%s"', lvls), collapse = ", ")),
     sprintf('df[["%s"]] <- as.numeric(df[["%s"]])', y, y),
+    "# The test runs on a copy with syntactic column names.",
+    sprintf('sdf <- data.frame(.x = df[["%s"]], .y = df[["%s"]])', x, y),
     "",
     test_line,
     "stat <- rstatix::add_significance(stat)",
-    sprintf('stat <- rstatix::add_xy_position(stat, x = "%s")', x),
+    'stat <- rstatix::add_xy_position(stat, x = ".x")',
     plabel_line,
     "",
     gl$prep,

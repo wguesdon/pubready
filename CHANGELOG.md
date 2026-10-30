@@ -66,6 +66,10 @@ tag move together.
 - The R engine of `factorial_anova` makes its factors after it drops the rows
   with a missing value, so a level whose every outcome is missing leaves no
   empty slot, and the points sit on their boxes (F54).
+- The R engine of `two_group_compare`, `multi_group_compare` and
+  `factorial_anova`, also with `--test art`, accepts a column name with a space
+  or a symbol. The tests and the emitted scripts run on a copy with syntactic
+  names, and the tables keep the original names (F44).
 
 ## [3.0.0] - 2026-10-29
 

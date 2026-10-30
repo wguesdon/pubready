@@ -199,3 +199,61 @@ test_that("paired_compare takes the level rule, not the row order", {
   expect_equal(res$stats$condition1, "pre")
   expect_equal(res$stats$contrast, "post - pre")
 })
+
+# F44: column names with a space run in the R recipes that build a formula.
+test_that("two_group, multi_group and factorial_anova accept a name with a space", {
+  df <- data.frame(`treatment group` = rep(c("a", "b"), each = 6),
+                   `tumor volume` = c(1, 2, 3, 4, 5, 6, 3, 4, 5, 6, 7, 8.5), check.names = FALSE)
+  res <- recipe_two_group_compare(df, v3_spec("two_group_compare", x = "treatment group",
+                                              y = "tumor volume"))
+  expect_equal(res$stats$outcome, "tumor volume")
+  mg <- data.frame(`mouse genotype` = rep(c("het", "ko", "wt"), each = 4),
+                   `expression level` = c(1, 2, 3, 4, 5, 6, 7, 8.5, 2, 3, 4, 5.5), check.names = FALSE)
+  res <- recipe_multi_group_compare(mg, v3_spec("multi_group_compare", x = "mouse genotype",
+                                                y = "expression level", test = "anova"))
+  expect_equal(nrow(res$stats), 3)
+  fa <- data.frame(`mouse genotype` = rep(c("wt", "ko"), each = 8),
+                   `drug treatment` = rep(rep(c("vehicle", "drug"), each = 4), 2),
+                   `response value` = c(5, 6, 7, 8, 9, 10, 11, 12.5, 4, 5, 6, 7.5, 12, 13, 15, 16),
+                   check.names = FALSE)
+  res <- recipe_factorial_anova(fa, v3_spec("factorial_anova", x = "mouse genotype",
+                                            fill = "drug treatment", y = "response value",
+                                            test = "art"))
+  expect_equal(res$stats$effect, c("mouse genotype", "drug treatment",
+                                   "mouse genotype:drug treatment"))
+})
+
+# Write the input and the script into a new temporary folder, run the script
+# with Rscript there, and return the exit status and the output.
+v3_run_script <- function(script, df) {
+  dir <- tempfile("v3_script_")
+  dir.create(dir)
+  utils::write.csv(df, file.path(dir, "input.csv"), row.names = FALSE)
+  writeLines(script, file.path(dir, "script.R"))
+  old <- setwd(dir)
+  on.exit(setwd(old), add = TRUE)
+  out <- suppressWarnings(system2(file.path(R.home("bin"), "Rscript"), "script.R",
+                                  stdout = TRUE, stderr = TRUE))
+  list(status = attr(out, "status"), out = paste(out, collapse = "\n"),
+       pdf = file.exists(file.path(dir, "figure.pdf")))
+}
+
+test_that("the emitted scripts run on names with a space (F44)", {
+  df <- data.frame(`treatment group` = rep(c("a", "b"), each = 6),
+                   `tumor volume` = c(1, 2, 3, 4, 5, 6, 3, 4, 5, 6, 7, 8.5), check.names = FALSE)
+  res <- recipe_two_group_compare(df, v3_spec("two_group_compare", x = "treatment group",
+                                              y = "tumor volume"))
+  run <- v3_run_script(call_build_script(res$build_script, "input.csv", "figure"), df)
+  expect_null(run$status, info = run$out)
+  expect_true(run$pdf)
+  fa <- data.frame(`mouse genotype` = rep(c("wt", "ko"), each = 8),
+                   `drug treatment` = rep(rep(c("vehicle", "drug"), each = 4), 2),
+                   `response value` = c(5, 6, 7, 8, 9, 10, 11, 12.5, 4, 5, 6, 7.5, 12, 13, 15, 16),
+                   check.names = FALSE)
+  res <- recipe_factorial_anova(fa, v3_spec("factorial_anova", x = "mouse genotype",
+                                            fill = "drug treatment", y = "response value",
+                                            test = "art"))
+  run <- v3_run_script(call_build_script(res$build_script, "input.csv", "figure"), fa)
+  expect_null(run$status, info = run$out)
+  expect_true(run$pdf)
+})

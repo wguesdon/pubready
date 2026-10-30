@@ -86,11 +86,15 @@ recipe_multi_group_compare <- function(df, spec) {
     stop(sprintf("multi_group_compare needs 2 or more groups in '%s'; found %d", x, length(lvls)))
   }
 
-  fml <- stats::as.formula(sprintf("`%s` ~ `%s`", y, x))
+  # The tests run on a copy with syntactic column names (.x, .y), so a column
+  # name with a space or a symbol cannot break a formula. The labels and the
+  # tables keep the original names.
+  sdf <- data.frame(.x = df[[x]], .y = df[[y]])
+  fml <- .y ~ .x
   by_group <- split(df[[y]], df[[x]])
   norm <- lapply(by_group, shapiro_safe)
   all_normal <- all(vapply(norm, is_normal_check, logical(1)))
-  lev_p <- tryCatch(rstatix::levene_test(df, fml)$p[1], error = na_on_error)
+  lev_p <- tryCatch(rstatix::levene_test(sdf, fml)$p[1], error = na_on_error)
   equal_var <- is.na(lev_p) || lev_p > 0.05
 
   rank_min_p <- rank_test_min_p(lengths(by_group), "kruskal")
@@ -103,24 +107,24 @@ recipe_multi_group_compare <- function(df, spec) {
   # Omnibus test and matching post-hoc. The base R functions give full precision;
   # rstatix rounds the Tukey and Games-Howell P values to three decimals.
   if (resolved$family == "anova") {
-    at <- stats::anova(stats::lm(fml, data = df))
+    at <- stats::anova(stats::lm(fml, data = sdf))
     omnibus <- list(statistic = at[["F value"]][1], df1 = at$Df[1], df2 = at$Df[2],
                     p = at[["Pr(>F)"]][1],
                     effect_size = list(name = "partial eta-squared",
                                        value = at[["Sum Sq"]][1] / sum(at[["Sum Sq"]])))
-    ph <- .mg_tukey(df, fml, lvls)
+    ph <- .mg_tukey(sdf, fml, lvls)
   } else if (resolved$family == "welch") {
-    wt <- stats::oneway.test(fml, data = df, var.equal = FALSE)
+    wt <- stats::oneway.test(fml, data = sdf, var.equal = FALSE)
     omnibus <- list(statistic = unname(wt$statistic), df1 = unname(wt$parameter[1]),
                     df2 = unname(wt$parameter[2]), p = wt$p.value, effect_size = NULL)
     ph <- .mg_games_howell(by_group, lvls)
   } else {
-    kt <- stats::kruskal.test(fml, data = df)
-    ke <- tryCatch(as.data.frame(rstatix::kruskal_effsize(df, fml)), error = null_on_error)
+    kt <- stats::kruskal.test(fml, data = sdf)
+    ke <- tryCatch(as.data.frame(rstatix::kruskal_effsize(sdf, fml)), error = null_on_error)
     omnibus <- list(statistic = unname(kt$statistic), df1 = unname(kt$parameter), df2 = NA_real_,
                     p = kt$p.value,
                     effect_size = if (!is.null(ke)) list(name = "eta-squared (H)", value = ke$effsize[1]) else NULL)
-    ph <- as.data.frame(rstatix::dunn_test(df, fml, p.adjust.method = "BH"))
+    ph <- as.data.frame(rstatix::dunn_test(sdf, fml, p.adjust.method = "BH"))
   }
 
   ph$group1 <- as.character(ph$group1)
@@ -322,14 +326,14 @@ recipe_multi_group_compare <- function(df, spec) {
   gl <- script_geom_lines(x, spec$appearance$geom %||% "box",
                           spec$appearance$show_points %||% TRUE)
   posthoc_line <- switch(resolved$posthoc,
-    tukey        = sprintf('ph <- rstatix::tukey_hsd(df, %s ~ %s)', y, x),
-    games_howell = sprintf('ph <- rstatix::games_howell_test(df, %s ~ %s)', y, x),
-    dunn         = sprintf('ph <- rstatix::dunn_test(df, %s ~ %s, p.adjust.method = "BH")', y, x)
+    tukey        = 'ph <- rstatix::tukey_hsd(sdf, .y ~ .x)',
+    games_howell = 'ph <- rstatix::games_howell_test(sdf, .y ~ .x)',
+    dunn         = 'ph <- rstatix::dunn_test(sdf, .y ~ .x, p.adjust.method = "BH")'
   )
   omni_line <- switch(resolved$family,
-    anova   = sprintf('omni <- as.data.frame(rstatix::anova_test(df, %s ~ %s))', y, x),
-    welch   = sprintf('omni <- as.data.frame(rstatix::welch_anova_test(df, %s ~ %s))', y, x),
-    kruskal = sprintf('omni <- as.data.frame(rstatix::kruskal_test(df, %s ~ %s))', y, x)
+    anova   = 'omni <- as.data.frame(rstatix::anova_test(sdf, .y ~ .x))',
+    welch   = 'omni <- as.data.frame(rstatix::welch_anova_test(sdf, .y ~ .x))',
+    kruskal = 'omni <- as.data.frame(rstatix::kruskal_test(sdf, .y ~ .x))'
   )
   omni_name <- cap_first(resolved$label)
   lab_line <- if (identical(spec$appearance$bracket$label %||% "p.signif", "p.format")) {
@@ -368,6 +372,8 @@ recipe_multi_group_compare <- function(df, spec) {
     sprintf('df[["%s"]] <- factor(df[["%s"]], levels = c(%s))', x, x,
             paste(sprintf('"%s"', lvls), collapse = ", ")),
     sprintf('df[["%s"]] <- as.numeric(df[["%s"]])', y, y),
+    "# The tests run on a copy with syntactic column names.",
+    sprintf('sdf <- data.frame(.x = df[["%s"]], .y = df[["%s"]])', x, y),
     "",
     posthoc_line,
     "ph$group1 <- as.character(ph$group1); ph$group2 <- as.character(ph$group2)",
