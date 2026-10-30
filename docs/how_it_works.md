@@ -607,9 +607,13 @@ figkit build          # builds localhost/pubready:3.0.0 from container/Container
 The image carries R (ggpubr, rstatix, ggprism, ggrepel, ggdist, survival,
 survminer, ARTool, ComplexHeatmap, pROC, metafor) and Python (matplotlib, seaborn,
 statannotations, pingouin, statsmodels, scikit-posthocs, lifelines,
-PyComplexHeatmap, upsetplot, adjustText), all pinned. The
-`core/` scripts are mounted at runtime, so editing a recipe does not need a
-rebuild; only changing the dependencies does.
+PyComplexHeatmap, upsetplot, adjustText). The R packages come from the fixed
+CRAN snapshot of the `rocker/r-ver:4.4.1` base image. `container/requirements.txt`
+gives no Python versions, so the build writes the versions that it resolved to
+`/opt/pubready/requirements.lock` in the image. A built image is therefore
+pinned, and each manifest records its digest, but a new build can resolve newer
+Python packages. The `core/` scripts are mounted at runtime, so editing a recipe
+does not need a rebuild; only changing the dependencies does.
 
 ## Testing and versioning
 

@@ -41,6 +41,9 @@ tag move together.
 - The README and the adapters say that `figkit plot` and `figkit render` stop
   when the repository holds an untracked file that git does not ignore. Write
   helper files under `pubready_output/` (F107).
+- `docs/how_it_works.md` says what pins the packages of the image: the CRAN
+  snapshot of the base image for R, and the lock file of the build for Python
+  (F106).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of
