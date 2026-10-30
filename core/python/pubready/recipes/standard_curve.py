@@ -253,6 +253,7 @@ def recipe_standard_curve(df, spec):
     stats_df = pd.DataFrame({"id": ids[is_unk], "signal": sig[is_unk],
                              "concentration": conc_u, "flag": flag})
     rec = recovery(model, s_conc, s_sig)
+    mono = monotonic(s_conc, s_sig)
     counts = {"n_unknowns": int(len(stats_df)),
               "n_in_range": int((stats_df["flag"] == "in range").sum()),
               "n_below": int((stats_df["flag"] == "below range").sum()),
@@ -265,21 +266,22 @@ def recipe_standard_curve(df, spec):
         "n_standards": int(len(s_conc)), "n_fitted": model["n_fit"],
         "n_levels": int(len(np.unique(s_conc))),
         "concentration_range": model["conc_range"], "signal_range": sorted(float(e) for e in ends),
-        **counts, "recovery": rec,
+        **counts, "recovery": rec, "standards_monotonic": mono["monotonic"],
+        "hook_turn": mono["turn"],
     }
-    fig = _plot(model, s_conc, s_sig, stats_df, counts, spec, x, y)
+    fig = _plot(model, s_conc, s_sig, stats_df, counts, spec, x, y, mono)
     df_used = pd.DataFrame({"id": ids[keep], "role": np.where(blank[keep], "unknown", "standard"),
                             "concentration": conc[keep], "signal": sig[keep]})
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
-        "methods": _methods(model, test_meta, method, spec, x, y),
+        "methods": _methods(model, test_meta, method, spec, x, y, mono),
         "df_used": df_used, "clean_steps": steps, "label": slugify(y),
         "width": 5.2, "height": 4.8,
         "build_script": functools.partial(_script, spec, model),
     }
 
 
-def _plot(model, s_conc, s_sig, unk, counts, spec, x, y):
+def _plot(model, s_conc, s_sig, unk, counts, spec, x, y, mono=None):
     """Draw the standards, the curve and the interpolated unknowns.
 
     Args:
@@ -291,6 +293,7 @@ def _plot(model, s_conc, s_sig, unk, counts, spec, x, y):
         spec: The figure specification.
         x: The concentration column.
         y: The signal column.
+        mono: The result of monotonic(), or None.
 
     Returns:
         matplotlib.figure.Figure: The figure.
@@ -343,7 +346,9 @@ def _plot(model, s_conc, s_sig, unk, counts, spec, x, y):
     ax.yaxis.set_major_locator(MaxNLocator(nbins=6, steps=[1, 2, 2.5, 5, 10]))
     ax.set_title(f"{cap_first(model['label'])} fit, R² = {model['r_squared']:.4f}\n"
                  f"{counts['n_in_range']} of {counts['n_unknowns']} unknowns interpolated; "
-                 f"{counts['n_below']} below range, {counts['n_above']} above range",
+                 f"{counts['n_below']} below range, {counts['n_above']} above range"
+                 + (f"\nStandards not monotonic above {_fmt(mono['turn'])}: possible hook effect"
+                    if mono is not None and not mono["monotonic"] else ""),
                  fontsize=10, color="#4d4d4d")
     if ap.get("title"):
         fig.suptitle(ap["title"], fontweight="bold")
@@ -369,6 +374,49 @@ def _fmt(v):
         str: The text.
     """
     return f"{v:.3g}"
+
+
+def monotonic(s_conc, s_sig):
+    """Whether the mean signal of the standards moves in one direction (F85).
+
+    A curve that rises and then falls, or the reverse, can be a hook effect: an
+    unknown in the turned part reads on the wrong side of the curve. The rule
+    is that of .stc_monotonic() in R.
+
+    Args:
+        s_conc: The concentrations of the standards.
+        s_sig: The signals of the standards.
+
+    Returns:
+        dict: monotonic, the concentration of the turn, and the two directions.
+    """
+    lv = np.unique(s_conc)
+    m = np.array([s_sig[s_conc == u].mean() for u in lv])
+    steps = np.sign(np.diff(m))
+    moving = steps[steps != 0]
+    if len(moving) == 0 or np.all(moving == moving[0]):
+        return {"monotonic": True, "turn": float("nan"), "first": None, "then": None}
+    k = int(np.where(steps == -moving[0])[0][0])
+    rising = moving[0] > 0
+    return {"monotonic": False, "turn": float(lv[k]),
+            "first": "rises" if rising else "falls", "then": "falls" if rising else "rises"}
+
+
+def hook_text(mono):
+    """The methods sentence on a hook effect, as .stc_hook_text() in R.
+
+    Args:
+        mono: The result of monotonic(), or None.
+
+    Returns:
+        str: The sentence with a trailing space, or "" for monotonic standards.
+    """
+    if mono is None or mono["monotonic"]:
+        return ""
+    return (f"The mean signal of the standards {mono['first']} up to a concentration of "
+            f"{_fmt(mono['turn'])} and {mono['then']} above it, so the standards are not "
+            "monotonic; this can be a hook effect, and an unknown read near or above that "
+            "concentration is not reliable. ")
 
 
 def _recovery_text(rec):
@@ -400,7 +448,7 @@ def _recovery_text(rec):
     return txt
 
 
-def _methods(model, meta, method, spec, x, y):
+def _methods(model, meta, method, spec, x, y, mono=None):
     """Write the methods paragraph, with the same sentences as the R engine.
 
     Args:
@@ -410,6 +458,7 @@ def _methods(model, meta, method, spec, x, y):
         spec: The figure specification.
         x: The concentration column.
         y: The signal column.
+        mono: The result of monotonic(), or None.
 
     Returns:
         str: The paragraph.
@@ -446,7 +495,7 @@ def _methods(model, meta, method, spec, x, y):
         f"({_fmt(meta['signal_range'][0])} to {_fmt(meta['signal_range'][1])}) was flagged below range "
         "or above range and given no concentration, so no value was extrapolated. "
         f"Of {meta['n_unknowns']} unknowns, {meta['n_in_range']} were in range, {meta['n_below']} "
-        f"below range and {meta['n_above']} above range. {rec_txt}"
+        f"below range and {meta['n_above']} above range. {rec_txt}{hook_text(mono)}"
         f"Fitted in Python {platform.python_version()} with {lib} "
         f"and drawn with matplotlib {v('matplotlib')}."
     )

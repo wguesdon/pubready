@@ -184,3 +184,24 @@ test_that("enzyme_kinetics reports a fit above the substrate range as not determ
   expect_match(res$methods, "fewer than two curves were determined", fixed = TRUE)
   expect_match(res$plot$labels$subtitle, "Not determined, left out of the tests: linear", fixed = TRUE)
 })
+
+# Standards whose mean signal rises and then falls are flagged as a possible
+# hook effect (F85). The Python suite uses the same data.
+sc_hook <- function() {
+  conc <- rep(c(0.156, 0.3125, 0.625, 1.25, 2.5, 5, 10), each = 2)
+  sig <- c(0.16, 0.15, 0.28, 0.28, 0.55, 0.52, 0.93, 0.94, 1.42, 1.44, 1.61, 1.60, 1.31, 1.30)
+  data.frame(sample = paste0("S", seq_along(conc)), conc = conc, signal = sig)
+}
+
+test_that("standard_curve flags standards that are not monotonic", {
+  res <- recipe_standard_curve(sc_hook(), bench_recipe_spec("standard_curve", x = "conc",
+                                                            y = "signal", id = "sample",
+                                                            test = "linear"))
+  expect_false(res$test_meta$standards_monotonic)
+  expect_equal(res$test_meta$hook_turn, 5)
+  expect_match(res$methods, "rises up to a concentration of 5 and falls above it", fixed = TRUE)
+  expect_match(res$plot$labels$subtitle, "possible hook effect", fixed = TRUE)
+  ok <- sc_hook()[1:12, ]
+  expect_true(recipe_standard_curve(ok, bench_recipe_spec("standard_curve", x = "conc", y = "signal",
+                                                          id = "sample", test = "linear"))$test_meta$standards_monotonic)
+})
