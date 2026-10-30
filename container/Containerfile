@@ -121,6 +121,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && fc-cache -f \
  && rm -rf /var/lib/apt/lists/*
 
+# Scalable monochrome emoji, pinned to the upstream commit and file checksum.
+# The distribution's Symbola font lacks newer characters such as the DNA emoji.
+RUN mkdir -p /usr/local/share/fonts/noto-emoji \
+ && curl -fsSL 'https://raw.githubusercontent.com/google/fonts/8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5/ofl/notoemoji/NotoEmoji%5Bwght%5D.ttf' \
+      -o /usr/local/share/fonts/noto-emoji/NotoEmoji.ttf \
+ && echo 'de6c18832938afc99caf132b39d6a30a19bac7f2e812e28db2535b4608d27551  /usr/local/share/fonts/noto-emoji/NotoEmoji.ttf' | sha256sum -c - \
+ && curl -fsSL 'https://raw.githubusercontent.com/google/fonts/8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5/ofl/notoemoji/OFL.txt' \
+      -o /usr/local/share/fonts/noto-emoji/OFL.txt \
+ && fc-cache -f
+
 RUN mkdir -p /opt/pubready/core
 
 ARG PUBREADY_VERSION=0.0.0

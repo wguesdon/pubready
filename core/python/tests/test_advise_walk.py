@@ -29,7 +29,7 @@ CASES = [
     ("mtcars", dict(x="wt", y="mpg"), ["aim=association"], "correlation", 0),
     ("pefr", dict(x="wright_1", y="mini_1"), ["aim=agreement"], "bland_altman", 0),
     ("asah", dict(x="s100b,ndka", y="outcome", positive="Poor"), ["aim=discrimination"], "roc_curve", 0),
-    ("asah", dict(x="s100b,ndka", y="outcome", positive="Bad"), ["aim=discrimination"], "roc_curve", 2),
+    ("asah", dict(x="s100b,ndka", y="outcome", positive="Bad"), ["aim=discrimination"], None, 2),
     ("pima_te", dict(x="predicted", y="type", positive="Yes"), ["aim=calibration"], "calibration", 0),
     ("bcg", dict(y="risk_ratio", ci_low="ci_low", ci_high="ci_high", label="trial", measure="ratio"), ["aim=meta_analysis"], "forest_meta", 0),
     ("lung", dict(time="time", event="event", x="sex"), ["aim=time_to_event", "tte_aim=compare_groups"], "survival_km", 0),

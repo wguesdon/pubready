@@ -6,7 +6,7 @@ from matplotlib.ticker import Formatter
 
 # Preserve the existing Latin face and use monochrome fallbacks for CJK,
 # symbols and emoji. The image installs the corresponding system fonts.
-matplotlib.rcParams["font.family"] = ["DejaVu Sans", "Noto Sans CJK JP", "Noto Sans", "Symbola"]
+matplotlib.rcParams["font.family"] = ["DejaVu Sans", "Noto Sans CJK JP", "Noto Sans", "Noto Emoji", "Symbola"]
 
 # The first six colours are the house palette. The fourteen after them keep a
 # figure with up to twenty groups distinct; palette() cycles past twenty.
