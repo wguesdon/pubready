@@ -196,3 +196,14 @@ test_that("diagnose and plot accept the same full option list (F73)", {
   expect_null(opt$test)
   expect_equal(spec_from_opt(opt)$test$method, "auto")
 })
+
+test_that("render finds the bundle input in the folder of the config (F74)", {
+  dir <- file.path(tempdir(), "bundle_f74")
+  dir.create(dir, showWarnings = FALSE)
+  writeLines("a,b", file.path(dir, "input_x.csv"))
+  cfg <- file.path(dir, "plot_config.yaml")
+  expect_equal(resolve_config_path("input_x.csv", cfg), file.path(dir, "input_x.csv"))
+  expect_equal(resolve_config_path("example/other.csv", cfg), "example/other.csv")
+  expect_equal(resolve_config_path("/abs/path.csv", cfg), "/abs/path.csv")
+  expect_null(resolve_config_path(NULL, cfg))
+})

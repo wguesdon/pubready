@@ -641,8 +641,13 @@ def write_bundle(spec, result, raw_input, out_root, container, git_commit, stamp
     write_data_log(os.path.join(bdir, "data_log.md"), raw_input, in_name, sums,
                    result["df_used"], result["clean_steps"], read_steps)
 
+    # The config names the input copy and the annotation copy by the bare file
+    # name; render finds them in the folder of the config.
     cfg = copy.deepcopy(spec)
     cfg["data"]["file"] = in_name
+    ann = cfg["data"].get("annotation")
+    if ann and os.path.exists(os.path.join(bdir, os.path.basename(ann))):
+        cfg["data"]["annotation"] = os.path.basename(ann)
     write_config(cfg, os.path.join(bdir, "plot_config.yaml"))
 
     write_session_info(os.path.join(bdir, "session_info.txt"))

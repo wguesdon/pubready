@@ -1,6 +1,8 @@
 """The figure spec: one dict that both `plot` (CLI args) and `render` (config)
 build, then hand to a recipe. Mirrors the R spec structure."""
 import os
+import re
+
 import yaml
 
 
@@ -156,6 +158,26 @@ def spec_from_config(path):
     cfg.setdefault("engine", "python")
     cfg.setdefault("data", {})
     return cfg
+
+
+def resolve_config_path(path, config):
+    """The path of a file that a plot_config.yaml names.
+
+    A relative path is found in the folder of the config first, so a bundle
+    renders from any folder, and else in the current folder, as before. The R
+    engine has the same rule.
+
+    Args:
+        path: The path in the config, or None.
+        config: The path of the config.
+
+    Returns:
+        str or None: The path to read.
+    """
+    if not path or re.match(r"^(/|~|[A-Za-z]:)", path):
+        return path
+    near = os.path.join(os.path.dirname(config), path)
+    return near if os.path.exists(near) else path
 
 
 def write_config(spec, path):

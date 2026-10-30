@@ -73,6 +73,11 @@ tag move together.
 - `figkit diagnose` accepts every option of `figkit plot`, from one option list
   that both commands share in each engine. Before, it accepted 11 options: R
   stopped on `--time`, and Python dropped `--ref` with no message (F73).
+- `figkit render` finds the input file and the annotation file of a config in
+  the folder of the config first, and else in the current folder. The bundle
+  config names the annotation copy by its bare file name, as it names the
+  input copy. Before, `render` of a bundle config from the repository root
+  stopped with "input file not found" (F74).
 
 ## [3.0.0] - 2026-10-29
 

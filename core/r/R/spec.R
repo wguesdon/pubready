@@ -138,6 +138,15 @@ spec_from_config <- function(path) {
   cfg
 }
 
+# The path of a file that a plot_config.yaml names. A relative path is found in
+# the folder of the config first, so a bundle renders from any folder, and else
+# in the current folder, as before. NULL stays NULL.
+resolve_config_path <- function(path, config) {
+  if (is.null(path) || !nzchar(path) || grepl("^(/|~|[A-Za-z]:)", path)) return(path)
+  near <- file.path(dirname(config), path)
+  if (file.exists(near)) near else path
+}
+
 # Write a spec back out as plot_config.yaml.
 write_config <- function(spec, path) {
   yaml::write_yaml(spec, path)

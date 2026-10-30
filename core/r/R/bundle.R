@@ -567,8 +567,13 @@ write_bundle <- function(spec, resolved, df_used, raw_input_path, plot, stats_df
   write_data_log(file.path(bdir, "data_log.md"),
                  raw_input_path, in_name, sums, df_used, data_log_steps, read_steps)
 
+  # The config names the input copy and the annotation copy by the bare file
+  # name; render finds them in the folder of the config.
   cfg <- spec
   cfg$data$file <- in_name
+  if (!is.null(cfg$data$annotation) && file.exists(file.path(bdir, basename(cfg$data$annotation)))) {
+    cfg$data$annotation <- basename(cfg$data$annotation)
+  }
   write_config(cfg, file.path(bdir, "plot_config.yaml"))
 
   writeLines(capture.output(utils::sessionInfo()), file.path(bdir, "session_info.txt"))

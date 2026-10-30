@@ -16,7 +16,7 @@ from pubready.bundle import (_markdown_value, dataframe_markdown, manifest_argum
 from pubready.io import read_tidy, read_tidy_logged
 from pubready.qc import qc_layout, qc_normality
 from pubready.run import inspect_data, print_inspect, run_entry
-from pubready.spec import add_plot_arguments, spec_from_args
+from pubready.spec import add_plot_arguments, resolve_config_path, spec_from_args
 
 
 def write_tmp_csv(tmp_path, lines):
@@ -255,3 +255,12 @@ def test_diagnose_and_plot_accept_the_same_full_option_list():
                       "--ref", "vehicle"])
     assert a.time == "t" and a.ref == "vehicle" and a.test is None
     assert spec_from_args(a)["test"]["method"] == "auto"
+
+
+def test_render_finds_the_bundle_input_in_the_folder_of_the_config(tmp_path):
+    (tmp_path / "input_x.csv").write_text("a,b\n")
+    cfg = str(tmp_path / "plot_config.yaml")
+    assert resolve_config_path("input_x.csv", cfg) == str(tmp_path / "input_x.csv")
+    assert resolve_config_path("example/other.csv", cfg) == "example/other.csv"
+    assert resolve_config_path("/abs/path.csv", cfg) == "/abs/path.csv"
+    assert resolve_config_path(None, cfg) is None
