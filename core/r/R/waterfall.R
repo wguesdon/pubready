@@ -63,10 +63,12 @@ recipe_waterfall <- function(df, spec) {
   n_missing <- n0 - nrow(d)
   if (has_time) {
     check_one_row_per_time(d$id, d$time, "waterfall", x)
+    late_step <- late_baseline_step(d$id, d$time, x)
     fv <- .wf_from_visits(d)
     per <- fv$per
     per$category <- .wf_category(per$best_change_pct, per$worst_change_pct, pr_cut, pd_cut)
     extra <- c(
+      late_step,
       if (fv$dropped_zero > 0) sprintf("Dropped %d patient(s) whose baseline was zero, because a percentage change needs a non-zero baseline.", fv$dropped_zero),
       if (fv$no_follow > 0) sprintf("Dropped %d patient(s) with no visit after the baseline.", fv$no_follow))
   } else {

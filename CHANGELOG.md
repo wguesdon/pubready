@@ -92,6 +92,10 @@ tag move together.
   its own: rows with a missing cell, patients with a zero baseline or with no
   later visit (with their row counts), and rows with a negative duration.
   Before, these drops read as rows with a missing value (F124).
+- The data log of `swimmer` lists each marker time after the end of the bar
+  or below 0, and the data logs of `waterfall` and `spider_response` list each
+  patient with no row at the first time point, whose baseline is then a later
+  visit. Before, both cases ran with no record (F94).
 
 ## [3.0.0] - 2026-10-29
 

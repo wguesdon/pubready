@@ -34,6 +34,7 @@ recipe_spider_response <- function(df, spec) {
   n_missing <- n_rows0 - nrow(d)
   d[[idc]] <- as.character(d[[idc]])
   check_one_row_per_time(d[[idc]], d[[x]], "spider_response", x)
+  late_step <- late_baseline_step(d[[idc]], d[[x]], x)
   d <- d[order(d[[idc]], d[[x]]), , drop = FALSE]
 
   baseline <- stats::aggregate(d[[y]], by = list(id = d[[idc]]),
@@ -91,6 +92,7 @@ recipe_spider_response <- function(df, spec) {
       sprintf("Dropped %d row(s) with a missing %s.", n_missing,
               if (!is.null(grp) && nzchar(grp)) "patient, time, value or group" else "patient, time or value")
     } else NULL,
+    late_step,
     if (length(dropped) > 0) {
       sprintf("Dropped %d patient(s) (%d row(s)) whose baseline was zero, because a percentage change needs a non-zero baseline.",
               length(dropped), rows_zero)
@@ -191,6 +193,24 @@ check_one_row_per_time <- function(id, time, recipe, xcol) {
   if (length(items) > 6) shown <- sprintf("%s and %d more", shown, length(items) - 6)
   stop(sprintf("%s needs one row per patient and time point, and %d patient(s) have two rows or more at one time: %s; average or remove the extra rows first",
                recipe, length(items), shown))
+}
+
+# A data log step for the patients with no row at the first time point of the
+# data, whose baseline is then a later visit; NULL when every patient has one.
+# spider_response and waterfall share it, and the Python engine has the same
+# rule.
+late_baseline_step <- function(id, time, xcol) {
+  if (length(time) == 0) return(NULL)
+  t0 <- min(time)
+  first <- tapply(time, id, min)
+  late <- names(first)[first > t0]
+  late <- unique(id[id %in% late])
+  if (length(late) == 0) return(NULL)
+  items <- sprintf("'%s' (%s = %s)", late, xcol, level_labels(unname(first[late])))
+  shown <- paste(utils::head(items, 6), collapse = ", ")
+  if (length(items) > 6) shown <- sprintf("%s and %d more", shown, length(items) - 6)
+  sprintf("%d patient(s) have no row at the first time point (%s = %s), so their baseline is their first later visit: %s.",
+          length(late), xcol, level_labels(t0), shown)
 }
 
 # Stop when the time column holds no number, and say how many of its values are

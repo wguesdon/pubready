@@ -275,3 +275,17 @@ test_that("the spider and swimmer data logs count each drop reason on its own (F
                                   "Dropped 1 row(s) with a negative duration.",
                                   "Kept 2 of 4 patient(s)."))
 })
+
+test_that("swimmer logs a marker outside the bar and spider a late baseline (F94)", {
+  s <- data.frame(patient = c("P1", "P2", "P3"), months = c(10, 6, 8), resp = c(12, -1, 3))
+  res <- recipe_swimmer(s, v3c_spec("swimmer", id = "patient", time = "months", markers = "resp"))
+  expect_true("2 value(s) of 'resp' fall after the end of the bar or below 0, and the symbols are drawn where the data puts them: 'P1' (12, bar 10), 'P2' (-1, bar 6)." %in%
+                res$clean_steps)
+  d <- data.frame(patient = c("P1", "P1", "P2", "P2", "P2"), week = c(8, 16, 0, 8, 16),
+                  lesion = c(50, 40, 30, 36, 33))
+  step <- "1 patient(s) have no row at the first time point (week = 0), so their baseline is their first later visit: 'P1' (week = 8)."
+  res <- recipe_spider_response(d, v3c_spec("spider_response", x = "week", y = "lesion", id = "patient"))
+  expect_true(step %in% res$clean_steps)
+  res <- recipe_waterfall(d, v3c_spec("waterfall", x = "week", y = "lesion", id = "patient"))
+  expect_true(step %in% res$clean_steps)
+})

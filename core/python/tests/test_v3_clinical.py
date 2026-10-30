@@ -336,3 +336,19 @@ def test_the_spider_and_swimmer_data_logs_count_each_drop_reason_on_its_own():
     assert res["clean_steps"] == ["Dropped 1 row(s) with a missing patient, duration, status or arm.",
                                   "Dropped 1 row(s) with a negative duration.",
                                   "Kept 2 of 4 patient(s)."]
+
+
+def test_swimmer_logs_a_marker_outside_the_bar_and_spider_a_late_baseline():
+    """F94: both cases ran with no step in the data log."""
+    s = pd.DataFrame({"patient": ["P1", "P2", "P3"], "months": [10, 6, 8], "resp": [12, -1, 3]})
+    res = recipe_swimmer(s, v3c_spec("swimmer", id="patient", time="months", markers="resp"))
+    assert ("2 value(s) of 'resp' fall after the end of the bar or below 0, and the symbols are "
+            "drawn where the data puts them: 'P1' (12, bar 10), 'P2' (-1, bar 6).") in res["clean_steps"]
+    d = pd.DataFrame({"patient": ["P1", "P1", "P2", "P2", "P2"], "week": [8, 16, 0, 8, 16],
+                      "lesion": [50, 40, 30, 36, 33]})
+    step = ("1 patient(s) have no row at the first time point (week = 0), so their baseline is "
+            "their first later visit: 'P1' (week = 8).")
+    res = recipe_spider_response(d, v3c_spec("spider_response", x="week", y="lesion", id="patient"))
+    assert step in res["clean_steps"]
+    res = recipe_waterfall(d, v3c_spec("waterfall", x="week", y="lesion", id="patient"))
+    assert step in res["clean_steps"]

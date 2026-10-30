@@ -17,7 +17,7 @@ from matplotlib.patches import Patch
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
 from .spider_response import (CATEGORIES, categorise, check_numeric_time,
-                              check_one_row_per_time)
+                              check_one_row_per_time, late_baseline_step)
 
 
 def from_visits(d):
@@ -84,6 +84,9 @@ def recipe_waterfall(df, spec):
     extra = []
     if has_time:
         check_one_row_per_time(d["id"], d["time"], "waterfall", x)
+        late_step = late_baseline_step(d["id"], d["time"], x)
+        if late_step:
+            extra.append(late_step)
         per, dropped_zero, no_follow = from_visits(d)
         per["category"] = [categorise(b, w, pr_cut, pd_cut)
                            for b, w in zip(per["best_change_pct"], per["worst_change_pct"])]

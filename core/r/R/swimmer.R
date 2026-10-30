@@ -50,7 +50,8 @@ recipe_swimmer <- function(df, spec) {
   clean_steps <- c(
     if (sum(missing) > 0) sprintf("Dropped %d row(s) with a missing patient, duration, status or arm.", sum(missing)),
     if (sum(negative) > 0) sprintf("Dropped %d row(s) with a negative duration.", sum(negative)),
-    sprintf("Kept %d of %d patient(s).", nrow(d), n0))
+    sprintf("Kept %d of %d patient(s).", nrow(d), n0),
+    unlist(lapply(markers, .sw_marker_step, d = d)))
 
   d <- d[order(d$duration, d$patient, method = "radix"), , drop = FALSE]
   d$rank <- seq_len(nrow(d))
@@ -118,6 +119,21 @@ recipe_swimmer <- function(df, spec) {
                                        has_group = has_group)),
        label = slugify(tcol), df_used = d, clean_steps = clean_steps,
        width = 6.4, height = max(3.6, min(10, 1.6 + 0.18 * nrow(d))))
+}
+
+# A data log step for the values of one marker column that fall after the end
+# of the bar or below 0; NULL when there is none. The symbols stay where the data
+# puts them. The Python engine writes the same step.
+.sw_marker_step <- function(m, d) {
+  v <- d[[m]]
+  out <- is.finite(v) & (v > d$duration | v < 0)
+  if (!any(out)) return(NULL)
+  items <- sprintf("'%s' (%s, bar %s)", d$patient[out], level_labels(v[out]),
+                   level_labels(d$duration[out]))
+  shown <- paste(utils::head(items, 6), collapse = ", ")
+  if (length(items) > 6) shown <- sprintf("%s and %d more", shown, length(items) - 6)
+  sprintf("%d value(s) of '%s' fall after the end of the bar or below 0, and the symbols are drawn where the data puts them: %s.",
+          sum(out), m, shown)
 }
 
 .sw_marker_rows <- function(m, d) {

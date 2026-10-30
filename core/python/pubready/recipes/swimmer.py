@@ -16,6 +16,7 @@ from matplotlib.lines import Line2D
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
+from ..util import level_labels
 from .survival_km import event_codes
 
 #: The marker shapes, in the order of --markers, matched to the R engine.
@@ -35,6 +36,31 @@ def arm_summary(d, g):
     s = d[d["group"] == g]
     return {"n": int(len(s)), "median_duration": float(s["duration"].median()),
             "ongoing": int(s["ongoing"].sum())}
+
+
+def marker_step(d, m):
+    """A data log step for the values of one marker that fall outside the bar.
+
+    A value after the end of the bar or below 0 is logged. The symbols stay
+    where the data puts them. The R engine writes the same step.
+
+    Args:
+        d: The per-patient table.
+        m: The marker column.
+
+    Returns:
+        str or None: The step, or None when every value is inside its bar.
+    """
+    v = d[m]
+    out = (np.isfinite(v) & ((v > d["duration"]) | (v < 0))).to_numpy()
+    if not out.any():
+        return None
+    vals = level_labels(v[out].reset_index(drop=True))
+    bars = level_labels(d["duration"][out].reset_index(drop=True))
+    items = [f"'{p}' ({a}, bar {b})" for p, a, b in zip(d["patient"][out], vals, bars)]
+    shown = ", ".join(items[:6]) + (f" and {len(items) - 6} more" if len(items) > 6 else "")
+    return (f"{int(out.sum())} value(s) of '{m}' fall after the end of the bar or below 0, and "
+            f"the symbols are drawn where the data puts them: {shown}.")
 
 
 def recipe_swimmer(df, spec):
@@ -93,6 +119,7 @@ def recipe_swimmer(df, spec):
     if negative.any():
         steps.append(f"Dropped {int(negative.sum())} row(s) with a negative duration.")
     steps.append(f"Kept {len(d)} of {n0} patient(s).")
+    steps += [s for s in (marker_step(d, m) for m in markers) if s]
 
     # The arms are sorted, as the other recipes sort their groups; R sorts them
     # in the same C-locale order.

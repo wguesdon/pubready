@@ -81,6 +81,37 @@ def check_one_row_per_time(ids, times, recipe, xcol):
                      "the extra rows first")
 
 
+def late_baseline_step(ids, times, xcol):
+    """A data log step for the patients with no row at the first time point.
+
+    The baseline of such a patient is a later visit. spider_response and
+    waterfall share it, and the R engine has the same rule.
+
+    Args:
+        ids: The patient of each row.
+        times: The time of each row.
+        xcol: The time column, for the message.
+
+    Returns:
+        str or None: The step, or None when every patient has a row at the
+        first time point.
+    """
+    t = pd.Series(list(times), dtype=float)
+    if t.empty:
+        return None
+    t0 = t.min()
+    first = t.groupby(pd.Series(list(ids))).min()
+    late = [i for i in dict.fromkeys(ids) if first[i] > t0]
+    if not late:
+        return None
+    labels = level_labels(pd.Series([first[i] for i in late], dtype=float))
+    items = [f"'{i}' ({xcol} = {lab})" for i, lab in zip(late, labels)]
+    shown = ", ".join(items[:6]) + (f" and {len(items) - 6} more" if len(items) > 6 else "")
+    return (f"{len(late)} patient(s) have no row at the first time point ({xcol} = "
+            f"{level_labels(pd.Series([t0]))[0]}), so their baseline is their first later "
+            f"visit: {shown}.")
+
+
 def check_numeric_time(values, col):
     """Stop when the time column holds no number, as check_numeric_time() in R.
 
@@ -141,6 +172,7 @@ def recipe_spider_response(df, spec):
     n_missing = n_rows0 - len(d)
     d[idc] = d[idc].astype(str)
     check_one_row_per_time(d[idc], d[x], "spider_response", x)
+    late_step = late_baseline_step(d[idc], d[x], x)
     d = d.sort_values([idc, x], kind="mergesort").reset_index(drop=True)
 
     baseline = d.groupby(idc, sort=False)[y].first()
@@ -187,6 +219,8 @@ def recipe_spider_response(df, spec):
     if n_missing:
         what = "patient, time, value or group" if grp else "patient, time or value"
         steps.append(f"Dropped {n_missing} row(s) with a missing {what}.")
+    if late_step:
+        steps.append(late_step)
     if dropped:
         steps.append(f"Dropped {dropped} patient(s) ({rows_zero} row(s)) whose baseline was "
                      "zero, because a percentage change needs a non-zero baseline.")
