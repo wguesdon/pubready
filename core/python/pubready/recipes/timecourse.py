@@ -21,8 +21,7 @@ from scipy import linalg, stats
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
-from ..util import _level_label, cap_first, level_labels, sig_text
-from .sankey import time_level_order
+from ..util import _level_label, cap_first, level_labels, sig_text, time_level_order
 
 
 def p_label(p):
@@ -177,7 +176,7 @@ def recipe_timecourse(df, spec):
     if (d.groupby("id")["group"].nunique() > 1).any():
         raise ValueError("each subject must belong to one group only")
     # The time points follow --levels, else numeric order, else the number that each
-    # label holds ("day 10"), else first appearance (time_level_order, in sankey).
+    # label holds ("day 10"), else first appearance (time_level_order, in util).
     # A numeric time keeps its spacing on the axis unless --levels sets the order.
     d["time_key"] = level_labels(d["time"])
     t_levels = dat.get("levels") or []

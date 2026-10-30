@@ -35,49 +35,6 @@
   out
 }
 
-# The order of a time column, one rule for the sankey visits and the timecourse
-# time points, in both engines. The listed order of --visit_levels (sankey) or
-# --levels (timecourse) comes first; a value that the list does not name stops
-# the run. Else the values sort as numbers when every value is a number; else by
-# the one number that each value holds, as in "week 8" and "M12", with a tie in
-# code-point order; else they keep the order of their first appearance. Returns
-# the order and the rule in words, for the data log and the methods text.
-time_level_order <- function(labels, levels = NULL, what = "visit", option = "--visit_levels") {
-  labels <- as.character(labels)
-  u <- unique(labels[!is.na(labels)])
-  if (length(levels) > 0) {
-    miss <- setdiff(u, trimws(as.character(levels)))
-    if (length(miss) > 0) {
-      stop(sprintf("%s does not list the %s(s) %s of the data", option, what,
-                   paste(sprintf("'%s'", miss), collapse = ", ")))
-    }
-    return(list(levels = level_order(u, levels, what),
-                rule = sprintf("the order that %s gives", option)))
-  }
-  if (length(u) > 0 && !anyNA(suppressWarnings(as.numeric(u)))) {
-    return(list(levels = level_order(u), rule = "numeric order"))
-  }
-  num <- vapply(u, .time_one_number, numeric(1), USE.NAMES = FALSE)
-  if (length(u) > 0 && !anyNA(num)) {
-    return(list(levels = u[order(num, u, method = "radix")],
-                rule = sprintf("the order of the number that each %s holds", what)))
-  }
-  list(levels = u,
-       rule = sprintf("the order of first appearance, because the %ss do not each hold one number", what))
-}
-
-# The one number that a label holds, or NA when it holds none or more than one.
-# A minus sign counts when it starts the label or follows a space ("Day -7").
-.time_one_number <- function(s) {
-  m <- gregexpr("[0-9]+(\\.[0-9]+)?", s)[[1]]
-  if (m[1] == -1 || length(m) != 1) return(NA_real_)
-  start <- m[1]
-  v <- as.numeric(substr(s, start, start + attr(m, "match.length")[1] - 1))
-  if (start > 1 && substr(s, start - 1, start - 1) == "-" &&
-      (start == 2 || substr(s, start - 2, start - 2) == " ")) v <- -v
-  v
-}
-
 # State order: the order of --levels when it is given, else numeric when every
 # value is a number, else first appearance. A state of the data that --levels
 # does not list stops the run; a listed state that no row holds is left out.

@@ -121,7 +121,7 @@ recipe_timecourse <- function(df, spec) {
     stop("each subject must belong to one group only")
   }
   # The time points follow --levels, else numeric order, else the number that each
-  # label holds ("day 10"), else first appearance (time_level_order, in sankey.R).
+  # label holds ("day 10"), else first appearance (time_level_order, in util.R).
   # A numeric time keeps its spacing on the axis unless --levels sets the order.
   d$time_key <- level_labels(d$time)
   t_levels <- unlist(spec$data$levels)

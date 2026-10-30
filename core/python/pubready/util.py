@@ -1,4 +1,6 @@
 """Small shared helpers (mirrors the R util functions)."""
+import re
+
 import numpy as np
 from scipy import stats
 
@@ -621,3 +623,71 @@ def level_order(labels, levels=None, what="group"):
     if u and all(n is not None for n in nums):
         return [v for _, v in sorted(zip(nums, u))]
     return sorted(u)
+
+
+#: One number in a time label: digits with an optional decimal part.
+NUMBER = re.compile(r"[0-9]+(?:\.[0-9]+)?")
+
+
+def one_number(s):
+    """The one number that a time label holds, as .time_one_number() in R.
+
+    A minus sign counts when it starts the label or follows a space ("Day -7").
+
+    Args:
+        s: The label.
+
+    Returns:
+        float or None: The number, or None when the label holds none or more
+        than one.
+    """
+    found = list(NUMBER.finditer(s))
+    if len(found) != 1:
+        return None
+    v = float(found[0].group())
+    i = found[0].start()
+    if i >= 1 and s[i - 1] == "-" and (i == 1 or s[i - 2] == " "):
+        v = -v
+    return v
+
+
+def time_level_order(labels, levels=None, what="visit", option="--visit_levels"):
+    """The order of a time column, one rule for sankey and timecourse.
+
+    The listed order of --visit_levels (sankey) or --levels (timecourse) comes
+    first; a value that the list does not name stops the run. Else the values
+    sort as numbers when every value is a number; else by the one number that
+    each value holds, as in "week 8" and "M12", with a tie in code-point order;
+    else they keep the order of their first appearance. The R engine has the
+    same rule (time_level_order).
+
+    Args:
+        labels: The time labels, in row order.
+        levels: The listed order, or None.
+        what: The word for one time value, for the messages.
+        option: The option that lists the order, for the rule text.
+
+    Returns:
+        dict: The levels in order and the rule in words.
+
+    Raises:
+        ValueError: If a value of the data is missing from levels.
+    """
+    u = [v for v in dict.fromkeys(labels) if isinstance(v, str)]
+    if levels:
+        listed = [str(s).strip() for s in levels]
+        miss = [v for v in u if v not in listed]
+        if miss:
+            raise ValueError(f"{option} does not list the {what}(s) "
+                             + ", ".join(f"'{m}'" for m in miss) + " of the data")
+        return {"levels": level_order(u, levels, what),
+                "rule": f"the order that {option} gives"}
+    if u and all(_level_number(v) is not None for v in u):
+        return {"levels": level_order(u), "rule": "numeric order"}
+    nums = [one_number(v) for v in u]
+    if u and all(n is not None for n in nums):
+        return {"levels": [v for _, v in sorted(zip(nums, u))],
+                "rule": f"the order of the number that each {what} holds"}
+    return {"levels": u,
+            "rule": f"the order of first appearance, because the {what}s do not each hold "
+                    "one number"}

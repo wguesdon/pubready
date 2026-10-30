@@ -10,7 +10,8 @@ from pubready.recipes.cox_forest import collinear_columns, cox_separation, recip
 from pubready.recipes.cumulative_incidence import recipe_cumulative_incidence
 from pubready.recipes.survival_km import (event_codes, km_break_step, km_median,
                                           recipe_survival_km)
-from pubready.recipes.sankey import recipe_sankey, time_level_order
+from pubready.recipes.sankey import recipe_sankey
+from pubready.util import time_level_order
 from pubready.recipes.swimmer import recipe_swimmer, swimmer_width
 from pubready.recipes.spider_response import recipe_spider_response, spider_width
 from pubready.recipes.timecourse import recipe_timecourse
