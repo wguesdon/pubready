@@ -34,3 +34,10 @@ test_that("coerce_numeric_columns keeps a mostly numeric column", {
   expect_equal(out$steps,
                "Coerced column 'tnf' to numeric; 1 value(s) became NA, for example '<0.1'.")
 })
+
+test_that("coerce_numeric_columns reads a logical column as text", {
+  df <- data.frame(flag = c(TRUE, FALSE, TRUE), obj = c(TRUE, NA, FALSE), v = c(1, 2, 3))
+  out <- coerce_numeric_columns(df)
+  expect_equal(out$numeric, "v")
+  expect_equal(out$text, c("flag", "obj"))
+})

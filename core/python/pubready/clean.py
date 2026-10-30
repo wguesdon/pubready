@@ -52,11 +52,16 @@ def coerce_numeric_columns(df, cols=None, threshold=0.8):
     steps, numeric, text = [], [], []
     for cn in (list(df.columns) if cols is None else list(cols)):
         v = df[cn]
-        if pd.api.types.is_numeric_dtype(v) and not pd.api.types.is_bool_dtype(v):
+        if pd.api.types.is_bool_dtype(v):
+            text.append(cn)
+            continue
+        if pd.api.types.is_numeric_dtype(v):
             numeric.append(cn)
             continue
         present = v.notna() & (v.astype(str).str.strip() != "")
-        num = pd.to_numeric(v.where(present), errors="coerce")
+        # Read the text form, as R does: pd.to_numeric() would turn True into 1,
+        # and R reads "TRUE" as no number.
+        num = pd.to_numeric(v.astype(str).where(present), errors="coerce")
         ok = present & num.notna() & np.isfinite(num.astype(float))
         n_present = int(present.sum())
         if n_present > 0 and int(ok.sum()) / n_present >= threshold:

@@ -42,3 +42,13 @@ def test_coerce_numeric_columns_keeps_a_mostly_numeric_column():
     assert text == ["group"]
     assert out["tnf"].isna().sum() == 1
     assert steps == ["Coerced column 'tnf' to numeric; 1 value(s) became NA, for example '<0.1'."]
+
+
+def test_coerce_numeric_columns_reads_a_logical_column_as_text():
+    import pandas as pd
+    from pubready.clean import coerce_numeric_columns
+    df = pd.DataFrame({"flag": [True, False, True], "obj": pd.Series([True, None, False], dtype=object),
+                       "v": [1.0, 2.0, 3.0]})
+    _, numeric, text, _ = coerce_numeric_columns(df)
+    assert numeric == ["v"]
+    assert text == ["flag", "obj"]
