@@ -45,3 +45,42 @@ test_that("distribution reports each group and leaves Shapiro-Wilk empty below 3
   expect_named(res$qc$panels, c("a", "b"))
   expect_s3_class(ggplot2::ggplot_build(res$plot), "ggplot_built")
 })
+
+# A variance that is not finite at double precision stops the run with a clear
+# message, in distribution and correlation_heatmap (F83).
+test_that("values near 1e300 or 1e-300 stop distribution and correlation_heatmap", {
+  big <- c(-7.858e299, 4.285e299, 9.2e299, 1.1e299, -3.3e299)
+  expect_error(recipe_distribution(data.frame(value = big), dist_spec(y = "value")),
+               "the variance of column 'value' is not finite at double precision")
+  tiny <- c(1.2e-300, 3.4e-300, 2.2e-300, 5.1e-300, 0.7e-300)
+  expect_error(recipe_distribution(data.frame(value = tiny), dist_spec(y = "value")),
+               "not finite at double precision")
+  df <- data.frame(big = big, b = c(1, 3, 2, 5, 4), c = c(2, 1, 4, 3, 6))
+  expect_error(recipe_correlation_heatmap(df, spec_from_opt(list(recipe = "correlation_heatmap",
+                                                                 data = "v.csv"))),
+               "correlation_heatmap: the variance of column 'big'")
+})
+
+# A group with no spread gets no density curve and no bandwidth, so it does not
+# stretch the shared x axis (F125).
+test_that("a group with no spread gets no density curve", {
+  df <- data.frame(condition = c(rep("ctrl", 6), "pair", "pair"),
+                   value = c(11.4, 13.1, 12.2, 10.9, 12.8, 11.7, 12.0, 12.0))
+  res <- recipe_distribution(df, dist_spec(y = "value", x = "condition"))
+  st <- res$stats
+  expect_true(is.na(st$bandwidth[st$group == "pair"]))
+  expect_false(is.na(st$bandwidth[st$group == "ctrl"]))
+  expect_match(res$methods, "The group(s) pair have no spread", fixed = TRUE)
+  expect_null(.dist_group_curves("pair", data.frame(group = df$condition, value = df$value),
+                                 .dist_bins(df$value)))
+})
+
+# A short number such as 1.3 has no padding in the subtitle (F127).
+test_that("the distribution subtitle has one space before the bin width", {
+  v <- (1:8) * 1.3 / 3.5
+  df <- data.frame(condition = rep(c("a", "b"), 4), value = v)
+  res <- recipe_distribution(df, dist_spec(y = "value", x = "condition"))
+  expect_equal(res$stats$bin_width[1], 1.3, tolerance = 1e-9)
+  expect_match(res$plot$labels$subtitle, "bin width 1.3$")
+  expect_false(grepl("  ", res$methods, fixed = TRUE))
+})

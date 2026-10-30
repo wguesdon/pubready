@@ -185,7 +185,8 @@ def test_mtcars_correlation_and_matrix():
 
 
 def test_mtcars_heatmap_welch_tests():
-    spec = bench_spec("heatmap", annotation=os.path.join(BENCH, "data", "mtcars_annotation.csv"))
+    spec = bench_spec("heatmap", annotation=os.path.join(BENCH, "data", "mtcars_annotation.csv"),
+                      test="welch_t")
     res = recipe_heatmap(bench_data("mtcars_matrix"), spec)
     st = res["stats"].set_index("feature")
     for f in ("mpg", "disp", "hp", "drat", "wt", "qsec"):
@@ -220,8 +221,10 @@ def test_titanic_and_ucb_chi_squared():
 def test_dnase_four_parameter_logistic():
     res = recipe_dose_response(bench_data("dnase_run1"), bench_spec(
         "dose_response", x="conc", y="density"))
-    for q in ("bottom", "top", "ec50", "hill", "rss"):
-        expect_ref(res["stats"][q].iloc[0], "dnase_4pl", q)
+    # The reference quantity "ec50" is the stats column "midpoint" (F123).
+    cols = {"bottom": "bottom", "top": "top", "ec50": "midpoint", "hill": "hill", "rss": "rss"}
+    for q, col in cols.items():
+        expect_ref(res["stats"][col].iloc[0], "dnase_4pl", q)
     sh = recipe_dose_response(bench_data("dnase"), bench_spec(
         "dose_response", x="conc", y="density", group="Run"))
     expect_ref(sh["test_meta"]["shared_ec50_test"]["statistic"], "dnase_shared", "statistic")
@@ -316,7 +319,8 @@ def test_airway_volcano_counts_match_deseq2():
 
 
 def test_airway_heatmap_welch_tests():
-    spec = bench_spec("heatmap", annotation=os.path.join(BENCH, "data", "airway_annotation.csv"))
+    spec = bench_spec("heatmap", annotation=os.path.join(BENCH, "data", "airway_annotation.csv"),
+                      test="welch_t")
     res = recipe_heatmap(bench_data("airway_heatmap"), spec)
     st = res["stats"].set_index("feature")
     for g in ("SPARCL1", "CACNB2", "DUSP1", "SAMHD1", "MAOA"):

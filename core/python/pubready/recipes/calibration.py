@@ -31,6 +31,8 @@ from .roc_curve import level_strings
 G = 10
 #: Predictions are clipped to [CLIP, 1 - CLIP] before the logit.
 CLIP = 1e-8
+#: Below this many distinct predictions the slope and the HL test are not estimable.
+MIN_DISTINCT = 3
 #: A legend entry longer than this puts the model name on its own line.
 WRAP = 62
 
@@ -153,21 +155,31 @@ def fit_model(m, d, case):
     ones = np.ones((len(y), 1))
     fam = sm.families.Binomial()
     x_slope = np.column_stack([ones, lp])
+    # Below 3 distinct predictions the data cannot identify a slope, and the
+    # Hosmer-Lemeshow test has no degree of freedom: both are reported as not
+    # estimable (F78), as in R.
+    estimable = len(np.unique(p)) >= MIN_DISTINCT
     fit_int = sm.GLM(y, ones, family=fam, offset=lp).fit(tol=1e-12, maxiter=100)
-    fit_slope = sm.GLM(y, x_slope, family=fam).fit(tol=1e-12, maxiter=100)
     # A second fit that starts at the estimate reads the standard error at the
     # estimate itself, as the R engine does.
     fit_int = sm.GLM(y, ones, family=fam, offset=lp).fit(start_params=fit_int.params, tol=1e-12,
                                                          maxiter=100)
-    fit_slope = sm.GLM(y, x_slope, family=fam).fit(start_params=fit_slope.params, tol=1e-12,
-                                                    maxiter=100)
+    nan = float("nan")
+    slope = {"estimate": nan, "se": nan, "ci_low": nan, "ci_high": nan}
+    if estimable:
+        fit_slope = sm.GLM(y, x_slope, family=fam).fit(tol=1e-12, maxiter=100)
+        fit_slope = sm.GLM(y, x_slope, family=fam).fit(start_params=fit_slope.params, tol=1e-12,
+                                                        maxiter=100)
+        slope = wald(fit_slope, 1)
     tab = group_table(p, y, G)
+    hl = (hosmer_lemeshow(tab) if estimable else
+          {"statistic": nan, "df": None, "p_value": nan, "groups": len(tab)})
     smooth = lowess(y, p, frac=2 / 3, it=0, delta=0.01 * (p.max() - p.min()),
                     return_sorted=True)
     return {"model": m, "n": len(y), "n_events": int(y.sum()),
-            "brier": float(np.mean((p - y) ** 2)),
-            "intercept": wald(fit_int, 0), "slope": wald(fit_slope, 1),
-            "hl": hosmer_lemeshow(tab), "oe_ratio": float(y.sum() / p.sum()),
+            "brier": float(np.mean((p - y) ** 2)), "estimable": estimable,
+            "intercept": wald(fit_int, 0), "slope": slope,
+            "hl": hl, "oe_ratio": float(y.sum() / p.sum()),
             "groups": tab, "smooth_x": smooth[:, 0], "smooth_y": np.clip(smooth[:, 1], 0, 1),
             "p": p, "y": y}
 
@@ -198,7 +210,8 @@ def legend_label(r):
     Returns:
         str: The label.
     """
-    st = (f"slope {r['slope']['estimate']:.2f}, intercept {r['intercept']['estimate']:.2f}, "
+    slope = f"{r['slope']['estimate']:.2f}" if r["estimable"] else "n.e."
+    st = (f"slope {slope}, intercept {r['intercept']['estimate']:.2f}, "
           f"Brier {r['brier']:.3f}, HL P {p_text(r['hl']['p_value'])}")
     one = f"{r['model']}: {st}"
     return f"{r['model']}\n{st}" if len(one) > WRAP else one
@@ -320,6 +333,7 @@ def recipe_calibration(df, spec):
         "groups_requested": G,
         "models": {r["model"]: {
             "n": r["n"], "n_events": r["n_events"], "brier": r["brier"],
+            "slope_estimable": r["estimable"],
             "intercept": r["intercept"]["estimate"], "slope": r["slope"]["estimate"],
             "hosmer_lemeshow": r["hl"], "oe_ratio": r["oe_ratio"]} for r in fits},
     }
@@ -394,6 +408,28 @@ def draw_figure(fits, pal, ap, sub, dims):
     return fig
 
 
+def model_text(r):
+    """The methods sentence of one model, as .cal_model_text() in R.
+
+    Args:
+        r: The model statistics.
+
+    Returns:
+        str: The sentence part.
+    """
+    head = (f"{r['model']}: Brier score {r['brier']:.3f}, calibration intercept "
+            f"{r['intercept']['estimate']:.2f} (95% CI {r['intercept']['ci_low']:.2f} to "
+            f"{r['intercept']['ci_high']:.2f}), ")
+    if not r["estimable"]:
+        return (f"{head}slope and Hosmer-Lemeshow test not estimable, because the predictions "
+                f"take fewer than {MIN_DISTINCT} distinct values, observed/expected "
+                f"{r['oe_ratio']:.2f}")
+    return (f"{head}slope {r['slope']['estimate']:.2f} (95% CI "
+            f"{r['slope']['ci_low']:.2f} to {r['slope']['ci_high']:.2f}), Hosmer-Lemeshow "
+            f"chi-square({int(r['hl']['df'])}) = {r['hl']['statistic']:.2f}, P "
+            f"{p_text(r['hl']['p_value'])}, observed/expected {r['oe_ratio']:.2f}")
+
+
 def _methods(fits, case, control, n_case, n, y):
     """Write the methods paragraph.
 
@@ -410,13 +446,7 @@ def _methods(fits, case, control, n_case, n, y):
     """
     from importlib.metadata import version as v
     import platform
-    per = "; ".join(
-        f"{r['model']}: Brier score {r['brier']:.3f}, calibration intercept "
-        f"{r['intercept']['estimate']:.2f} (95% CI {r['intercept']['ci_low']:.2f} to "
-        f"{r['intercept']['ci_high']:.2f}), slope {r['slope']['estimate']:.2f} (95% CI "
-        f"{r['slope']['ci_low']:.2f} to {r['slope']['ci_high']:.2f}), Hosmer-Lemeshow "
-        f"chi-square({int(r['hl']['df'])}) = {r['hl']['statistic']:.2f}, P "
-        f"{p_text(r['hl']['p_value'])}, observed/expected {r['oe_ratio']:.2f}" for r in fits)
+    per = "; ".join(model_text(r) for r in fits)
     return (
         f"The calibration of the predicted probabilities was assessed against the observed "
         f"outcome {y} = {case} (events, n = {n_case}) versus {control} (non-events, n = "

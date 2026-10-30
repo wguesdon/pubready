@@ -152,10 +152,10 @@
 .drc_curve_row <- function(g, lx, y, fitres, span_ref) {
   fit <- fitres$fit
   base <- data.frame(group = g, n = length(y), doses = length(unique(lx)),
-                     midpoint = if (fitres$start$hill < 0) "IC50" else "EC50",
+                     midpoint_type = if (fitres$start$hill < 0) "IC50" else "EC50",
                      bottom = NA_real_, top = NA_real_, hill = NA_real_,
-                     log_ec50 = NA_real_, se_log_ec50 = NA_real_, ec50 = NA_real_,
-                     ec50_ci_low = NA_real_, ec50_ci_high = NA_real_,
+                     log_midpoint = NA_real_, se_log_midpoint = NA_real_, midpoint = NA_real_,
+                     midpoint_ci_low = NA_real_, midpoint_ci_high = NA_real_,
                      r_squared = NA_real_, rss = NA_real_, df_resid = NA_integer_,
                      fit_status = "not determined",
                      status_reason = if (isTRUE(fitres$flat)) fitres$reason else "the fit did not converge",
@@ -176,10 +176,10 @@
   }
   data.frame(
     group = g, n = length(y), doses = length(unique(lx)),
-    midpoint = if (cf[["hill"]] < 0) "IC50" else "EC50",
+    midpoint_type = if (cf[["hill"]] < 0) "IC50" else "EC50",
     bottom = cf[["bottom"]], top = cf[["top"]], hill = cf[["hill"]],
-    log_ec50 = cf[["log_ec50"]], se_log_ec50 = unname(se[["log_ec50"]]),
-    ec50 = 10^cf[["log_ec50"]], ec50_ci_low = ci_low, ec50_ci_high = ci_high,
+    log_midpoint = cf[["log_ec50"]], se_log_midpoint = unname(se[["log_ec50"]]),
+    midpoint = 10^cf[["log_ec50"]], midpoint_ci_low = ci_low, midpoint_ci_high = ci_high,
     r_squared = 1 - rss / sum((y - mean(y))^2),
     rss = rss, df_resid = as.integer(dfr), fit_status = "fitted",
     status_reason = NA_character_, stringsAsFactors = FALSE)
@@ -249,7 +249,7 @@
   r <- rows[rows$group == g, ]
   lxg <- d$lx[d$group == g]
   grid <- seq(min(lxg), max(lxg), length.out = 200)
-  cf <- c(bottom = r$bottom, top = r$top, log_ec50 = r$log_ec50, hill = r$hill)
+  cf <- c(bottom = r$bottom, top = r$top, log_ec50 = r$log_midpoint, hill = r$hill)
   data.frame(group = g, dose = 10^grid, y = .drc_predict(cf, grid), stringsAsFactors = FALSE)
 }
 
@@ -278,6 +278,12 @@ recipe_dose_response <- function(df, spec) {
     if (sum(nonpos) > 0) sprintf("Dropped %d row(s) with a dose of zero or below, because the dose axis is logarithmic.", sum(nonpos)),
     sprintf("Kept %d of %d row(s).", nrow(d), n0))
   d$lx <- log10(d$dose)
+  # A response on a scale far from 1, such as 1e12 RLU, keeps nls from
+  # converging. The fit runs on the response divided by a power of ten, and the
+  # plateaus and the sums of squares go back to the original scale (F80).
+  rs <- .drc_response_scale(d$y)
+  y_orig <- d$y
+  d$y <- d$y / rs
 
   g_lv <- unique(d$group)
   # The span rule compares each fitted span with the range of the mean
@@ -313,12 +319,20 @@ recipe_dose_response <- function(df, spec) {
   shared <- if (length(det_lv) >= 2) {
     .drc_shared_test(d[d$group %in% det_lv, , drop = FALSE], stats_df[det, , drop = FALSE])
   } else NULL
+  stats_df <- .drc_unscale_rows(stats_df, rs)
+  shared <- .drc_unscale_shared(shared, rs)
+  d$y <- y_orig
+  pts$mean <- pts$mean * rs
+  pts$sem <- pts$sem * rs
 
   pal <- spec$appearance$palette %||% pubready_palette
   pal <- rep(pal, length.out = length(g_lv))
   mid_name <- .drc_mid_name(stats_df)
-  leg <- ifelse(det, sprintf("%s (%s = %s)", g_lv, stats_df$midpoint, sig_text(stats_df$ec50)),
+  leg <- ifelse(det, sprintf("%s (%s = %s)", g_lv, stats_df$midpoint_type, sig_text(stats_df$midpoint)),
                 sprintf("%s (not determined)", g_lv))
+  # A long curve name wraps, and the figure grows with the longest line, so the
+  # legend does not squeeze the panel to nothing (F81). Python has the same rule.
+  leg <- .est_wrap(leg, 28)
   names(pal) <- g_lv; names(leg) <- g_lv
 
   curves <- do.call(rbind, lapply(det_lv, .drc_curve_grid, rows = stats_df, d = d))
@@ -350,7 +364,8 @@ recipe_dose_response <- function(df, spec) {
                   title = spec$appearance$title, subtitle = subtitle) +
     pub_theme(spec$appearance$theme) +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"),
-                   legend.position = if (has_group) "right" else "none")
+                   legend.position = if (has_group) "right" else "none",
+                   legend.key.spacing.y = ggplot2::unit(4, "pt"))
 
   test_meta <- list(
     name = "Four-parameter logistic fit",
@@ -360,22 +375,22 @@ recipe_dose_response <- function(df, spec) {
     curves = stats::setNames(lapply(seq_len(nrow(stats_df)), .drc_meta_row, rows = stats_df), g_lv),
     shared_ec50_test = shared)
   resolved <- list(family = "dose_response", label = test_meta$name)
-  methods <- .drc_methods(stats_df, shared, d, spec, x, y, replicated)
+  methods <- .drc_methods(stats_df, shared, d, spec, x, y, replicated, sum(nonpos), rs)
   build_script <- list(fn = .drc_emit_script,
                        args = list(spec = spec, starts = starts, algos = algos,
-                                   has_group = has_group))
+                                   has_group = has_group, rs = rs))
 
   df_used <- data.frame(group = d$group, dose = d$dose, response = d$y, stringsAsFactors = FALSE)
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script, label = slugify(y),
        df_used = df_used, clean_steps = clean_steps,
-       width = if (has_group) 6.2 else 4.6, height = 4.2)
+       width = if (has_group) .drc_width(c(leg, grp)) else 4.6, height = 4.2)
 }
 
 # IC50 when every determined curve falls, EC50 otherwise.
 .drc_mid_name <- function(rows) {
-  mids <- rows$midpoint[rows$fit_status == "fitted"]
-  if (length(mids) == 0) mids <- rows$midpoint
+  mids <- rows$midpoint_type[rows$fit_status == "fitted"]
+  if (length(mids) == 0) mids <- rows$midpoint_type
   if (all(mids == "IC50")) "IC50" else "EC50"
 }
 
@@ -389,8 +404,8 @@ recipe_dose_response <- function(df, spec) {
   } else if (any(det)) {
     r <- rows[which(det)[1], ]
     sprintf("%s%s = %s (95%% CI %s to %s)", if (has_group) paste0(r$group, " ") else "",
-            r$midpoint, sig_text(r$ec50), sig_text(r$ec50_ci_low),
-            sig_text(r$ec50_ci_high))
+            r$midpoint_type, sig_text(r$midpoint), sig_text(r$midpoint_ci_low),
+            sig_text(r$midpoint_ci_high))
   } else if (has_group) {
     sprintf("%s not determined for any curve", mid_name)
   } else {
@@ -408,12 +423,12 @@ recipe_dose_response <- function(df, spec) {
 
 .drc_meta_row <- function(i, rows) {
   r <- rows[i, ]
-  list(midpoint = r$midpoint, fit_status = r$fit_status, status_reason = r$status_reason,
-       ec50 = r$ec50, ci_low = r$ec50_ci_low, ci_high = r$ec50_ci_high,
+  list(midpoint_type = r$midpoint_type, fit_status = r$fit_status, status_reason = r$status_reason,
+       midpoint = r$midpoint, ci_low = r$midpoint_ci_low, ci_high = r$midpoint_ci_high,
        hill = r$hill, bottom = r$bottom, top = r$top, r_squared = r$r_squared)
 }
 
-.drc_methods <- function(rows, shared, d, spec, x, y, replicated) {
+.drc_methods <- function(rows, shared, d, spec, x, y, replicated, n_nonpos = 0, rs = 1) {
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   v <- pkg_versions("ggplot2")
   y_lab <- spec$appearance$y_label %||% y
@@ -423,17 +438,17 @@ recipe_dose_response <- function(df, spec) {
   fits <- if (nrow(fr) > 0) {
     paste0(paste(sprintf("%s%s = %s (95%% CI %s to %s, Hill slope %.2f, R2 = %.3f)",
                          if (nrow(rows) > 1) paste0(fr$group, ": ") else "",
-                         fr$midpoint,
-                         sig_text(fr$ec50),
-                         sig_text(fr$ec50_ci_low),
-                         sig_text(fr$ec50_ci_high),
+                         fr$midpoint_type,
+                         sig_text(fr$midpoint),
+                         sig_text(fr$midpoint_ci_low),
+                         sig_text(fr$midpoint_ci_high),
                          fr$hill, fr$r_squared), collapse = "; "), ".")
   } else ""
   nd <- rows[!det, , drop = FALSE]
   nd_txt <- if (nrow(nd) > 0) {
     paste0(" ", paste(sprintf("%s was not determined, because %s.",
-                              if (nrow(rows) > 1) paste0("The ", nd$midpoint, " of ", nd$group)
-                              else paste0("The ", nd$midpoint),
+                              if (nrow(rows) > 1) paste0("The ", nd$midpoint_type, " of ", nd$group)
+                              else paste0("The ", nd$midpoint_type),
                               nd$status_reason), collapse = " "),
            " A curve that is not determined is drawn as its mean +/- SEM without a fit",
            if (nrow(rows) > 1) " and is left out of the shared-midpoint F test." else ".")
@@ -452,13 +467,15 @@ recipe_dose_response <- function(df, spec) {
             cap_first(y_lab), x_lab, nrow(d), nrow(rows)),
     "The 95% confidence interval of the midpoint was computed on the log10 scale from the standard error of the fit and back-transformed. ",
     .drc_points_text(replicated),
+    .drc_nonpos_text(n_nonpos),
+    .drc_scale_text(rs),
     "A curve whose mean responses varied by less than 10% of the range of the mean responses of all curves, or whose responses did not differ between the doses in a one-way ANOVA (P >= 0.05), was not fitted, and its midpoint was reported as not determined. ",
     "A midpoint was also reported as not determined when the fit did not converge, when the fitted span (top minus bottom) was below 10% of the range of the mean responses, when the midpoint lay outside the tested doses, or when its 95% CI was not finite. ",
     fits, nd_txt, shared_txt,
     sprintf(" Fitted in R %s with stats::nls and drawn with ggplot2 %s.", rver, v$ggplot2))
 }
 
-.drc_emit_script <- function(spec, starts, algos, has_group, in_name, fig_stub) {
+.drc_emit_script <- function(spec, starts, algos, has_group, in_name, fig_stub, rs = 1) {
   x <- spec$data$x; y <- spec$data$y; grp <- spec$data$group
   start_lines <- vapply(names(starts), .drc_start_literal, character(1), starts = starts)
   c(
@@ -478,7 +495,9 @@ recipe_dose_response <- function(df, spec) {
     paste0("  ", start_lines, c(rep(",", max(length(start_lines) - 1, 0)), "")[seq_along(start_lines)]),
     ")",
     sprintf("algos <- c(%s)", paste(sprintf('"%s" = "%s"', names(algos), unlist(algos)), collapse = ", ")),
-    "fml <- y ~ bottom + (top - bottom) / (1 + 10^((log_ec50 - lx) * hill))",
+    "# The fit runs on the response divided by a power of ten, as in the figure.",
+    sprintf("rs <- %s; d$ys <- d$y / rs", format(rs, scientific = TRUE)),
+    "fml <- ys ~ bottom + (top - bottom) / (1 + 10^((log_ec50 - lx) * hill))",
     "ctrl <- nls.control(maxiter = 1000, tol = 1e-8, minFactor = 1e-12)",
     "curves <- NULL",
     "for (g in names(starts)) {",
@@ -487,7 +506,7 @@ recipe_dose_response <- function(df, spec) {
     "  print(summary(fit))",
     "  grid <- seq(min(d$lx[d$group == g]), max(d$lx[d$group == g]), length.out = 200)",
     "  curves <- rbind(curves, data.frame(group = g, dose = 10^grid,",
-    "                                     y = predict(fit, data.frame(lx = grid))))",
+    "                                     y = predict(fit, data.frame(lx = grid)) * rs))",
     "}",
     "p <- ggplot() + geom_point(data = d, aes(dose, y, colour = group), alpha = 0.6) +",
     sprintf('  scale_x_log10() + labs(x = "%s", y = "%s") + theme_classic()',
@@ -510,4 +529,52 @@ recipe_dose_response <- function(df, spec) {
 .drc_points_text <- function(replicated) {
   if (replicated) "Points show the mean +/- SEM of the replicates at each dose. "
   else "Each point is the single response at its dose. "
+}
+
+# The rows with a dose of zero or below have no place on the log dose axis. The
+# methods text gives their count, as the data log does (F76).
+.drc_nonpos_text <- function(n) {
+  if (n > 0) {
+    sprintf("%d row(s) with a dose of zero or below were left out of the fit and the figure, because the dose axis is logarithmic. ", n)
+  } else ""
+}
+
+# The power of ten that the response is divided by before the fit: 10^e for a
+# largest absolute response of the order 10^e when e is 3 or more or -3 or
+# less, else 1 (F80). The Python engine has the same rule.
+.drc_response_scale <- function(y) {
+  m <- max(abs(y))
+  if (!is.finite(m) || m == 0) return(1)
+  e <- floor(log10(m))
+  if (abs(e) >= 3) 10^e else 1
+}
+
+# The plateaus and the residual sum of squares of the stats table back on the
+# scale of the response.
+.drc_unscale_rows <- function(rows, rs) {
+  rows$bottom <- rows$bottom * rs
+  rows$top <- rows$top * rs
+  rows$rss <- rows$rss * rs^2
+  rows
+}
+
+.drc_unscale_shared <- function(shared, rs) {
+  if (is.null(shared)) return(NULL)
+  shared$rss_shared <- shared$rss_shared * rs^2
+  shared$rss_separate <- shared$rss_separate * rs^2
+  shared
+}
+
+.drc_scale_text <- function(rs) {
+  if (rs == 1) return("")
+  sprintf("The responses were divided by %s for the fit, so that the optimiser works near 1, and the plateaus are reported on the original scale. ",
+          sprintf("%g", rs))
+}
+
+# The width of a figure with a legend: the 4.6 inch panel and a legend column
+# that grows with the longest line of the wrapped labels and the legend title,
+# at least 1.6 inches (F81). The Python engine has the same rule.
+.drc_width <- function(labels) {
+  longest <- max(nchar(unlist(strsplit(labels, "\n", fixed = TRUE))))
+  4.6 + max(1.6, 0.2 + 0.065 * longest)
 }

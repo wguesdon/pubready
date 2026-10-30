@@ -70,3 +70,17 @@ test_that("each composition strip names the group column", {
   panels <- levels(res$plot$data$panel)
   expect_true(all(startsWith(panels, "condition: ")))
 })
+
+# A category with no count in any sample is dropped and logged, so the BH count
+# names the categories that were tested (F88).
+test_that("composition drops a category with a total count of zero", {
+  df <- comp_data()
+  df <- rbind(df, data.frame(cell = "Platelet", sample = unique(df$sample),
+                             condition = rep(c("control", "treated"), each = 5), n = 0))
+  res <- recipe_composition(df, comp_spec(id = "sample", x = "cell", y = "n", group = "condition"))
+  expect_false("Platelet" %in% res$stats$category)
+  expect_equal(res$test_meta$n_categories, 3)
+  expect_true(any(grepl("Dropped 1 category(ies) with a total count of zero: 'Platelet'.",
+                        res$clean_steps, fixed = TRUE)))
+  expect_match(res$methods, "adjusted across the 3 categories", fixed = TRUE)
+})

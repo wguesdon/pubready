@@ -96,6 +96,15 @@ tag move together.
   to `--test anova`. Python ran the ANOVA before, so the engines reported
   different tests. Both engines write the residual P to the stats table as
   `residual_shapiro_p` and to `test_meta` (F37).
+- The `dose_response` stats table names its midpoint columns `midpoint_type`,
+  `midpoint`, `log_midpoint`, `se_log_midpoint`, `midpoint_ci_low` and
+  `midpoint_ci_high`, so an IC50 is no longer stored in a column named `ec50`.
+  The `volcano` stats table names its p column after the `--y` column, for
+  example `padj` (F123).
+- `heatmap` runs the Welch t-test of each feature only with `--test welch_t`.
+  The default, `--test auto`, runs no test, because a second test on genes
+  that a DE test chose is circular. `--test welch_t` stops when the annotation
+  does not hold two groups (F97).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of
@@ -316,6 +325,107 @@ tag move together.
   the R figure. `factorial_anova` wraps its legend labels and title at 20
   characters in both engines, and the figure width follows the wrapped labels
   (F81).
+- `volcano` keeps a gene with p = 0. The recipe sets the p to the smallest
+  positive double, draws the gene as a triangle at the top, and records the
+  count in the data log and the methods text. A p outside 0 to 1 stops the run
+  (F45).
+- The R `heatmap` draws a null result. When no feature has an adjusted P
+  below 0.05, both engines draw no star column, and the methods text says that
+  no star is drawn (F46).
+- `heatmap` stops and names each sample of the matrix that the annotation
+  does not list. Under `--test welch_t`, a sample with no group or a group of
+  one sample stops the run, and a feature with no variance in either group
+  gets P = NA in both engines and stays out of the Benjamini-Hochberg count.
+  The groups follow the level order of the other recipes (F87).
+- The `heatmap` annotation tracks continue the palette from one track to the
+  next, so two tracks no longer share colours (F121).
+- The Python `manhattan` writes a numeric chromosome as "1" and not "1.0"
+  when the column holds an empty cell. Both engines read the chromosome names
+  with `level_labels()` (F64).
+- `pca` leaves the `--id` and `--label` columns out of the features, reads
+  `--features` for an explicit list, and names each feature and each dropped
+  feature in the data log, so a numeric sample id that becomes a feature is
+  visible (F47).
+- `pca` drops the same samples in both engines: each sample with a missing
+  group, then each sample with a missing feature value, then each feature with
+  no variance in the samples that remain. The data log names the rows and the
+  features. A missing group is no longer a group "nan" in Python (F48).
+- `pca` keeps a numeric column that holds a few text cells, such as "<0.1":
+  each such cell becomes a missing value, and the data log names the cell and
+  each text column that the recipe leaves out (F42).
+- `composition` drops a category with a total count of zero and logs it. Its
+  P was NA, and the methods text counted it among the categories of the
+  Benjamini-Hochberg adjustment (F88).
+- `correlation_heatmap` keeps a numeric column that holds a few text cells in
+  the same way as `pca`, and names each dropped column in the data log (F42).
+- `distribution` and `correlation_heatmap` stop with a clear message when the
+  variance of a column is not finite at double precision, as with values near
+  1e300 or 1e-300, in place of a silent NA, a wrong curve or a crash (F83).
+- `correlation_heatmap` stops and names each pair of columns that shares fewer
+  than 3 complete rows or holds a constant in them. Such a pair had no
+  correlation, so the clustering stopped with an unclear error, and the two
+  engines tested it differently, which changed the Benjamini-Hochberg count
+  (F79, F87).
+- `distribution` draws no density curve and reports no bandwidth for a group
+  with no spread, so a group of equal values no longer stretches the shared x
+  axis. The methods text names the group (F125).
+- `bland_altman` skips the proportional-bias regression and the Shapiro-Wilk
+  test when the differences are constant, sets their SD to 0 and says so. Two
+  identical methods gave "P = NaN" in R and P = 1.0 in Python, and a constant
+  difference gave a slope of rounding noise. The stats table gains
+  `differences_constant` (F82).
+- `calibration` reports the calibration slope and the Hosmer-Lemeshow test as
+  not estimable when a model has fewer than 3 distinct predictions. Python
+  reported a slope that the data cannot identify, and R stopped with "cannot
+  find valid starting values" (F78).
+- The `dose_response` methods text gives the count of rows with a dose of zero
+  or below that the recipe left out, as the data log does (F76).
+- `dose_response` divides a response of the order 1e3 or more, or 1e-3 or
+  less, by a power of ten before the fit, so the R fit converges on a scale of
+  1e12 as the Python fit does. The plateaus and the sums of squares are
+  reported on the original scale, and the methods text names the factor (F80).
+- `dose_response` wraps a legend label at 28 characters and `forest_meta` wraps
+  a study label at 30 characters, in both engines, and each figure grows with
+  its longest line. A long label no longer squeezes the R panel to nothing or
+  cuts the subtitle (F81).
+- `forest_meta` checks each study before the pooling and stops with the study
+  name when its CI does not hold its estimate, its bounds are reversed, its CI
+  has zero width or its standard error is 0 or below. An SE of 0 was dropped
+  as a missing value, and a CI of zero width stopped with an unclear error. A
+  study with an empty label reads "Study <row>" in place of "NA" (F77).
+- `enrichment_dot` keeps a term with an adjusted p of 0: the p is set to the
+  smallest positive double and the term is drawn as a triangle at the top of
+  the colour scale. The data log records the replacement and each dropped row
+  (F51).
+- `enrichment_dot` no longer treats a raw `pvalue` column as an adjusted p.
+  When the table holds no adjusted p column, the raw p is drawn and labelled
+  "not adjusted" in the legend, the stats table (`p_value`), the data log and
+  the methods text (F52).
+- `enrichment_dot` makes a repeated term name unique, "Term (2)" for the
+  second copy, and logs it. R stopped with "factor level is duplicated" (F79).
+- `enzyme_kinetics` reports a fit as not determined, as `dose_response` does,
+  when Vmax or Km is not positive, when Km lies above the highest substrate
+  concentration, or when the 95% CI of Km or of Vmax holds 0. Such a curve keeps
+  its points, has no fitted values in the stats table, and stays out of the
+  shared-parameter F tests. The stats table gains `fit_status` and
+  `status_reason` (F50).
+- `roc_curve` does not report the DeLong CI of a marker with an AUC of 0 or 1
+  or of a constant marker, where the CI has zero width, and says why. A
+  constant marker gets no optimal threshold, in place of "-Inf", and a warning
+  in the methods text. The stats table gains `constant_marker` and
+  `complete_separation` (F86).
+- `standard_curve` checks that the mean signal of the standards moves in one
+  direction with the concentration. When it rises and then falls, or the
+  reverse, the subtitle and the methods text warn of a possible hook effect
+  and name the concentration of the turn (F85).
+- `upset` reads set membership with one rule in both engines: 1, TRUE, T, yes
+  and y are members, 0, FALSE, F, no and n are not, in any case, and an empty
+  cell is not a member and is counted in the data log. Any other value, such as
+  a count of 2, stops the run and names the column. A "yes"/"no" column was an
+  empty set in R, and a 0/1 column with one empty cell was an empty set in
+  Python (F49).
+- The R `distribution` subtitle reads "bin width 1.3" with one space; each
+  formatted number of the recipe is trimmed (F127).
 
 ## [3.0.0] - 2026-10-29
 

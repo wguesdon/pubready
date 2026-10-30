@@ -21,6 +21,7 @@ from scipy import stats
 
 from ..bundle import slugify
 from ..theme import apply_pub_style
+from ..util import level_labels
 
 GW = 5e-8
 SUGG = 1e-5
@@ -46,7 +47,9 @@ def chr_name(v):
     Returns:
         pandas.Series: The names, missing values kept as NaN.
     """
-    s = v.astype(str).str.strip().str.replace(r"^(?i:chr)", "", regex=True)
+    # A numeric column, also one that holds an empty cell, reads "1" and not
+    # "1.0" (level_labels, F64), as in R.
+    s = level_labels(v).astype(str).str.strip().str.replace(r"^(?i:chr)", "", regex=True)
     return s.where(v.notna())
 
 
@@ -210,7 +213,7 @@ def recipe_manhattan(df, spec):
             raise ValueError(f"column '{c}' not found in data")
 
     n0 = len(df)
-    raw_chr = df[chr_col].astype(str).str.strip().where(df[chr_col].notna())
+    raw_chr = level_labels(df[chr_col]).astype(str).str.strip().where(df[chr_col].notna())
     chr_s = chr_name(df[chr_col])
     pos = pd.to_numeric(df[pos_col], errors="coerce").to_numpy(dtype=float)
     p = pd.to_numeric(df[p_col], errors="coerce").to_numpy(dtype=float)
@@ -414,7 +417,9 @@ import numpy as np, pandas as pd
 from scipy import stats
 
 raw = pd.read_csv("{in_name}")
-chrs = raw["{chr_col}"].astype(str).str.replace(r"^(?i:chr)", "", regex=True).to_numpy()
+# A numeric chromosome reads "1" and not "1.0", as in the figure.
+chrs = (raw["{chr_col}"].astype(str).str.replace(r"\\.0$", "", regex=True)
+        .str.replace(r"^(?i:chr)", "", regex=True).to_numpy())
 pos = pd.to_numeric(raw["{pos_col}"], errors="coerce").to_numpy(float)
 p = pd.to_numeric(raw["{p_col}"], errors="coerce").to_numpy(float)
 keep = np.isfinite(pos) & np.isfinite(p)

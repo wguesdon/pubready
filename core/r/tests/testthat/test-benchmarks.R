@@ -121,7 +121,8 @@ test_that("mtcars: the Pearson correlation and the correlation matrix match stat
 
 test_that("mtcars: the per-feature Welch tests of the heatmap match stats::t.test", {
   bench_skip()
-  spec <- bench_spec("heatmap", annotation = file.path(bench_dir(), "data", "mtcars_annotation.csv"))
+  spec <- bench_spec("heatmap", annotation = file.path(bench_dir(), "data", "mtcars_annotation.csv"),
+                     test = "welch_t")
   res <- recipe_heatmap(bench_data("mtcars_matrix"), spec)
   for (f in c("mpg", "disp", "hp", "drat", "wt", "qsec")) {
     expect_ref(res$stats$p_value[res$stats$feature == f], "mtcars_heatmap", paste0("p_", f))
@@ -160,7 +161,8 @@ test_that("DNase: the 4PL fit matches the self-starting SSfpl model", {
   bench_skip()
   res <- recipe_dose_response(bench_data("dnase_run1"),
                               bench_spec("dose_response", x = "conc", y = "density"))
-  for (q in c("bottom", "top", "ec50", "hill", "rss")) expect_ref(res$stats[[q]], "dnase_4pl", q)
+  cols <- c(bottom = "bottom", top = "top", ec50 = "midpoint", hill = "hill", rss = "rss")
+  for (q in names(cols)) expect_ref(res$stats[[cols[[q]]]], "dnase_4pl", q)
   sh <- recipe_dose_response(bench_data("dnase"),
                              bench_spec("dose_response", x = "conc", y = "density", group = "Run"))
   expect_ref(sh$test_meta$shared_ec50_test$statistic, "dnase_shared", "statistic")
@@ -257,7 +259,8 @@ test_that("airway (Himes 2014): the volcano counts match the DESeq2 results", {
 
 test_that("airway: the per-gene Welch tests of the heatmap match stats::t.test", {
   bench_skip()
-  spec <- bench_spec("heatmap", annotation = file.path(bench_dir(), "data", "airway_annotation.csv"))
+  spec <- bench_spec("heatmap", annotation = file.path(bench_dir(), "data", "airway_annotation.csv"),
+                     test = "welch_t")
   res <- recipe_heatmap(bench_data("airway_heatmap"), spec)
   for (g in c("SPARCL1", "CACNB2", "DUSP1", "SAMHD1", "MAOA")) {
     expect_ref(res$stats$p_value[res$stats$feature == g], "airway_heatmap", paste0("p_", g))

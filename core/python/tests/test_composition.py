@@ -101,3 +101,18 @@ def test_each_composition_strip_names_the_group_column():
     res = recipe_composition(comp_data(), comp_spec(id="sample", x="cell", y="n", group="condition"))
     titles = [ax.get_title() for ax in res["fig"].axes if ax.get_title()]
     assert titles and all(t.startswith("condition: ") for t in titles)
+
+
+def test_composition_drops_a_category_with_a_total_count_of_zero():
+    """A category with no count is dropped and logged, as in R (F88)."""
+    from pubready.recipes.composition import recipe_composition
+    df = comp_data()
+    extra = pd.DataFrame({"sample": [f"S{i}" for i in range(1, 11)],
+                          "condition": ["control"] * 5 + ["treated"] * 5,
+                          "cell": "Platelet", "n": 0})
+    res = recipe_composition(pd.concat([df, extra], ignore_index=True),
+                             comp_spec(id="sample", x="cell", y="n", group="condition"))
+    assert "Platelet" not in set(res["stats"]["category"])
+    assert res["test_meta"]["n_categories"] == 3
+    assert "Dropped 1 category(ies) with a total count of zero: 'Platelet'." in res["clean_steps"]
+    assert "adjusted across the 3 categories" in res["methods"]

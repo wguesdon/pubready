@@ -73,8 +73,8 @@ bench lung_cox "Cox" --recipe cox_forest --data $D/lung.csv \
 bench mtcars_correlation "Pearson" --recipe correlation --data $D/mtcars.csv \
   --x wt --y mpg --test pearson
 bench mtcars_correlation_heatmap "" --recipe correlation_heatmap --data $D/mtcars.csv
-bench mtcars_heatmap "" --recipe heatmap --data $D/mtcars_matrix.csv \
-  --annotation $D/mtcars_annotation.csv
+bench mtcars_heatmap "Welch" --recipe heatmap --data $D/mtcars_matrix.csv \
+  --annotation $D/mtcars_annotation.csv --test welch_t
 bench airquality_spearman "Spearman" --recipe correlation --data $D/airquality.csv \
   --x Temp --y Ozone --test spearman
 bench iris_pca "PERMANOVA" --recipe pca --data $D/iris.csv --group Species
@@ -104,7 +104,7 @@ bench aml_swimmer "median duration" --recipe swimmer --data $D/aml.csv \
 echo "--- Real omics and clinical datasets ---"
 bench airway_volcano "volcano" --recipe volcano --data $D/airway_de.csv --y padj
 bench airway_heatmap "Welch" --recipe heatmap --data $D/airway_heatmap.csv \
-  --annotation $D/airway_annotation.csv
+  --annotation $D/airway_annotation.csv --test welch_t
 bench airway_pca "exact" --recipe pca --data $D/airway_pca.csv --group dex
 bench airway_enrichment "over-representation" --recipe enrichment_dot \
   --data $D/airway_enrichment.csv

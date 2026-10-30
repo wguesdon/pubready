@@ -156,3 +156,9 @@ test_that("feature_panel reports the Kruskal eta-squared (H) of rstatix", {
   expect_equal(res$stats$effect_size[res$stats$feature == "f1"], ref, tolerance = 1e-10)
   expect_equal(unique(res$stats$effect_size_name), "eta-squared (H)")
 })
+
+# A numeric chromosome column with an empty cell reads "1", not "1.0" (F64).
+test_that("manhattan writes a numeric chromosome as a whole number", {
+  expect_equal(.mh_chr_name(c(1, 10, NA, 2)), c("1", "10", NA, "2"))
+  expect_equal(.mh_chr_name(c("chr1", "chrX")), c("1", "X"))
+})

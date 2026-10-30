@@ -2,8 +2,9 @@
 # Input is a matrix CSV: first column = feature id, remaining columns = samples.
 # An optional annotation CSV (--annotation) labels the columns; its first column
 # is the sample id. By default rows are z-scored and both axes are clustered.
-# When the primary annotation column has exactly two groups, each feature gets a
-# Welch t-test (BH-adjusted) and significance stars are drawn beside it.
+# With --test welch_t and an annotation whose first column holds two groups,
+# each feature gets a Welch t-test (BH-adjusted) and significance stars are
+# drawn beside it. The default, --test auto, runs no test (F97).
 #
 # Both engines draw the same leaf order (.hm_tree): a complete-linkage tree on
 # the Euclidean distance of the drawn values, and at each merge the branch with
@@ -53,6 +54,73 @@
   out
 }
 
+# Whether to run the per-feature Welch test. --test auto, the default, draws no
+# test; --test welch_t runs it and needs an annotation whose first column holds
+# two groups. Any other value stops the run.
+.hm_welch_requested <- function(method, group_col, ann) {
+  method <- method %||% "auto"
+  if (!method %in% c("auto", "welch_t")) {
+    stop(sprintf("heatmap: unknown --test '%s'; use auto (no test) or welch_t", method))
+  }
+  if (method == "auto") return(FALSE)
+  if (is.null(group_col)) {
+    stop("heatmap: --test welch_t needs --annotation, a table whose first column after the sample id holds two groups")
+  }
+  lv <- unique(ann[[group_col]][!is.na(ann[[group_col]])])
+  if (length(lv) != 2) {
+    stop(sprintf("heatmap: --test welch_t compares two groups, but the annotation column '%s' holds %d",
+                 group_col, length(lv)))
+  }
+  TRUE
+}
+
+# The colours of the annotation tracks. The palette continues from one track to
+# the next, so two tracks never share a colour while the palette lasts (F121).
+# The levels of each track follow level_order(). The Python engine has the same
+# rule.
+.hm_track_colours <- function(ann) {
+  out <- list()
+  k <- 0
+  for (cn in names(ann)) {
+    lv <- level_order(ann[[cn]])
+    idx <- (k + seq_along(lv) - 1) %% length(pubready_palette) + 1
+    out[[cn]] <- stats::setNames(pubready_palette[idx], lv)
+    k <- k + length(lv)
+  }
+  out
+}
+
+# The two groups of the Welch test, in the order of level_order(). A sample
+# with no group, or a group of fewer than two samples, stops the run (F87).
+.hm_test_groups <- function(g, samples, group_col) {
+  empty <- samples[is.na(g) | !nzchar(trimws(g))]
+  if (length(empty) > 0) {
+    stop(sprintf("heatmap: --test welch_t needs a group for each sample, but the annotation column '%s' is empty for %s",
+                 group_col, paste(sprintf("'%s'", empty), collapse = ", ")))
+  }
+  lv <- level_order(g)
+  n <- as.integer(table(factor(g, levels = lv)))
+  if (any(n < 2)) {
+    stop(sprintf("heatmap: --test welch_t needs at least 2 samples in each group; %s",
+                 paste(sprintf("group '%s' has %d", lv[n < 2], n[n < 2]), collapse = ", ")))
+  }
+  lv
+}
+
+# The Welch t-test P of one feature, or NA when a group has fewer than two
+# values or the standard error of the difference is zero at double precision,
+# the rule of stats::t.test ("data are essentially constant"). The Python
+# engine has the same rule.
+.hm_welch_p <- function(r, in_a, in_b) {
+  x <- r[in_a]; y <- r[in_b]
+  if (length(x) < 2 || length(y) < 2) return(NA_real_)
+  se <- sqrt(stats::var(x) / length(x) + stats::var(y) / length(y))
+  if (!is.finite(se) || se <= 10 * .Machine$double.eps * max(abs(mean(x)), abs(mean(y)))) {
+    return(NA_real_)
+  }
+  stats::t.test(x, y)$p.value
+}
+
 recipe_heatmap <- function(df, spec) {
   feat <- as.character(df[[1]])
   mat  <- as.matrix(df[, -1, drop = FALSE])
@@ -89,35 +157,45 @@ recipe_heatmap <- function(df, spec) {
   top_anno <- NULL; ann <- NULL; group_col <- NULL
   if (!is.null(spec$data$annotation) && nzchar(spec$data$annotation)) {
     araw <- read_tidy(spec$data$annotation)
-    rn <- as.character(araw[[1]])
+    rn <- level_labels(araw[[1]])
+    miss <- setdiff(colnames(mat), rn)
+    if (length(miss) > 0) {
+      stop(sprintf("heatmap: the annotation %s has no row for the sample(s) %s of the matrix",
+                   basename(spec$data$annotation), paste(sprintf("'%s'", miss), collapse = ", ")))
+    }
     ann <- araw[, -1, drop = FALSE]
     rownames(ann) <- rn
     ann <- ann[colnames(mat), , drop = FALSE]
-    for (cn in names(ann)) ann[[cn]] <- as.character(ann[[cn]])
-    ann_cols <- lapply(names(ann), function(cn) {
-      lv <- sort(unique(ann[[cn]]))
-      stats::setNames(rep(pubready_palette, length.out = length(lv)), lv)
-    })
-    names(ann_cols) <- names(ann)
+    for (cn in names(ann)) ann[[cn]] <- level_labels(ann[[cn]])
+    ann_cols <- .hm_track_colours(ann)
     top_anno <- ComplexHeatmap::HeatmapAnnotation(
       df = ann, col = ann_cols,
       annotation_name_gp = grid::gpar(fontsize = 9))
     group_col <- names(ann)[1]
   }
 
-  # Per-feature differential test when the primary annotation has two groups.
+  # Per-feature differential test, only with --test welch_t. On genes that a DE
+  # test chose, a second test on the same samples is circular, so the default
+  # draws no test (F97).
+  run_test <- .hm_welch_requested(spec$test$method, group_col, ann)
   right_anno <- NULL
-  if (!is.null(group_col) && length(unique(ann[[group_col]])) == 2) {
-    g  <- factor(ann[[group_col]]); lv <- levels(g)
-    p  <- apply(mat, 1, function(r)
-      tryCatch(stats::t.test(r[g == lv[1]], r[g == lv[2]])$p.value,
-               error = function(e) NA_real_))
+  if (run_test) {
+    g  <- ann[[group_col]]
+    lv <- .hm_test_groups(g, colnames(mat), group_col)
+    # A feature with no variance in either group has no Welch test. Its P is NA,
+    # and the BH adjustment runs over the tested features only (F87).
+    p  <- apply(mat, 1, .hm_welch_p, in_a = g == lv[1], in_b = g == lv[2])
+    n_untested <- sum(is.na(p))
     padj  <- stats::p.adjust(p, "BH")
     stars <- ifelse(is.na(padj), "",
              ifelse(padj < 0.001, "***", ifelse(padj < 0.01, "**",
              ifelse(padj < 0.05, "*", ""))))
-    right_anno <- ComplexHeatmap::rowAnnotation(
-      ` ` = ComplexHeatmap::anno_text(stars, gp = grid::gpar(fontsize = 10)))
+    # anno_text cannot size a column of empty strings, so a null result, with
+    # no star to draw, gets no star column (F46).
+    if (any(nzchar(stars))) {
+      right_anno <- ComplexHeatmap::rowAnnotation(
+        ` ` = ComplexHeatmap::anno_text(stars, gp = grid::gpar(fontsize = 10)))
+    }
     stats_df <- data.frame(
       feature = rownames(mat),
       mean_g1 = rowMeans(mat[, g == lv[1], drop = FALSE]),
@@ -131,7 +209,7 @@ recipe_heatmap <- function(df, spec) {
   } else {
     stats_df <- data.frame(feature = rownames(mat), mean = rowMeans(mat),
                            sd = apply(mat, 1, stats::sd), stringsAsFactors = FALSE)
-    test_label <- NULL; test_levels <- NULL; n_sig <- NA_integer_
+    test_label <- NULL; test_levels <- NULL; n_sig <- NA_integer_; n_untested <- 0L
   }
 
   col_fun <- if (scale_mode == "none") {
@@ -155,12 +233,13 @@ recipe_heatmap <- function(df, spec) {
     name = "Clustered heatmap (ComplexHeatmap)",
     scale = scale_mode, clustering = cluster,
     n_features = nrow(mat), n_samples = ncol(mat),
-    per_feature_test = test_label, n_significant = n_sig,
+    per_feature_test = test_label, n_significant = n_sig, n_untested = n_untested,
     row_order = as.list(rownames(disp)[row_order]),
     column_order = as.list(colnames(disp)[col_order]))
 
   resolved <- list(family = "heatmap", label = "heatmap")
-  methods  <- .hm_methods(scale_mode, cluster, nrow(mat), ncol(mat), test_levels, n_sig)
+  methods  <- .hm_methods(scale_mode, cluster, nrow(mat), ncol(mat), test_levels, n_sig,
+                          n_untested)
   build_script <- function(in_name, fig_stub) {
     .hm_emit_script(spec, in_name, fig_stub, scale_mode, cluster_rows, cluster_cols, legend_name)
   }
@@ -174,7 +253,8 @@ recipe_heatmap <- function(df, spec) {
        height = max(5.0, 1.5 + 0.16 * nrow(mat)))
 }
 
-.hm_methods <- function(scale_mode, cluster, n_feat, n_samp, test_levels, n_sig) {
+.hm_methods <- function(scale_mode, cluster, n_feat, n_samp, test_levels, n_sig,
+                        n_untested = 0) {
   v    <- pkg_versions(c("ComplexHeatmap", "circlize"))
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   scale_txt <- switch(scale_mode,
@@ -189,10 +269,17 @@ recipe_heatmap <- function(df, spec) {
   if (cluster %in% c("both", "rows", "columns")) {
     clust_txt <- paste(clust_txt, "Clustering used complete linkage on the Euclidean distance of the displayed values, and at each merge the branch with the higher mean of the unscaled values was drawn first.")
   }
-  test_txt <- if (!is.null(test_levels)) {
-    sprintf(" Each feature was compared between %s and %s with a Welch two-sample t-test, which treats the samples as independent, and the P values were adjusted across the %d features with the Benjamini-Hochberg method; %d of the %d features had an adjusted P below 0.05 and are marked with stars.",
-            test_levels[1], test_levels[2], n_feat, n_sig, n_feat)
+  n_tested <- n_feat - n_untested
+  untested_txt <- if (n_untested > 0) {
+    sprintf(" %d feature(s) had no variance in either group, so they were not tested and were left out of the adjustment.", n_untested)
   } else ""
+  sig_txt <- if (isTRUE(n_sig > 0)) {
+    sprintf("%d of the %d features had an adjusted P below 0.05 and are marked with stars.", n_sig, n_tested)
+  } else "no feature had an adjusted P below 0.05, so no star is drawn."
+  test_txt <- if (!is.null(test_levels)) {
+    sprintf(" Each feature was compared between %s and %s with a Welch two-sample t-test, which treats the samples as independent, and the P values were adjusted across the %d tested features with the Benjamini-Hochberg method; %s%s",
+            test_levels[1], test_levels[2], n_tested, sig_txt, untested_txt)
+  } else " No statistical test was applied."
   paste0(
     sprintf("A heatmap of %d features across %d samples was drawn with ComplexHeatmap. ",
             n_feat, n_samp),

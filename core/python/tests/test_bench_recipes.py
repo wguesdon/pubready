@@ -225,3 +225,51 @@ def test_standard_curve_recovery_counts_only_the_levels_read_back():
     assert "The other 2 levels could not be read back" in txt
     rec.update(n_read_back=8, n_within_80_120=8)
     assert "could not be read back" not in _recovery_text(rec)
+
+
+def ek_two_curves():
+    """A Michaelis-Menten curve and a straight line, as in the R suite.
+
+    Returns:
+        pandas.DataFrame: The table.
+    """
+    s = np.array([1, 2, 5, 10, 20, 50], dtype=float)
+    noise = np.array([0.8, -1.1, 0.6, -0.4, 0.9, -0.7])
+    return pd.DataFrame({"s": np.tile(s, 2), "group": ["mm"] * 6 + ["linear"] * 6,
+                         "v": np.concatenate([100 * s / (5 + s) + noise, 0.1 * s + noise / 10])})
+
+
+def test_enzyme_kinetics_reports_a_fit_above_the_range_as_not_determined():
+    """A Km above the highest substrate is not determined, as in R (F50)."""
+    res = recipe_enzyme_kinetics(ek_two_curves(), bench_recipe_spec(
+        "enzyme_kinetics", x="s", y="v", group="group"))
+    st = res["stats"]
+    assert list(st["fit_status"]) == ["fitted", "not determined"]
+    assert st["status_reason"].iloc[1] == "Km lies above the highest substrate concentration"
+    assert np.isnan(st["km"].iloc[1])
+    assert st["km"].iloc[0] == pytest.approx(5, rel=0.1)
+    assert res["test_meta"]["shared_km_test"] is None
+    assert "fewer than two curves were determined" in res["methods"]
+
+
+def sc_hook():
+    """Standards that rise and then fall, as in the R suite.
+
+    Returns:
+        pandas.DataFrame: The table.
+    """
+    conc = np.repeat([0.156, 0.3125, 0.625, 1.25, 2.5, 5, 10], 2)
+    sig = [0.16, 0.15, 0.28, 0.28, 0.55, 0.52, 0.93, 0.94, 1.42, 1.44, 1.61, 1.60, 1.31, 1.30]
+    return pd.DataFrame({"sample": [f"S{i + 1}" for i in range(len(conc))], "conc": conc,
+                         "signal": sig})
+
+
+def test_standard_curve_flags_standards_that_are_not_monotonic():
+    """A rise then a fall is flagged as a possible hook effect, as in R (F85)."""
+    spec = bench_recipe_spec("standard_curve", x="conc", y="signal", id="sample", test="linear")
+    res = recipe_standard_curve(sc_hook(), spec)
+    assert res["test_meta"]["standards_monotonic"] is False
+    assert res["test_meta"]["hook_turn"] == 5
+    assert "rises up to a concentration of 5 and falls above it" in res["methods"]
+    ok = recipe_standard_curve(sc_hook().iloc[:12], spec)
+    assert ok["test_meta"]["standards_monotonic"] is True

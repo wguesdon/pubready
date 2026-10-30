@@ -218,3 +218,13 @@ def test_kruskal_effect_size_is_eta_squared_h_in_both_recipes():
         SimpleNamespace(recipe="multi_group_compare", data="d.csv", x="group", y="value",
                         test="kruskal")))
     assert mg["test_meta"]["omnibus"]["effect_size"]["value"] == pytest.approx(want, rel=1e-12)
+
+
+def test_manhattan_writes_a_numeric_chromosome_as_a_whole_number():
+    """A float chromosome column reads "1", not "1.0", as in R (F64)."""
+    import numpy as np
+    import pandas as pd
+    from pubready.recipes.manhattan import chr_name
+    out = chr_name(pd.Series([1.0, 10.0, np.nan, 2.0]))
+    assert list(out[[0, 1, 3]]) == ["1", "10", "2"] and pd.isna(out[2])
+    assert list(chr_name(pd.Series(["chr1", "chrX"]))) == ["1", "X"]

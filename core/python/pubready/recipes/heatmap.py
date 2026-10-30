@@ -1,8 +1,9 @@
 """Recipe: clustered heatmap of a features-by-samples matrix. Tries
 PyComplexHeatmap (to mirror the R ComplexHeatmap output); falls back to a seaborn
 clustermap if PyComplexHeatmap raises. Row z-score and clustering by default;
-a per-feature Welch t-test (BH) is computed when the annotation has two groups,
-and its stars are drawn between the heatmap and the row names, as in R.
+a per-feature Welch t-test (BH) is computed with --test welch_t when the
+annotation has two groups, and its stars are drawn between the heatmap and the
+row names, as in R. The default, --test auto, runs no test.
 
 Both engines draw the same leaf order (ordered_linkage): a complete-linkage tree
 on the Euclidean distance of the drawn values, and at each merge the branch with
@@ -24,6 +25,7 @@ from statsmodels.stats.multitest import multipletests
 from ..bundle import slugify
 from ..io import read_tidy
 from ..theme import PALETTE, diverging_cmap
+from ..util import level_labels, level_order
 
 
 def ordered_linkage(values, weights):
@@ -74,16 +76,25 @@ def color_limits(disp, scale_mode):
     return -2.0, 0.0, 2.0
 
 
-def level_colours(series):
-    """House-palette colours for the sorted levels of one annotation column.
+def track_colours(ann):
+    """House-palette colours of the annotation tracks, as .hm_track_colours() in R.
+
+    The palette continues from one track to the next, so two tracks never share
+    a colour while the palette lasts (F121). The levels of each track follow
+    level_order().
 
     Args:
-        series: The annotation column.
+        ann: The annotation table, one column per track, as text.
 
     Returns:
-        dict: One colour for each level, as the R engine assigns them.
+        dict: For each track, one colour for each level.
     """
-    return {lvl: PALETTE[i % len(PALETTE)] for i, lvl in enumerate(sorted(series.unique()))}
+    out, k = {}, 0
+    for c in ann.columns:
+        lv = level_order(ann[c])
+        out[c] = {lvl: PALETTE[(k + i) % len(PALETTE)] for i, lvl in enumerate(lv)}
+        k += len(lv)
+    return out
 
 
 def heatmap_stars(padj):
@@ -110,8 +121,44 @@ def heatmap_stars(padj):
     return out
 
 
+def welch_requested(method, group_col, n_groups):
+    """Whether to run the per-feature Welch test, as .hm_welch_requested() in R.
+
+    --test auto, the default, draws no test; --test welch_t runs it and needs an
+    annotation whose first column holds two groups. Any other value stops the run.
+
+    Args:
+        method: The --test value.
+        group_col: The first annotation column, or None without an annotation.
+        n_groups: The count of distinct values in that column.
+
+    Returns:
+        bool: True for --test welch_t.
+
+    Raises:
+        ValueError: If the value is unknown or the annotation does not hold two
+            groups.
+    """
+    method = method or "auto"
+    if method not in ("auto", "welch_t"):
+        raise ValueError(f"heatmap: unknown --test '{method}'; use auto (no test) or welch_t")
+    if method == "auto":
+        return False
+    if group_col is None:
+        raise ValueError("heatmap: --test welch_t needs --annotation, a table whose first column "
+                         "after the sample id holds two groups")
+    if n_groups != 2:
+        raise ValueError(f"heatmap: --test welch_t compares two groups, but the annotation column "
+                         f"'{group_col}' holds {n_groups}")
+    return True
+
+
 def welch_p(row, ca, cb):
     """The Welch t-test P value of one feature between two sample sets.
+
+    The P is NaN when a group has fewer than two values or when the standard
+    error of the difference is zero at double precision, the rule of R's
+    t.test ("data are essentially constant"), as .hm_welch_p() in R (F87).
 
     Args:
         row: The values of one feature, indexed by sample.
@@ -119,9 +166,63 @@ def welch_p(row, ca, cb):
         cb: The samples of the second group.
 
     Returns:
-        float: The two-sided P value.
+        float: The two-sided P value, or NaN.
     """
-    return stats.ttest_ind(row[ca], row[cb], equal_var=False).pvalue
+    x = np.asarray(row[ca], dtype=float)
+    y = np.asarray(row[cb], dtype=float)
+    if len(x) < 2 or len(y) < 2:
+        return float("nan")
+    se = np.sqrt(np.var(x, ddof=1) / len(x) + np.var(y, ddof=1) / len(y))
+    if not np.isfinite(se) or se <= 10 * np.finfo(float).eps * max(abs(x.mean()), abs(y.mean())):
+        return float("nan")
+    return float(stats.ttest_ind(x, y, equal_var=False).pvalue)
+
+
+def welch_groups(g, group_col):
+    """The two groups of the Welch test, as .hm_test_groups() in R.
+
+    Args:
+        g: The group of each sample, indexed by sample, missing kept as NaN.
+        group_col: The annotation column, for the message.
+
+    Returns:
+        list: The two groups in the order of level_order().
+
+    Raises:
+        ValueError: If a sample has no group or a group has fewer than two samples.
+    """
+    empty = [str(s) for s, v in g.items() if pd.isna(v) or not str(v).strip()]
+    if empty:
+        raise ValueError(f"heatmap: --test welch_t needs a group for each sample, but the "
+                         f"annotation column '{group_col}' is empty for "
+                         + ", ".join(f"'{s}'" for s in empty))
+    lab = level_labels(g)
+    lv = level_order(lab)
+    small = [(lvl, int((lab == lvl).sum())) for lvl in lv if int((lab == lvl).sum()) < 2]
+    if small:
+        raise ValueError("heatmap: --test welch_t needs at least 2 samples in each group; "
+                         + ", ".join(f"group '{lvl}' has {n}" for lvl, n in small))
+    return lv
+
+
+def bh_tested(p):
+    """Benjamini-Hochberg adjustment over the P values that are not NaN.
+
+    R's p.adjust() leaves a missing P out of the count, so a feature that was
+    not tested does not change the adjusted P of the others.
+
+    Args:
+        p: The P values, NaN for a feature that was not tested.
+
+    Returns:
+        numpy.ndarray: The adjusted P values, NaN where p is NaN.
+    """
+    p = np.asarray(p, dtype=float)
+    out = np.full(len(p), np.nan)
+    ok = ~np.isnan(p)
+    if ok.any():
+        out[ok] = multipletests(p[ok], method="fdr_bh")[1]
+    return out
 
 
 # The gap in points between the heatmap and the row names when stars sit there.
@@ -232,32 +333,48 @@ def recipe_heatmap(df, spec):
     col_order = (list(disp.columns[hierarchy.leaves_list(col_z)]) if col_z is not None
                  else list(disp.columns))
 
-    ann, group_col = None, None
+    ann, group_col, n_groups = None, None, 0
     if spec["data"].get("annotation"):
         araw = read_tidy(spec["data"]["annotation"])
-        araw = araw.set_index(araw.columns[0])
-        ann = araw.reindex(mat.columns)
-        ann = ann.astype(str)
+        ids = level_labels(araw.iloc[:, 0])
+        miss = [c for c in mat.columns if c not in set(ids)]
+        if miss:
+            raise ValueError(f"heatmap: the annotation {os.path.basename(spec['data']['annotation'])} "
+                             "has no row for the sample(s) "
+                             + ", ".join(f"'{m}'" for m in miss) + " of the matrix")
+        araw = araw.iloc[:, 1:].set_axis(list(ids), axis=0)
+        ann = araw[~araw.index.duplicated()].reindex(mat.columns)
         group_col = ann.columns[0]
+        n_groups = int(ann[group_col].dropna().nunique())
+        group_raw = ann[group_col]
+        ann = ann.apply(level_labels).astype(str)
 
-    # Per-feature differential test when the primary annotation has two groups.
+    # Per-feature differential test, only with --test welch_t. On genes that a DE
+    # test chose, a second test on the same samples is circular, so the default
+    # draws no test (F97).
+    run_test = welch_requested(spec["test"].get("method"), group_col, n_groups)
     star_of = {}
-    if ann is not None and ann[group_col].nunique() == 2:
-        g = ann[group_col]
-        lv = sorted(g.unique())
+    n_untested = 0
+    if run_test:
+        g = level_labels(group_raw)
+        lv = welch_groups(g, group_col)
         ca = [c for c in mat.columns if g.loc[c] == lv[0]]
         cb = [c for c in mat.columns if g.loc[c] == lv[1]]
-        pvals = mat.apply(welch_p, axis=1, args=(ca, cb)).to_numpy()
-        padj = multipletests(pvals, method="fdr_bh")[1]
+        # A feature with no variance in either group has no Welch test. Its P is
+        # NaN, and the BH adjustment runs over the tested features only (F87).
+        pvals = mat.apply(welch_p, axis=1, args=(ca, cb)).to_numpy(dtype=float)
+        n_untested = int(np.isnan(pvals).sum())
+        padj = bh_tested(pvals)
         star_of = dict(zip(mat.index, heatmap_stars(padj)))
         stats_df = pd.DataFrame({
             "feature": mat.index, f"mean_{lv[0]}": mat[ca].mean(axis=1).to_numpy(),
             f"mean_{lv[1]}": mat[cb].mean(axis=1).to_numpy(),
-            "p_value": pvals, "p_adj": padj, "significant": padj < 0.05,
+            "p_value": pvals, "p_adj": padj,
+            "significant": np.where(np.isnan(padj), None, padj < 0.05),
         })
         test_label = f"per-feature Welch t-test ({lv[0]} vs {lv[1]}), BH-adjusted"
         test_levels = (lv[0], lv[1])
-        n_sig = int((padj < 0.05).sum())
+        n_sig = int(np.sum(padj < 0.05))
     else:
         stats_df = pd.DataFrame({"feature": mat.index, "mean": mat.mean(axis=1).to_numpy(),
                                  "sd": mat.std(axis=1).to_numpy()})
@@ -276,7 +393,7 @@ def recipe_heatmap(df, spec):
         col_ha = None
         if ann is not None:
             col_ha = pch.HeatmapAnnotation(
-                **{c: pch.anno_simple(ann[c], colors=level_colours(ann[c]), add_text=False,
+                **{c: pch.anno_simple(ann[c], colors=track_colours(ann)[c], add_text=False,
                                       legend=True)
                    for c in ann.columns},
                 axis=1, verbose=0)
@@ -297,7 +414,7 @@ def recipe_heatmap(df, spec):
             row_names_side="right", col_names_side="bottom", plot_legend=False, verbose=0)
         fig = plt.gcf()
         label_axes = row_label_axes(plotter)
-        if star_of:
+        if any(star_of.values()):
             for a in label_axes:
                 add_row_stars(a, star_of)
         gap = 4.0 / 25.4 * fig.dpi / fig.get_window_extent().width
@@ -310,7 +427,7 @@ def recipe_heatmap(df, spec):
         fallback_reason = f"{type(err).__name__}: {err}"
         col_colors = None
         if ann is not None:
-            col_colors = pd.DataFrame({c: ann[c].map(level_colours(ann[c])) for c in ann.columns})
+            col_colors = pd.DataFrame({c: ann[c].map(track_colours(ann)[c]) for c in ann.columns})
         grid = sns.clustermap(
             disp, cmap=diverging_cmap(), vmin=vmin, vmax=vmax, center=vcenter, method="complete",
             row_cluster=row_z is not None, col_cluster=col_z is not None,
@@ -318,7 +435,7 @@ def recipe_heatmap(df, spec):
             col_colors=col_colors, figsize=(w, h), cbar_kws={"label": legend_name},
             xticklabels=True, yticklabels=True)
         fig = grid.figure
-        if star_of:
+        if any(star_of.values()):
             add_row_stars(grid.ax_heatmap, star_of)
 
     test_meta = {
@@ -326,10 +443,11 @@ def recipe_heatmap(df, spec):
         "fallback_reason": fallback_reason,
         "scale": scale_mode, "clustering": cluster,
         "n_features": int(mat.shape[0]), "n_samples": int(mat.shape[1]),
-        "per_feature_test": test_label, "n_significant": n_sig,
+        "per_feature_test": test_label, "n_significant": n_sig, "n_untested": n_untested,
         "row_order": [str(v) for v in row_order], "column_order": [str(v) for v in col_order],
     }
-    methods = _methods(scale_mode, cluster, mat.shape[0], mat.shape[1], test_levels, n_sig, used_pch)
+    methods = _methods(scale_mode, cluster, mat.shape[0], mat.shape[1], test_levels, n_sig, used_pch,
+                       n_untested)
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": df_used, "clean_steps": clean_steps,
@@ -341,7 +459,7 @@ def recipe_heatmap(df, spec):
     }
 
 
-def _methods(scale_mode, cluster, n_feat, n_samp, test_levels, n_sig, used_pch):
+def _methods(scale_mode, cluster, n_feat, n_samp, test_levels, n_sig, used_pch, n_untested=0):
     from importlib.metadata import version as v
     import platform
     lib = "PyComplexHeatmap" if used_pch else "seaborn.clustermap"
@@ -357,13 +475,18 @@ def _methods(scale_mode, cluster, n_feat, n_samp, test_levels, n_sig, used_pch):
         clust_txt += (" Clustering used complete linkage on the Euclidean distance of the displayed "
                       "values, and at each merge the branch with the higher mean of the unscaled "
                       "values was drawn first.")
-    test_txt = ""
+    test_txt = " No statistical test was applied."
     if test_levels:
+        n_tested = n_feat - n_untested
+        untested_txt = (f" {n_untested} feature(s) had no variance in either group, so they were "
+                        "not tested and were left out of the adjustment." if n_untested else "")
+        sig_txt = (f"{n_sig} of the {n_tested} features had an adjusted P below 0.05 and are "
+                   "marked with stars." if n_sig else
+                   "no feature had an adjusted P below 0.05, so no star is drawn.")
         test_txt = (f" Each feature was compared between {test_levels[0]} and {test_levels[1]} with a "
                     "Welch two-sample t-test, which treats the samples as independent, and the P "
-                    f"values were adjusted across the {n_feat} features with the Benjamini-Hochberg "
-                    f"method; {n_sig} of the {n_feat} features had an adjusted P below 0.05 and are "
-                    "marked with stars.")
+                    f"values were adjusted across the {n_tested} tested features with the "
+                    f"Benjamini-Hochberg method; {sig_txt}{untested_txt}")
     return (
         f"A heatmap of {n_feat} features across {n_samp} samples was drawn with {lib}. "
         + scale_txt + " " + clust_txt + test_txt +

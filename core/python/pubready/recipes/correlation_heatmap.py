@@ -2,6 +2,7 @@
 Mirrors the R recipe: correlation matrix drawn as a seaborn clustermap with
 dendrograms, each cell showing the coefficient and BH-adjusted stars. Pearson by
 default; --test spearman|kendall."""
+import functools
 import inspect
 import os
 
@@ -11,26 +12,129 @@ import pandas as pd
 import seaborn as sns
 from scipy import stats as ss
 from scipy.cluster import hierarchy
-from statsmodels.stats.multitest import multipletests
 
 from ..bundle import slugify
+from ..clean import coerce_numeric_columns
 from ..theme import diverging_cmap
 from ..util import cap_first
-from .heatmap import ordered_linkage
+from .heatmap import bh_tested, ordered_linkage
+from .pca import name_list
+
+
+def usable(v):
+    """Whether a column is a variable, as .ch_usable() in R.
+
+    Args:
+        v: The column, numeric.
+
+    Returns:
+        bool: True when it has 3 finite values or more and some variance.
+    """
+    v = v.to_numpy(dtype=float)
+    return bool(np.isfinite(v).sum() >= 3 and np.nanstd(v) > 0)
+
+
+def check_finite_variance(v, col, recipe):
+    """Stop when the variance of a column is not finite at double precision.
+
+    The values differ, but values near 1e300 overflow the variance to inf and
+    values near 1e-300 underflow it to 0 (F83). distribution uses the same
+    check. The R engine has the same rule and message
+    (.check_finite_variance).
+
+    Args:
+        v: The values of the column.
+        col: The column name, for the message.
+        recipe: The recipe name, for the message.
+
+    Raises:
+        ValueError: If the variance is not a finite positive number.
+    """
+    v = np.asarray(v, dtype=float)
+    v = v[np.isfinite(v)]
+    if len(v) < 2 or len(np.unique(v)) < 2:
+        return
+    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        s2 = float(np.var(v, ddof=1))
+    if not np.isfinite(s2) or s2 <= 0:
+        raise ValueError(f"{recipe}: the variance of column '{col}' is not finite at double "
+                         f"precision (largest absolute value {np.abs(v).max():.2g}); rescale the "
+                         "column, for example to other units or to log10")
+
+
+def pair_problem(a, b, name_a, name_b):
+    """Say why a pair of variables has no correlation, as .ch_pair_problem() in R.
+
+    Args:
+        a: The values of the first variable.
+        b: The values of the second variable.
+        name_a: The first column name.
+        name_b: The second column name.
+
+    Returns:
+        str or None: The pair as text for the message, or None when the pair
+        has 3 shared complete rows or more and both variables vary in them.
+    """
+    a = np.asarray(a, dtype=float)
+    b = np.asarray(b, dtype=float)
+    ok = np.isfinite(a) & np.isfinite(b)
+    n = int(ok.sum())
+    if n >= 3 and np.std(a[ok], ddof=1) > 0 and np.std(b[ok], ddof=1) > 0:
+        return None
+    why = f"{n} shared complete row(s)" if n < 3 else "a constant in the shared rows"
+    return f"'{name_a}' and '{name_b}' ({why})"
+
+
+def check_pairs(num):
+    """Stop when a pair of variables has no correlation, as .ch_check_pairs() in R.
+
+    A pair with fewer than 3 shared complete rows, or with a variable that is
+    constant in them, leaves NA in the matrix, so the clustering fails and the
+    engines test the pair differently (F79, F87).
+
+    Args:
+        num: The variables, one column each.
+
+    Raises:
+        ValueError: If a pair has no correlation; the message names the pairs.
+    """
+    cols = list(num.columns)
+    bad = []
+    for i in range(len(cols) - 1):
+        for j in range(i + 1, len(cols)):
+            msg = pair_problem(num[cols[i]], num[cols[j]], cols[i], cols[j])
+            if msg:
+                bad.append(msg)
+    if bad:
+        more = f"; and {len(bad) - 5} more" if len(bad) > 5 else ""
+        raise ValueError(f"correlation_heatmap: {len(bad)} pair(s) of columns have no correlation: "
+                         + "; ".join(bad[:5]) + more
+                         + "; remove one column of each pair or fill the missing values")
 
 
 def recipe_correlation_heatmap(df, spec):
-    num = df.select_dtypes(include="number")
-    if num.shape[1] < 2:
+    # coerce_numeric_columns() decides what is numeric: a column with one text
+    # cell such as "<0.1" stays a variable, the cell becomes NaN, and the data
+    # log names the cell and each text column left out (F42).
+    df, numeric, text, clean_steps = coerce_numeric_columns(df)
+    if len(numeric) < 2:
         raise ValueError("correlation_heatmap needs at least 2 numeric columns")
-    n0 = num.shape[1]
-    keep = [c for c in num.columns if num[c].notna().sum() >= 3 and num[c].std() > 0]
+    num = df[numeric].astype(float)
+    for c in numeric:
+        check_finite_variance(num[c], c, "correlation_heatmap")
+    keep = [c for c in numeric if usable(num[c])]
+    dropped = [c for c in numeric if c not in keep]
     num = num[keep]
     if num.shape[1] < 2:
         raise ValueError("correlation_heatmap needs at least 2 numeric columns with variance")
-    clean_steps = ([f"Dropped {n0 - num.shape[1]} non-numeric or zero-variance column(s) "
-                    f"({n0} -> {num.shape[1]} variables)."] if num.shape[1] < n0
-                   else ["No cleaning applied; numeric columns used as-is."])
+    if text:
+        clean_steps.append(f"Left out the text column(s) {name_list(text)}.")
+    if dropped:
+        clean_steps.append(f"Dropped {len(dropped)} column(s) with fewer than 3 values or no "
+                           f"variance: {name_list(dropped)}.")
+    if not clean_steps:
+        clean_steps = ["No cleaning applied; numeric columns used as-is."]
+    check_pairs(num)
 
     method = (spec["test"].get("method") or "auto").lower()
     if method in ("auto", ""):
@@ -58,7 +162,8 @@ def recipe_correlation_heatmap(df, spec):
 
     iu = np.triu_indices(k, 1)
     p_ut = P[iu]
-    padj_ut = multipletests(p_ut, method="fdr_bh")[1]
+    # BH over the tested pairs only, as R p.adjust() leaves out a missing P.
+    padj_ut = bh_tested(p_ut)
     Padj = np.zeros((k, k))
     Padj[iu] = padj_ut
     Padj = Padj + Padj.T
@@ -115,7 +220,7 @@ def recipe_correlation_heatmap(df, spec):
         "df_used": num.reset_index(drop=True), "clean_steps": clean_steps,
         "label": slugify(os.path.splitext(spec["data"]["file"])[0]),
         "width": w, "height": h,
-        "build_script": lambda in_name, fig_stub: _script(in_name, fig_stub, method, row_c, col_c),
+        "build_script": functools.partial(_script, method, row_c, col_c, varlist),
     }
 
 
@@ -136,7 +241,20 @@ def _methods(method, cluster, k, n_sig):
     )
 
 
-def _script(in_name, fig_stub, method, row_c, col_c):
+def _script(method, row_c, col_c, varlist, in_name, fig_stub):
+    """Write the standalone script that redraws the correlation heatmap.
+
+    Args:
+        method: The correlation method.
+        row_c: Whether the rows are clustered.
+        col_c: Whether the columns are clustered.
+        varlist: The variables of the figure.
+        in_name: The bundled input file name.
+        fig_stub: The figure file stem.
+
+    Returns:
+        str: The script text.
+    """
     return f'''#!/usr/bin/env python3
 # Standalone reproduction. Run inside the pinned pubready container
 # (see REPRODUCE.md) from this bundle folder.
@@ -150,7 +268,8 @@ from scipy.cluster import hierarchy
 {inspect.getsource(ordered_linkage)}
 
 raw = pd.read_csv("{in_name}")
-num = raw.select_dtypes(include="number")
+# The variables of the figure; a cell that does not read as a number is NaN.
+num = raw[{list(varlist)!r}].apply(pd.to_numeric, errors="coerce")
 M = num.corr(method="{method}")
 # The leaf order of the figure: complete linkage on the Euclidean distance of
 # the matrix rows, and at each merge the branch with the higher mean correlation

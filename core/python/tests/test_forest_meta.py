@@ -73,3 +73,38 @@ def test_forest_meta_names_the_tau2_truncation_only_when_it_occurs():
     het = res["test_meta"]["heterogeneity"]
     assert het["q"] > het["df"]
     assert "truncated" not in res["methods"]
+
+
+def test_forest_meta_checks_each_study_and_names_the_bad_ones():
+    """Each study is checked, and a bad one stops the run with its name, as in R (F77)."""
+    import pytest
+    df = pd.DataFrame({"study": ["Trial A", "Trial B", "Trial C"], "hr": [0.8, 0.7, 0.95],
+                       "lo": [0.85, 0.55, 0.70], "hi": [1.10, 0.90, 1.30]})
+    spec = fm_spec(y="hr", ci_low="lo", ci_high="hi", label="study")
+    with pytest.raises(ValueError, match=r"study 'Trial A': its CI \(0.85 to 1.1\) does not hold "
+                                         r"its estimate 0.8"):
+        recipe_forest_meta(df, spec)
+    df.loc[0, ["lo", "hi"]] = [1.1, 0.6]
+    with pytest.raises(ValueError, match="its CI bounds are reversed"):
+        recipe_forest_meta(df, spec)
+    df.loc[0, ["lo", "hi"]] = [0.8, 0.8]
+    with pytest.raises(ValueError, match="its CI has zero width"):
+        recipe_forest_meta(df, spec)
+    se = pd.DataFrame({"study": ["A", "B", "C"], "md": [1.2, 0.8, 1.5], "se": [0.0, 0.3, 0.4]})
+    with pytest.raises(ValueError, match="study 'A': its standard error is 0"):
+        recipe_forest_meta(se, fm_spec(y="md", se="se", label="study"))
+    df.loc[0, ["lo", "hi"]] = [0.6, 1.07]
+    df.loc[2, "study"] = ""
+    res = recipe_forest_meta(df, spec)
+    assert "Study 3" in list(res["stats"]["label"])
+
+
+def test_a_long_forest_meta_label_wraps_and_widens_the_figure():
+    """A long study label wraps and the figure grows, as in R (F81)."""
+    from pubready.recipes.forest_meta import figure_size
+    df = pd.DataFrame({"study": ["A very long study label that keeps going well past sixty "
+                                 "characters", "Trial B", "Trial C"],
+                       "hr": [0.8, 0.7, 0.95], "lo": [0.6, 0.55, 0.70], "hi": [1.07, 0.90, 1.30]})
+    res = recipe_forest_meta(df, fm_spec(y="hr", ci_low="lo", ci_high="hi", label="study"))
+    assert res["width"] > 8.2
+    assert figure_size(["Trial B", "Random effects (DL)"], 2)[0] == pytest.approx(8.2)

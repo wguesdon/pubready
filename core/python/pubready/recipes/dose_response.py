@@ -28,6 +28,7 @@ from scipy import optimize, stats
 from ..bundle import slugify
 from ..theme import R_POINT_PT, apply_pub_style, new_fig, palette, plain_log_axis
 from ..util import cap_first, sig_text
+from .estimation_plot import wrap
 
 _FIT_OPTS = {"maxfev": 20000, "ftol": 1e-12, "xtol": 1e-12, "gtol": 1e-12}
 
@@ -230,9 +231,9 @@ def curve_row(g, lx, y, popt, pcov, start, span_ref, flat_reason=None):
     nan = float("nan")
     base = {
         "group": g, "n": int(len(y)), "doses": int(len(np.unique(lx))),
-        "midpoint": "IC50" if start["hill"] < 0 else "EC50",
-        "bottom": nan, "top": nan, "hill": nan, "log_ec50": nan, "se_log_ec50": nan,
-        "ec50": nan, "ec50_ci_low": nan, "ec50_ci_high": nan, "r_squared": nan,
+        "midpoint_type": "IC50" if start["hill"] < 0 else "EC50",
+        "bottom": nan, "top": nan, "hill": nan, "log_midpoint": nan, "se_log_midpoint": nan,
+        "midpoint": nan, "midpoint_ci_low": nan, "midpoint_ci_high": nan, "r_squared": nan,
         "rss": nan, "df_resid": nan, "fit_status": "not determined",
         "status_reason": flat_reason or "the fit did not converge",
     }
@@ -257,10 +258,10 @@ def curve_row(g, lx, y, popt, pcov, start, span_ref, flat_reason=None):
         return base
     return {
         "group": g, "n": int(len(y)), "doses": int(len(np.unique(lx))),
-        "midpoint": "IC50" if hill < 0 else "EC50",
+        "midpoint_type": "IC50" if hill < 0 else "EC50",
         "bottom": bottom, "top": top, "hill": hill,
-        "log_ec50": log_ec50, "se_log_ec50": float(se[2]),
-        "ec50": 10 ** log_ec50, "ec50_ci_low": ci_low, "ec50_ci_high": ci_high,
+        "log_midpoint": log_ec50, "se_log_midpoint": float(se[2]),
+        "midpoint": 10 ** log_ec50, "midpoint_ci_low": ci_low, "midpoint_ci_high": ci_high,
         "r_squared": 1 - rss / float(np.sum((y - y.mean()) ** 2)),
         "rss": rss, "df_resid": dfr, "fit_status": "fitted", "status_reason": None,
     }
@@ -353,6 +354,69 @@ def shared_test(d, rows):
             "rss_shared": rss_sh, "rss_separate": rss_sep}
 
 
+def response_scale(y):
+    """The power of ten that the response is divided by before the fit (F80).
+
+    The scale is 10**e for a largest absolute response of the order 10**e when
+    e is 3 or more or -3 or less, else 1, as .drc_response_scale() in R.
+
+    Args:
+        y: The responses.
+
+    Returns:
+        float: The scale.
+    """
+    m = float(np.max(np.abs(y)))
+    if not np.isfinite(m) or m == 0:
+        return 1.0
+    e = int(np.floor(np.log10(m)))
+    return float(10.0 ** e) if abs(e) >= 3 else 1.0
+
+
+def unscale_row(r, rs):
+    """Put the plateaus and the residual sum of squares of one row back on scale.
+
+    Args:
+        r: The stats row, changed in place.
+        rs: The scale of the fit.
+    """
+    r["bottom"] = r["bottom"] * rs
+    r["top"] = r["top"] * rs
+    r["rss"] = r["rss"] * rs ** 2
+
+
+def unscale_shared(shared, rs):
+    """Put the sums of squares of the shared test back on the scale of the response.
+
+    Args:
+        shared: The shared-EC50 test, or None.
+        rs: The scale of the fit.
+
+    Returns:
+        dict or None: The test.
+    """
+    if shared is None:
+        return None
+    shared["rss_shared"] = shared["rss_shared"] * rs ** 2
+    shared["rss_separate"] = shared["rss_separate"] * rs ** 2
+    return shared
+
+
+def _scale_text(rs):
+    """Say that the response was scaled for the fit, as .drc_scale_text() in R.
+
+    Args:
+        rs: The scale of the fit.
+
+    Returns:
+        str: The sentence with a trailing space, or "" for a scale of 1.
+    """
+    if rs == 1:
+        return ""
+    return (f"The responses were divided by {rs:g} for the fit, so that the optimiser works near "
+            "1, and the plateaus are reported on the original scale. ")
+
+
 def dose_summary(d):
     """Mean and standard error of the response at each dose of each curve.
 
@@ -413,6 +477,12 @@ def recipe_dose_response(df, spec):
                      "because the dose axis is logarithmic.")
     steps.append(f"Kept {len(d)} of {n0} row(s).")
     d["lx"] = np.log10(d["dose"])
+    # A response on a scale far from 1, such as 1e12 RLU, can keep a fit from
+    # converging. The fit runs on the response divided by a power of ten, and the
+    # plateaus and the sums of squares go back to the original scale (F80).
+    rs = response_scale(d["y"].to_numpy())
+    y_orig = d["y"].copy()
+    d["y"] = d["y"] / rs
 
     groups = list(pd.unique(d["group"]))
     # The span rule compares each fitted span with the range of the mean
@@ -445,11 +515,23 @@ def recipe_dose_response(df, spec):
     if len(det_groups) >= 2:
         shared = shared_test(d[d["group"].isin(det_groups)].reset_index(drop=True),
                              stats_df[det].reset_index(drop=True))
+    for r in rows:
+        unscale_row(r, rs)
+    stats_df = pd.DataFrame(rows)
+    shared = unscale_shared(shared, rs)
+    d["y"] = y_orig
+    summ["mean"] = summ["mean"] * rs
+    summ["sem"] = summ["sem"] * rs
 
     ap = spec["appearance"]
     pal = palette(len(groups), ap.get("palette"))
     mid_name = _mid_name(stats_df)
-    w, h = (6.2 if has_group else 4.6), 4.2
+    # A long curve name wraps, and the figure grows with the longest line, so the
+    # legend does not squeeze the panel to nothing (F81), as in R.
+    leg = [wrap(f"{g} ({r['midpoint_type']} = {sig_text(r['midpoint'])})" if det[i]
+                else f"{g} (not determined)", 28)
+           for i, (g, (_, r)) in enumerate(zip(groups, stats_df.iterrows()))]
+    w, h = (figure_width(leg + [str(grp)]) if has_group else 4.6), 4.2
     fig, ax = new_fig(w, h)
     replicated = bool((summ["n"] > 1).any())
     handles = []
@@ -462,16 +544,16 @@ def recipe_dose_response(df, spec):
                         ecolor=pal[i], elinewidth=0.8, capsize=2)
         # R draws the means with geom_point(size = 2).
         pts = ax.scatter(10 ** s["lx"], s["mean"], color=pal[i], s=(2 * R_POINT_PT) ** 2,
-                         zorder=3, label=f"{g} (not determined)")
+                         zorder=3, label=leg[i])
         if det[i]:
             lxg = d.loc[d["group"] == g, "lx"]
             grid = np.linspace(lxg.min(), lxg.max(), 200)
-            cf = (r["bottom"], r["top"], r["log_ec50"], r["hill"])
+            cf = (r["bottom"], r["top"], r["log_midpoint"], r["hill"])
             ax.plot(10 ** grid, fpl(grid, *cf), color=pal[i], lw=1.6)
             # The key of a fitted curve shows the point on the line, as in R.
             handles.append(Line2D([], [], color=pal[i], lw=1.6, marker="o",
                                   markersize=2 * R_POINT_PT,
-                                  label=f"{g} ({r['midpoint']} = {sig_text(r['ec50'])})"))
+                                  label=leg[i]))
         else:
             handles.append(pts)
     ax.set_xscale("log")
@@ -492,9 +574,9 @@ def recipe_dose_response(df, spec):
         "n_curves": len(groups),
         "n_determined": len(det_groups),
         "not_determined": nd_groups,
-        "curves": {r["group"]: {"midpoint": r["midpoint"], "fit_status": r["fit_status"],
-                                "status_reason": r["status_reason"], "ec50": r["ec50"],
-                                "ci_low": r["ec50_ci_low"], "ci_high": r["ec50_ci_high"],
+        "curves": {r["group"]: {"midpoint_type": r["midpoint_type"], "fit_status": r["fit_status"],
+                                "status_reason": r["status_reason"], "midpoint": r["midpoint"],
+                                "ci_low": r["midpoint_ci_low"], "ci_high": r["midpoint_ci_high"],
                                 "hill": r["hill"], "bottom": r["bottom"], "top": r["top"],
                                 "r_squared": r["r_squared"]} for r in rows},
         "shared_ec50_test": shared,
@@ -502,10 +584,11 @@ def recipe_dose_response(df, spec):
     df_used = pd.DataFrame({"group": d["group"], "dose": d["dose"], "response": d["y"]})
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
-        "methods": _methods(stats_df, shared, len(d), spec, x, y, replicated),
+        "methods": _methods(stats_df, shared, len(d), spec, x, y, replicated,
+                            int(nonpos.sum()), rs),
         "df_used": df_used, "clean_steps": steps, "label": slugify(y),
         "width": w, "height": h,
-        "build_script": functools.partial(_script, spec, starts, methods, has_group),
+        "build_script": functools.partial(_script, spec, starts, methods, has_group, rs),
     }
 
 
@@ -518,9 +601,9 @@ def _mid_name(rows):
     Returns:
         str: "IC50" or "EC50".
     """
-    mids = rows.loc[rows["fit_status"] == "fitted", "midpoint"]
+    mids = rows.loc[rows["fit_status"] == "fitted", "midpoint_type"]
     if len(mids) == 0:
-        mids = rows["midpoint"]
+        mids = rows["midpoint_type"]
     return "IC50" if (mids == "IC50").all() else "EC50"
 
 
@@ -545,8 +628,8 @@ def _subtitle(rows, shared, mid_name, has_group):
                  f"{shared['statistic']:.2f}, P = {sig_text(shared['p_value'], 2)}")
     elif det.any():
         r = rows[det].iloc[0]
-        first = (f"{(str(r['group']) + ' ') if has_group else ''}{r['midpoint']} = {sig_text(r['ec50'])} "
-                 f"(95% CI {sig_text(r['ec50_ci_low'])} to {sig_text(r['ec50_ci_high'])})")
+        first = (f"{(str(r['group']) + ' ') if has_group else ''}{r['midpoint_type']} = {sig_text(r['midpoint'])} "
+                 f"(95% CI {sig_text(r['midpoint_ci_low'])} to {sig_text(r['midpoint_ci_high'])})")
     elif has_group:
         first = f"{mid_name} not determined for any curve"
     else:
@@ -559,6 +642,37 @@ def _subtitle(rows, shared, mid_name, has_group):
     else:
         second = f"{len(nd)} curves not determined, left out of the test"
     return f"{first}\n{second}"
+
+
+def figure_width(labels):
+    """The width of a figure with a legend, as .drc_width() in R (F81).
+
+    The 4.6 inch panel and a legend column that grows with the longest line of
+    the wrapped labels and the legend title, at least 1.6 inches.
+
+    Args:
+        labels: The wrapped legend labels and the legend title.
+
+    Returns:
+        float: The width in inches.
+    """
+    longest = max(len(line) for lab in labels for line in str(lab).split("\n"))
+    return 4.6 + max(1.6, 0.2 + 0.065 * longest)
+
+
+def _nonpos_text(n):
+    """Say how many rows with a dose of zero or below were left out (F76).
+
+    Args:
+        n: The count of such rows.
+
+    Returns:
+        str: The sentence with a trailing space, or "" when no row was left out.
+    """
+    if n > 0:
+        return (f"{n} row(s) with a dose of zero or below were left out of the fit and the "
+                "figure, because the dose axis is logarithmic. ")
+    return ""
 
 
 def _points_text(replicated):
@@ -577,7 +691,7 @@ def _points_text(replicated):
     return "Each point is the single response at its dose. "
 
 
-def _methods(rows, shared, n_points, spec, x, y, replicated):
+def _methods(rows, shared, n_points, spec, x, y, replicated, n_nonpos=0, rs=1.0):
     """Write the methods paragraph.
 
     Args:
@@ -588,6 +702,8 @@ def _methods(rows, shared, n_points, spec, x, y, replicated):
         x: The dose column.
         y: The response column.
         replicated: True when a dose of a curve has more than one response.
+        n_nonpos: The count of rows dropped for a dose of zero or below.
+        rs: The power of ten that the response was divided by for the fit.
 
     Returns:
         str: The paragraph.
@@ -599,15 +715,15 @@ def _methods(rows, shared, n_points, spec, x, y, replicated):
     multi = len(rows) > 1
     det = rows["fit_status"] == "fitted"
     fits = "; ".join(
-        f"{(str(r['group']) + ': ') if multi else ''}{r['midpoint']} = {sig_text(r['ec50'])} "
-        f"(95% CI {sig_text(r['ec50_ci_low'])} to {sig_text(r['ec50_ci_high'])}, Hill slope {r['hill']:.2f}, "
+        f"{(str(r['group']) + ': ') if multi else ''}{r['midpoint_type']} = {sig_text(r['midpoint'])} "
+        f"(95% CI {sig_text(r['midpoint_ci_low'])} to {sig_text(r['midpoint_ci_high'])}, Hill slope {r['hill']:.2f}, "
         f"R2 = {r['r_squared']:.3f})" for _, r in rows[det].iterrows())
     fits = f"{fits}." if fits else ""
     nd = rows[~det]
     nd_txt = ""
     if len(nd):
         nd_txt = " " + " ".join(
-            f"The {r['midpoint']}{(' of ' + str(r['group'])) if multi else ''} was not determined, "
+            f"The {r['midpoint_type']}{(' of ' + str(r['group'])) if multi else ''} was not determined, "
             f"because {r['status_reason']}." for _, r in nd.iterrows())
         nd_txt += (" A curve that is not determined is drawn as its mean +/- SEM without a fit"
                    + (" and is left out of the shared-midpoint F test." if multi else "."))
@@ -630,7 +746,8 @@ def _methods(rows, shared, n_points, spec, x, y, replicated):
         "curve (variable Hill slope) fitted by nonlinear least squares on log10 dose "
         f"(n = {n_points} points, {len(rows)} curve(s)). The 95% confidence interval of the "
         "midpoint was computed on the log10 scale from the standard error of the fit and "
-        f"back-transformed. {_points_text(replicated)}A curve whose mean responses varied by "
+        f"back-transformed. {_points_text(replicated)}{_nonpos_text(n_nonpos)}{_scale_text(rs)}A curve whose mean "
+        "responses varied by "
         "less than 10% of the range "
         "of the mean responses of all curves, or whose responses did not differ between the "
         "doses in a one-way ANOVA (P >= 0.05), was not fitted, and its midpoint was reported as "
@@ -642,7 +759,7 @@ def _methods(rows, shared, n_points, spec, x, y, replicated):
     )
 
 
-def _script(spec, starts, methods, has_group, in_name, fig_stub):
+def _script(spec, starts, methods, has_group, rs, in_name, fig_stub):
     """Write the standalone script that refits and redraws the curves.
 
     Args:
@@ -650,6 +767,7 @@ def _script(spec, starts, methods, has_group, in_name, fig_stub):
         starts: The starting values of each curve.
         methods: The curve_fit routine that converged for each curve.
         has_group: Whether the data has a curve column.
+        rs: The power of ten that the response is divided by for the fit.
         in_name: The name of the input copy inside the bundle.
         fig_stub: The name of the figure file, without its extension.
 
@@ -681,6 +799,8 @@ d = pd.DataFrame({{"dose": pd.to_numeric(raw["{x}"], errors="coerce"),
                    "group": {group_expr}}})
 d = d[np.isfinite(d["dose"]) & np.isfinite(d["y"]) & (d["dose"] > 0)]
 d["lx"] = np.log10(d["dose"])
+# The fit runs on the response divided by a power of ten, as in the figure.
+rs = {rs!r}
 methods = {methods!r}
 starts = {{
     {start_txt}
@@ -688,11 +808,11 @@ starts = {{
 fig, ax = plt.subplots(figsize=({6.2 if has_group else 4.6}, 4.2))
 for g, p0 in starts.items():
     s = d[d["group"] == g]
-    popt, pcov = curve_fit(fpl, s["lx"], s["y"], p0=p0, method=methods[g], maxfev=20000,
+    popt, pcov = curve_fit(fpl, s["lx"], s["y"] / rs, p0=p0, method=methods[g], maxfev=20000,
                            ftol=1e-12, xtol=1e-12, gtol=1e-12)
     print(g, "bottom, top, log10 EC50, hill:", popt)
     grid = np.linspace(s["lx"].min(), s["lx"].max(), 200)
-    ax.plot(10 ** grid, fpl(grid, *popt), label=g)
+    ax.plot(10 ** grid, fpl(grid, *popt) * rs, label=g)
     ax.scatter(s["dose"], s["y"], s=14, alpha=0.6)
 # A curve whose midpoint is not determined is drawn as points only, as in the figure.
 for g in d["group"].unique():

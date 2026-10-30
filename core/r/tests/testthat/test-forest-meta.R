@@ -45,3 +45,34 @@ test_that("forest_meta names the tau2 truncation only when it occurs", {
   expect_gt(res$test_meta$heterogeneity$q, res$test_meta$heterogeneity$df)
   expect_false(grepl("truncated", res$methods))
 })
+
+# A study whose CI does not hold its estimate, whose bounds are reversed, whose
+# CI has zero width, or whose SE is 0 stops the run with its name (F77). An
+# empty label reads "Study <row>".
+test_that("forest_meta checks each study and names the bad ones", {
+  df <- data.frame(study = c("Trial A", "Trial B", "Trial C"), hr = c(0.8, 0.7, 0.95),
+                   lo = c(0.85, 0.55, 0.70), hi = c(1.10, 0.90, 1.30))
+  spec <- fm_spec(y = "hr", ci_low = "lo", ci_high = "hi", label = "study")
+  expect_error(recipe_forest_meta(df, spec),
+               "study 'Trial A': its CI \\(0.85 to 1.1\\) does not hold its estimate 0.8")
+  df$lo[1] <- 1.1; df$hi[1] <- 0.6
+  expect_error(recipe_forest_meta(df, spec), "its CI bounds are reversed")
+  df$lo[1] <- 0.8; df$hi[1] <- 0.8
+  expect_error(recipe_forest_meta(df, spec), "its CI has zero width")
+  se <- data.frame(study = c("A", "B", "C"), md = c(1.2, 0.8, 1.5), se = c(0, 0.3, 0.4))
+  expect_error(recipe_forest_meta(se, fm_spec(y = "md", se = "se", label = "study")),
+               "study 'A': its standard error is 0")
+  df$lo[1] <- 0.6; df$hi[1] <- 1.07; df$study[3] <- ""
+  res <- recipe_forest_meta(df, spec)
+  expect_true("Study 3" %in% res$stats$label)
+})
+
+# A long study label wraps at 30 characters and the figure grows with it (F81).
+test_that("a long forest_meta label wraps and widens the figure", {
+  df <- data.frame(study = c("A very long study label that keeps going well past sixty characters",
+                             "Trial B", "Trial C"),
+                   hr = c(0.8, 0.7, 0.95), lo = c(0.6, 0.55, 0.70), hi = c(1.07, 0.90, 1.30))
+  res <- recipe_forest_meta(df, fm_spec(y = "hr", ci_low = "lo", ci_high = "hi", label = "study"))
+  expect_gt(res$width, 8.2)
+  expect_equal(.fm_size(c("Trial B", "Random effects (DL)"), 2)$width, 8.2)
+})

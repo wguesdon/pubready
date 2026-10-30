@@ -23,7 +23,7 @@ def test_heatmap_draws_stars_and_keeps_legends_clear_of_the_row_names(tmp_path):
     ann_path = tmp_path / "ann.csv"
     pd.DataFrame({"sample": samples, "group": ["a"] * 6 + ["b"] * 6}).to_csv(ann_path, index=False)
     a = SimpleNamespace(recipe="heatmap", data="matrix.csv", x=None, y=None,
-                        annotation=str(ann_path))
+                        annotation=str(ann_path), test="welch_t")
     res = recipe_heatmap(df, spec_from_args(a))
 
     fig = res["fig"]
@@ -134,3 +134,90 @@ def test_heatmap_legends_are_not_clipped_to_the_legend_axes(tmp_path):
     res = recipe_heatmap(df, spec_from_args(a))
     legends = [c for ax in res["fig"].axes for c in ax.get_children() if isinstance(c, Legend)]
     assert legends and not any(lg.get_clip_on() for lg in legends)
+
+
+def hm_null(tmp_path):
+    """A matrix and an annotation with no difference between the two groups.
+
+    Args:
+        tmp_path: The folder for the annotation file.
+
+    Returns:
+        tuple: The matrix and the path of the annotation.
+    """
+    df = pd.DataFrame({"gene": [f"g{i}" for i in range(1, 5)],
+                       "a1": [5.1, 3.0, 7.2, 1.1], "a2": [4.9, 3.3, 6.8, 0.9],
+                       "a3": [5.3, 2.8, 7.0, 1.2], "b1": [5.0, 3.1, 7.1, 1.0],
+                       "b2": [5.2, 2.9, 6.9, 1.3], "b3": [4.8, 3.2, 7.3, 0.8]})
+    ann_path = tmp_path / "ann.csv"
+    pd.DataFrame({"sample": ["a1", "a2", "a3", "b1", "b2", "b3"],
+                  "group": ["a"] * 3 + ["b"] * 3}).to_csv(ann_path, index=False)
+    return df, ann_path
+
+
+def test_a_null_heatmap_draws_no_star_column(tmp_path):
+    """A null result gets no star column in either engine (F46)."""
+    df, ann_path = hm_null(tmp_path)
+    a = SimpleNamespace(recipe="heatmap", data="matrix.csv", x=None, y=None,
+                        annotation=str(ann_path), test="welch_t")
+    res = recipe_heatmap(df, spec_from_args(a))
+    assert res["test_meta"]["n_significant"] == 0
+    stars = [t for ax in res["fig"].axes for t in ax.texts if set(t.get_text()) == {"*"}]
+    assert not stars
+
+
+def test_the_heatmap_runs_no_test_by_default(tmp_path):
+    """The Welch test runs only with --test welch_t (F97)."""
+    import pytest
+    df, ann_path = hm_null(tmp_path)
+    a = SimpleNamespace(recipe="heatmap", data="matrix.csv", x=None, y=None,
+                        annotation=str(ann_path))
+    res = recipe_heatmap(df, spec_from_args(a))
+    assert list(res["stats"].columns) == ["feature", "mean", "sd"]
+    assert res["test_meta"]["per_feature_test"] is None
+    assert "No statistical test was applied." in res["methods"]
+    three = pd.read_csv(ann_path)
+    three.loc[0, "group"] = "c"
+    three.to_csv(ann_path, index=False)
+    a.test = "welch_t"
+    with pytest.raises(ValueError, match="compares two groups"):
+        recipe_heatmap(df, spec_from_args(a))
+    a.test = "anova"
+    with pytest.raises(ValueError, match="unknown --test 'anova'"):
+        recipe_heatmap(df, spec_from_args(a))
+
+
+def test_the_heatmap_leaves_a_degenerate_feature_out_of_the_bh_count(tmp_path):
+    """One rule for a degenerate Welch test, as in R (F87)."""
+    import pytest
+    from statsmodels.stats.multitest import multipletests
+    df, ann_path = hm_null(tmp_path)
+    df.loc[len(df)] = ["g_floor", 0.0, 0.0, 0.0, 3.0, 3.0, 3.0]
+    a = SimpleNamespace(recipe="heatmap", data="matrix.csv", x=None, y=None,
+                        annotation=str(ann_path), test="welch_t")
+    res = recipe_heatmap(df, spec_from_args(a))
+    st = res["stats"].set_index("feature")
+    assert np.isnan(st.loc["g_floor", "p_value"]) and np.isnan(st.loc["g_floor", "p_adj"])
+    ok = st.index != "g_floor"
+    assert np.allclose(st.loc[ok, "p_adj"], multipletests(st.loc[ok, "p_value"], method="fdr_bh")[1])
+    assert res["test_meta"]["n_untested"] == 1
+    assert "1 feature(s) had no variance in either group" in res["methods"]
+    pd.read_csv(ann_path).iloc[:5].to_csv(ann_path, index=False)
+    a.test = None
+    with pytest.raises(ValueError, match="has no row for the sample\\(s\\) 'b3'"):
+        recipe_heatmap(df, spec_from_args(a))
+    pd.DataFrame({"sample": ["a1", "a2", "a3", "b1", "b2", "b3"],
+                  "group": ["a"] * 5 + ["b"]}).to_csv(ann_path, index=False)
+    a.test = "welch_t"
+    with pytest.raises(ValueError, match="group 'b' has 1"):
+        recipe_heatmap(df, spec_from_args(a))
+
+
+def test_the_annotation_tracks_do_not_share_a_colour():
+    """The palette continues across the tracks, as in R (F121)."""
+    from pubready.recipes.heatmap import track_colours
+    from pubready.theme import PALETTE
+    ann = pd.DataFrame({"group": ["b", "a", "a", "b"], "batch": ["1", "2", "1", "2"]})
+    cols = track_colours(ann)
+    assert cols["group"] == {"a": PALETTE[0], "b": PALETTE[1]}
+    assert cols["batch"] == {"1": PALETTE[2], "2": PALETTE[3]}

@@ -12,17 +12,52 @@
 
 .ba_stats <- function(a, b) {
   d <- a - b; m <- (a + b) / 2; n <- length(d)
-  bias <- mean(d); s <- stats::sd(d)
+  # Differences that are equal up to rounding have an SD of 0: the regression
+  # would fit rounding noise or give P = NaN, so it is not run (F82). The
+  # Python engine has the same rule.
+  constant <- .ba_constant(d, a, b)
+  bias <- mean(d); s <- if (constant) 0 else stats::sd(d)
   z <- stats::qnorm(0.975); tq <- stats::qt(0.975, n - 1)
   se_bias <- s / sqrt(n)
   se_loa <- s * sqrt(1 / n + z^2 / (2 * (n - 1)))
-  fit <- summary(stats::lm(d ~ m))$coefficients
+  slope <- NA_real_; slope_p <- NA_real_
+  if (!constant) {
+    fit <- summary(stats::lm(d ~ m))$coefficients
+    slope <- fit["m", "Estimate"]; slope_p <- fit["m", "Pr(>|t|)"]
+  }
   list(n = n, bias = bias, bias_ci_low = bias - tq * se_bias, bias_ci_high = bias + tq * se_bias,
        sd_diff = s, loa_low = bias - z * s, loa_high = bias + z * s,
        loa_low_ci_low = bias - z * s - tq * se_loa, loa_low_ci_high = bias - z * s + tq * se_loa,
        loa_high_ci_low = bias + z * s - tq * se_loa, loa_high_ci_high = bias + z * s + tq * se_loa,
-       prop_bias_slope = fit["m", "Estimate"], prop_bias_p = fit["m", "Pr(>|t|)"],
-       shapiro_p_diff = shapiro_safe(d)$p)
+       prop_bias_slope = slope, prop_bias_p = slope_p,
+       shapiro_p_diff = if (constant) NA_real_ else shapiro_safe(d)$p,
+       differences_constant = constant)
+}
+
+# The differences are constant when their range is at most 1e-9 of the largest
+# reading, so that rounding noise does not count as spread.
+.ba_constant <- function(d, a, b) diff(range(d)) <= 1e-9 * max(abs(c(a, b)))
+
+# The subtitle: n and the proportional-bias test, or a note that the
+# differences are constant.
+.ba_subtitle <- function(s) {
+  if (s$differences_constant) {
+    return(sprintf("n = %d; the differences are constant, so no proportional bias test", s$n))
+  }
+  sprintf("n = %d; proportional bias slope %.3f, P = %s", s$n, s$prop_bias_slope,
+          sig_text(s$prop_bias_p, 2))
+}
+
+# The methods sentences on the proportional bias and the normality checks.
+.ba_checks_text <- function(s) {
+  if (s$differences_constant) {
+    return("The differences were constant, so their SD is 0 and the limits of agreement equal the bias; the regression of the difference on the mean and the Shapiro-Wilk test of the differences were not run. ")
+  }
+  paste0(
+    sprintf("A linear regression of the difference on the mean gave a slope of %.3f (P = %s) as a test of proportional bias. ",
+            s$prop_bias_slope, sig_text(s$prop_bias_p, 2)),
+    sprintf("The normality of the differences, which the limits assume, was checked with the Shapiro-Wilk test (P = %s). ",
+            sig_text(s$shapiro_p_diff, 2)))
 }
 
 # One label in the right margin, just outside the panel, level with its line.
@@ -77,8 +112,7 @@ recipe_bland_altman <- function(df, spec) {
     ggplot2::labs(x = spec$appearance$x_label %||% sprintf("Mean of %s and %s", x, y),
                   y = spec$appearance$y_label %||% sprintf("Difference (%s - %s)", x, y),
                   title = spec$appearance$title,
-                  subtitle = sprintf("n = %d; proportional bias slope %.3f, P = %s",
-                                     s$n, s$prop_bias_slope, sig_text(s$prop_bias_p, 2))) +
+                  subtitle = .ba_subtitle(s)) +
     pub_theme(spec$appearance$theme) +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"),
                    plot.margin = ggplot2::margin(10, 12 + 5.2 * max(nchar(lines$lab)), 10, 10))
@@ -108,10 +142,7 @@ recipe_bland_altman <- function(df, spec) {
             sig_text(s$loa_low), sig_text(s$loa_low_ci_low), sig_text(s$loa_low_ci_high),
             sig_text(s$loa_high), sig_text(s$loa_high_ci_low), sig_text(s$loa_high_ci_high)),
     "computed as the mean difference plus or minus 1.96 standard deviations, with confidence intervals from the standard error of Bland and Altman (1999). ",
-    sprintf("A linear regression of the difference on the mean gave a slope of %.3f (P = %s) as a test of proportional bias. ",
-            s$prop_bias_slope, sig_text(s$prop_bias_p, 2)),
-    sprintf("The normality of the differences, which the limits assume, was checked with the Shapiro-Wilk test (P = %s). ",
-            sig_text(s$shapiro_p_diff, 2)),
+    .ba_checks_text(s),
     sprintf("Computed in R %s and drawn with ggplot2 %s.", rver, v$ggplot2))
 }
 

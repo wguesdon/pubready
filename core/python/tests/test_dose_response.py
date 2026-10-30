@@ -47,10 +47,10 @@ def test_dose_response_reports_a_flat_curve_as_not_determined():
                                drc_spec(x="dose", y="response", group="compound"))
     st = res["stats"]
     assert list(st["fit_status"]) == ["fitted", "fitted", "not determined"]
-    assert np.isnan(st["ec50"].iloc[2])
-    assert st[["ec50_ci_low", "ec50_ci_high", "hill"]].iloc[2].isna().all()
+    assert np.isnan(st["midpoint"].iloc[2])
+    assert st[["midpoint_ci_low", "midpoint_ci_high", "hill"]].iloc[2].isna().all()
     assert st["status_reason"].iloc[2] == "the mean responses vary by less than 10% of the data range"
-    assert st["ec50"].iloc[:2].to_numpy() == pytest.approx([0.3, 3], rel=0.1)
+    assert st["midpoint"].iloc[:2].to_numpy() == pytest.approx([0.3, 3], rel=0.1)
     assert res["test_meta"]["n_determined"] == 2
     assert res["test_meta"]["shared_ec50_test"]["df1"] == 1
     assert "not determined" in res["methods"]
@@ -114,3 +114,49 @@ def test_dose_and_kinetics_methods_say_what_each_point_shows():
     assert "single response" in dose_response._points_text(False)
     assert "small points show each replicate" in enzyme_kinetics._points_text(True)
     assert "single rate" in enzyme_kinetics._points_text(False)
+
+
+def test_dose_response_stats_name_the_midpoint_columns():
+    """The midpoint columns say midpoint, so an IC50 is not stored as "ec50" (F123)."""
+    res = recipe_dose_response(drc_three_curves(),
+                               drc_spec(x="dose", y="response", group="compound"))
+    cols = set(res["stats"].columns)
+    assert {"midpoint_type", "midpoint", "log_midpoint", "se_log_midpoint",
+            "midpoint_ci_low", "midpoint_ci_high"} <= cols
+    assert not any("ec50" in c for c in cols)
+    assert res["stats"]["midpoint_type"].iloc[0] == "IC50"
+
+
+def test_the_dose_response_methods_count_the_rows_with_a_zero_dose():
+    """The methods text counts the rows with a dose of zero or below (F76)."""
+    df = drc_three_curves()
+    df = pd.concat([df, pd.DataFrame({"compound": ["active A", "active B"], "dose": [0.0, 0.0],
+                                      "response": [100.0, 100.0]})], ignore_index=True)
+    res = recipe_dose_response(df, drc_spec(x="dose", y="response", group="compound"))
+    assert "2 row(s) with a dose of zero or below were left out of the fit" in res["methods"]
+
+
+def test_dose_response_fits_a_response_on_the_scale_of_1e12():
+    """The response is divided by a power of ten for the fit, as in R (F80)."""
+    df = drc_three_curves()
+    df = df[df["compound"] == "active A"].copy()
+    df["response"] = df["response"] * 1e10
+    res = recipe_dose_response(df, drc_spec(x="dose", y="response"))
+    st = res["stats"]
+    assert st["fit_status"].iloc[0] == "fitted"
+    assert st["midpoint"].iloc[0] == pytest.approx(0.3, rel=0.1)
+    assert st["top"].iloc[0] == pytest.approx(1e12, rel=0.1)
+    assert "The responses were divided by 1e+11 for the fit" in res["methods"]
+
+
+def test_a_long_curve_name_wraps_and_widens_the_figure():
+    """A long curve name wraps in the legend and the figure grows, as in R (F81)."""
+    from pubready.recipes.dose_response import figure_width
+    df = drc_three_curves()
+    long = "a very long compound name that goes on and on beyond sixty characters"
+    df.loc[df["compound"] == "active A", "compound"] = long
+    res = recipe_dose_response(df, drc_spec(x="dose", y="response", group="compound"))
+    assert res["width"] > 6.2
+    assert figure_width(["cmpd_A (IC50 = 0.045)", "compound"]) == pytest.approx(6.2)
+    assert figure_width(["a very long compound name", "that goes on"]) == pytest.approx(
+        4.6 + 0.2 + 0.065 * 25)

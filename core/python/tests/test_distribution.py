@@ -84,3 +84,42 @@ def test_numeric_group_labels_match_the_r_engine():
                        "v": [1.0, 2.0, 3.0, 2.0, 3.0, 5.0, 4.0, 6.0, 7.0, 1.0]})
     res = recipe_distribution(df, dist_spec(x="dose", y="v"))
     assert list(res["stats"]["group"]) == ["0.5", "1", "2"]
+
+
+def test_values_near_1e300_or_1e_minus_300_stop_the_run():
+    """A variance that is not finite at double precision stops the run (F83)."""
+    import pytest
+    from pubready.recipes.correlation_heatmap import recipe_correlation_heatmap
+    big = [-7.858e299, 4.285e299, 9.2e299, 1.1e299, -3.3e299]
+    with pytest.raises(ValueError, match="the variance of column 'value' is not finite"):
+        recipe_distribution(pd.DataFrame({"value": big}), dist_spec(y="value"))
+    tiny = [1.2e-300, 3.4e-300, 2.2e-300, 5.1e-300, 0.7e-300]
+    with pytest.raises(ValueError, match="not finite at double precision"):
+        recipe_distribution(pd.DataFrame({"value": tiny}), dist_spec(y="value"))
+    df = pd.DataFrame({"big": big, "b": [1, 3, 2, 5, 4], "c": [2, 1, 4, 3, 6]})
+    spec = spec_from_args(SimpleNamespace(recipe="correlation_heatmap", data="v.csv", x=None, y=None))
+    with pytest.raises(ValueError, match="correlation_heatmap: the variance of column 'big'"):
+        recipe_correlation_heatmap(df, spec)
+
+
+def test_a_group_with_no_spread_gets_no_density_curve():
+    """A group with no spread gets no density and no bandwidth, as in R (F125)."""
+    from pubready.recipes.distribution import _curves
+    df = pd.DataFrame({"condition": ["ctrl"] * 6 + ["pair"] * 2,
+                       "value": [11.4, 13.1, 12.2, 10.9, 12.8, 11.7, 12.0, 12.0]})
+    res = recipe_distribution(df, dist_spec(y="value", x="condition"))
+    st = res["stats"].set_index("group")
+    assert np.isnan(st.loc["pair", "bandwidth"])
+    assert np.isfinite(st.loc["ctrl", "bandwidth"])
+    assert "The group(s) pair have no spread" in res["methods"]
+    assert _curves(np.array([12.0, 12.0]), fd_bins(df["value"].to_numpy())) is None
+
+
+def test_the_distribution_subtitle_has_one_space_before_the_bin_width():
+    """The subtitle reads "bin width 1.3", as the R engine now writes it (F127)."""
+    v = np.arange(1, 9) * 1.3 / 3.5
+    df = pd.DataFrame({"condition": ["a", "b"] * 4, "value": v})
+    res = recipe_distribution(df, dist_spec(y="value", x="condition"))
+    texts = [t.get_text() for t in res["fig"].texts]
+    assert any(t.endswith("bin width 1.3") for t in texts)
+    assert "  " not in res["methods"]

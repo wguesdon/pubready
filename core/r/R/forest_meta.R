@@ -27,6 +27,44 @@
 
 .fm_back <- function(v, measure) if (measure == "ratio") exp(v) else v
 
+# The study labels: the --label column, with "Study <row>" for an empty cell, so
+# that no row reads "NA".
+.fm_labels <- function(v, n) {
+  out <- if (is.null(v)) rep(NA_character_, n) else trimws(as.character(v))
+  empty <- is.na(out) | !nzchar(out)
+  out[empty] <- sprintf("Study %d", which(empty))
+  out
+}
+
+# Why one study row cannot be pooled, or NA when it can (F77): its CI bounds are
+# reversed, its CI has zero width, its CI does not hold its estimate, or its
+# standard error is 0 or below. The Python engine has the same rule.
+.fm_study_problem <- function(i, est, lo, hi, se) {
+  if (!is.null(se)) {
+    if (se[i] <= 0) return(sprintf("its standard error is %s", format(se[i])))
+    return(NA_character_)
+  }
+  if (lo[i] > hi[i]) return(sprintf("its CI bounds are reversed (%s to %s)", format(lo[i]), format(hi[i])))
+  if (lo[i] == hi[i]) return(sprintf("its CI has zero width (%s to %s)", format(lo[i]), format(hi[i])))
+  if (est[i] < lo[i] || est[i] > hi[i]) {
+    return(sprintf("its CI (%s to %s) does not hold its estimate %s", format(lo[i]), format(hi[i]),
+                   format(est[i])))
+  }
+  NA_character_
+}
+
+# Stop and name each study that cannot be pooled.
+.fm_check_studies <- function(labels, est, lo, hi, se) {
+  why <- vapply(seq_along(est), .fm_study_problem, character(1), est = est, lo = lo, hi = hi,
+                se = se)
+  bad <- which(!is.na(why))
+  if (length(bad) == 0) return(invisible(TRUE))
+  msg <- paste(sprintf("study '%s': %s", labels[bad], why[bad])[seq_len(min(5, length(bad)))],
+               collapse = "; ")
+  if (length(bad) > 5) msg <- sprintf("%s; and %d more", msg, length(bad) - 5)
+  stop(sprintf("forest_meta cannot pool %d study row(s): %s", length(bad), msg))
+}
+
 recipe_forest_meta <- function(df, spec) {
   y <- spec$data$y; lab <- spec$data$label
   lo_col <- spec$data$ci_low; hi_col <- spec$data$ci_high; se_col <- spec$data$se
@@ -43,10 +81,11 @@ recipe_forest_meta <- function(df, spec) {
   lo <- if (has_ci) suppressWarnings(as.numeric(df[[lo_col]])) else NULL
   hi <- if (has_ci) suppressWarnings(as.numeric(df[[hi_col]])) else NULL
   se_in <- if (!has_ci) suppressWarnings(as.numeric(df[[se_col]])) else NULL
-  labels <- if (!is.null(lab)) as.character(df[[lab]]) else paste("Study", seq_len(n0))
-  keep <- is.finite(est) & (if (has_ci) is.finite(lo) & is.finite(hi) else is.finite(se_in) & se_in > 0)
+  labels <- .fm_labels(if (!is.null(lab)) df[[lab]] else NULL, n0)
+  keep <- is.finite(est) & (if (has_ci) is.finite(lo) & is.finite(hi) else is.finite(se_in))
   est <- est[keep]; labels <- labels[keep]
   if (has_ci) { lo <- lo[keep]; hi <- hi[keep] } else se_in <- se_in[keep]
+  .fm_check_studies(labels, est, lo, hi, se_in)
   if (length(est) < 2) stop("forest_meta needs at least 2 studies")
 
   measure <- .fm_resolve_measure(spec$data$measure, est, lo, hi)
@@ -102,7 +141,7 @@ recipe_forest_meta <- function(df, spec) {
        label = slugify(y),
        df_used = data.frame(label = labels, estimate = est, ci_low = lo, ci_high = hi,
                             yi = yi, se = sei, stringsAsFactors = FALSE),
-       clean_steps = clean_steps, width = 8.2, height = p$height)
+       clean_steps = clean_steps, width = p$width, height = p$height)
 }
 
 .fm_diamond <- function(i, pooled, ypos) {
@@ -129,7 +168,10 @@ recipe_forest_meta <- function(df, spec) {
                  pooled$i2[2], pooled$tau2[2])
   ylim <- c(0, max(sy) + 0.8)
   brk <- c(sy, py)
-  blab <- c(studies$label, "Fixed effect", "Random effects (DL)")
+  # A long study label wraps at 30 characters, and the figure grows with the
+  # longest line, so the panel keeps its width (F81). Python has the same rule.
+  blab <- c(.est_wrap(studies$label, 30), "Fixed effect", "Random effects (DL)")
+  size <- .fm_size(blab, k)
 
   forest <- ggplot2::ggplot() +
     ggplot2::geom_vline(xintercept = null_x, linetype = "dashed", colour = "grey55", linewidth = 0.4) +
@@ -175,8 +217,9 @@ recipe_forest_meta <- function(df, spec) {
                    axis.title.x = ggplot2::element_text(size = 13, colour = "white"),
                    axis.text.x = ggplot2::element_text(size = 11, colour = "white"),
                    plot.margin = ggplot2::margin(10, 10, 10, 0))
-  list(plot = ggpubr::ggarrange(forest, table, ncol = 2, widths = c(2.6, 1), align = "h"),
-       height = 1.6 + 0.3 * (k + 3))
+  list(plot = ggpubr::ggarrange(forest, table, ncol = 2,
+                                widths = c(size$width - 8.2 / 3.6, 8.2 / 3.6), align = "h"),
+       height = size$height, width = size$width)
 }
 
 .fm_methods <- function(pooled, measure, k, y, spec) {
@@ -230,4 +273,15 @@ recipe_forest_meta <- function(df, spec) {
   if (is.finite(q) && is.finite(q_df) && q < q_df) {
     "; Q was below its degrees of freedom, so the DerSimonian-Laird tau2 was truncated at zero and I2 is 0%"
   } else ""
+}
+
+# The figure size: the label column grows with the longest line of the wrapped
+# labels, at least the 2.21 inches of the default layout, and each extra line of
+# a wrapped label adds 0.2 inch of height (F81). The Python engine has the same
+# rule.
+.fm_size <- function(labels, k) {
+  parts <- strsplit(labels, "\n", fixed = TRUE)
+  label_in <- max(0.27 * 8.2, 0.25 + 0.075 * max(nchar(unlist(parts))))
+  list(width = 8.2 - 0.27 * 8.2 + label_in,
+       height = 1.6 + 0.3 * (k + 3) + 0.2 * sum(lengths(parts) - 1))
 }

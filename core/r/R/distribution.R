@@ -70,13 +70,17 @@
   b[abs(b - round(b)) < 1e-9]
 }
 
-.dist_bandwidth <- function(v) if (length(v) >= 2) stats::bw.nrd0(v) else NA_real_
+# The bandwidth of the density, or NA for a group with no density: fewer than two
+# values, or no spread (F125).
+.dist_bandwidth <- function(v) if (length(v) >= 2 && stats::sd(v) > 0) stats::bw.nrd0(v) else NA_real_
 
 # The Gaussian kernel density at one grid point.
 .dist_kde_point <- function(g, v, bw) sum(stats::dnorm((g - v) / bw)) / (length(v) * bw)
 
+# formatC() pads a short number to a fixed width, which put two spaces in
+# "bin width  1.3"; each formatted number is trimmed (F127).
 .dist_p_label <- function(p) {
-  if (is.na(p)) "P = NA" else if (p < 0.001) "P < 0.001" else paste0("P = ", formatC(p, format = "g", digits = 2))
+  if (is.na(p)) "P = NA" else if (p < 0.001) "P < 0.001" else paste0("P = ", trimws(formatC(p, format = "g", digits = 2)))
 }
 
 # One row of the stats table: the summary of one group.
@@ -109,7 +113,9 @@
 .dist_group_curves <- function(gl, d, bins) {
   v <- d$value[d$group == gl]
   n <- length(v)
-  if (n < 2) return(NULL)
+  # A group with no spread has no density: bw.nrd0 falls back to a width from the
+  # value itself, which draws a wide curve that stretches the shared axis (F125).
+  if (n < 2 || stats::sd(v) == 0) return(NULL)
   bw <- stats::bw.nrd0(v)
   grid <- seq(min(v) - 3 * bw, max(v) + 3 * bw, length.out = .dist_grid_n)
   to_count <- n * bins$width
@@ -169,6 +175,10 @@ recipe_distribution <- function(df, spec) {
   if (nrow(d) < 2) stop("distribution needs at least 2 finite values")
   if (length(steps) == 0) steps <- "No cleaning applied; input used as-is."
   lv <- if (has_group) sort(unique(d$group), method = "radix") else "all"
+  # Values near 1e300 or 1e-300 give a variance that is not finite at double
+  # precision, and with it a silent NA or a wrong curve. The run stops (F83).
+  .check_finite_variance(d$value, y, "distribution")
+  for (g in lv) .check_finite_variance(d$value[d$group == g], y, "distribution")
 
   bins <- .dist_bins(d$value)
   stats_df <- do.call(rbind, lapply(lv, .dist_group_row, d = d, bins = bins))
@@ -224,7 +234,7 @@ recipe_distribution <- function(df, spec) {
                                length = grid::unit(0.04, "npc"), alpha = 0.6, linewidth = 0.3)
   }
   sub <- if (has_group) {
-    sprintf("Shapiro-Wilk normality test per group; bin width %s", formatC(bins$width, format = "g", digits = 3))
+    sprintf("Shapiro-Wilk normality test per group; bin width %s", trimws(formatC(bins$width, format = "g", digits = 3)))
   } else {
     r <- stats_df[1, ]
     paste0(sprintf("n = %d", r$n),
@@ -282,13 +292,21 @@ recipe_distribution <- function(df, spec) {
   cmp_txt <- if (has_group) {
     " No test compared the groups; use two_group_compare or multi_group_compare to test a difference in location."
   } else ""
+  flat <- stats_df$group[!is.na(stats_df$sd) & stats_df$sd == 0]
+  flat_txt <- if (length(flat) > 0 && has_group) {
+    sprintf(" The group(s) %s have no spread, so no density curve or normal fit is drawn for them.",
+            paste(flat, collapse = ", "))
+  } else if (length(flat) > 0) {
+    " The values have no spread, so no density curve or normal fit is drawn."
+  } else ""
   paste0(
     sprintf("The distribution of %s was described %s.", y_lab, scope),
     sprintf(" The histogram uses a bin width of %s from %s, with bins anchored at a multiple of the width.",
-            formatC(bins$width, format = "g", digits = 4), bin_txt),
+            trimws(formatC(bins$width, format = "g", digits = 4)), bin_txt),
     cap_txt,
     " The solid curve is a Gaussian kernel density with the bandwidth of Silverman's rule of thumb (stats::bw.nrd0),",
     " and the dashed curve is a normal distribution with the sample mean and SD; both are scaled to counts.",
+    flat_txt,
     sw_txt,
     " Skewness and excess kurtosis are the moment estimates on standardised values (sum(z^3) / n and sum(z^4) / n - 3, with z scaled by the SD).",
     cmp_txt,
@@ -323,7 +341,7 @@ recipe_distribution <- function(df, spec) {
     "  idx <- pmin(pmax(floor((vg - start) / w) + 1, 1), nb)",
     "  bars <- rbind(bars, data.frame(group = g, xmin = start + (seq_len(nb) - 1) * w,",
     "                                 xmax = start + seq_len(nb) * w, count = tabulate(idx, nb)))",
-    "  if (length(vg) < 2) next",
+    "  if (length(vg) < 2 || sd(vg) == 0) next",
     "  bw <- bw.nrd0(vg)",
     "  grid <- seq(min(vg) - 3 * bw, max(vg) + 3 * bw, length.out = 512)",
     "  dens <- rowSums(dnorm(outer(grid, vg, \"-\") / bw)) / (length(vg) * bw)",

@@ -52,13 +52,25 @@ recipe_volcano <- function(df, spec) {
   lab <- if (!is.na(cols$lab)) as.character(df[[cols$lab]]) else as.character(seq_len(nrow(df)))
 
   n0 <- nrow(df)
-  keep <- is.finite(fc) & is.finite(p) & p > 0
+  bad <- sum(is.finite(p) & (p < 0 | p > 1))
+  if (bad > 0) {
+    stop(sprintf("volcano: p must lie in 0 to 1; column '%s' holds %d value(s) outside 0 to 1",
+                 cols$p, bad))
+  }
+  keep <- is.finite(fc) & is.finite(p)
   fc <- fc[keep]; p <- p[keep]; lab <- lab[keep]
   if (length(fc) < 1) stop("volcano: no usable rows after cleaning")
-  clean_steps <- if (sum(!keep) > 0) {
-    sprintf("Dropped %d row(s) with missing or non-finite fold change or p (%d -> %d).",
-            sum(!keep), n0, length(fc))
-  } else "No cleaning applied; input used as-is."
+  # A p of exactly 0 is the strongest hit, not a missing value. It is set to the
+  # smallest positive double, as manhattan does, and drawn as a triangle.
+  is_zero <- p == 0
+  n_zero <- sum(is_zero)
+  p[is_zero] <- .Machine$double.xmin
+  clean_steps <- c(
+    if (sum(!keep) > 0) sprintf("Dropped %d row(s) with missing or non-finite fold change or p (%d -> %d).",
+                                sum(!keep), n0, length(fc)),
+    if (n_zero > 0) sprintf("Replaced %d p value(s) of exactly 0 with the smallest positive double (%s), so that -log10 p is finite.",
+                            n_zero, formatC(.Machine$double.xmin, format = "g", digits = 3)))
+  if (length(clean_steps) == 0) clean_steps <- "No cleaning applied; input used as-is."
   df_used <- stats::setNames(data.frame(lab, fc, p, stringsAsFactors = FALSE),
                              c(cols$lab %||% "label", cols$fc, cols$p))
 
@@ -75,7 +87,9 @@ recipe_volcano <- function(df, spec) {
   pal <- c(NS = "grey70", FC = "#2E8B57", p = "#3B6DB3", `FC and p` = "#C1432B")
   present <- .volcano_present(cat)
 
-  pdat <- data.frame(fc = fc, neglog = neglog, cat = cat, lab = lab, stringsAsFactors = FALSE)
+  pdat <- data.frame(fc = fc, p = p, neglog = neglog, ydisp = .volcano_display_y(neglog, is_zero, pcc),
+                     cat = cat, lab = lab, shape = ifelse(is_zero, 17, 16),
+                     stringsAsFactors = FALSE)
   sig  <- pdat[pdat$cat == "FC and p", , drop = FALSE]
   sig  <- sig[order(-(abs(sig$fc) * sig$neglog)), , drop = FALSE]
   lab_df <- if (nrow(sig) > 0) utils::head(sig, topn) else
@@ -83,9 +97,11 @@ recipe_volcano <- function(df, spec) {
 
   n_up   <- sum(fc >= fcc & p <= pcc)
   n_down <- sum(fc <= -fcc & p <= pcc)
+  subtitle <- if (n_zero > 0) sprintf("%d feature(s) with p = 0 drawn as triangles at the top", n_zero)
 
-  p_plot <- ggplot2::ggplot(pdat, ggplot2::aes(x = fc, y = neglog, colour = cat)) +
-    ggplot2::geom_point(size = 1.4, alpha = 0.7) +
+  p_plot <- ggplot2::ggplot(pdat, ggplot2::aes(x = fc, y = ydisp, colour = cat)) +
+    ggplot2::geom_point(ggplot2::aes(shape = shape), size = 1.4, alpha = 0.7) +
+    ggplot2::scale_shape_identity() +
     ggplot2::scale_colour_manual(values = pal, breaks = present,
                                  labels = unname(.volcano_legend(plab)[present]), name = NULL) +
     ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = 2.5, alpha = 1))) +
@@ -99,21 +115,26 @@ recipe_volcano <- function(df, spec) {
     ggplot2::labs(
       x     = spec$appearance$x_label %||% "log2 fold change",
       y     = spec$appearance$y_label %||% sprintf("-log10 %s", plab),
-      title = spec$appearance$title) +
+      title = spec$appearance$title, subtitle = subtitle) +
     pub_theme(spec$appearance$theme) +
-    ggplot2::theme(legend.position = "bottom")
+    ggplot2::theme(legend.position = "bottom",
+                   plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"))
 
   stats_df <- data.frame(
-    gene = lab_df$lab, log2FC = lab_df$fc, p_value = 10^(-lab_df$neglog),
+    gene = lab_df$lab, log2FC = lab_df$fc, p_value = lab_df$p,
     neg_log10_p = lab_df$neglog,
     direction = ifelse(lab_df$fc > 0, "up", "down"), stringsAsFactors = FALSE)
+  # The p column keeps the name of the input column, so padj is not shown as a
+  # raw p (F123).
+  names(stats_df)[3] <- cols$p
 
   test_meta <- list(
     name = "Volcano plot", fc_cutoff = fcc, p_cutoff = pcc,
-    n_total = length(fc), n_up = n_up, n_down = n_down, n_significant = n_up + n_down)
+    n_total = length(fc), n_up = n_up, n_down = n_down, n_significant = n_up + n_down,
+    n_zero_p = n_zero)
 
   resolved <- list(family = "volcano", label = "volcano plot")
-  methods  <- .volcano_methods(length(fc), fcc, pcc, n_up, n_down, plab, nrow(lab_df))
+  methods  <- .volcano_methods(length(fc), fcc, pcc, n_up, n_down, plab, nrow(lab_df), n_zero)
   build_script <- function(in_name, fig_stub) {
     .volcano_emit_script(in_name, fig_stub, cols, fcc, pcc, topn)
   }
@@ -124,17 +145,30 @@ recipe_volcano <- function(df, spec) {
        df_used = df_used, clean_steps = clean_steps, width = 6.0, height = 5.6)
 }
 
-.volcano_methods <- function(n, fcc, pcc, n_up, n_down, plab, n_lab) {
+# -log10 p for drawing: a p of exactly 0 sits at a ceiling 12% above the largest
+# other value, or above the p cutoff line, as in manhattan.
+.volcano_display_y <- function(neglog, is_zero, pcc) {
+  top <- if (any(!is_zero)) max(neglog[!is_zero]) else 0
+  neglog[is_zero] <- max(top, -log10(pcc)) * 1.12
+  neglog
+}
+
+.volcano_methods <- function(n, fcc, pcc, n_up, n_down, plab, n_lab, n_zero = 0) {
   v    <- pkg_versions(c("ggplot2", "ggrepel"))
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   lab_txt <- if (n_up + n_down > 0) {
     sprintf("The %d significant features with the largest product of |log2 fold change| and -log10 %s are labelled. ",
             n_lab, plab)
   } else sprintf("No feature was significant, so the %d features with the smallest %s are labelled. ", n_lab, plab)
+  zero_txt <- if (n_zero > 0) {
+    sprintf("%d %s value(s) of exactly 0 were set to the smallest positive double (%s) and are drawn as triangles at the top of the plot. ",
+            n_zero, plab, formatC(.Machine$double.xmin, format = "g", digits = 3))
+  } else ""
   paste0(
     sprintf("Differential-expression results for %d features were shown as a volcano plot. ", n),
     sprintf("Features with |log2 fold change| >= %g and %s <= %g were called significant; ", fcc, plab, pcc),
     sprintf("%d were up-regulated and %d down-regulated. ", n_up, n_down),
+    zero_txt,
     lab_txt,
     "The differential test itself was performed upstream; this figure summarises its output. ",
     sprintf("Drawn in R %s with ggplot2 %s and ggrepel %s.", rver, v$ggplot2, v$ggrepel))
@@ -151,7 +185,8 @@ recipe_volcano <- function(df, spec) {
     sprintf('raw <- read.csv("%s", check.names = FALSE)', in_name),
     sprintf('fc <- as.numeric(raw[["%s"]]); p <- as.numeric(raw[["%s"]])', cols$fc, cols$p),
     sprintf('lab <- %s', lab_expr),
-    "keep <- is.finite(fc) & is.finite(p) & p > 0; fc <- fc[keep]; p <- p[keep]; lab <- lab[keep]",
+    "keep <- is.finite(fc) & is.finite(p); fc <- fc[keep]; p <- p[keep]; lab <- lab[keep]",
+    "p[p == 0] <- .Machine$double.xmin",
     sprintf('fcc <- %s; pcc <- %s', fcc, pcc),
     'cat <- ifelse(abs(fc) >= fcc & p <= pcc, "FC and p", ifelse(p <= pcc, "p", ifelse(abs(fc) >= fcc, "FC", "NS")))',
     'cat <- factor(cat, levels = c("NS", "FC", "p", "FC and p"))',

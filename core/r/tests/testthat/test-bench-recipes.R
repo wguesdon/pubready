@@ -161,3 +161,47 @@ test_that("the standard curve recovery counts only the levels read back", {
   rec$n_read_back <- 8; rec$n_within_80_120 <- 8
   expect_false(grepl("could not be read back", .stc_recovery_text(rec)))
 })
+
+# A Michaelis-Menten fit whose Km lies above the highest substrate, or whose CI
+# holds 0, is reported as not determined and stays out of the F tests (F50). The
+# Python suite uses the same data.
+ek_two_curves <- function() {
+  s <- c(1, 2, 5, 10, 20, 50)
+  noise <- c(0.8, -1.1, 0.6, -0.4, 0.9, -0.7)
+  data.frame(s = rep(s, 2), group = rep(c("mm", "linear"), each = 6),
+             v = c(100 * s / (5 + s) + noise, 0.1 * s + noise / 10))
+}
+
+test_that("enzyme_kinetics reports a fit above the substrate range as not determined", {
+  res <- recipe_enzyme_kinetics(ek_two_curves(),
+                                bench_recipe_spec("enzyme_kinetics", x = "s", y = "v", group = "group"))
+  st <- res$stats
+  expect_equal(st$fit_status, c("fitted", "not determined"))
+  expect_equal(st$status_reason[2], "Km lies above the highest substrate concentration")
+  expect_true(is.na(st$km[2]))
+  expect_equal(st$km[1], 5, tolerance = 0.1)
+  expect_null(res$test_meta$shared_km_test)
+  expect_match(res$methods, "fewer than two curves were determined", fixed = TRUE)
+  expect_match(res$plot$labels$subtitle, "Not determined, left out of the tests: linear", fixed = TRUE)
+})
+
+# Standards whose mean signal rises and then falls are flagged as a possible
+# hook effect (F85). The Python suite uses the same data.
+sc_hook <- function() {
+  conc <- rep(c(0.156, 0.3125, 0.625, 1.25, 2.5, 5, 10), each = 2)
+  sig <- c(0.16, 0.15, 0.28, 0.28, 0.55, 0.52, 0.93, 0.94, 1.42, 1.44, 1.61, 1.60, 1.31, 1.30)
+  data.frame(sample = paste0("S", seq_along(conc)), conc = conc, signal = sig)
+}
+
+test_that("standard_curve flags standards that are not monotonic", {
+  res <- recipe_standard_curve(sc_hook(), bench_recipe_spec("standard_curve", x = "conc",
+                                                            y = "signal", id = "sample",
+                                                            test = "linear"))
+  expect_false(res$test_meta$standards_monotonic)
+  expect_equal(res$test_meta$hook_turn, 5)
+  expect_match(res$methods, "rises up to a concentration of 5 and falls above it", fixed = TRUE)
+  expect_match(res$plot$labels$subtitle, "possible hook effect", fixed = TRUE)
+  ok <- sc_hook()[1:12, ]
+  expect_true(recipe_standard_curve(ok, bench_recipe_spec("standard_curve", x = "conc", y = "signal",
+                                                          id = "sample", test = "linear"))$test_meta$standards_monotonic)
+})

@@ -77,8 +77,8 @@ recipe_roc_curve <- function(df, spec) {
     }
   }
 
-  legend_lab <- sprintf("%s: AUC %.2f (%.2f to %.2f)", markers, rows$auc,
-                        rows$auc_ci_low, rows$auc_ci_high)
+  legend_lab <- sprintf("%s: AUC %.2f (%s)", markers, rows$auc,
+                        .roc_ci_label(rows$auc_ci_low, rows$auc_ci_high))
   pts <- do.call(rbind, lapply(seq_along(markers), .roc_curve_points, rocs = rocs,
                                labels = markers))
   pts$marker <- factor(pts$marker, levels = markers)
@@ -133,26 +133,54 @@ recipe_roc_curve <- function(df, spec) {
   r <- rocs[[m]]
   ci <- as.numeric(pROC::ci.auc(r, method = "delong"))
   yd <- .roc_youden(r)
+  auc <- as.numeric(pROC::auc(r))
+  # The DeLong CI has zero width at an AUC of 0 or 1 and for a constant marker,
+  # so it is not valid there and is not reported; a constant marker has no
+  # optimal threshold (F86). The Python engine has the same rule.
+  constant <- length(unique(c(r$cases, r$controls))) == 1
+  separated <- auc >= 1 || auc <= 0
+  if (constant || separated) ci <- c(NA_real_, NA_real_, NA_real_)
   data.frame(marker = m, case_level = case, n_cases = n_case, n_controls = n_ctrl,
-             direction = r$direction, auc = as.numeric(pROC::auc(r)),
+             direction = r$direction, auc = auc,
              auc_ci_low = ci[1], auc_ci_high = ci[3],
-             youden_threshold = yd$threshold, sensitivity = yd$sensitivity,
-             specificity = yd$specificity, stringsAsFactors = FALSE)
+             youden_threshold = if (constant) NA_real_ else yd$threshold,
+             sensitivity = yd$sensitivity, specificity = yd$specificity,
+             constant_marker = constant, complete_separation = separated,
+             stringsAsFactors = FALSE)
+}
+
+# The CI part of a legend label: the bounds, or "CI not valid" where the
+# DeLong CI is not reported.
+.roc_ci_label <- function(lo, hi) {
+  ifelse(is.na(lo), "CI not valid", sprintf("%.2f to %.2f", lo, hi))
+}
+
+# The methods text of one marker.
+.roc_marker_text <- function(i, rows) {
+  r <- rows[i, ]
+  if (r$constant_marker) {
+    return(sprintf("%s is constant, so it does not discriminate the outcome: AUC = %.3f, with no valid CI and no optimal threshold",
+                   r$marker, r$auc))
+  }
+  ci <- if (r$complete_separation) {
+    "the DeLong 95% CI is not valid, because the marker separates the cases from the controls completely"
+  } else sprintf("95%% CI %.3f to %.3f", r$auc_ci_low, r$auc_ci_high)
+  sprintf("%s, AUC = %.3f (%s), optimal threshold %s (sensitivity %.2f, specificity %.2f)",
+          r$marker, r$auc, ci, sprintf("%.4g", r$youden_threshold), r$sensitivity, r$specificity)
 }
 
 .roc_meta_row <- function(i, rows) {
   r <- rows[i, ]
   list(auc = r$auc, ci_low = r$auc_ci_low, ci_high = r$auc_ci_high, direction = r$direction,
        youden_threshold = r$youden_threshold, sensitivity = r$sensitivity,
-       specificity = r$specificity, delong_p_vs_first = r$delong_p_vs_first)
+       specificity = r$specificity, delong_p_vs_first = r$delong_p_vs_first,
+       constant_marker = r$constant_marker, complete_separation = r$complete_separation)
 }
 
 .roc_methods <- function(rows, case, control, n_case, n_ctrl, y) {
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   v <- pkg_versions(c("pROC", "ggplot2"))
-  per <- paste(sprintf("%s, AUC = %.3f (95%% CI %.3f to %.3f), optimal threshold %s (sensitivity %.2f, specificity %.2f)",
-                       rows$marker, rows$auc, rows$auc_ci_low, rows$auc_ci_high,
-                       sprintf("%.4g", rows$youden_threshold), rows$sensitivity, rows$specificity),
+  per <- paste(vapply(seq_len(nrow(rows)), .roc_marker_text, character(1), rows = rows),
                collapse = "; ")
   cmp <- if (nrow(rows) >= 2) {
     k <- 2:nrow(rows)

@@ -112,7 +112,7 @@ fi
 
 echo "[9] clustered heatmap"
 ./cli/figkit plot --recipe heatmap --data example/expression_matrix.csv \
-  --annotation example/expression_annotation.csv --out "$OUT/heatmap"
+  --annotation example/expression_annotation.csv --test welch_t --out "$OUT/heatmap"
 check_bundle "$OUT/heatmap" "heatmap"
 if compgen -G "$OUT/heatmap/*/stats_*.csv" > /dev/null && grep -q "p_adj" "$OUT"/heatmap/*/stats_*.csv; then
   echo "PASS: heatmap per-feature stats"
@@ -490,7 +490,7 @@ pyc fa2 --recipe factorial_anova    --data example/twoway_response.csv   --y res
 pyc fa3 --recipe factorial_anova    --data example/threeway_response.csv --y response --x genotype --fill treatment --facet sex
 pyc km  --recipe survival_km        --data example/survival_trial.csv    --time time --event event --x arm
 pyc cox --recipe cox_forest         --data example/survival_trial.csv    --time time --event event --covariates arm,age,sex,stage
-pyc hm  --recipe heatmap            --data example/expression_matrix.csv --annotation example/expression_annotation.csv
+pyc hm  --recipe heatmap            --data example/expression_matrix.csv --annotation example/expression_annotation.csv --test welch_t
 pyc corr    --recipe correlation         --data example/correlation_xy.csv   --x gene_a --y gene_b
 pyc corrhm  --recipe correlation_heatmap --data example/correlation_vars.csv
 pyc upset   --recipe upset               --data example/set_membership.csv
@@ -653,6 +653,36 @@ done
 ./cli/figkit plot --recipe factorial_anova --data "$SP/twoway_space.csv" --x "mouse genotype" \
   --fill "drug treatment" --y "response value" --test art --out "$SP/fa_art_r" > /dev/null 2>&1
 check_bundle "$SP/fa_art_r" "factorial_anova --test art with spaces in the names (r)"
+
+# Area D: the omics, curve and other recipes.
+echo
+# The cases write their small inputs under $OUT, which git ignores and figkit
+# mounts with the rest of the repository.
+D_DATA="$OUT/area_d_data"
+mkdir -p "$D_DATA"
+
+echo "[D1] heatmap with no significant feature (expect a bundle in both engines)"
+cat > "$D_DATA/hm_null.csv" <<'CSV'
+gene,a1,a2,a3,b1,b2,b3
+g1,5.1,4.9,5.3,5.0,5.2,4.8
+g2,3.0,3.3,2.8,3.1,2.9,3.2
+g3,7.2,6.8,7.0,7.1,6.9,7.3
+g4,1.1,0.9,1.2,1.0,1.3,0.8
+CSV
+cat > "$D_DATA/hm_null_ann.csv" <<'CSV'
+sample,group
+a1,a
+a2,a
+a3,a
+b1,b
+b2,b
+b3,b
+CSV
+for engine in r python; do
+  ./cli/figkit plot --engine "$engine" --recipe heatmap --data "$D_DATA/hm_null.csv" \
+    --annotation "$D_DATA/hm_null_ann.csv" --test welch_t --out "$OUT/d_hm_null_$engine" > /dev/null 2>&1
+  check_bundle "$OUT/d_hm_null_$engine" "null heatmap ($engine)"
+done
 
 echo
 if [ "$fail" -eq 0 ]; then

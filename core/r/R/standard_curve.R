@@ -117,6 +117,31 @@
 
 .stc_fmt <- function(v) sprintf("%.3g", v)
 
+# Whether the mean signal of the standards moves in one direction with the
+# concentration (F85). A curve that rises and then falls, or the reverse, can
+# be a hook effect: an unknown in the turned part reads on the wrong side of
+# the curve. Returns the result, the concentration of the turn and the two
+# directions. The Python engine has the same rule.
+.stc_monotonic <- function(s_conc, s_sig) {
+  lv <- sort(unique(s_conc))
+  m <- vapply(lv, .stc_level_mean, numeric(1), conc = s_conc, sig = s_sig)
+  steps <- sign(diff(m))
+  moving <- steps[steps != 0]
+  if (length(moving) == 0 || all(moving == moving[1])) {
+    return(list(monotonic = TRUE, turn = NA_real_, first = NA_character_, then = NA_character_))
+  }
+  k <- which(steps == -moving[1])[1]
+  list(monotonic = FALSE, turn = lv[k],
+       first = if (moving[1] > 0) "rises" else "falls",
+       then = if (moving[1] > 0) "falls" else "rises")
+}
+
+.stc_hook_text <- function(mono) {
+  if (mono$monotonic) return("")
+  sprintf("The mean signal of the standards %s up to a concentration of %s and %s above it, so the standards are not monotonic; this can be a hook effect, and an unknown read near or above that concentration is not reliable. ",
+          mono$first, .stc_fmt(mono$turn), mono$then)
+}
+
 recipe_standard_curve <- function(df, spec) {
   x <- spec$data$x; y <- spec$data$y; id <- spec$data$id
   if (is.null(x) || is.null(y)) {
@@ -173,6 +198,7 @@ recipe_standard_curve <- function(df, spec) {
                                           sum(s_conc == 0)))
   }
 
+  mono <- .stc_monotonic(s_conc, s_sig)
   inv <- .stc_invert(model, sig[is_unk])
   stats_df <- data.frame(id = ids[is_unk], signal = sig[is_unk],
                          concentration = inv$concentration, flag = inv$flag,
@@ -189,20 +215,21 @@ recipe_standard_curve <- function(df, spec) {
          n_standards = length(s_conc), n_fitted = model$n_fit,
          n_levels = length(unique(s_conc)),
          concentration_range = model$conc_range, signal_range = sort(ends)),
-    counts, list(recovery = recovery))
+    counts, list(recovery = recovery, standards_monotonic = mono$monotonic,
+                 hook_turn = mono$turn))
 
-  fig <- .stc_plot(model, s_conc, s_sig, stats_df, counts, spec, x, y)
+  fig <- .stc_plot(model, s_conc, s_sig, stats_df, counts, spec, x, y, mono)
   df_used <- data.frame(id = ids[keep], role = ifelse(blank[keep], "unknown", "standard"),
                         concentration = conc[keep], signal = sig[keep], stringsAsFactors = FALSE)
   list(plot = fig, stats = stats_df, test_meta = test_meta,
        resolved = list(family = "standard_curve", label = test_meta$name),
-       methods = .stc_methods(model, test_meta, method, spec, x, y),
+       methods = .stc_methods(model, test_meta, method, spec, x, y, mono),
        build_script = list(fn = .stc_emit_script, args = list(spec = spec, model = model)),
        label = slugify(y), df_used = df_used, clean_steps = clean_steps,
        width = 5.2, height = 4.8)
 }
 
-.stc_plot <- function(model, s_conc, s_sig, unk, counts, spec, x, y) {
+.stc_plot <- function(model, s_conc, s_sig, unk, counts, spec, x, y, mono = NULL) {
   ap <- spec$appearance
   pal <- pub_palette(2, ap$palette)
   is_4pl <- model$type == "4pl"
@@ -251,6 +278,9 @@ recipe_standard_curve <- function(df, spec) {
   sub <- sprintf("%s fit, R\u00b2 = %.4f\n%d of %d unknowns interpolated; %d below range, %d above range",
                  cap_first(model$label), model$r_squared, counts$n_in_range, counts$n_unknowns,
                  counts$n_below, counts$n_above)
+  if (!is.null(mono) && !mono$monotonic) {
+    sub <- paste0(sub, sprintf("\nStandards not monotonic above %s: possible hook effect", .stc_fmt(mono$turn)))
+  }
   p <- p +
     ggplot2::scale_shape_manual(values = stats::setNames(c(16, 23), c(std_lab, unk_lab)),
                                 breaks = c(std_lab, unk_lab), name = NULL) +
@@ -270,7 +300,7 @@ recipe_standard_curve <- function(df, spec) {
   p
 }
 
-.stc_methods <- function(model, meta, method, spec, x, y) {
+.stc_methods <- function(model, meta, method, spec, x, y, mono) {
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   v <- pkg_versions("ggplot2")
   y_lab <- spec$appearance$y_label %||% y
@@ -297,6 +327,7 @@ recipe_standard_curve <- function(df, spec) {
     sprintf("Of %d unknowns, %d were in range, %d below range and %d above range. ",
             meta$n_unknowns, meta$n_in_range, meta$n_below, meta$n_above),
     rec_txt,
+    .stc_hook_text(mono),
     sprintf("Fitted in R %s with %s and drawn with ggplot2 %s.", rver,
             if (model$type == "4pl") "stats::nls" else "stats::lm", v$ggplot2))
 }

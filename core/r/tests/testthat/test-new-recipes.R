@@ -16,9 +16,9 @@ test_that("dose_response reports an IC50 for a falling curve and drops the zero 
   df <- data.frame(dose = dose,
                    response = fpl_value(pmax(dose, 1e-6), 5, 100, 0.3, -1.2) + stats::rnorm(24, 0, 1))
   res <- recipe_dose_response(df, new_spec("dose_response", x = "dose", y = "response"))
-  expect_equal(res$stats$midpoint, "IC50")
+  expect_equal(res$stats$midpoint_type, "IC50")
   expect_lt(res$stats$hill, 0)
-  expect_equal(res$stats$ec50, 0.3, tolerance = 0.1)
+  expect_equal(res$stats$midpoint, 0.3, tolerance = 0.1)
   expect_true(any(grepl("zero or below", res$clean_steps)))
   expect_equal(res$stats$n, 21)
 })
@@ -164,4 +164,33 @@ test_that("swimmer refuses a status that is not coded 1 or 0", {
   df <- data.frame(pt = c("a", "b"), months = c(3, 10), ended = c(1, 2))
   expect_error(recipe_swimmer(df, new_spec("swimmer", id = "pt", time = "months", event = "ended")),
                "1 = the course ended")
+})
+
+# Constant differences, here equal up to rounding: the SD is 0 and the
+# regression is not run, in place of P = NaN or a slope of rounding noise (F82).
+test_that("bland_altman skips the regression when the differences are constant", {
+  a <- c(5.1, 6.1, 7.3, 8.9, 10.2, 12.7)
+  res <- recipe_bland_altman(data.frame(a = a, b = a - 1.1), new_spec("bland_altman", x = "a", y = "b"))
+  expect_true(res$stats$differences_constant)
+  expect_equal(res$stats$sd_diff, 0)
+  expect_true(is.na(res$stats$prop_bias_p))
+  expect_equal(res$stats$bias, 1.1, tolerance = 1e-9)
+  expect_match(res$methods, "The differences were constant", fixed = TRUE)
+})
+
+# The DeLong CI is not reported at an AUC of 1 or for a constant marker, and a
+# constant marker has no optimal threshold (F86). The Python suite matches.
+test_that("roc_curve flags complete separation and a constant marker", {
+  df <- data.frame(status = rep(c("healthy", "disease"), each = 6),
+                   perfect = c(1:6, 11:16), flat = 5,
+                   mixed = c(1, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 12))
+  res <- recipe_roc_curve(df, new_spec("roc_curve", y = "status", x = "perfect,flat,mixed",
+                                       positive = "disease"))
+  st <- res$stats
+  expect_equal(st$complete_separation, c(TRUE, FALSE, FALSE))
+  expect_equal(st$constant_marker, c(FALSE, TRUE, FALSE))
+  expect_true(all(is.na(c(st$auc_ci_low[1:2], st$youden_threshold[2]))))
+  expect_false(is.na(st$auc_ci_low[3]))
+  expect_match(res$methods, "flat is constant, so it does not discriminate the outcome", fixed = TRUE)
+  expect_match(res$methods, "the DeLong 95% CI is not valid", fixed = TRUE)
 })

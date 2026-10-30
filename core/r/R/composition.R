@@ -121,6 +121,16 @@ recipe_composition <- function(df, spec) {
     ids <- ids[totals > 0]
     totals <- totals[totals > 0]
   }
+  # A category with no count in any sample has no proportion to test: its P
+  # would be NA and it would still count in the BH adjustment, so it is dropped
+  # and logged (F88). The Python engine has the same rule.
+  empty <- colSums(M) == 0
+  if (any(empty)) {
+    steps <- c(steps, sprintf("Dropped %d category(ies) with a total count of zero: %s.",
+                              sum(empty), .pca_name_list(cats[empty])))
+    M <- M[, !empty, drop = FALSE]
+    cats <- cats[!empty]
+  }
   if (length(cats) < 2) stop("composition needs at least 2 categories")
   if (length(ids) < 1) stop("composition needs at least 1 sample with a count above zero")
   g_of <- d$group[match(ids, d$id)]

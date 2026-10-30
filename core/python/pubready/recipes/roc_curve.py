@@ -137,10 +137,53 @@ def analyse_marker(controls, cases):
     lo, hi = min(max(auc - z * np.sqrt(var), 0.0), 1.0), min(max(auc + z * np.sqrt(var), 0.0), 1.0)
     thr, sens, spec = roc_points(controls, cases, direction)
     i = int(np.argmax(sens + spec - 1))
+    # The DeLong CI has zero width at an AUC of 0 or 1 and for a constant marker,
+    # so it is not valid there and is not reported; a constant marker has no
+    # optimal threshold (F86), as in R.
+    constant = len(np.unique(np.concatenate([cases, controls]))) == 1
+    separated = auc >= 1 or auc <= 0
+    if constant or separated:
+        lo = hi = float("nan")
     return {"direction": direction, "v10": v10, "v01": v01, "auc": auc, "var": var,
             "ci_low": lo, "ci_high": hi, "thr": thr, "sens": sens, "spec": spec,
-            "youden_threshold": float(thr[i]), "sensitivity": float(sens[i]),
-            "specificity": float(spec[i])}
+            "youden_threshold": float("nan") if constant else float(thr[i]),
+            "sensitivity": float(sens[i]), "specificity": float(spec[i]),
+            "constant_marker": constant, "complete_separation": separated}
+
+
+def ci_label(lo, hi):
+    """The CI part of a legend label, as .roc_ci_label() in R.
+
+    Args:
+        lo: The lower bound, NaN where the DeLong CI is not reported.
+        hi: The upper bound.
+
+    Returns:
+        str: The bounds, or "CI not valid".
+    """
+    return "CI not valid" if np.isnan(lo) else f"{lo:.2f} to {hi:.2f}"
+
+
+def marker_text(r):
+    """The methods text of one marker, as .roc_marker_text() in R.
+
+    Args:
+        r: The stats row of the marker.
+
+    Returns:
+        str: The text.
+    """
+    if r["constant_marker"]:
+        return (f"{r['marker']} is constant, so it does not discriminate the outcome: AUC = "
+                f"{r['auc']:.3f}, with no valid CI and no optimal threshold")
+    if r["complete_separation"]:
+        ci = ("the DeLong 95% CI is not valid, because the marker separates the cases from the "
+              "controls completely")
+    else:
+        ci = f"95% CI {r['auc_ci_low']:.3f} to {r['auc_ci_high']:.3f}"
+    return (f"{r['marker']}, AUC = {r['auc']:.3f} ({ci}), optimal threshold "
+            f"{r['youden_threshold']:.4g} (sensitivity {r['sensitivity']:.2f}, specificity "
+            f"{r['specificity']:.2f})")
 
 
 def delong_paired(a, b):
@@ -253,7 +296,8 @@ def recipe_roc_curve(df, spec):
                      "direction": r["direction"], "auc": r["auc"],
                      "auc_ci_low": r["ci_low"], "auc_ci_high": r["ci_high"],
                      "youden_threshold": r["youden_threshold"], "sensitivity": r["sensitivity"],
-                     "specificity": r["specificity"], "delong_z_vs_first": zval,
+                     "specificity": r["specificity"], "constant_marker": r["constant_marker"],
+                     "complete_separation": r["complete_separation"], "delong_z_vs_first": zval,
                      "delong_p_vs_first": pval})
     stats_df = pd.DataFrame(rows)
 
@@ -263,7 +307,7 @@ def recipe_roc_curve(df, spec):
     fig, ax = new_fig(w, h)
     ax.plot([0, 1], [0, 1], ls="--", color="0.6", lw=0.8)
     for k, (m, r) in enumerate(zip(markers, res)):
-        lab = f"{m}: AUC {r['auc']:.2f} ({r['ci_low']:.2f} to {r['ci_high']:.2f})"
+        lab = f"{m}: AUC {r['auc']:.2f} ({ci_label(r['ci_low'], r['ci_high'])})"
         ax.plot(1 - r["spec"], r["sens"], color=pal[k], lw=1.6, label=lab)
         ax.scatter([1 - r["specificity"]], [r["sensitivity"]], s=36, facecolor="white",
                    edgecolor=pal[k], linewidths=1.4, zorder=3)
@@ -288,7 +332,8 @@ def recipe_roc_curve(df, spec):
         "n_cases": n_case, "n_controls": n_ctrl,
         "markers": {r["marker"]: {k: r[k] for k in (
             "auc", "auc_ci_low", "auc_ci_high", "direction", "youden_threshold",
-            "sensitivity", "specificity", "delong_p_vs_first")} for r in rows},
+            "sensitivity", "specificity", "delong_p_vs_first", "constant_marker",
+            "complete_separation")} for r in rows},
     }
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta,
@@ -315,11 +360,7 @@ def _methods(rows, case, control, n_case, n_ctrl, y):
     """
     from importlib.metadata import version as v
     import platform
-    per = "; ".join(
-        f"{r['marker']}, AUC = {r['auc']:.3f} (95% CI {r['auc_ci_low']:.3f} to "
-        f"{r['auc_ci_high']:.3f}), optimal threshold {r['youden_threshold']:.4g} "
-        f"(sensitivity {r['sensitivity']:.2f}, specificity {r['specificity']:.2f})"
-        for _, r in rows.iterrows())
+    per = "; ".join(marker_text(r) for _, r in rows.iterrows())
     cmp = ""
     if len(rows) >= 2:
         cmp = (f" The AUC of each marker was compared with that of {rows['marker'].iloc[0]} by "

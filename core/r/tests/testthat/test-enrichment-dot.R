@@ -46,3 +46,50 @@ test_that(".enrich_wrap balances long labels", {
   size <- .enrich_size(c("a\nb", "short"))
   expect_equal(size$height, 4.0)
 })
+
+# The enrichment table of the area D tests: one term with an adjusted p of 0,
+# one with no adjusted p and one with no name. The Python suite uses the same.
+enrich_area_d <- function() {
+  data.frame(Description = c("Pathway 0", "Pathway 1", NA, "Pathway 3", "Pathway 4"),
+             GeneRatio = c("5/200", "6/200", "7/200", "8/200", "9/200"),
+             Count = c(5, 6, 7, 8, 9), p.adjust = c(0, NA, 1e-4, 1e-5, 1e-6),
+             check.names = FALSE, stringsAsFactors = FALSE)
+}
+
+# An adjusted p of 0 is kept and marked, and each dropped row is logged (F51).
+test_that("enrichment_dot keeps an adjusted p of 0 and logs the dropped rows", {
+  res <- recipe_enrichment_dot(enrich_area_d(),
+                               spec_from_opt(list(recipe = "enrichment_dot", data = "e.csv")))
+  expect_equal(res$test_meta$n_terms_total, 3)
+  expect_equal(res$test_meta$n_zero_p, 1)
+  expect_equal(res$stats$term[1], "Pathway 0")
+  expect_equal(res$stats$p_adjust[1], .Machine$double.xmin)
+  steps <- paste(res$clean_steps, collapse = " | ")
+  expect_match(steps, "Dropped 2 row(s) with a missing term, adjusted p or x value (5 -> 3).", fixed = TRUE)
+  expect_match(steps, "Replaced 1 adjusted p value(s) of exactly 0", fixed = TRUE)
+  expect_match(res$methods, "drawn as triangles", fixed = TRUE)
+})
+
+# A table with only a raw p is labelled as not adjusted, never as adjusted (F52).
+test_that("enrichment_dot labels a raw p as not adjusted", {
+  df <- enrich_area_d()[c(1, 4, 5), ]
+  names(df)[names(df) == "p.adjust"] <- "pvalue"
+  df$pvalue <- c(1e-3, 1e-5, 1e-6)
+  res <- recipe_enrichment_dot(df, spec_from_opt(list(recipe = "enrichment_dot", data = "e.csv")))
+  expect_false(res$test_meta$p_adjusted)
+  expect_true("p_value" %in% names(res$stats))
+  expect_false("p_adjust" %in% names(res$stats))
+  expect_match(res$methods, "the raw p-value, which is not adjusted for multiple testing", fixed = TRUE)
+  expect_match(res$clean_steps[1], "raw p column 'pvalue'", fixed = TRUE)
+  expect_equal(res$plot$scales$get_scales("colour")$name, "-log10 p (not adjusted)")
+})
+
+# A repeated term name is made unique and logged; R stopped on it (F79).
+test_that("enrichment_dot makes a repeated term name unique", {
+  df <- enrich_area_d()[c(1, 4, 5), ]
+  df$Description <- c("Pathway 1", "Pathway 1", "Pathway 4")
+  res <- recipe_enrichment_dot(df, spec_from_opt(list(recipe = "enrichment_dot", data = "e.csv")))
+  expect_setequal(res$stats$term, c("Pathway 1", "Pathway 1 (2)", "Pathway 4"))
+  expect_true(any(grepl("Made 1 repeated term name(s) unique by adding (2), (3) and so on: 'Pathway 1'.",
+                        res$clean_steps, fixed = TRUE)))
+})

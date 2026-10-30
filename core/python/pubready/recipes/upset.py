@@ -18,18 +18,64 @@ import pandas as pd
 from matplotlib.ticker import MaxNLocator
 
 from ..bundle import slugify
+from ..util import level_labels
 
 ABSENT = "#CCCCCC"   # the grey of an absent set, as in ComplexHeatmap
 SHADE = "#F0F0F0"    # the background of every second set row
 
 
-def _to_member(s):
-    if pd.api.types.is_bool_dtype(s):
-        return s.astype(bool)
-    sn = pd.to_numeric(s, errors="coerce")
-    if sn.notna().all() and set(sn.unique()) <= {0, 1}:
-        return sn == 1
-    return s.astype(str).str.lower().isin(["1", "true", "yes", "y", "t"])
+#: The membership codes, in lower case. One rule in both engines (F49): 1, TRUE,
+#: T, yes or y is a member; 0, FALSE, F, no or n is not; an empty cell is not a
+#: member and is counted in the data log; any other value stops the run.
+YES = ("1", "true", "t", "yes", "y")
+NO = ("0", "false", "f", "no", "n")
+
+
+def cell_text(v):
+    """One cell as text, as .up_cells() in R.
+
+    Args:
+        v: The cell.
+
+    Returns:
+        str or None: The text, with a whole number written with no decimal
+        point, or None for an empty cell.
+    """
+    if v is None or (isinstance(v, (float, np.floating)) and np.isnan(v)):
+        return None
+    if isinstance(v, (bool, np.bool_)):
+        return "TRUE" if v else "FALSE"
+    if isinstance(v, (int, float, np.integer, np.floating)):
+        return level_labels(pd.Series([v])).iloc[0]
+    s = str(v).strip()
+    return s or None
+
+
+def to_member(s, col):
+    """Read one set column as membership, as .up_as_member() in R.
+
+    Args:
+        s: The column.
+        col: The column name, for the message.
+
+    Returns:
+        tuple: The boolean membership and the count of empty cells.
+
+    Raises:
+        ValueError: If a cell holds a value that is not a membership code.
+    """
+    cells = [cell_text(v) for v in s]
+    bad = []
+    for c in cells:
+        if c is not None and c.lower() not in YES + NO and c not in bad:
+            bad.append(c)
+    if bad:
+        raise ValueError(f"upset: column '{col}' holds the value(s) "
+                         + ", ".join(f"'{b}'" for b in bad[:5])
+                         + ", which are not a membership code; use 1/0, TRUE/FALSE or yes/no, "
+                         "and leave a cell empty for not a member")
+    member = pd.Series([c is not None and c.lower() in YES for c in cells], index=s.index)
+    return member, sum(c is None for c in cells)
 
 
 def combo_table(bin_df, set_cols):
@@ -184,15 +230,22 @@ def recipe_upset(df, spec):
     if setdf.shape[1] < 2:
         raise ValueError("upset needs at least 2 set columns")
 
-    bin_df = setdf.apply(_to_member)
+    members, clean_steps = {}, []
+    for c in setdf.columns:
+        members[c], n_empty = to_member(setdf[c], c)
+        if n_empty:
+            clean_steps.append(f"Read {n_empty} empty cell(s) of column '{c}' as not a member.")
+    bin_df = pd.DataFrame(members)
     set_cols = list(bin_df.columns)
     n_elements = len(bin_df)
     in_any = bin_df.any(axis=1)
     dropped = int((~in_any).sum())
     bin_df = bin_df[in_any].reset_index(drop=True)
-    clean_steps = ([f"Dropped {dropped} element(s) that belonged to no set "
-                    f"({n_elements} -> {len(bin_df)})."] if dropped
-                   else ["No cleaning applied; every element belongs to at least one set."])
+    if dropped:
+        clean_steps.append(f"Dropped {dropped} element(s) that belonged to no set "
+                           f"({n_elements} -> {len(bin_df)}).")
+    if not clean_steps:
+        clean_steps = ["No cleaning applied; every element belongs to at least one set."]
 
     # Distinct-mode intersection sizes: count elements per unique membership tuple.
     table = combo_table(bin_df, set_cols)
@@ -270,7 +323,11 @@ import numpy as np, pandas as pd
 
 raw = pd.read_csv("{in_name}"{idcol})
 set_cols = {set_cols!r}
-bin_df = raw[set_cols].apply(pd.to_numeric, errors="coerce") == 1
+# 1, TRUE, T, yes or y is a member; any other code or an empty cell is not.
+codes = raw[set_cols].astype(str)
+for c in set_cols:
+    codes[c] = codes[c].str.strip().str.lower().str.replace(r"\\.0$", "", regex=True)
+bin_df = codes.isin(["1", "true", "t", "yes", "y"])
 bin_df = bin_df[bin_df.any(axis=1)].reset_index(drop=True)
 combo = bin_df.groupby(set_cols, sort=False).size().reset_index(name="size")
 combo["sets"] = [" & ".join(c for c in set_cols if r[c]) for _, r in combo.iterrows()]
