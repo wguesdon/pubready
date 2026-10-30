@@ -73,6 +73,11 @@ tag move together.
 - `timecourse` stops with "the outcome has zero variance" when every value of
   the complete subjects is the same. Before, R stopped with an unclear error,
   and Python wrote F = nan or F values from rounding noise (F90).
+- `timecourse` reports Mauchly's test as not available when the complete
+  subjects are fewer than the groups plus the time points minus one, and
+  `--test auto` then applies the Greenhouse-Geisser correction. The methods
+  text says why, and `test_meta` records `available: false`. Before, Python
+  wrote W = 0 and P = 1, and R stopped with an unclear error (F95).
 
 ## [3.0.0] - 2026-10-29
 

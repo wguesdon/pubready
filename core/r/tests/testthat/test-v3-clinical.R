@@ -221,3 +221,16 @@ test_that("timecourse stops on an outcome with zero variance (F90)", {
                "the outcome 'y' has zero variance: every value of the 6 complete subject(s) is 100",
                fixed = TRUE)
 })
+
+test_that("Mauchly's test is not available with too few subjects, and GG applies (F95)", {
+  tc <- data.frame(id = rep(sprintf("m%d", 1:4), each = 4), day = rep(c(0, 7, 14, 21), 4),
+                   arm = rep(c("a", "b"), each = 8),
+                   y = c(10, 14, 19, 25, 11, 13, 20, 27, 9, 12, 14, 15, 10, 11, 15, 17))
+  res <- recipe_timecourse(tc, v3c_spec("timecourse", x = "day", y = "y", id = "id", group = "arm"))
+  expect_false(res$test_meta$sphericity$available)
+  expect_true(is.na(res$test_meta$sphericity$p_value))
+  expect_true(res$test_meta$correction_applied)
+  expect_equal(res$stats$correction, c("none", "Greenhouse-Geisser", "Greenhouse-Geisser"))
+  expect_match(res$methods, "Mauchly's test was not available, because it needs at least 5 complete subjects (4 subject(s) in 2 group(s) at 4 time points)",
+               fixed = TRUE)
+})

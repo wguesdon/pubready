@@ -271,3 +271,17 @@ def test_timecourse_stops_on_an_outcome_with_zero_variance():
     with pytest.raises(ValueError, match=r"the outcome 'y' has zero variance: every value of the 6 "
                                          r"complete subject\(s\) is 100"):
         recipe_timecourse(tc, v3c_spec("timecourse", x="day", y="y", id="id", group="arm"))
+
+
+def test_mauchly_is_not_available_with_too_few_subjects_and_gg_applies():
+    """F95: Python wrote W = 0 and P = 1; R stopped with an unclear error."""
+    tc = pd.DataFrame({"id": [f"m{i}" for i in range(1, 5) for _ in range(4)],
+                       "day": [0, 7, 14, 21] * 4, "arm": ["a"] * 8 + ["b"] * 8,
+                       "y": [10, 14, 19, 25, 11, 13, 20, 27, 9, 12, 14, 15, 10, 11, 15, 17]})
+    res = recipe_timecourse(tc, v3c_spec("timecourse", x="day", y="y", id="id", group="arm"))
+    assert res["test_meta"]["sphericity"]["available"] is False
+    assert np.isnan(res["test_meta"]["sphericity"]["p_value"])
+    assert res["test_meta"]["correction_applied"] is True
+    assert list(res["stats"]["correction"]) == ["none", "Greenhouse-Geisser", "Greenhouse-Geisser"]
+    assert ("Mauchly's test was not available, because it needs at least 5 complete subjects "
+            "(4 subject(s) in 2 group(s) at 4 time points)") in res["methods"]
