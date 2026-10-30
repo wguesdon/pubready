@@ -103,3 +103,16 @@ def test_enrichment_dot_keeps_a_zero_p_and_logs_the_dropped_rows():
     assert "Dropped 2 row(s) with a missing term, adjusted p or x value (5 -> 3)." in steps
     assert "Replaced 1 adjusted p value(s) of exactly 0" in steps
     assert "drawn as triangles" in res["methods"]
+
+
+def test_enrichment_dot_labels_a_raw_p_as_not_adjusted():
+    """A table with only a raw p is labelled as not adjusted, as in R (F52)."""
+    df = enrich_area_d().iloc[[0, 3, 4]].rename(columns={"p.adjust": "pvalue"})
+    df["pvalue"] = [1e-3, 1e-5, 1e-6]
+    res = recipe_enrichment_dot(df, enrich_spec())
+    assert res["test_meta"]["p_adjusted"] is False
+    assert "p_value" in res["stats"].columns and "p_adjust" not in res["stats"].columns
+    assert "the raw p-value, which is not adjusted for multiple testing" in res["methods"]
+    assert "raw p column 'pvalue'" in res["clean_steps"][0]
+    titles = [ax.get_title(loc="left") for ax in res["fig"].axes]
+    assert "-log10 p (not adjusted)" in titles

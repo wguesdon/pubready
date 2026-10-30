@@ -69,3 +69,17 @@ test_that("enrichment_dot keeps an adjusted p of 0 and logs the dropped rows", {
   expect_match(steps, "Replaced 1 adjusted p value(s) of exactly 0", fixed = TRUE)
   expect_match(res$methods, "drawn as triangles", fixed = TRUE)
 })
+
+# A table with only a raw p is labelled as not adjusted, never as adjusted (F52).
+test_that("enrichment_dot labels a raw p as not adjusted", {
+  df <- enrich_area_d()[c(1, 4, 5), ]
+  names(df)[names(df) == "p.adjust"] <- "pvalue"
+  df$pvalue <- c(1e-3, 1e-5, 1e-6)
+  res <- recipe_enrichment_dot(df, spec_from_opt(list(recipe = "enrichment_dot", data = "e.csv")))
+  expect_false(res$test_meta$p_adjusted)
+  expect_true("p_value" %in% names(res$stats))
+  expect_false("p_adjust" %in% names(res$stats))
+  expect_match(res$methods, "the raw p-value, which is not adjusted for multiple testing", fixed = TRUE)
+  expect_match(res$clean_steps[1], "raw p column 'pvalue'", fixed = TRUE)
+  expect_equal(res$plot$scales$get_scales("colour")$name, "-log10 p (not adjusted)")
+})

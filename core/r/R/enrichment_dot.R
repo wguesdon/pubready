@@ -12,7 +12,8 @@
   }
   list(
     term  = pick(c("Description", "ID", "pathway", "term", "Term", "NAME"), spec$data$label),
-    padj  = pick(c("p.adjust", "padj", "qvalue", "q_value", "FDR", "pvalue", "p_value")),
+    padj  = pick(c("p.adjust", "padj", "qvalue", "q_value", "FDR")),
+    praw  = pick(c("pvalue", "p_value", "P.Value", "pval")),
     count = pick(c("Count", "setSize", "count", "size")),
     ratio = pick(c("GeneRatio", "gene_ratio", "generatio")),
     nes   = pick(c("NES", "nes", "enrichmentScore", "ES")))
@@ -71,7 +72,14 @@
 recipe_enrichment_dot <- function(df, spec) {
   cols <- .enrich_columns(df, spec)
   if (is.na(cols$term)) stop("enrichment_dot: no term/Description column found; set it with --label")
-  if (is.na(cols$padj)) stop("enrichment_dot: no adjusted-p column found")
+  # A table with only a raw p is drawn and labelled as not adjusted, so a raw p
+  # is never shown as an adjusted one (F52).
+  adjusted <- !is.na(cols$padj)
+  if (!adjusted) cols$padj <- cols$praw
+  if (is.na(cols$padj)) {
+    stop("enrichment_dot: no p-value column found; give p.adjust, padj, qvalue, FDR or pvalue")
+  }
+  pw <- .enrich_p_words(adjusted)
 
   term  <- as.character(df[[cols$term]])
   padj  <- suppressWarnings(as.numeric(df[[cols$padj]]))
@@ -88,7 +96,7 @@ recipe_enrichment_dot <- function(df, spec) {
   } else if (!is.na(cols$ratio)) {
     xval <- .parse_ratio(df[[cols$ratio]]); xlab_default <- "gene ratio"
   } else {
-    xval <- -log10(padj); xlab_default <- "-log10 adjusted p"
+    xval <- -log10(padj); xlab_default <- pw$axis
   }
 
   n0 <- length(term)
@@ -97,10 +105,14 @@ recipe_enrichment_dot <- function(df, spec) {
   is_zero <- is_zero[keep]
   if (length(term) < 1) stop("enrichment_dot: no usable rows")
   clean_steps <- c(
-    if (sum(!keep) > 0) sprintf("Dropped %d row(s) with a missing term, adjusted p or x value (%d -> %d).",
-                                sum(!keep), n0, length(term)),
-    if (any(is_zero)) sprintf("Replaced %d adjusted p value(s) of exactly 0 with the smallest positive double (%s), so that -log10 p is finite.",
-                              sum(is_zero), formatC(.Machine$double.xmin, format = "g", digits = 3)))
+    if (sum(!keep) > 0) sprintf("Dropped %d row(s) with a missing term, %s or x value (%d -> %d).",
+                                sum(!keep), pw$noun, n0, length(term)),
+    if (any(is_zero)) sprintf("Replaced %d %s value(s) of exactly 0 with the smallest positive double (%s), so that -log10 p is finite.",
+                              sum(is_zero), pw$noun, formatC(.Machine$double.xmin, format = "g", digits = 3)))
+  if (!adjusted) {
+    clean_steps <- c(sprintf("The table holds no adjusted p column, so the raw p column '%s' is shown and labelled as not adjusted.",
+                             cols$padj), clean_steps)
+  }
   if (length(clean_steps) == 0) clean_steps <- "No cleaning applied; enrichment table used as-is."
   df_used <- data.frame(term = term, x = xval, p_adjust = padj, count = count, stringsAsFactors = FALSE)
   # The colour, and the x of the -log10 p axis, of a p of 0 sits at a ceiling 12%
@@ -129,12 +141,12 @@ recipe_enrichment_dot <- function(df, spec) {
     p + ggplot2::geom_point(ggplot2::aes(colour = shade, shape = shape), size = 3)
   }
   subtitle <- if (n_zero_shown > 0) {
-    sprintf("%d term(s) with adjusted p = 0 drawn as triangles", n_zero_shown)
+    sprintf("%d term(s) with %s = 0 drawn as triangles", n_zero_shown, pw$noun)
   }
   p <- p +
     # Colour by -log10 of the adjusted p: the values span orders of magnitude, so
     # a linear scale would paint almost every term the same colour.
-    ggplot2::scale_colour_gradient(low = "#3B6DB3", high = "#C1432B", name = "-log10 p.adjust") +
+    ggplot2::scale_colour_gradient(low = "#3B6DB3", high = "#C1432B", name = pw$legend) +
     ggplot2::scale_size_continuous(name = "count") +
     ggplot2::scale_shape_identity() +
     ggplot2::labs(x = spec$appearance$x_label %||% xlab_default, y = NULL,
@@ -152,16 +164,19 @@ recipe_enrichment_dot <- function(df, spec) {
   stats_df <- data.frame(term = as.character(pd$term), x = pd$x, p_adjust = pd$padj,
                          count = pd$count, stringsAsFactors = FALSE)
   names(stats_df)[2] <- if (gsea_mode) "NES" else if (!is.na(cols$ratio)) "gene_ratio" else "neg_log10_padj"
+  names(stats_df)[3] <- pw$col
 
   test_meta <- list(name = if (gsea_mode) "GSEA dot plot" else "ORA dot plot",
                     n_terms_total = length(term), n_terms_shown = nrow(pd), x_axis = xlab_default,
-                    n_zero_p = sum(is_zero))
+                    n_zero_p = sum(is_zero), p_column = cols$padj, p_adjusted = adjusted)
   resolved <- list(family = "enrichment_dot",
                    label = if (gsea_mode) "GSEA dot plot" else "ORA dot plot")
-  methods <- .enrich_methods(gsea_mode, length(term), nrow(pd), xlab_default, sum(is_zero))
+  methods <- .enrich_methods(gsea_mode, length(term), nrow(pd), xlab_default, sum(is_zero),
+                             adjusted)
   build_script <- list(fn = .enrich_emit_script,
                        args = list(cols = cols, gsea_mode = gsea_mode, topn = topn,
-                                   width = size$width, height = size$height))
+                                   width = size$width, height = size$height,
+                                   adjusted = adjusted))
 
   list(plot = p, stats = stats_df, test_meta = test_meta, resolved = resolved,
        methods = methods, build_script = build_script,
@@ -170,31 +185,48 @@ recipe_enrichment_dot <- function(df, spec) {
        width = size$width, height = size$height)
 }
 
-.enrich_methods <- function(gsea_mode, n_total, n_shown, xlab, n_zero = 0) {
+# The words for the p column: an adjusted p, or a raw p that the figure, the
+# stats table and the methods text call not adjusted (F52). The Python engine
+# uses the same words.
+.enrich_p_words <- function(adjusted) {
+  if (adjusted) {
+    list(axis = "-log10 adjusted p", legend = "-log10 p.adjust", noun = "adjusted p", one = "an adjusted p",
+         col = "p_adjust", methods = "the adjusted p-value")
+  } else {
+    list(axis = "-log10 p (not adjusted)", legend = "-log10 p (not adjusted)", noun = "p", one = "a p",
+         col = "p_value",
+         methods = "the raw p-value, which is not adjusted for multiple testing, because the table holds no adjusted p-value")
+  }
+}
+
+.enrich_methods <- function(gsea_mode, n_total, n_shown, xlab, n_zero = 0, adjusted = TRUE) {
   v    <- pkg_versions("ggplot2")
   rver <- paste(R.version$major, R.version$minor, sep = ".")
   kind <- if (gsea_mode) "a GSEA" else "an over-representation (ORA)"
+  pw <- .enrich_p_words(adjusted)
   zero_txt <- if (n_zero > 0) {
-    sprintf("%d term(s) with an adjusted p-value of exactly 0 were set to the smallest positive double (%s) and are drawn as triangles at the top of the colour scale. ",
-            n_zero, formatC(.Machine$double.xmin, format = "g", digits = 3))
+    sprintf("%d term(s) with %s of exactly 0 were set to the smallest positive double (%s) and are drawn as triangles at the top of the colour scale. ",
+            n_zero, pw$one, formatC(.Machine$double.xmin, format = "g", digits = 3))
   } else ""
   paste0(
     sprintf("The top %d of %d enriched terms from %s analysis were shown as a dot plot. ",
             n_shown, n_total, kind),
-    sprintf(paste("The x-axis is %s, dot color the -log10 of the adjusted p-value, and dot size",
-                  "the gene count. "), xlab),
+    sprintf(paste("The x-axis is %s, dot color the -log10 of %s, and dot size",
+                  "the gene count. "), xlab, pw$methods),
     zero_txt,
     "The enrichment analysis was performed upstream; this figure summarises its output. ",
     sprintf("Drawn in R %s with ggplot2 %s.", rver, v$ggplot2))
 }
 
-.enrich_emit_script <- function(cols, gsea_mode, topn, width, height, in_name, fig_stub) {
+.enrich_emit_script <- function(cols, gsea_mode, topn, width, height, in_name, fig_stub,
+                                adjusted = TRUE) {
+  pw <- .enrich_p_words(adjusted)
   xline <- if (gsea_mode) {
     sprintf('d$x <- as.numeric(raw[["%s"]]); xlab <- "NES"', cols$nes)
   } else if (!is.na(cols$ratio)) {
     sprintf('d$x <- sapply(strsplit(as.character(raw[["%s"]]), "/"), function(a) as.numeric(a[1])/as.numeric(a[2])); xlab <- "gene ratio"', cols$ratio)
   } else {
-    'd$x <- -log10(d$padj); xlab <- "-log10 adjusted p"'
+    sprintf('d$x <- -log10(d$padj); xlab <- "%s"', pw$axis)
   }
   vline <- if (gsea_mode) '  + geom_vline(xintercept = 0, linetype = "dashed")' else ""
   c(
@@ -215,7 +247,7 @@ recipe_enrichment_dot <- function(df, spec) {
     "for (i in seq_len(nrow(d))) d$label[i] <- paste(strwrap(d$term[i], 46), collapse = \"\\n\")",
     "d$label <- factor(d$label, levels = d$label[order(d$x)])",
     'p <- ggplot(d, aes(x, label)) + geom_point(aes(size = count, colour = -log10(padj))) +',
-    '  scale_colour_gradient(low = "#3B6DB3", high = "#C1432B", name = "-log10 p.adjust") + labs(x = xlab, y = NULL) + theme_classic()',
+    sprintf('  scale_colour_gradient(low = "#3B6DB3", high = "#C1432B", name = "%s") + labs(x = xlab, y = NULL) + theme_classic()', pw$legend),
     paste0("p <- p", vline),
     sprintf('ggsave("%s.pdf", p, width = %.2f, height = %.2f)', fig_stub, width, height),
     'cat("Reproduced figure.\\n")'

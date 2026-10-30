@@ -15,7 +15,8 @@ from ..theme import apply_pub_style, significance_cmap
 from .volcano import DOUBLE_XMIN, display_y
 
 _TERM = ["Description", "ID", "pathway", "term", "Term", "NAME"]
-_PADJ = ["p.adjust", "padj", "qvalue", "q_value", "FDR", "pvalue", "p_value"]
+_PADJ = ["p.adjust", "padj", "qvalue", "q_value", "FDR"]
+_PRAW = ["pvalue", "p_value", "P.Value", "pval"]
 _COUNT = ["Count", "setSize", "count", "size"]
 _RATIO = ["GeneRatio", "gene_ratio", "generatio"]
 _NES = ["NES", "nes", "enrichmentScore", "ES"]
@@ -144,13 +145,40 @@ def dot_area(ct, lo, rng):
     return 30 + 200 * (arr - lo) / rng
 
 
+def p_words(adjusted):
+    """The words for the p column, as .enrich_p_words() in R (F52).
+
+    Args:
+        adjusted: True for an adjusted p, False for a raw p that the figure,
+            the stats table and the methods text call not adjusted.
+
+    Returns:
+        dict: The axis label, the legend title, the noun, the noun with its
+        article, the stats column and the methods phrase.
+    """
+    if adjusted:
+        return {"axis": "-log10 adjusted p", "legend": "-log10 p.adjust", "noun": "adjusted p",
+                "one": "an adjusted p", "col": "p_adjust", "methods": "the adjusted p-value"}
+    return {"axis": "-log10 p (not adjusted)", "legend": "-log10 p (not adjusted)", "noun": "p",
+            "one": "a p", "col": "p_value",
+            "methods": ("the raw p-value, which is not adjusted for multiple testing, because the "
+                        "table holds no adjusted p-value")}
+
+
 def recipe_enrichment_dot(df, spec):
     term_col = _pick(df, _TERM, spec["data"].get("label"))
-    padj_col = _pick(df, _PADJ)
     if term_col is None:
         raise ValueError("enrichment_dot: no term/Description column found; set it with --label")
+    padj_col = _pick(df, _PADJ)
+    # A table with only a raw p is drawn and labelled as not adjusted, so a raw p
+    # is never shown as an adjusted one (F52).
+    adjusted = padj_col is not None
+    if not adjusted:
+        padj_col = _pick(df, _PRAW)
     if padj_col is None:
-        raise ValueError("enrichment_dot: no adjusted-p column found")
+        raise ValueError("enrichment_dot: no p-value column found; give p.adjust, padj, qvalue, "
+                         "FDR or pvalue")
+    pw = p_words(adjusted)
     count_col = _pick(df, _COUNT)
     ratio_col = _pick(df, _RATIO)
     nes_col = _pick(df, _NES)
@@ -172,7 +200,7 @@ def recipe_enrichment_dot(df, spec):
         elif ratio_col:
             xval = _parse_ratio(df[ratio_col]); xlab = "gene ratio"
         else:
-            xval = -np.log10(padj); xlab = "-log10 adjusted p"
+            xval = -np.log10(padj); xlab = pw["axis"]
 
     n0 = len(term)
     keep = np.isfinite(padj) & np.isfinite(xval) & df[term_col].notna().to_numpy()
@@ -182,11 +210,14 @@ def recipe_enrichment_dot(df, spec):
         raise ValueError("enrichment_dot: no usable rows")
     clean_steps = []
     if (~keep).any():
-        clean_steps.append(f"Dropped {int((~keep).sum())} row(s) with a missing term, adjusted p "
+        clean_steps.append(f"Dropped {int((~keep).sum())} row(s) with a missing term, {pw['noun']} "
                            f"or x value ({n0} -> {len(term)}).")
     if is_zero.any():
-        clean_steps.append(f"Replaced {int(is_zero.sum())} adjusted p value(s) of exactly 0 with the "
+        clean_steps.append(f"Replaced {int(is_zero.sum())} {pw['noun']} value(s) of exactly 0 with the "
                            f"smallest positive double ({DOUBLE_XMIN:.3g}), so that -log10 p is finite.")
+    if not adjusted:
+        clean_steps.insert(0, f"The table holds no adjusted p column, so the raw p column "
+                              f"'{padj_col}' is shown and labelled as not adjusted.")
     if not clean_steps:
         clean_steps = ["No cleaning applied; enrichment table used as-is."]
     df_used = pd.DataFrame({"term": term, "x": xval, "p_adjust": padj, "count": count})
@@ -243,7 +274,7 @@ def recipe_enrichment_dot(df, spec):
     if gsea:
         ax.axvline(0, ls="--", lw=0.6, color="grey")
     if n_zero_shown:
-        ax.set_title(f"{n_zero_shown} term(s) with adjusted p = 0 drawn as triangles",
+        ax.set_title(f"{n_zero_shown} term(s) with {pw['noun']} = 0 drawn as triangles",
                      fontsize=10, color="#4d4d4d")
         if ap.get("title"):
             fig.suptitle(ap["title"], fontweight="bold")
@@ -269,44 +300,46 @@ def recipe_enrichment_dot(df, spec):
     cb_h = max(0.8, min(1.4, cb_top - bottom_in - 0.3))
     cax = fig.add_axes([leg_x + 0.05 / w, (cb_top - 0.3 - cb_h) / h, 0.18 / w, cb_h / h])
     fig.colorbar(sc, cax=cax)
-    cax.set_title("-log10 p.adjust", fontsize=10, loc="left", pad=8)
+    cax.set_title(pw["legend"], fontsize=10, loc="left", pad=8)
     cax.tick_params(labelsize=9)
 
     stats_df = pd.DataFrame({
         "term": top["term"],
         ("NES" if gsea else "gene_ratio" if ratio_col else "neg_log10_padj"): top["x"],
-        "p_adjust": top["p_adjust"], "count": top["count"]})
+        pw["col"]: top["p_adjust"], "count": top["count"]})
     test_meta = {"name": "GSEA dot plot" if gsea else "ORA dot plot",
                  "n_terms_total": len(term), "n_terms_shown": len(t), "x_axis": xlab,
-                 "n_zero_p": int(is_zero.sum())}
-    methods = _methods(gsea, len(term), len(t), xlab, int(is_zero.sum()))
+                 "n_zero_p": int(is_zero.sum()), "p_column": padj_col, "p_adjusted": adjusted}
+    methods = _methods(gsea, len(term), len(t), xlab, int(is_zero.sum()), adjusted)
     return {
         "fig": fig, "stats": stats_df, "test_meta": test_meta, "methods": methods,
         "df_used": df_used, "clean_steps": clean_steps,
         "label": slugify(os.path.splitext(spec["data"]["file"])[0]),
         "width": w, "height": h,
         "build_script": functools.partial(_script, term_col, padj_col, count_col, ratio_col,
-                                          nes_col, topn, w, h),
+                                          nes_col, topn, w, h, adjusted),
     }
 
 
-def _methods(gsea, n_total, n_shown, xlab, n_zero=0):
+def _methods(gsea, n_total, n_shown, xlab, n_zero=0, adjusted=True):
     from importlib.metadata import version as v
     import platform
     kind = "a GSEA" if gsea else "an over-representation (ORA)"
-    zero_txt = (f"{n_zero} term(s) with an adjusted p-value of exactly 0 were set to the smallest "
+    pw = p_words(adjusted)
+    zero_txt = (f"{n_zero} term(s) with {pw['one']} of exactly 0 were set to the smallest "
                 f"positive double ({DOUBLE_XMIN:.3g}) and are drawn as triangles at the top of the "
                 "colour scale. " if n_zero else "")
     return (
         f"The top {n_shown} of {n_total} enriched terms from {kind} analysis were shown as a "
-        f"dot plot. The x-axis is {xlab}, dot color the -log10 of the adjusted p-value, and "
+        f"dot plot. The x-axis is {xlab}, dot color the -log10 of {pw['methods']}, and "
         f"dot size the gene count. {zero_txt}The enrichment analysis was performed upstream; "
         "this figure summarises its output. "
         f"Drawn in Python {platform.python_version()} with matplotlib {v('matplotlib')}."
     )
 
 
-def _script(term_col, padj_col, count_col, ratio_col, nes_col, topn, w, h, in_name, fig_stub):
+def _script(term_col, padj_col, count_col, ratio_col, nes_col, topn, w, h, adjusted, in_name,
+            fig_stub):
     """Write the standalone script that redraws the dot plot.
 
     Args:
@@ -318,6 +351,7 @@ def _script(term_col, padj_col, count_col, ratio_col, nes_col, topn, w, h, in_na
         topn: The number of terms to show.
         w: The figure width in inches.
         h: The figure height in inches.
+        adjusted: True when the p column is an adjusted p.
         in_name: The bundled input file name.
         fig_stub: The figure file stem.
 
@@ -330,7 +364,7 @@ def _script(term_col, padj_col, count_col, ratio_col, nes_col, topn, w, h, in_na
         xline = (f'x = np.array([float(s.split("/")[0]) / float(s.split("/")[1]) if "/" in s else float(s) '
                  f'for s in raw["{ratio_col}"].astype(str)]); xlab = "gene ratio"')
     else:
-        xline = f'x = -np.log10(pd.to_numeric(raw["{padj_col}"], errors="coerce").to_numpy()); xlab = "-log10 adjusted p"'
+        xline = f'x = -np.log10(padj); xlab = "{p_words(adjusted)["axis"]}"'
     count_line = (f'ct = pd.to_numeric(raw["{count_col}"], errors="coerce").to_numpy()'
                   if count_col else "ct = np.full(len(raw), 60.0)")
     return f'''#!/usr/bin/env python3
@@ -358,7 +392,7 @@ sc = ax.scatter(x, np.arange(len(t)), c=-np.log10(pj), s=70, cmap="coolwarm", ed
 ax.set_yticks(np.arange(len(t))); ax.set_yticklabels(t)
 ax.set_xlabel(xlab)
 for s in ("top", "right"): ax.spines[s].set_visible(False)
-fig.colorbar(sc, ax=ax, label="-log10 p.adjust", fraction=0.046, pad=0.04)
+fig.colorbar(sc, ax=ax, label="{p_words(adjusted)['legend']}", fraction=0.046, pad=0.04)
 fig.tight_layout(); fig.savefig("{fig_stub}.pdf")
 print("Reproduced figure.")
 '''
