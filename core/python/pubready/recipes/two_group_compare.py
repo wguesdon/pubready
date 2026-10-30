@@ -96,7 +96,7 @@ def recipe_two_group_compare(df, spec):
         res = pg.ttest(a, b, paired=paired, correction=not r["var_equal"])
         statistic = float(res["T"].iloc[0]); pval = float(res["p_val"].iloc[0])
         dof = float(res["dof"].iloc[0]); eff = cohens_d_r(a, b, paired=paired)
-        eff_name = "Cohen's d"
+        eff_name = "Cohen's dz" if paired else "Cohen's d"
     else:
         if paired:
             d = a - b
@@ -206,7 +206,11 @@ def _methods(r, stats_df, eff_name, eff_value, spec):
     from importlib.metadata import version as v
     y_label = spec["appearance"].get("y_label") or spec["data"]["y"]
     var_txt = ""
-    if r["family"] == "t":
+    # A paired t-test works on the within-pair differences, so no variance
+    # sentence applies to it.
+    if r["family"] == "t" and r["paired"]:
+        var_txt = ""
+    elif r["family"] == "t":
         var_txt = (" Equal variances were assumed." if r["var_equal"]
                    else " Equal variances were not assumed, and the Welch correction was applied.")
     else:

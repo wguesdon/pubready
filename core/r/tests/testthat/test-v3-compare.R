@@ -104,3 +104,17 @@ test_that("feature_panel keeps the parametric family at 3 against 3", {
   expect_true(res$test_meta$kept_parametric)
   expect_match(res$methods, "so the parametric test was kept")
 })
+
+# F66: the paired path of two_group_compare names the effect Cohen's dz and
+# writes no variance sentence.
+test_that("the paired t-test of two_group_compare reports Cohen's dz", {
+  df <- data.frame(group = rep(c("a", "b"), each = 6),
+                   value = c(1, 2, 3, 4, 5, 6, 2.1, 2.9, 4.4, 4.8, 6.3, 7.2))
+  res <- recipe_two_group_compare(df, v3_spec("two_group_compare", x = "group", y = "value",
+                                              paired = TRUE, test = "t"))
+  expect_equal(res$stats$effect_size_name, "Cohen's dz")
+  d <- df$value[1:6] - df$value[7:12]
+  expect_equal(res$stats$effect_size, mean(d) / sd(d), tolerance = 1e-9)
+  expect_false(grepl("variances", res$methods))
+  expect_match(res$methods, "Cohen's dz = -4.82 (a minus b)", fixed = TRUE)
+})

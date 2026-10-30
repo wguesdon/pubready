@@ -35,6 +35,9 @@ tag move together.
   groups. `correlation` stops on a constant column and names it.
   `feature_panel` reports a constant feature as "not tested: constant" and
   leaves it out of the normality check and of the BH count (F43).
+- The paired t-test of `two_group_compare --paired` writes no sentence about
+  equal variances and names its effect size "Cohen's dz", the mean of the
+  within-pair differences over their SD, group1 minus group2 (F66).
 
 ## [3.0.0] - 2026-10-29
 

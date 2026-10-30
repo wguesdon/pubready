@@ -41,7 +41,7 @@ recipe_two_group_compare <- function(df, spec) {
       rstatix::cohens_d(df, fml, paired = paired),
       error = null_on_error
     )
-    eff_name <- "Cohen's d"
+    eff_name <- if (paired) "Cohen's dz" else "Cohen's d"
     eff_val <- if (!is.null(eff) && "effsize" %in% names(eff)) eff$effsize[1] else NA_real_
   } else {
     stat <- rstatix::wilcox_test(df, fml, paired = paired)
@@ -202,8 +202,11 @@ recipe_two_group_compare <- function(df, spec) {
   rver <- paste(R.version$major, R.version$minor, sep = ".")
 
   norm_txt <- "Normality was assessed with the Shapiro-Wilk test."
+  # A paired t-test works on the within-pair differences, so no variance
+  # sentence applies to it.
   var_txt <- if (resolved$family == "t") {
-    if (isTRUE(resolved$var_equal)) " Equal variances were assumed."
+    if (isTRUE(resolved$paired)) ""
+    else if (isTRUE(resolved$var_equal)) " Equal variances were assumed."
     else " Equal variances were not assumed, and the Welch correction was applied."
   } else " A non-parametric test was used because the normality assumption was not met."
   if (tolower(spec$test$method %||% "auto") != "auto") {

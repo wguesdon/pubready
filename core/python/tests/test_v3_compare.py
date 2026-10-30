@@ -132,3 +132,19 @@ def test_feature_panel_keeps_the_parametric_family_at_3_against_3():
     assert res["test_meta"]["test"] == "welch_t"
     assert res["test_meta"]["kept_parametric"] is True
     assert "so the parametric test was kept" in res["methods"]
+
+
+# F66: the paired path of two_group_compare names the effect Cohen's dz and
+# writes no variance sentence.
+def test_the_paired_t_test_of_two_group_compare_reports_cohens_dz():
+    a = [1, 2, 3, 4, 5, 6]
+    b = [2.1, 2.9, 4.4, 4.8, 6.3, 7.2]
+    df = pd.DataFrame({"group": ["a"] * 6 + ["b"] * 6, "value": a + b})
+    res = recipe_two_group_compare(df, v3_spec("two_group_compare", x="group", y="value",
+                                               paired=True, test="t"))
+    row = res["stats"].iloc[0]
+    assert row["effect_size_name"] == "Cohen's dz"
+    d = np.array(a) - np.array(b)
+    assert row["effect_size"] == pytest.approx(d.mean() / d.std(ddof=1), rel=1e-9)
+    assert "variances" not in res["methods"]
+    assert "Cohen's dz = -4.82 (a minus b)" in res["methods"]
