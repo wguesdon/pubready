@@ -47,7 +47,9 @@ Build the image with rootless Podman, and then run `figkit` from the terminal:
 
 Each generated bundle contains `report.qmd`, `report.html`, and
 `report_provenance.json`. The HTML report contains its images and other resources.
-The report command stops when the repository contains an untracked file.
+`figkit plot` and `figkit render` stop when the repository holds an untracked
+file that git does not ignore, because each bundle records the commit. Write
+helper files under `pubready_output/`, which git ignores.
 
 ### 1. Install Podman
 

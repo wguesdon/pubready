@@ -33,6 +33,11 @@ command reports a Podman problem, run `figkit doctor` and show its output to the
 user. Do not install Podman, and do not run `sudo`. The user runs each fix that
 needs administrator rights.
 
+In a clone, `figkit plot` and `figkit render` stop when the repository holds an
+untracked file that git does not ignore, because the bundle records the commit.
+Write each helper file, such as a reshaped CSV, under `pubready_output/`, which
+git ignores.
+
 ## Workflow
 
 1. Run `figkit inspect` on the data. Read the real column types and group sizes.
@@ -192,6 +197,7 @@ to `--test chisq` or to the R engine, which uses the network algorithm.
 
 - `docs/how_it_works.md` — the full option table, an example for every recipe, and the bundle contents.
 - `example/README.md` — worked commands and the committed reference figures.
+  A uv install does not hold this file. Read it in a clone or on GitHub.
 - `reference/` — the statistical decision tree and assumption-check notes.
 
 ## Install

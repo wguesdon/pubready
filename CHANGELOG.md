@@ -37,6 +37,10 @@ tag move together.
   model and the harness. `docs/how_it_works.md` lists the four options (F102).
 - The docs say that the benchmarks check 32 of the 34 recipes. No public dataset
   in the image fits `spider_response` or `waterfall` (F104).
+- The adapters say that a uv install does not hold `example/README.md` (F105).
+- The README and the adapters say that `figkit plot` and `figkit render` stop
+  when the repository holds an untracked file that git does not ignore. Write
+  helper files under `pubready_output/` (F107).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of
