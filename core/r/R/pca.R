@@ -80,31 +80,36 @@
 
 # The feature columns of the PCA. With --features, the listed columns, each of
 # which must exist and be numeric. Else every numeric column other than the
-# group and the --id and --label columns. Returns the features and the steps
-# that name the columns left out.
+# group and the --id and --label columns. coerce_numeric_columns() decides what
+# is numeric: a column with one text cell such as "<0.1" stays a feature, and
+# the cell becomes NA (F42). Returns the table, the features and the steps that
+# name the coerced cells and the columns left out.
 .pca_feature_columns <- function(df, grp_col, skip, features) {
-  steps <- character(0)
   if (length(features) > 0) {
     absent <- setdiff(features, names(df))
     if (length(absent) > 0) {
       stop(sprintf("pca: --features names column(s) not found in data: %s",
                    paste(sprintf("'%s'", absent), collapse = ", ")))
     }
-    text <- features[!vapply(df[features], is.numeric, logical(1))]
-    if (length(text) > 0) {
+    co <- coerce_numeric_columns(df, features)
+    if (length(co$text) > 0) {
       stop(sprintf("pca: --features names column(s) that are not numeric: %s",
-                   paste(sprintf("'%s'", text), collapse = ", ")))
+                   paste(sprintf("'%s'", co$text), collapse = ", ")))
     }
-    return(list(features = features, steps = steps))
+    return(list(df = co$df, features = features, steps = co$steps))
   }
   skip <- intersect(skip[nzchar(skip)], names(df))
   cand <- setdiff(names(df), c(grp_col, skip))
-  num <- cand[vapply(df[cand], is.numeric, logical(1))]
+  co <- coerce_numeric_columns(df, cand)
+  steps <- co$steps
   if (length(skip) > 0) {
     steps <- c(steps, sprintf("Left out the --id and --label column(s) %s.",
                               paste(sprintf("'%s'", skip), collapse = ", ")))
   }
-  list(features = num, steps = steps)
+  if (length(co$text) > 0) {
+    steps <- c(steps, sprintf("Left out the text column(s) %s.", .pca_name_list(co$text)))
+  }
+  list(df = co$df, features = co$numeric, steps = steps)
 }
 
 recipe_pca <- function(df, spec) {
@@ -118,6 +123,7 @@ recipe_pca <- function(df, spec) {
   # group, --id and --label. The data log names each feature, so a numeric
   # sample id that slipped in is visible (F47).
   sel <- .pca_feature_columns(df, grp_col, c(id_col, lab_col), spec$data$features)
+  df <- sel$df
   feat_cols <- sel$features
   if (length(feat_cols) < 2) stop("pca needs at least 2 numeric feature columns")
   mat <- as.matrix(df[, feat_cols, drop = FALSE])

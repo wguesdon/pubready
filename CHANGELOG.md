@@ -53,6 +53,9 @@ tag move together.
   group, then each sample with a missing feature value, then each feature with
   no variance in the samples that remain. The data log names the rows and the
   features. A missing group is no longer a group "nan" in Python (F48).
+- `pca` keeps a numeric column that holds a few text cells, such as "<0.1":
+  each such cell becomes a missing value, and the data log names the cell and
+  each text column that the recipe leaves out (F42).
 
 ## [3.0.0] - 2026-10-29
 

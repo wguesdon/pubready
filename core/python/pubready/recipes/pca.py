@@ -14,6 +14,7 @@ from matplotlib.patches import Ellipse
 from scipy import stats as ss
 
 from ..bundle import slugify
+from ..clean import coerce_numeric_columns
 from ..theme import apply_pub_style, palette
 from ..util import level_labels, level_order
 
@@ -161,7 +162,9 @@ def feature_columns(df, grp_col, skip, features):
 
     With --features, the listed columns, each of which must exist and be
     numeric. Else every numeric column other than the group and the --id and
-    --label columns.
+    --label columns. coerce_numeric_columns() decides what is numeric: a column
+    with one text cell such as "<0.1" stays a feature, and the cell becomes
+    NaN (F42).
 
     Args:
         df: The table.
@@ -170,41 +173,31 @@ def feature_columns(df, grp_col, skip, features):
         features: The --features list, or None.
 
     Returns:
-        tuple: The feature columns and the steps that name the columns left out.
+        tuple: The table, the feature columns and the steps that name the
+        coerced cells and the columns left out.
 
     Raises:
         ValueError: If a listed feature is absent or not numeric.
     """
-    steps = []
     if features:
         absent = [c for c in features if c not in df.columns]
         if absent:
             raise ValueError("pca: --features names column(s) not found in data: "
                              + ", ".join(f"'{c}'" for c in absent))
-        text = [c for c in features if not is_numeric_column(df[c])]
+        df, _, text, steps = coerce_numeric_columns(df, features)
         if text:
             raise ValueError("pca: --features names column(s) that are not numeric: "
                              + ", ".join(f"'{c}'" for c in text))
-        return list(features), steps
+        return df, list(features), steps
     skip = [c for c in skip if c and c in df.columns]
     cand = [c for c in df.columns if c != grp_col and c not in skip]
-    num = [c for c in cand if is_numeric_column(df[c])]
+    df, num, text, steps = coerce_numeric_columns(df, cand)
     if skip:
         steps.append("Left out the --id and --label column(s) "
                      + ", ".join(f"'{c}'" for c in skip) + ".")
-    return num, steps
-
-
-def is_numeric_column(s):
-    """Whether a column is numeric, as R is.numeric(): a boolean column is not.
-
-    Args:
-        s: The column.
-
-    Returns:
-        bool: True for a numeric column.
-    """
-    return pd.api.types.is_numeric_dtype(s) and not pd.api.types.is_bool_dtype(s)
+    if text:
+        steps.append(f"Left out the text column(s) {name_list(text)}.")
+    return df, num, steps
 
 
 def recipe_pca(df, spec):
@@ -219,7 +212,8 @@ def recipe_pca(df, spec):
     # The features: the --features list, else every numeric column other than
     # the group, --id and --label. The data log names each feature, so a numeric
     # sample id that slipped in is visible (F47).
-    feat, sel_steps = feature_columns(df, grp_col, [id_col, lab_col], spec["data"].get("features"))
+    df, feat, sel_steps = feature_columns(df, grp_col, [id_col, lab_col],
+                                          spec["data"].get("features"))
     if len(feat) < 2:
         raise ValueError("pca needs at least 2 numeric feature columns")
     X = df[feat].to_numpy(dtype=float)

@@ -59,3 +59,21 @@ test_that("pca drops the samples with a missing group or feature and logs them",
   expect_match(steps, "Dropped 1 zero-variance feature(s): 'fconst'.", fixed = TRUE)
   expect_equal(res$stats$omnibus_df1[1], 2)
 })
+
+# A numeric column with one text cell stays a feature, the cell becomes NA, and
+# the data log names the cell and each text column left out (F42).
+test_that("pca keeps a mostly numeric column and logs the text cell", {
+  df <- pca_id_data()
+  df$f2 <- as.character(round(df$f2, 3))
+  df$f2[4] <- "<0.1"
+  df$batch <- rep(c("x", "y"), 6)
+  res <- recipe_pca(df, spec_from_opt(list(recipe = "pca", data = "p.csv", group = "group",
+                                           id = "sample_id")))
+  expect_equal(res$test_meta$n_features, 4)
+  expect_equal(res$test_meta$n_samples, 11)
+  steps <- paste(res$clean_steps, collapse = " | ")
+  expect_match(steps, "Coerced column 'f2' to numeric; 1 value(s) became NA, for example '<0.1'.",
+               fixed = TRUE)
+  expect_match(steps, "Left out the text column(s) 'batch'.", fixed = TRUE)
+  expect_match(steps, "missing feature value: row 4.", fixed = TRUE)
+})

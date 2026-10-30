@@ -72,3 +72,19 @@ def test_pca_drops_the_samples_with_a_missing_group_or_feature():
     assert "Dropped 1 sample(s) with a missing feature value: row 5." in steps
     assert "Dropped 1 zero-variance feature(s): 'fconst'." in steps
     assert res["stats"]["omnibus_df1"].iloc[0] == 2
+
+
+def test_pca_keeps_a_mostly_numeric_column_and_logs_the_text_cell():
+    """One text cell does not drop the column; the log names it, as in R (F42)."""
+    df = pca_id_data()
+    df["f2"] = df["f2"].round(3).astype(str)
+    df.loc[3, "f2"] = "<0.1"
+    df["batch"] = ["x", "y"] * 6
+    res = recipe_pca(df, spec_from_args(SimpleNamespace(
+        recipe="pca", data="p.csv", x=None, y=None, group="group", id="sample_id")))
+    assert res["test_meta"]["n_features"] == 4
+    assert res["test_meta"]["n_samples"] == 11
+    steps = " | ".join(res["clean_steps"])
+    assert "Coerced column 'f2' to numeric; 1 value(s) became NA, for example '<0.1'." in steps
+    assert "Left out the text column(s) 'batch'." in steps
+    assert "missing feature value: row 4." in steps
