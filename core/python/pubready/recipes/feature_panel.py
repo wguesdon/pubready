@@ -20,10 +20,11 @@ from matplotlib.ticker import MaxNLocator
 from scipy import stats
 
 from ..bundle import slugify
+from ..clean import coerce_numeric_columns
 from ..theme import apply_pub_style, new_fig, palette
 from ..util import (SCRIPT_LABEL_FN, cap_first, check_test_method, is_zero_variance, level_labels,
-                    level_order, mann_whitney_r, rank_biserial_unpaired, rank_floor_text,
-                    rank_test_cannot_reach, rank_test_min_p, shapiro_normal)
+                    level_order, mann_whitney_r, quote_join, rank_biserial_unpaired,
+                    rank_floor_text, rank_test_cannot_reach, rank_test_min_p, shapiro_normal)
 
 MAX_FEATURES = 36
 MAX_QC_PANELS = 48
@@ -113,16 +114,23 @@ def long_table(df, spec):
         d = pd.DataFrame({"feature": df[fcol].astype(str).where(df[fcol].notna()),
                           "group": df[x], "value": pd.to_numeric(df[y], errors="coerce")})
         layout = "long"
+        wide_steps = []
     else:
+        # A column is a feature when 80% or more of its cells read as numbers; a
+        # cell such as "<0.1" becomes NaN and is logged, and each text column
+        # that is left out is named (clean.coerce_numeric_columns, one rule in
+        # both engines).
         skip = {x, dat.get("id"), dat.get("label")}
-        cols = [c for c in df.columns
-                if pd.api.types.is_numeric_dtype(df[c]) and c not in skip]
+        cdf, cols, text, wide_steps = coerce_numeric_columns(
+            df, [c for c in df.columns if c not in skip])
         if not cols:
             raise ValueError("feature_panel found no numeric feature column; pass --facet for long data")
-        d = pd.concat([pd.DataFrame({"feature": c, "group": df[x],
-                                     "value": pd.to_numeric(df[c], errors="coerce")})
+        d = pd.concat([pd.DataFrame({"feature": c, "group": cdf[x], "value": cdf[c]})
                        for c in cols], ignore_index=True)
         layout = "wide"
+        if text:
+            wide_steps.append(f"Left out the text column(s) {quote_join(text)}; they are not "
+                              "features.")
     n0 = len(d)
     keep = (d["feature"].notna() & (d["feature"].astype(str).str.len() > 0)
             & d["group"].notna() & np.isfinite(d["value"]))
@@ -132,7 +140,7 @@ def long_table(df, spec):
     d["group"] = level_labels(d["group"])
     glv = level_order(d["group"], dat.get("levels"), "group")
     feats = list(pd.unique(d["feature"]))
-    steps = [f"Read {layout} data: {len(feats)} feature(s), {len(glv)} group(s)."]
+    steps = [f"Read {layout} data: {len(feats)} feature(s), {len(glv)} group(s)."] + wide_steps
     if int((~keep).sum()):
         steps.append(f"Dropped {int((~keep).sum())} value(s) with a missing feature, group or value "
                      f"({n0} -> {len(d)}).")

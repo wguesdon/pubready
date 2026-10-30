@@ -363,3 +363,16 @@ def test_small_axis_values_read_in_scientific_notation():
         "1.5e-09", "2.0e-09", "2.5e-09", ""]
     assert plain_number_labels([0, 1e-5, 2e-5]) == ["0e+00", "1e-05", "2e-05"]
     assert plain_number_labels([0, 0.25, 0.5]) == ["0.00", "0.25", "0.50"]
+
+
+# F42: a wide feature_panel keeps a mostly numeric column, logs the text cell,
+# and names each text column that it leaves out.
+def test_a_wide_feature_panel_coerces_a_mostly_numeric_column_and_logs_it():
+    vals = [1, 2, 3, 4, 5, 6, 3, 4, 5, 6, 7, 8.5]
+    df = pd.DataFrame({"group": ["a"] * 6 + ["b"] * 6, "f1": [str(v) for v in vals],
+                       "f2": ["<0.1"] + [str(v) for v in vals[1:]], "site": ["x", "y", "z"] * 4})
+    res = recipe_feature_panel(df, v3_spec("feature_panel", x="group"))
+    assert list(res["stats"]["feature"]) == ["f1", "f2"]
+    assert ("Coerced column 'f2' to numeric; 1 value(s) became NA, for example '<0.1'."
+            in res["clean_steps"])
+    assert "Left out the text column(s) 'site'; they are not features." in res["clean_steps"]

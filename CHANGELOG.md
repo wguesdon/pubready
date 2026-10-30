@@ -118,6 +118,10 @@ tag move together.
   is below 1e-4, as for molar concentrations. It read "0.000000" before. The R
   bracket of `two_group_compare` now sits 6% of the data span above the drawn
   geom, so it no longer falls to 0 on such values (F84).
+- A wide `feature_panel` keeps a column when 80% or more of its cells read as
+  numbers. Each other cell, such as "<0.1", becomes NA and the data log
+  records it, and the data log names each text column that is left out. The
+  whole column was dropped with no record before (F42).
 
 ## [3.0.0] - 2026-10-29
 

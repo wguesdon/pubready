@@ -397,3 +397,17 @@ test_that("small axis values read in scientific notation", {
   res <- recipe_two_group_compare(df, v3_spec("two_group_compare", x = "group", y = "conc"))
   expect_gt(v3_bracket_y(res$plot), 3.3e-9)
 })
+
+# F42: a wide feature_panel keeps a mostly numeric column, logs the text cell,
+# and names each text column that it leaves out.
+test_that("a wide feature_panel coerces a mostly numeric column and logs it", {
+  df <- data.frame(group = rep(c("a", "b"), each = 6),
+                   f1 = as.character(c(1, 2, 3, 4, 5, 6, 3, 4, 5, 6, 7, 8.5)),
+                   f2 = c("<0.1", 2, 3, 4, 5, 6, 3, 4, 5, 6, 7, 8.5),
+                   site = rep(c("x", "y", "z"), 4), stringsAsFactors = FALSE)
+  res <- recipe_feature_panel(df, v3_spec("feature_panel", x = "group"))
+  expect_equal(res$stats$feature, c("f1", "f2"))
+  expect_true(any(grepl("Coerced column 'f2' to numeric; 1 value(s) became NA, for example '<0.1'.",
+                        res$clean_steps, fixed = TRUE)))
+  expect_true("Left out the text column(s) 'site'; they are not features." %in% res$clean_steps)
+})

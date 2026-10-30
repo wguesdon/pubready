@@ -34,8 +34,6 @@
              stringsAsFactors = FALSE)
 }
 
-.fp_is_feature_col <- function(v) is.numeric(v)
-
 .fp_long <- function(df, spec) {
   x <- spec$data$x; fcol <- spec$data$facet; y <- spec$data$y
   if (is.null(x) || !nzchar(x)) stop("feature_panel needs --x (the group column)")
@@ -46,12 +44,20 @@
     d <- data.frame(feature = as.character(df[[fcol]]), group = df[[x]],
                     value = suppressWarnings(as.numeric(df[[y]])), stringsAsFactors = FALSE)
     layout <- "long"
+    wide_steps <- character(0)
   } else {
+    # A column is a feature when 80% or more of its cells read as numbers; a
+    # cell such as "<0.1" becomes NA and is logged, and each text column that is
+    # left out is named (util coerce_numeric_columns, one rule in both engines).
     skip <- c(x, spec$data$id, spec$data$label)
-    cols <- setdiff(names(df)[vapply(df, .fp_is_feature_col, logical(1))], skip)
+    co <- coerce_numeric_columns(df, setdiff(names(df), skip))
+    cols <- co$numeric
     if (length(cols) == 0) stop("feature_panel found no numeric feature column; pass --facet for long data")
-    d <- do.call(rbind, lapply(cols, .fp_stack_col, df = df, x = x))
+    d <- do.call(rbind, lapply(cols, .fp_stack_col, df = co$df, x = x))
     layout <- "wide"
+    wide_steps <- c(co$steps,
+                    if (length(co$text) > 0) sprintf("Left out the text column(s) %s; they are not features.",
+                                                     quote_join(co$text)))
   }
   n0 <- nrow(d)
   keep <- !is.na(d$feature) & nzchar(d$feature) & !is.na(d$group) & is.finite(d$value)
@@ -63,6 +69,7 @@
   feats <- unique(d$feature)
   steps <- c(
     sprintf("Read %s data: %d feature(s), %d group(s).", layout, length(feats), length(glv)),
+    wide_steps,
     if (sum(!keep) > 0) sprintf("Dropped %d value(s) with a missing feature, group or value (%d -> %d).",
                                 sum(!keep), n0, nrow(d)))
   list(d = d, features = feats, groups = glv, steps = steps, layout = layout)
