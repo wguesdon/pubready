@@ -619,10 +619,10 @@ R suite (`core/r/tests/testthat`) loads the source package with `pkgload`; the
 Python suite (`core/python/tests`) runs under `pytest`. The end-to-end
 `tests/smoke_test.sh` drives every recipe on both engines.
 
-The public benchmarks in `benchmarks/` check the numbers. Each recipe runs on
-a published dataset, for example the `sleep` data of Student (1908), the NCCTG
-lung cancer trial, the BCG vaccine trials or the PEFR data of Bland and Altman
-(1986). Both suites compare the result with a reference value that the
+The public benchmarks in `benchmarks/` check the numbers. Each recipe other than
+`spider_response` and `waterfall` runs on a published dataset, for example the
+`sleep` data of Student (1908), the NCCTG lung cancer trial, the BCG vaccine
+trials or the PEFR data of Bland and Altman (1986). Both suites compare the result with a reference value that the
 canonical R function computed, such as `stats::t.test`, `survival::coxph`,
 `pROC::roc` or `metafor::rma`. `tests/benchmark_test.sh` runs the same cases
 end to end through `figkit plot`. See `benchmarks/README.md`.

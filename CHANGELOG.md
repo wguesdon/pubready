@@ -35,6 +35,8 @@ tag move together.
 - The adapters tell the agent to pass `--llm-provider`, `--llm-model`,
   `--agent-harness` and `--agent-harness-version`, so that the report names the
   model and the harness. `docs/how_it_works.md` lists the four options (F102).
+- The docs say that the benchmarks check 32 of the 34 recipes. No public dataset
+  in the image fits `spider_response` or `waterfall` (F104).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of

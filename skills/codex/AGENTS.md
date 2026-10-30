@@ -171,7 +171,9 @@ Pick the engine per figure with `--engine`. Both write the same bundle and, wher
 a matching method exists, the same numbers. The two-group and paired recipes agree
 digit for digit on the t-test, the Mann-Whitney U test and the Wilcoxon signed-rank
 test, and the smoke test asserts it. The public benchmarks in `benchmarks/` hold
-every recipe in both engines to an independent reference value. Five gaps remain.
+32 of the 34 recipes in both engines to an independent reference value. No
+public dataset in the image fits `spider_response` or `waterfall`, so only the
+smoke test checks those two. Five gaps remain.
 The aligned rank transform for non-parametric factorial ANOVA is R only, so
 `--test art --engine python` errors and routes you to R.
 The Python `survival_km` table has no confidence interval for the median survival.
