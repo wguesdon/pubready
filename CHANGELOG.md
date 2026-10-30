@@ -21,6 +21,10 @@ tag move together.
   `midpoint_ci_high`, so an IC50 is no longer stored in a column named `ec50`.
   The `volcano` stats table names its p column after the `--y` column, for
   example `padj` (F123).
+- `heatmap` runs the Welch t-test of each feature only with `--test welch_t`.
+  The default, `--test auto`, runs no test, because a second test on genes
+  that a DE test chose is circular. `--test welch_t` stops when the annotation
+  does not hold two groups (F97).
 
 ### Fixed
 - `--levels`, `--markers` and `--covariates` accept "|" as the separator of

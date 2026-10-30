@@ -112,7 +112,7 @@ fi
 
 echo "[9] clustered heatmap"
 ./cli/figkit plot --recipe heatmap --data example/expression_matrix.csv \
-  --annotation example/expression_annotation.csv --out "$OUT/heatmap"
+  --annotation example/expression_annotation.csv --test welch_t --out "$OUT/heatmap"
 check_bundle "$OUT/heatmap" "heatmap"
 if compgen -G "$OUT/heatmap/*/stats_*.csv" > /dev/null && grep -q "p_adj" "$OUT"/heatmap/*/stats_*.csv; then
   echo "PASS: heatmap per-feature stats"
@@ -490,7 +490,7 @@ pyc fa2 --recipe factorial_anova    --data example/twoway_response.csv   --y res
 pyc fa3 --recipe factorial_anova    --data example/threeway_response.csv --y response --x genotype --fill treatment --facet sex
 pyc km  --recipe survival_km        --data example/survival_trial.csv    --time time --event event --x arm
 pyc cox --recipe cox_forest         --data example/survival_trial.csv    --time time --event event --covariates arm,age,sex,stage
-pyc hm  --recipe heatmap            --data example/expression_matrix.csv --annotation example/expression_annotation.csv
+pyc hm  --recipe heatmap            --data example/expression_matrix.csv --annotation example/expression_annotation.csv --test welch_t
 pyc corr    --recipe correlation         --data example/correlation_xy.csv   --x gene_a --y gene_b
 pyc corrhm  --recipe correlation_heatmap --data example/correlation_vars.csv
 pyc upset   --recipe upset               --data example/set_membership.csv

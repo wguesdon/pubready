@@ -1,8 +1,9 @@
 """Recipe: clustered heatmap of a features-by-samples matrix. Tries
 PyComplexHeatmap (to mirror the R ComplexHeatmap output); falls back to a seaborn
 clustermap if PyComplexHeatmap raises. Row z-score and clustering by default;
-a per-feature Welch t-test (BH) is computed when the annotation has two groups,
-and its stars are drawn between the heatmap and the row names, as in R.
+a per-feature Welch t-test (BH) is computed with --test welch_t when the
+annotation has two groups, and its stars are drawn between the heatmap and the
+row names, as in R. The default, --test auto, runs no test.
 
 Both engines draw the same leaf order (ordered_linkage): a complete-linkage tree
 on the Euclidean distance of the drawn values, and at each merge the branch with
@@ -108,6 +109,38 @@ def heatmap_stars(padj):
         else:
             out.append("")
     return out
+
+
+def welch_requested(method, group_col, n_groups):
+    """Whether to run the per-feature Welch test, as .hm_welch_requested() in R.
+
+    --test auto, the default, draws no test; --test welch_t runs it and needs an
+    annotation whose first column holds two groups. Any other value stops the run.
+
+    Args:
+        method: The --test value.
+        group_col: The first annotation column, or None without an annotation.
+        n_groups: The count of distinct values in that column.
+
+    Returns:
+        bool: True for --test welch_t.
+
+    Raises:
+        ValueError: If the value is unknown or the annotation does not hold two
+            groups.
+    """
+    method = method or "auto"
+    if method not in ("auto", "welch_t"):
+        raise ValueError(f"heatmap: unknown --test '{method}'; use auto (no test) or welch_t")
+    if method == "auto":
+        return False
+    if group_col is None:
+        raise ValueError("heatmap: --test welch_t needs --annotation, a table whose first column "
+                         "after the sample id holds two groups")
+    if n_groups != 2:
+        raise ValueError(f"heatmap: --test welch_t compares two groups, but the annotation column "
+                         f"'{group_col}' holds {n_groups}")
+    return True
 
 
 def welch_p(row, ca, cb):
@@ -232,17 +265,21 @@ def recipe_heatmap(df, spec):
     col_order = (list(disp.columns[hierarchy.leaves_list(col_z)]) if col_z is not None
                  else list(disp.columns))
 
-    ann, group_col = None, None
+    ann, group_col, n_groups = None, None, 0
     if spec["data"].get("annotation"):
         araw = read_tidy(spec["data"]["annotation"])
         araw = araw.set_index(araw.columns[0])
         ann = araw.reindex(mat.columns)
-        ann = ann.astype(str)
         group_col = ann.columns[0]
+        n_groups = int(ann[group_col].dropna().nunique())
+        ann = ann.astype(str)
 
-    # Per-feature differential test when the primary annotation has two groups.
+    # Per-feature differential test, only with --test welch_t. On genes that a DE
+    # test chose, a second test on the same samples is circular, so the default
+    # draws no test (F97).
+    run_test = welch_requested(spec["test"].get("method"), group_col, n_groups)
     star_of = {}
-    if ann is not None and ann[group_col].nunique() == 2:
+    if run_test:
         g = ann[group_col]
         lv = sorted(g.unique())
         ca = [c for c in mat.columns if g.loc[c] == lv[0]]
@@ -357,7 +394,7 @@ def _methods(scale_mode, cluster, n_feat, n_samp, test_levels, n_sig, used_pch):
         clust_txt += (" Clustering used complete linkage on the Euclidean distance of the displayed "
                       "values, and at each merge the branch with the higher mean of the unscaled "
                       "values was drawn first.")
-    test_txt = ""
+    test_txt = " No statistical test was applied."
     if test_levels:
         sig_txt = (f"{n_sig} of the {n_feat} features had an adjusted P below 0.05 and are "
                    "marked with stars." if n_sig else

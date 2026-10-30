@@ -185,7 +185,8 @@ def test_mtcars_correlation_and_matrix():
 
 
 def test_mtcars_heatmap_welch_tests():
-    spec = bench_spec("heatmap", annotation=os.path.join(BENCH, "data", "mtcars_annotation.csv"))
+    spec = bench_spec("heatmap", annotation=os.path.join(BENCH, "data", "mtcars_annotation.csv"),
+                      test="welch_t")
     res = recipe_heatmap(bench_data("mtcars_matrix"), spec)
     st = res["stats"].set_index("feature")
     for f in ("mpg", "disp", "hp", "drat", "wt", "qsec"):
@@ -318,7 +319,8 @@ def test_airway_volcano_counts_match_deseq2():
 
 
 def test_airway_heatmap_welch_tests():
-    spec = bench_spec("heatmap", annotation=os.path.join(BENCH, "data", "airway_annotation.csv"))
+    spec = bench_spec("heatmap", annotation=os.path.join(BENCH, "data", "airway_annotation.csv"),
+                      test="welch_t")
     res = recipe_heatmap(bench_data("airway_heatmap"), spec)
     st = res["stats"].set_index("feature")
     for g in ("SPARCL1", "CACNB2", "DUSP1", "SAMHD1", "MAOA"):

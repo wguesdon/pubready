@@ -82,3 +82,19 @@ test_that("a heatmap with no significant feature draws without a star column", {
   on.exit(grDevices::dev.off(), add = TRUE)
   expect_silent(res$draw())
 })
+
+# The Welch test runs only with --test welch_t (F97).
+test_that("the heatmap runs no test by default and checks --test welch_t", {
+  ann <- hm_null_annotation()
+  res <- recipe_heatmap(hm_null_matrix(), hm_spec(annotation = ann))
+  expect_equal(names(res$stats), c("feature", "mean", "sd"))
+  expect_null(res$test_meta$per_feature_test)
+  expect_match(res$methods, "No statistical test was applied.", fixed = TRUE)
+  three <- utils::read.csv(ann)
+  three$group[1] <- "c"
+  utils::write.csv(three, ann, row.names = FALSE)
+  expect_error(recipe_heatmap(hm_null_matrix(), hm_spec(annotation = ann, test = "welch_t")),
+               "compares two groups")
+  expect_error(recipe_heatmap(hm_null_matrix(), hm_spec(annotation = ann, test = "anova")),
+               "unknown --test 'anova'")
+})

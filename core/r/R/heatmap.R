@@ -2,8 +2,9 @@
 # Input is a matrix CSV: first column = feature id, remaining columns = samples.
 # An optional annotation CSV (--annotation) labels the columns; its first column
 # is the sample id. By default rows are z-scored and both axes are clustered.
-# When the primary annotation column has exactly two groups, each feature gets a
-# Welch t-test (BH-adjusted) and significance stars are drawn beside it.
+# With --test welch_t and an annotation whose first column holds two groups,
+# each feature gets a Welch t-test (BH-adjusted) and significance stars are
+# drawn beside it. The default, --test auto, runs no test (F97).
 #
 # Both engines draw the same leaf order (.hm_tree): a complete-linkage tree on
 # the Euclidean distance of the drawn values, and at each merge the branch with
@@ -51,6 +52,26 @@
     if (k < 0) out <- c(out, -k) else stack <- c(m[k, 1], m[k, 2], stack)
   }
   out
+}
+
+# Whether to run the per-feature Welch test. --test auto, the default, draws no
+# test; --test welch_t runs it and needs an annotation whose first column holds
+# two groups. Any other value stops the run.
+.hm_welch_requested <- function(method, group_col, ann) {
+  method <- method %||% "auto"
+  if (!method %in% c("auto", "welch_t")) {
+    stop(sprintf("heatmap: unknown --test '%s'; use auto (no test) or welch_t", method))
+  }
+  if (method == "auto") return(FALSE)
+  if (is.null(group_col)) {
+    stop("heatmap: --test welch_t needs --annotation, a table whose first column after the sample id holds two groups")
+  }
+  lv <- unique(ann[[group_col]][!is.na(ann[[group_col]])])
+  if (length(lv) != 2) {
+    stop(sprintf("heatmap: --test welch_t compares two groups, but the annotation column '%s' holds %d",
+                 group_col, length(lv)))
+  }
+  TRUE
 }
 
 recipe_heatmap <- function(df, spec) {
@@ -105,9 +126,12 @@ recipe_heatmap <- function(df, spec) {
     group_col <- names(ann)[1]
   }
 
-  # Per-feature differential test when the primary annotation has two groups.
+  # Per-feature differential test, only with --test welch_t. On genes that a DE
+  # test chose, a second test on the same samples is circular, so the default
+  # draws no test (F97).
+  run_test <- .hm_welch_requested(spec$test$method, group_col, ann)
   right_anno <- NULL
-  if (!is.null(group_col) && length(unique(ann[[group_col]])) == 2) {
+  if (run_test) {
     g  <- factor(ann[[group_col]]); lv <- levels(g)
     p  <- apply(mat, 1, function(r)
       tryCatch(stats::t.test(r[g == lv[1]], r[g == lv[2]])$p.value,
@@ -199,7 +223,7 @@ recipe_heatmap <- function(df, spec) {
   test_txt <- if (!is.null(test_levels)) {
     sprintf(" Each feature was compared between %s and %s with a Welch two-sample t-test, which treats the samples as independent, and the P values were adjusted across the %d features with the Benjamini-Hochberg method; %s",
             test_levels[1], test_levels[2], n_feat, sig_txt)
-  } else ""
+  } else " No statistical test was applied."
   paste0(
     sprintf("A heatmap of %d features across %d samples was drawn with ComplexHeatmap. ",
             n_feat, n_samp),

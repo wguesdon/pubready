@@ -56,7 +56,7 @@ rm -rf "$OUT"
 
 # Clustered heatmap (row z-score, cluster both) with group annotation + sig stars
 ./cli/figkit plot --recipe heatmap --data example/expression_matrix.csv \
-  --annotation example/expression_annotation.csv \
+  --annotation example/expression_annotation.csv --test welch_t \
   --stamp demo --out "$OUT"
 
 # Correlation scatter (auto -> Pearson) with a linear fit and CI band
@@ -191,7 +191,7 @@ PY="--engine python"
 ./cli/figkit plot $PY --recipe cox_forest --data example/survival_trial.csv \
   --time time --event event --covariates "arm,age,sex,stage" --stamp cox_py --out "$OUT"
 ./cli/figkit plot $PY --recipe heatmap --data example/expression_matrix.csv \
-  --annotation example/expression_annotation.csv --stamp demo_py --out "$OUT"
+  --annotation example/expression_annotation.csv --test welch_t --stamp demo_py --out "$OUT"
 ./cli/figkit plot $PY --recipe correlation --data example/correlation_xy.csv \
   --x gene_a --y gene_b --xlab "Gene A (a.u.)" --ylab "Gene B (a.u.)" --stamp corr_py --out "$OUT"
 ./cli/figkit plot $PY --recipe correlation_heatmap --data example/correlation_vars.csv \

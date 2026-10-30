@@ -121,7 +121,8 @@ test_that("mtcars: the Pearson correlation and the correlation matrix match stat
 
 test_that("mtcars: the per-feature Welch tests of the heatmap match stats::t.test", {
   bench_skip()
-  spec <- bench_spec("heatmap", annotation = file.path(bench_dir(), "data", "mtcars_annotation.csv"))
+  spec <- bench_spec("heatmap", annotation = file.path(bench_dir(), "data", "mtcars_annotation.csv"),
+                     test = "welch_t")
   res <- recipe_heatmap(bench_data("mtcars_matrix"), spec)
   for (f in c("mpg", "disp", "hp", "drat", "wt", "qsec")) {
     expect_ref(res$stats$p_value[res$stats$feature == f], "mtcars_heatmap", paste0("p_", f))
@@ -258,7 +259,8 @@ test_that("airway (Himes 2014): the volcano counts match the DESeq2 results", {
 
 test_that("airway: the per-gene Welch tests of the heatmap match stats::t.test", {
   bench_skip()
-  spec <- bench_spec("heatmap", annotation = file.path(bench_dir(), "data", "airway_annotation.csv"))
+  spec <- bench_spec("heatmap", annotation = file.path(bench_dir(), "data", "airway_annotation.csv"),
+                     test = "welch_t")
   res <- recipe_heatmap(bench_data("airway_heatmap"), spec)
   for (g in c("SPARCL1", "CACNB2", "DUSP1", "SAMHD1", "MAOA")) {
     expect_ref(res$stats$p_value[res$stats$feature == g], "airway_heatmap", paste0("p_", g))

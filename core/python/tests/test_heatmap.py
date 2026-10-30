@@ -23,7 +23,7 @@ def test_heatmap_draws_stars_and_keeps_legends_clear_of_the_row_names(tmp_path):
     ann_path = tmp_path / "ann.csv"
     pd.DataFrame({"sample": samples, "group": ["a"] * 6 + ["b"] * 6}).to_csv(ann_path, index=False)
     a = SimpleNamespace(recipe="heatmap", data="matrix.csv", x=None, y=None,
-                        annotation=str(ann_path))
+                        annotation=str(ann_path), test="welch_t")
     res = recipe_heatmap(df, spec_from_args(a))
 
     fig = res["fig"]
@@ -164,3 +164,24 @@ def test_a_null_heatmap_draws_no_star_column(tmp_path):
     assert res["test_meta"]["n_significant"] == 0
     stars = [t for ax in res["fig"].axes for t in ax.texts if set(t.get_text()) == {"*"}]
     assert not stars
+
+
+def test_the_heatmap_runs_no_test_by_default(tmp_path):
+    """The Welch test runs only with --test welch_t (F97)."""
+    import pytest
+    df, ann_path = hm_null(tmp_path)
+    a = SimpleNamespace(recipe="heatmap", data="matrix.csv", x=None, y=None,
+                        annotation=str(ann_path))
+    res = recipe_heatmap(df, spec_from_args(a))
+    assert list(res["stats"].columns) == ["feature", "mean", "sd"]
+    assert res["test_meta"]["per_feature_test"] is None
+    assert "No statistical test was applied." in res["methods"]
+    three = pd.read_csv(ann_path)
+    three.loc[0, "group"] = "c"
+    three.to_csv(ann_path, index=False)
+    a.test = "welch_t"
+    with pytest.raises(ValueError, match="compares two groups"):
+        recipe_heatmap(df, spec_from_args(a))
+    a.test = "anova"
+    with pytest.raises(ValueError, match="unknown --test 'anova'"):
+        recipe_heatmap(df, spec_from_args(a))
