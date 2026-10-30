@@ -32,6 +32,7 @@ recipe_spider_response <- function(df, spec) {
   n_rows0 <- nrow(d)
   d <- d[stats::complete.cases(d), , drop = FALSE]
   d[[idc]] <- as.character(d[[idc]])
+  check_one_row_per_time(d[[idc]], d[[x]], "spider_response", x)
   d <- d[order(d[[idc]], d[[x]]), , drop = FALSE]
 
   baseline <- stats::aggregate(d[[y]], by = list(id = d[[idc]]),
@@ -170,6 +171,22 @@ recipe_spider_response <- function(df, spec) {
        methods = methods, build_script = build_script,
        label = slugify(y), df_used = d, clean_steps = clean_steps,
        width = 5.8, height = 4.2)
+}
+
+# Stop when a patient has two rows or more at one time point, and name the
+# patients and the times. A second baseline row would else become a later visit.
+# spider_response and waterfall share it, and the Python engine has the same
+# rule.
+check_one_row_per_time <- function(id, time, recipe, xcol) {
+  tt <- level_labels(time)
+  dup <- duplicated(paste(id, tt, sep = "\r"))
+  if (!any(dup)) return(invisible(NULL))
+  first <- !duplicated(id[dup])
+  items <- sprintf("'%s' at %s = %s", id[dup][first], xcol, tt[dup][first])
+  shown <- paste(utils::head(items, 6), collapse = ", ")
+  if (length(items) > 6) shown <- sprintf("%s and %d more", shown, length(items) - 6)
+  stop(sprintf("%s needs one row per patient and time point, and %d patient(s) have two rows or more at one time: %s; average or remove the extra rows first",
+               recipe, length(items), shown))
 }
 
 # Stop when the time column holds no number, and say how many of its values are

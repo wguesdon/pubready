@@ -303,3 +303,16 @@ def test_waterfall_names_a_text_time_and_timecourse_a_set_with_no_complete_subje
     with pytest.raises(ValueError, match=r"none of the 3 subject\(s\) of 'id' has a value at every one "
                                          r"of the 3 time points of 'day' \(0, 7, 14\)"):
         recipe_timecourse(tc, v3c_spec("timecourse", x="day", y="y", id="id"))
+
+
+def test_waterfall_and_spider_name_a_patient_with_two_rows_at_one_time():
+    """F59: a second baseline row became a later visit."""
+    d = pd.DataFrame({"patient": ["P1", "P1", "P1", "P2", "P2", "P3", "P3", "P3"],
+                      "week": [0, 0, 8, 0, 8, 0, 8, 8],
+                      "lesion": [50, 52, 40, 30, 36, 20, 21, 22]})
+    msg = (r"needs one row per patient and time point, and 2 patient\(s\) have two rows or more at "
+           r"one time: 'P1' at week = 0, 'P3' at week = 8")
+    with pytest.raises(ValueError, match="waterfall " + msg):
+        recipe_waterfall(d, v3c_spec("waterfall", x="week", y="lesion", id="patient"))
+    with pytest.raises(ValueError, match="spider_response " + msg):
+        recipe_spider_response(d, v3c_spec("spider_response", x="week", y="lesion", id="patient"))

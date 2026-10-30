@@ -19,7 +19,7 @@ import pandas as pd
 
 from ..bundle import slugify
 from ..theme import apply_pub_style, new_fig, palette
-from ..util import cap_first
+from ..util import cap_first, level_labels
 
 #: The order a response legend reads in, from the best outcome to the worst.
 CATEGORIES = ("partial response", "stable disease", "progressive disease")
@@ -43,6 +43,40 @@ def categorise(best, worst, pr_cut, pd_cut):
     if worst >= pd_cut:
         return "progressive disease"
     return "stable disease"
+
+
+def check_one_row_per_time(ids, times, recipe, xcol):
+    """Stop when a patient has two rows or more at one time point.
+
+    A second baseline row would else become a later visit. The message names
+    the patients and the times. spider_response and waterfall share it, and the
+    R engine has the same rule.
+
+    Args:
+        ids: The patient of each row.
+        times: The time of each row.
+        recipe: The recipe name, for the message.
+        xcol: The time column, for the message.
+
+    Raises:
+        ValueError: If a patient has two rows at one time.
+    """
+    tt = level_labels(pd.Series(list(times)))
+    keys = pd.Series([f"{i}\r{t}" for i, t in zip(ids, tt)])
+    dup = keys.duplicated().to_numpy()
+    if not dup.any():
+        return
+    dup_ids = [i for i, flag in zip(ids, dup) if flag]
+    dup_tt = [t for t, flag in zip(tt, dup) if flag]
+    items, seen = [], set()
+    for i, t in zip(dup_ids, dup_tt):
+        if i not in seen:
+            seen.add(i)
+            items.append(f"'{i}' at {xcol} = {t}")
+    shown = ", ".join(items[:6]) + (f" and {len(items) - 6} more" if len(items) > 6 else "")
+    raise ValueError(f"{recipe} needs one row per patient and time point, and {len(items)} "
+                     f"patient(s) have two rows or more at one time: {shown}; average or remove "
+                     "the extra rows first")
 
 
 def check_numeric_time(values, col):
@@ -103,6 +137,7 @@ def recipe_spider_response(df, spec):
     n_rows0 = len(d)
     d = d.dropna()
     d[idc] = d[idc].astype(str)
+    check_one_row_per_time(d[idc], d[x], "spider_response", x)
     d = d.sort_values([idc, x], kind="mergesort").reset_index(drop=True)
 
     baseline = d.groupby(idc, sort=False)[y].first()

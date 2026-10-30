@@ -62,6 +62,7 @@ recipe_waterfall <- function(df, spec) {
   d <- d[stats::complete.cases(d), , drop = FALSE]
   n_missing <- n0 - nrow(d)
   if (has_time) {
+    check_one_row_per_time(d$id, d$time, "waterfall", x)
     fv <- .wf_from_visits(d)
     per <- fv$per
     per$category <- .wf_category(per$best_change_pct, per$worst_change_pct, pr_cut, pd_cut)

@@ -247,3 +247,14 @@ test_that("waterfall names a text time and timecourse names a set with no comple
                "none of the 3 subject(s) of 'id' has a value at every one of the 3 time points of 'day' (0, 7, 14)",
                fixed = TRUE)
 })
+
+test_that("waterfall and spider_response name a patient with two rows at one time (F59)", {
+  d <- data.frame(patient = c("P1", "P1", "P1", "P2", "P2", "P3", "P3", "P3"),
+                  week = c(0, 0, 8, 0, 8, 0, 8, 8),
+                  lesion = c(50, 52, 40, 30, 36, 20, 21, 22))
+  msg <- "needs one row per patient and time point, and 2 patient(s) have two rows or more at one time: 'P1' at week = 0, 'P3' at week = 8"
+  expect_error(recipe_waterfall(d, v3c_spec("waterfall", x = "week", y = "lesion", id = "patient")),
+               paste("waterfall", msg), fixed = TRUE)
+  expect_error(recipe_spider_response(d, v3c_spec("spider_response", x = "week", y = "lesion", id = "patient")),
+               paste("spider_response", msg), fixed = TRUE)
+})

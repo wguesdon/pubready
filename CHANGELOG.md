@@ -84,6 +84,10 @@ tag move together.
   counts when no subject, or too few, has a value at every time point. Before,
   these inputs stopped with "waterfall needs at least one patient with a
   response" or "timecourse needs more complete subjects than groups" (F92).
+- `waterfall` and `spider_response` stop when a patient has two rows at one
+  time point, and the message names each such patient and time, as
+  `timecourse` does. Before, a second baseline row became a later visit, and a
+  patient whose lesion grew by 25.9% read "partial response" (F59).
 
 ## [3.0.0] - 2026-10-29
 
