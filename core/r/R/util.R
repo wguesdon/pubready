@@ -68,6 +68,20 @@ rank_biserial_unpaired <- function(u, n1, n2) {
   2 * as.numeric(u) / (n1 * n2) - 1
 }
 
+# Signed Cohen's d of two groups, first minus second. Two independent groups use
+# the pooled standard deviation; paired data use dz, the mean of the
+# differences over their standard deviation. The Python engine uses the same
+# formulas (util.cohens_d_r).
+cohens_d_signed <- function(a, b, paired = FALSE) {
+  if (paired) {
+    d <- a - b
+    return(mean(d) / stats::sd(d))
+  }
+  na <- length(a); nb <- length(b)
+  pooled <- sqrt(((na - 1) * stats::var(a) + (nb - 1) * stats::var(b)) / (na + nb - 2))
+  (mean(a) - mean(b)) / pooled
+}
+
 # Rank-biserial correlation for paired differences (Kerby's formula). Zero
 # differences are dropped, as in the signed-rank test itself.
 rank_biserial_paired <- function(d) {

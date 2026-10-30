@@ -166,3 +166,16 @@ def test_two_group_compare_paired_chooses_the_test_from_the_differences():
     with pytest.raises(ValueError, match="need the same size"):
         recipe_two_group_compare(sleep_df.iloc[1:], v3_spec("two_group_compare", x="group",
                                                            y="extra", paired=True))
+
+
+# F65: Cohen's d of two_group_compare uses the pooled SD in both engines.
+def test_two_group_compare_reports_cohens_d_over_the_pooled_sd():
+    a = [7, 7.4, 9.5, 7.2]
+    b = [9.6, 11.2, 10.1, 12.5, 8.8, 13, 11.4]
+    df = pd.DataFrame({"group": ["F"] * 4 + ["M"] * 7, "hwt": a + b})
+    res = recipe_two_group_compare(df, v3_spec("two_group_compare", x="group", y="hwt",
+                                               test="student_t"))
+    sp = np.sqrt((3 * np.var(a, ddof=1) + 6 * np.var(b, ddof=1)) / 9)
+    assert res["stats"]["effect_size"].iloc[0] == pytest.approx((np.mean(a) - np.mean(b)) / sp,
+                                                                rel=1e-12)
+    assert "Cohen's d is the mean difference over the pooled standard deviation." in res["methods"]

@@ -47,12 +47,10 @@ recipe_two_group_compare <- function(df, spec) {
 
   if (resolved$family == "t") {
     stat <- rstatix::t_test(df, fml, paired = paired, var.equal = isTRUE(resolved$var_equal))
-    eff  <- tryCatch(
-      rstatix::cohens_d(df, fml, paired = paired),
-      error = null_on_error
-    )
+    # Cohen's d over the pooled SD (paired: dz), as the Python engine and
+    # feature_panel compute it; rstatix::cohens_d uses the average variance.
     eff_name <- if (paired) "Cohen's dz" else "Cohen's d"
-    eff_val <- if (!is.null(eff) && "effsize" %in% names(eff)) eff$effsize[1] else NA_real_
+    eff_val <- cohens_d_signed(by_group[[lvls[1]]], by_group[[lvls[2]]], paired)
   } else {
     stat <- rstatix::wilcox_test(df, fml, paired = paired)
     eff_name <- "rank-biserial r"
@@ -188,6 +186,16 @@ recipe_two_group_compare <- function(df, spec) {
        df_used = df, clean_steps = cl$steps, qc = qc)
 }
 
+# The sentence that defines a Cohen's d of the methods text. The Python engine
+# writes the same words.
+.tg_effect_definition <- function(name) {
+  if (identical(name, "Cohen's d")) {
+    " Cohen's d is the mean difference over the pooled standard deviation."
+  } else if (identical(name, "Cohen's dz")) {
+    " Cohen's dz is the mean of the within-pair differences over their standard deviation."
+  } else ""
+}
+
 # The within-pair differences, group1 minus group2, with the rows paired by
 # their order in each group. Groups of unequal size cannot pair.
 .tg_paired_diffs <- function(by_group, lvls, x) {
@@ -260,6 +268,7 @@ recipe_two_group_compare <- function(df, spec) {
               formatC(eff_v, format = "f", digits = 2), stats_df$group1[1], stats_df$group2[1])
     }
   } else ""
+  eff_txt <- paste0(eff_txt, .tg_effect_definition(test_meta$effect_size$name))
   adj_txt <- if (!identical(spec$test$p_adjust, "none")) {
     sprintf(" P-values were adjusted for multiple comparisons using the %s method.", spec$test$p_adjust)
   } else ""

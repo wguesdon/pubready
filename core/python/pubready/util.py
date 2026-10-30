@@ -318,12 +318,12 @@ def rank_floor_text(min_p, kept):
 
 
 def cohens_d_r(a, b, paired=False):
-    """Signed Cohen's d with the formulas of rstatix::cohens_d.
+    """Signed Cohen's d of two groups, first minus second.
 
     pingouin reports the magnitude only, so the sign that says which group is
     higher is restored here. Two independent groups use the pooled standard
     deviation; paired data use dz, the mean difference over its standard
-    deviation.
+    deviation. The R engine uses the same formulas (cohens_d_signed).
 
     Args:
         a: Values of the first group.

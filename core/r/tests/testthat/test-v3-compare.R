@@ -135,3 +135,16 @@ test_that("two_group_compare --paired chooses the test from the differences", {
                                                                 y = "extra", paired = TRUE)),
                "need the same size")
 })
+
+# F65: Cohen's d of two_group_compare uses the pooled SD in both engines.
+test_that("two_group_compare reports Cohen's d over the pooled SD", {
+  df <- data.frame(group = c(rep("F", 4), rep("M", 7)),
+                   hwt = c(7, 7.4, 9.5, 7.2, 9.6, 11.2, 10.1, 12.5, 8.8, 13, 11.4))
+  res <- recipe_two_group_compare(df, v3_spec("two_group_compare", x = "group", y = "hwt",
+                                              test = "student_t"))
+  a <- df$hwt[1:4]; b <- df$hwt[5:11]
+  sp <- sqrt((3 * var(a) + 6 * var(b)) / 9)
+  expect_equal(res$stats$effect_size, (mean(a) - mean(b)) / sp, tolerance = 1e-12)
+  expect_match(res$methods, "Cohen's d is the mean difference over the pooled standard deviation.",
+               fixed = TRUE)
+})

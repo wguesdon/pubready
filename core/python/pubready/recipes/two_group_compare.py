@@ -20,6 +20,14 @@ from ..util import (cap_first, cohens_d_r, is_zero_variance, mann_whitney_r, p_s
                     zero_variance_subject)
 
 
+EFFECT_DEFINITIONS = {
+    "Cohen's d": " Cohen's d is the mean difference over the pooled standard deviation.",
+    "Cohen's dz": (" Cohen's dz is the mean of the within-pair differences over their standard"
+                   " deviation."),
+}
+"""The sentence that defines a Cohen's d of the methods text, as in the R engine."""
+
+
 def _resolve(method, all_normal, equal_var, paired, rank_min_p=np.nan, t_can_run=True):
     """Resolve the test from the request and the assumption checks.
 
@@ -273,7 +281,7 @@ def _methods(r, stats_df, eff_name, eff_value, spec):
         f"{cap_first(y_label)} was compared between the two groups with a {r['label']}."
         + norm_txt + var_txt +
         f" Effect size is reported as {eff_txt} ({stats_df['group1'].iloc[0]} minus "
-        f"{stats_df['group2'].iloc[0]})."
+        f"{stats_df['group2'].iloc[0]})." + EFFECT_DEFINITIONS.get(eff_name, "") +
         " Significance was set at P < 0.05."
         f" Analyses were performed in Python {_pyver()} with pingouin {v('pingouin')};"
         f" figures were produced with seaborn {v('seaborn')} and statannotations {v('statannotations')}."

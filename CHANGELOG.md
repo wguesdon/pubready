@@ -49,6 +49,10 @@ tag move together.
   group, and groups of unequal size stop the run. The stats table gets
   `shapiro_p_diff`, the QC panel shows the differences, and the methods text
   names them (F36).
+- The R engine of `two_group_compare` computes Cohen's d over the pooled SD, as
+  the Python engine and `feature_panel` do, and not over the average variance
+  of `rstatix::cohens_d`. On the cats data both engines now give -0.95. The
+  methods text states the formula (F65).
 
 ## [3.0.0] - 2026-10-29
 
