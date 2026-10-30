@@ -43,6 +43,8 @@ tag move together.
   one sample stops the run, and a feature with no variance in either group
   gets P = NA in both engines and stays out of the Benjamini-Hochberg count.
   The groups follow the level order of the other recipes (F87).
+- The `heatmap` annotation tracks continue the palette from one track to the
+  next, so two tracks no longer share colours (F121).
 
 ## [3.0.0] - 2026-10-29
 

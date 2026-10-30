@@ -74,6 +74,22 @@
   TRUE
 }
 
+# The colours of the annotation tracks. The palette continues from one track to
+# the next, so two tracks never share a colour while the palette lasts (F121).
+# The levels of each track follow level_order(). The Python engine has the same
+# rule.
+.hm_track_colours <- function(ann) {
+  out <- list()
+  k <- 0
+  for (cn in names(ann)) {
+    lv <- level_order(ann[[cn]])
+    idx <- (k + seq_along(lv) - 1) %% length(pubready_palette) + 1
+    out[[cn]] <- stats::setNames(pubready_palette[idx], lv)
+    k <- k + length(lv)
+  }
+  out
+}
+
 # The two groups of the Welch test, in the order of level_order(). A sample
 # with no group, or a group of fewer than two samples, stops the run (F87).
 .hm_test_groups <- function(g, samples, group_col) {
@@ -150,12 +166,8 @@ recipe_heatmap <- function(df, spec) {
     ann <- araw[, -1, drop = FALSE]
     rownames(ann) <- rn
     ann <- ann[colnames(mat), , drop = FALSE]
-    for (cn in names(ann)) ann[[cn]] <- as.character(ann[[cn]])
-    ann_cols <- lapply(names(ann), function(cn) {
-      lv <- sort(unique(ann[[cn]]))
-      stats::setNames(rep(pubready_palette, length.out = length(lv)), lv)
-    })
-    names(ann_cols) <- names(ann)
+    for (cn in names(ann)) ann[[cn]] <- level_labels(ann[[cn]])
+    ann_cols <- .hm_track_colours(ann)
     top_anno <- ComplexHeatmap::HeatmapAnnotation(
       df = ann, col = ann_cols,
       annotation_name_gp = grid::gpar(fontsize = 9))

@@ -123,3 +123,15 @@ test_that("the heatmap leaves a degenerate feature out of the BH count", {
   expect_error(recipe_heatmap(m, hm_spec(annotation = ann, test = "welch_t")),
                "group 'b' has 1")
 })
+
+# The palette continues across the annotation tracks, so two tracks do not
+# share a colour (F121). The Python suite expects the same colours.
+test_that("the annotation tracks do not share a colour", {
+  ann <- data.frame(group = c("b", "a", "a", "b"), batch = c(1, 2, 1, 2))
+  ann$batch <- level_labels(ann$batch)
+  cols <- .hm_track_colours(ann)
+  expect_equal(unname(cols$group), pubready_palette[1:2])
+  expect_equal(names(cols$group), c("a", "b"))
+  expect_equal(unname(cols$batch), pubready_palette[3:4])
+  expect_equal(names(cols$batch), c("1", "2"))
+})

@@ -76,16 +76,25 @@ def color_limits(disp, scale_mode):
     return -2.0, 0.0, 2.0
 
 
-def level_colours(series):
-    """House-palette colours for the sorted levels of one annotation column.
+def track_colours(ann):
+    """House-palette colours of the annotation tracks, as .hm_track_colours() in R.
+
+    The palette continues from one track to the next, so two tracks never share
+    a colour while the palette lasts (F121). The levels of each track follow
+    level_order().
 
     Args:
-        series: The annotation column.
+        ann: The annotation table, one column per track, as text.
 
     Returns:
-        dict: One colour for each level, as the R engine assigns them.
+        dict: For each track, one colour for each level.
     """
-    return {lvl: PALETTE[i % len(PALETTE)] for i, lvl in enumerate(sorted(series.unique()))}
+    out, k = {}, 0
+    for c in ann.columns:
+        lv = level_order(ann[c])
+        out[c] = {lvl: PALETTE[(k + i) % len(PALETTE)] for i, lvl in enumerate(lv)}
+        k += len(lv)
+    return out
 
 
 def heatmap_stars(padj):
@@ -338,7 +347,7 @@ def recipe_heatmap(df, spec):
         group_col = ann.columns[0]
         n_groups = int(ann[group_col].dropna().nunique())
         group_raw = ann[group_col]
-        ann = ann.astype(str)
+        ann = ann.apply(level_labels).astype(str)
 
     # Per-feature differential test, only with --test welch_t. On genes that a DE
     # test chose, a second test on the same samples is circular, so the default
@@ -384,7 +393,7 @@ def recipe_heatmap(df, spec):
         col_ha = None
         if ann is not None:
             col_ha = pch.HeatmapAnnotation(
-                **{c: pch.anno_simple(ann[c], colors=level_colours(ann[c]), add_text=False,
+                **{c: pch.anno_simple(ann[c], colors=track_colours(ann)[c], add_text=False,
                                       legend=True)
                    for c in ann.columns},
                 axis=1, verbose=0)
@@ -418,7 +427,7 @@ def recipe_heatmap(df, spec):
         fallback_reason = f"{type(err).__name__}: {err}"
         col_colors = None
         if ann is not None:
-            col_colors = pd.DataFrame({c: ann[c].map(level_colours(ann[c])) for c in ann.columns})
+            col_colors = pd.DataFrame({c: ann[c].map(track_colours(ann)[c]) for c in ann.columns})
         grid = sns.clustermap(
             disp, cmap=diverging_cmap(), vmin=vmin, vmax=vmax, center=vcenter, method="complete",
             row_cluster=row_z is not None, col_cluster=col_z is not None,

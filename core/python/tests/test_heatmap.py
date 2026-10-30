@@ -211,3 +211,13 @@ def test_the_heatmap_leaves_a_degenerate_feature_out_of_the_bh_count(tmp_path):
     a.test = "welch_t"
     with pytest.raises(ValueError, match="group 'b' has 1"):
         recipe_heatmap(df, spec_from_args(a))
+
+
+def test_the_annotation_tracks_do_not_share_a_colour():
+    """The palette continues across the tracks, as in R (F121)."""
+    from pubready.recipes.heatmap import track_colours
+    from pubready.theme import PALETTE
+    ann = pd.DataFrame({"group": ["b", "a", "a", "b"], "batch": ["1", "2", "1", "2"]})
+    cols = track_colours(ann)
+    assert cols["group"] == {"a": PALETTE[0], "b": PALETTE[1]}
+    assert cols["batch"] == {"1": PALETTE[2], "2": PALETTE[3]}
