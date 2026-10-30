@@ -363,3 +363,15 @@ test_that("proportions gives no odds ratio for a zero cell on the chi-squared br
   expect_match(res$methods, "The odds ratio is not given, because a cell of the 2 x 2 table is zero.",
                fixed = TRUE)
 })
+
+# F118: a Tukey or Games-Howell P below 1e-12 is written as "< 1e-12".
+test_that("a studentized-range P below 1e-12 is written as < 1e-12", {
+  expect_equal(p_floor_column(c(0.03, 2e-13)), c("0.03", "< 1e-12"))
+  expect_equal(p_floor_column(c(0.03, 2e-5)), c(0.03, 2e-5))
+  expect_equal(p_bracket_label(c(0.0329, 0), TRUE), c("p = 0.033", "p < 1e-12"))
+  mg <- data.frame(g = rep(c("a", "b", "c"), each = 10),
+                   y = c(30 + sin(1:10) / 10, 5 + cos(1:10) / 10, 17 + sin(2 * (1:10)) / 10))
+  res <- recipe_multi_group_compare(mg, v3_spec("multi_group_compare", x = "g", y = "y",
+                                                test = "anova"))
+  expect_true(all(res$stats$p_adj == "< 1e-12"))
+})

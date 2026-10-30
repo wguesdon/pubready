@@ -158,6 +158,8 @@ recipe_multi_group_compare <- function(df, spec) {
     omnibus_effect_size = if (is.null(omnibus$effect_size)) NA_real_ else omnibus$effect_size$value,
     stringsAsFactors = FALSE
   )
+  floored <- resolved$posthoc %in% c("tukey", "games_howell")
+  if (floored) stats_df$p_adj <- p_floor_column(stats_df$p_adj)
 
   # Significant comparisons only. Up to .mg_max_brackets() of them get a
   # bracket each, on its own level; more than that would stack too many lines,
@@ -196,7 +198,7 @@ recipe_multi_group_compare <- function(df, spec) {
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 10, colour = "grey30"))
   cld <- NULL
   if (display == "brackets" && nrow(sig) > 0) {
-    sig <- .mg_bracket_rows(sig, lvls, top_all, span, bracket_label)
+    sig <- .mg_bracket_rows(sig, lvls, top_all, span, bracket_label, floored)
     p <- p +
       ggpubr::stat_pvalue_manual(sig, label = "lab", tip.length = 0.01, bracket.size = 0.4,
                                  label.size = 3.6, vjust = 0) +
@@ -273,12 +275,12 @@ recipe_multi_group_compare <- function(df, spec) {
 
 # One level per bracket, the narrowest pairs lowest, from 8% of the span above
 # the tallest geom, 13% of the span apart. The Python engine uses the same rule.
-.mg_bracket_rows <- function(sig, lvls, top_all, span, bracket_label) {
+.mg_bracket_rows <- function(sig, lvls, top_all, span, bracket_label, floored = FALSE) {
   i1 <- match(sig$group1, lvls); i2 <- match(sig$group2, lvls)
   sig <- sig[order(abs(i2 - i1), pmin(i1, i2)), , drop = FALSE]
   sig$y.position <- top_all + span * (0.08 + 0.13 * (seq_len(nrow(sig)) - 1))
   sig$lab <- if (identical(bracket_label, "p.format")) {
-    paste0("p = ", formatC(sig$p.adj, format = "g", digits = 2))
+    p_bracket_label(sig$p.adj, floored)
   } else {
     p_stars(sig$p.adj)
   }

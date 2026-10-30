@@ -280,6 +280,32 @@ cap_first <- function(s) {
   paste0(toupper(substring(s, 1, 1)), substring(s, 2))
 }
 
+# The studentized range distribution (ptukey) of the Tukey and the Games-Howell
+# tests loses its precision in the far tail in both engines: R gives 0 or about
+# 2.4e-13, Python 0, where the exact P can be 1e-17. Below this floor the P is
+# written as "< 1e-12".
+p_floor_studentized <- 1e-12
+
+# A column of P values as text when one of them is below the floor: "< 1e-12"
+# for those, 15 significant digits for the others. A column with no P below the
+# floor stays numeric. The Python engine has the same rule (util.p_floor_column).
+p_floor_column <- function(p, floor = p_floor_studentized) {
+  low <- !is.na(p) & p < floor
+  if (!any(low)) return(p)
+  out <- sprintf("%.15g", p)
+  out[low] <- sprintf("< %g", floor)
+  out[is.na(p)] <- NA_character_
+  out
+}
+
+# The label of a bracket in the p.format style: "p = 0.032", or "p < 1e-12"
+# below the floor when `floored` is TRUE.
+p_bracket_label <- function(p, floored = FALSE) {
+  out <- paste0("p = ", formatC(p, format = "g", digits = 2))
+  if (floored) out[!is.na(p) & p < p_floor_studentized] <- sprintf("p < %g", p_floor_studentized)
+  out
+}
+
 # The P value as a phrase for a methods sentence: "P < 0.001" below 0.001, else
 # "P = " and two significant digits. A table cell keeps the bare value.
 p_phrase <- function(p) {

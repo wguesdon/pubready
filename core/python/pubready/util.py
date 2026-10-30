@@ -425,6 +425,48 @@ def rank_biserial_paired(d):
     return float((rk[nz > 0].sum() - rk[nz < 0].sum()) / rk.sum())
 
 
+P_FLOOR_STUDENTIZED = 1e-12
+"""Below this P the studentized range of Tukey and Games-Howell loses its precision.
+
+R gives 0 or about 2.4e-13, Python 0, where the exact P can be 1e-17, so the P
+is written as "< 1e-12", as p_floor_studentized of the R engine.
+"""
+
+
+def p_floor_column(p, floor=P_FLOOR_STUDENTIZED):
+    """A column of P values as text when one of them is below the floor.
+
+    Args:
+        p: The P values.
+        floor: The floor.
+
+    Returns:
+        list: The P values unchanged when none is below the floor, else text:
+        "< 1e-12" below it and 15 significant digits for the others, as
+        p_floor_column() of the R engine.
+    """
+    vals = [float(v) for v in p]
+    if not any(np.isfinite(v) and v < floor for v in vals):
+        return vals
+    return [None if not np.isfinite(v) else (f"< {floor:g}" if v < floor else f"{v:.15g}")
+            for v in vals]
+
+
+def p_bracket_label(p, floored=False):
+    """The label of a bracket in the p.format style.
+
+    Args:
+        p: The P value.
+        floored: Whether the P comes from the studentized range.
+
+    Returns:
+        str: "p = 0.032", or "p < 1e-12" below the floor when floored.
+    """
+    if floored and np.isfinite(p) and p < P_FLOOR_STUDENTIZED:
+        return f"p < {P_FLOOR_STUDENTIZED:g}"
+    return f"p = {p:.2g}"
+
+
 def p_phrase(p, digits=2):
     """Write a P value as a phrase for a methods sentence.
 

@@ -109,6 +109,10 @@ tag move together.
 - On the chi-squared branch of `proportions`, a 2 x 2 table with a zero cell
   gives no odds ratio in both engines (NA), and the methods text says that a
   cell is zero. R wrote Inf and Python an empty cell before (F93).
+- `multi_group_compare` writes a Tukey or Games-Howell P below 1e-12 as
+  "< 1e-12" in the stats table and in a `p.format` bracket. The studentized
+  range loses its precision there in both engines: R wrote 0 or about 2.4e-13,
+  and Python wrote 0 (F118).
 
 ## [3.0.0] - 2026-10-29
 

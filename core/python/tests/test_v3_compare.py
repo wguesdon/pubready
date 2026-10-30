@@ -339,3 +339,18 @@ def test_proportions_gives_no_odds_ratio_for_a_zero_cell_on_the_chi_squared_bran
     assert res["stats"]["odds_ratio"].isna().all()
     assert ("The odds ratio is not given, because a cell of the 2 x 2 table is zero."
             in res["methods"])
+
+
+# F118: a Tukey or Games-Howell P below 1e-12 is written as "< 1e-12".
+def test_a_studentized_range_p_below_1e12_is_written_as_less_than():
+    from pubready.util import p_bracket_label, p_floor_column
+    assert p_floor_column([0.03, 2e-13]) == ["0.03", "< 1e-12"]
+    assert p_floor_column([0.03, 2e-5]) == [0.03, 2e-5]
+    assert [p_bracket_label(p, True) for p in (0.0329, 0.0)] == ["p = 0.033", "p < 1e-12"]
+    i = np.arange(1, 11)
+    mg = pd.DataFrame({"g": np.repeat(["a", "b", "c"], 10),
+                       "y": np.concatenate([30 + np.sin(i) / 10, 5 + np.cos(i) / 10,
+                                            17 + np.sin(2 * i) / 10])})
+    res = recipe_multi_group_compare(mg, v3_spec("multi_group_compare", x="g", y="y",
+                                                 test="anova"))
+    assert (res["stats"]["p_adj"] == "< 1e-12").all()

@@ -15,9 +15,9 @@ from ..clean import clean_xy
 from ..theme import (add_dist_geom, apply_pub_style, category_width, geom_top, new_fig, palette,
                      plain_number_axis, script_geom_code, wrap_labels)
 from ..util import (SCRIPT_LABEL_FN, cap_first, check_spread, check_test_method, cld_letters,
-                    df_text, level_labels, level_order, p_stars, rank_floor_text,
-                    rank_test_cannot_reach, rank_test_min_p, shapiro_normal, zero_variance_groups,
-                    zero_variance_message, zero_variance_subject)
+                    df_text, level_labels, level_order, p_bracket_label, p_floor_column, p_stars,
+                    rank_floor_text, rank_test_cannot_reach, rank_test_min_p, shapiro_normal,
+                    zero_variance_groups, zero_variance_message, zero_variance_subject)
 
 MAX_BRACKETS = 6
 """More significant pairs than this switch the figure to a compact letter display."""
@@ -145,7 +145,7 @@ def recipe_multi_group_compare(df, spec):
         span = max(abs(top_all), 1.0)
     letters = None
     if display == "brackets" and sig:
-        _draw_brackets(ax, sig, lv, top_all, span, blabel)
+        _draw_brackets(ax, sig, lv, top_all, span, blabel, fam in ("anova", "welch"))
     elif display == "compact letter display":
         letters = cld_letters(lv, [a for a, _, _ in pairs], [b for _, b, _ in pairs],
                               [p for _, _, p in pairs])
@@ -175,6 +175,9 @@ def recipe_multi_group_compare(df, spec):
         "omnibus_df2": omni["df2"], "omnibus_p": omni["p"],
         "omnibus_effect_size_name": omni["eff_name"], "omnibus_effect_size": omni["eff"],
     } for a, b, p in pairs])
+    floored = fam in ("anova", "welch")
+    if floored and len(stats_df):
+        stats_df["p_adj"] = p_floor_column(stats_df["p_adj"])
 
     n_by = {g: int(len(gr)) for g, gr in zip(lv, groups)}
     test_meta = {
@@ -270,7 +273,7 @@ def _bracket_key(row, pos):
     return (abs(i2 - i1), min(i1, i2))
 
 
-def _draw_brackets(ax, sig, lv, top_all, span, blabel):
+def _draw_brackets(ax, sig, lv, top_all, span, blabel, floored=False):
     """Draw one bracket per significant pair, each on its own level.
 
     The rule is the one of .mg_bracket_rows() in the R engine: the narrowest
@@ -284,6 +287,8 @@ def _draw_brackets(ax, sig, lv, top_all, span, blabel):
         top_all: The top of the tallest geom.
         span: The span of the drawn axis.
         blabel: "p.signif" for stars or "p.format" for the P value.
+        floored: Whether the P values come from the studentized range, so a P
+            below 1e-12 reads "p < 1e-12".
     """
     pos = {g: i for i, g in enumerate(lv)}
     rows = sorted(sig, key=functools.partial(_bracket_key, pos=pos))
@@ -293,7 +298,7 @@ def _draw_brackets(ax, sig, lv, top_all, span, blabel):
     for (a, b, p), yk in zip(rows, levels):
         x1, x2 = sorted((pos[a], pos[b]))
         ax.plot([x1, x1, x2, x2], [yk - tip, yk, yk, yk - tip], color="black", lw=0.8)
-        lab = f"p = {p:.2g}" if blabel == "p.format" else p_stars(p)
+        lab = p_bracket_label(p, floored) if blabel == "p.format" else p_stars(p)
         ax.text((x1 + x2) / 2, yk, lab, ha="center", va="bottom", fontsize=10)
     ax.set_ylim(top=top)
 
