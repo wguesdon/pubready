@@ -18,7 +18,7 @@ volcano x y label fc_cutoff p_cutoff top_n theme xlab ylab title
 enrichment_dot label top_n theme xlab title
 paired_compare x y id levels test theme xlab ylab title palette
 proportions x y levels test theme xlab ylab title palette
-pca group fill x label features theme xlab ylab title palette
+pca group fill x id label features theme xlab ylab title palette
 spider_response x y id group pd_threshold pr_threshold theme xlab ylab title palette
 dose_response x y group theme xlab ylab title palette
 roc_curve x y positive theme xlab ylab title palette
