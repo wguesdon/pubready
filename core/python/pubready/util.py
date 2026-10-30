@@ -277,3 +277,102 @@ def df_text(d):
     """
     d = float(d)
     return f"{int(round(d))}" if abs(d - round(d)) < 1e-9 else f"{d:.2f}"
+
+
+def _level_label(v):
+    """Format one value of a grouping column as level_labels() does.
+
+    Args:
+        v: One value.
+
+    Returns:
+        str or float: The label, or NaN for a missing value.
+    """
+    if v is None or (isinstance(v, (float, np.floating)) and np.isnan(v)):
+        return np.nan
+    if isinstance(v, (bool, np.bool_)):
+        return "TRUE" if v else "FALSE"
+    if isinstance(v, (int, np.integer)):
+        return str(int(v))
+    if isinstance(v, (float, np.floating)):
+        if np.isfinite(v) and v == round(v) and abs(v) < 1e15:
+            return str(int(v))
+        return f"{v:.15g}"
+    return str(v)
+
+
+def level_labels(values):
+    """Text labels for the values of a grouping column.
+
+    A whole number prints with no decimal point and no exponent, so a dose of
+    80 reads "80" in both engines, also when pandas reads the column as float
+    because it holds a missing value. Other numbers print with 15 significant
+    digits. The R engine has the same rule.
+
+    Args:
+        values: A pandas Series.
+
+    Returns:
+        pandas.Series: The labels as text, with each missing value kept as NaN.
+    """
+    return values.map(_level_label)
+
+
+def _level_number(s):
+    """Read one label as a number, as R as.numeric() does.
+
+    Args:
+        s: One label.
+
+    Returns:
+        float or None: The number, or None when the label is not a number.
+    """
+    if "_" in s:
+        return None
+    try:
+        v = float(s)
+    except ValueError:
+        return None
+    return None if np.isnan(v) else v
+
+
+def level_order(labels, levels=None, what="group"):
+    """The order of the levels of a grouping column, one rule in both engines.
+
+    With --levels the order is the listed order: a value of the data that the
+    list does not name stops the run, and a listed value that no row holds is
+    left out. Without --levels the levels sort as numbers when every label is a
+    number, else in code-point order. The R engine has the same rule.
+
+    Args:
+        labels: The labels. A value that is not text is formatted with
+            level_labels() first, and a missing value is left out.
+        levels: The order that --levels gives, or None.
+        what: The word for one level in the error message.
+
+    Returns:
+        list: The levels in order.
+
+    Raises:
+        ValueError: If a value of the data is missing from levels.
+    """
+    u = []
+    for v in labels:
+        lab = v if isinstance(v, str) else _level_label(v)
+        if isinstance(lab, str) and lab not in u:
+            u.append(lab)
+    if levels:
+        listed = []
+        for s in levels:
+            s = str(s).strip()
+            if s not in listed:
+                listed.append(s)
+        miss = [v for v in u if v not in listed]
+        if miss:
+            raise ValueError("--levels does not list the {}(s) {} of the data".format(
+                what, ", ".join(f"'{m}'" for m in miss)))
+        return [v for v in listed if v in u]
+    nums = [_level_number(v) for v in u]
+    if u and all(n is not None for n in nums):
+        return [v for _, v in sorted(zip(nums, u))]
+    return sorted(u)

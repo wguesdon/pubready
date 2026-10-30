@@ -174,3 +174,40 @@ sig_text <- function(x, digits = 3) {
 df_text <- function(d) {
   if (abs(d - round(d)) < 1e-9) sprintf("%d", as.integer(round(d))) else sprintf("%.2f", d)
 }
+
+# Text labels for the values of a grouping column. A whole number prints with no
+# decimal point and no exponent, so a dose of 80 reads "80" in both engines, also
+# when the column holds a missing value. Other numbers print with 15
+# significant digits. The Python engine has the same rule.
+level_labels <- function(x) {
+  if (!is.numeric(x)) return(as.character(x))
+  whole <- is.finite(x) & x == round(x) & abs(x) < 1e15
+  out <- trimws(formatC(x, digits = 15, format = "g"))
+  out[whole] <- trimws(formatC(x[whole], format = "f", digits = 0))
+  out[is.na(x)] <- NA_character_
+  out
+}
+
+# The order of the levels of a grouping column, one rule in both engines. With
+# --levels the order is the listed order: a value of the data that the list does
+# not name stops the run, and a listed value that no row holds is left out.
+# Without --levels the levels sort as numbers when every label is a number, else
+# in code-point order, which does not depend on the locale of the image.
+level_order <- function(labels, levels = NULL, what = "group") {
+  labels <- if (is.numeric(labels)) level_labels(labels) else as.character(labels)
+  u <- unique(labels[!is.na(labels)])
+  if (length(levels) > 0) {
+    levels <- unique(trimws(as.character(levels)))
+    miss <- setdiff(u, levels)
+    if (length(miss) > 0) {
+      stop(sprintf("--levels does not list the %s(s) %s of the data", what,
+                   paste(sprintf("'%s'", miss), collapse = ", ")))
+    }
+    return(levels[levels %in% u])
+  }
+  num <- suppressWarnings(as.numeric(u))
+  if (length(u) > 0 && all(is.finite(num) | is.infinite(num))) {
+    return(u[order(num, u, method = "radix")])
+  }
+  sort(u, method = "radix")
+}
