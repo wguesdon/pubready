@@ -14,6 +14,13 @@ tag move together.
 ## [Unreleased]
 
 ### Added
+- 32 benchmark cases on 15 new public datasets from R packages in the image
+  check the paths that the 3.0.0 cases checked once or not at all: Student's
+  t, Mann-Whitney, Games-Howell, Dunn, three-way and aligned rank transform
+  ANOVA, paired estimation, one-way repeated measures, KM medians, Cox models
+  with three-level and text covariates, a falling 4PL with zero doses, a linear
+  standard curve, PERMANOVA and the CIs of several recipes. The benchmarks now
+  hold 57 datasets and 533 reference values.
 
 ### Changed
 

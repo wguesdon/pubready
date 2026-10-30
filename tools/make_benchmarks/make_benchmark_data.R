@@ -781,6 +781,518 @@ add_ref("normand_meta", "i2", nd_dl$I2, "metafor::rma(method = 'DL')")
 add_ref("normand_meta", "q", nd_dl$QE, "metafor::rma(method = 'DL')")
 add_ref("normand_meta", "fixed_estimate", nd_fe$b[1], "metafor::rma(method = 'FE')")
 
+# The cases below come from the v3 agent test of 2026-10-30. They cover the
+# paths that the earlier cases checked once or not at all.
+
+# A dataset that an R package ships with data(), read into a plain object.
+get_pkg_data <- function(name, pkg) {
+  e <- new.env()
+  utils::data(list = name, package = pkg, envir = e)
+  get(name, envir = e)
+}
+
+# The pooled standard deviation of two samples.
+pooled_sd <- function(a, b) {
+  sqrt(((length(a) - 1) * stats::var(a) + (length(b) - 1) * stats::var(b)) /
+         (length(a) + length(b) - 2))
+}
+
+# The Games-Howell test of one pair, from its definition: a Welch t of the pair,
+# referred to the studentized range with k groups and the Welch df.
+games_howell_pair <- function(a, b, k) {
+  va <- stats::var(a) / length(a)
+  vb <- stats::var(b) / length(b)
+  q <- abs(mean(b) - mean(a)) / sqrt(va + vb) * sqrt(2)
+  dfw <- (va + vb)^2 / (va^2 / (length(a) - 1) + vb^2 / (length(b) - 1))
+  c(estimate = mean(b) - mean(a), p = stats::ptukey(q, k, dfw, lower.tail = FALSE))
+}
+
+# Dunn's z of one pair, with the tie correction of Dunn (1964).
+dunn_z <- function(i, j, rk, g, n_all, tie_term) {
+  ni <- sum(g == i)
+  nj <- sum(g == j)
+  s <- sqrt((n_all * (n_all + 1) / 12 - tie_term / (12 * (n_all - 1))) * (1 / ni + 1 / nj))
+  (mean(rk[g == i]) - mean(rk[g == j])) / s
+}
+
+# The pseudo-F of a one-way PERMANOVA (Anderson 2001) from a matrix of squared
+# distances.
+permanova_f <- function(d2, g) {
+  n <- length(g)
+  lv <- unique(g)
+  ss_t <- sum(d2[upper.tri(d2)]) / n
+  ss_w <- 0
+  for (l in lv) {
+    idx <- which(g == l)
+    sub <- d2[idx, idx, drop = FALSE]
+    ss_w <- ss_w + sum(sub[upper.tri(sub)]) / length(idx)
+  }
+  ((ss_t - ss_w) / (length(lv) - 1)) / (ss_w / (n - length(lv)))
+}
+
+# A 4PL fit with SSfpl on log10 dose, written in the GraphPad form
+# bottom + (top - bottom) / (1 + 10^((log10 EC50 - log10 dose) * hill)).
+fpl_log10 <- function(dose, y) {
+  d <- data.frame(lx = log10(dose), y = y)
+  st <- stats::getInitial(y ~ SSfpl(lx, A, B, xmid, scal), data = d)
+  fit <- stats::nls(y ~ SSfpl(lx, A, B, xmid, scal), data = d, start = st,
+                    control = stats::nls.control(maxiter = 500, tol = 1e-8, minFactor = 1e-12))
+  cf <- stats::coef(fit)
+  se <- summary(fit)$coefficients[, "Std. Error"]
+  bottom <- cf[["A"]]
+  top <- cf[["B"]]
+  hill <- 1 / (cf[["scal"]] * log(10))
+  if (bottom > top) {
+    tmp <- bottom
+    bottom <- top
+    top <- tmp
+    hill <- -hill
+  }
+  tq <- stats::qt(0.975, stats::df.residual(fit))
+  list(bottom = bottom, top = top, hill = hill, ec50 = 10^cf[["xmid"]],
+       se_log_ec50 = se[["xmid"]],
+       ci_low = 10^(cf[["xmid"]] - tq * se[["xmid"]]),
+       ci_high = 10^(cf[["xmid"]] + tq * se[["xmid"]]),
+       rss = sum(stats::residuals(fit)^2), coef = cf)
+}
+
+# 40. MASS::cats, heart weight by sex, with unequal groups of 47 and 97 cats.
+cats <- write_data(data.frame(Sex = as.character(MASS::cats$Sex), Bwt = MASS::cats$Bwt,
+                              Hwt = MASS::cats$Hwt, stringsAsFactors = FALSE), "cats")
+cat_f <- cats$Hwt[cats$Sex == "F"]
+cat_m <- cats$Hwt[cats$Sex == "M"]
+cat_st <- stats::t.test(cat_f, cat_m, var.equal = TRUE)
+add_ref("cats_student", "statistic", cat_st$statistic, "stats::t.test(var.equal = TRUE)")
+add_ref("cats_student", "df", cat_st$parameter, "stats::t.test(var.equal = TRUE)")
+add_ref("cats_student", "p_value", cat_st$p.value, "stats::t.test(var.equal = TRUE)")
+add_ref("cats_student", "cohens_d", (mean(cat_f) - mean(cat_m)) / pooled_sd(cat_f, cat_m),
+        "mean difference / pooled SD (Cohen 1988)")
+cat_mw <- suppressWarnings(stats::wilcox.test(cat_f, cat_m, exact = FALSE, correct = TRUE))
+add_ref("cats_mann_whitney", "statistic", cat_mw$statistic, "stats::wilcox.test(correct = TRUE)")
+add_ref("cats_mann_whitney", "p_value", cat_mw$p.value, "stats::wilcox.test(correct = TRUE)")
+add_ref("cats_mann_whitney", "rank_biserial",
+        2 * cat_mw$statistic / (length(cat_f) * length(cat_m)) - 1, "2 U / (n1 n2) - 1")
+cat_fp <- NULL
+for (f in c("Bwt", "Hwt")) {
+  a <- cats[[f]][cats$Sex == "F"]
+  b <- cats[[f]][cats$Sex == "M"]
+  wt <- stats::t.test(a, b, var.equal = FALSE)
+  add_ref("cats_feature_panel", paste0("statistic_", f), wt$statistic, "stats::t.test(var.equal = FALSE)")
+  add_ref("cats_feature_panel", paste0("df_", f), wt$parameter, "stats::t.test(var.equal = FALSE)")
+  add_ref("cats_feature_panel", paste0("p_", f), wt$p.value, "stats::t.test(var.equal = FALSE)")
+  add_ref("cats_feature_panel", paste0("cohens_d_", f), (mean(a) - mean(b)) / pooled_sd(a, b),
+          "mean difference / pooled SD")
+  cat_fp <- c(cat_fp, wt$p.value)
+}
+cat_fq <- stats::p.adjust(cat_fp, "BH")
+add_ref("cats_feature_panel", "p_adj_Bwt", cat_fq[1], "stats::p.adjust(method = 'BH')")
+add_ref("cats_feature_panel", "p_adj_Hwt", cat_fq[2], "stats::p.adjust(method = 'BH')")
+
+# 41. PlantGrowth, ctrl against trt2. The 20 values hold no tie, so R takes the
+# exact distribution of the Mann-Whitney U.
+pg_all <- utils::read.csv(file.path(out_dir, "plant_growth.csv"), stringsAsFactors = FALSE)
+pg2 <- write_data(pg_all[pg_all$group %in% c("ctrl", "trt2"), ], "plant_growth_ctrl_trt2")
+pg2_a <- pg2$weight[pg2$group == "ctrl"]
+pg2_b <- pg2$weight[pg2$group == "trt2"]
+stopifnot(!anyDuplicated(c(pg2_a, pg2_b)))
+pg2_mw <- stats::wilcox.test(pg2_a, pg2_b, exact = TRUE)
+add_ref("plant_growth_mw_exact", "statistic", pg2_mw$statistic, "stats::wilcox.test(exact = TRUE)")
+add_ref("plant_growth_mw_exact", "p_value", pg2_mw$p.value, "stats::wilcox.test(exact = TRUE)")
+add_ref("plant_growth_mw_exact", "rank_biserial",
+        2 * pg2_mw$statistic / (length(pg2_a) * length(pg2_b)) - 1, "2 U / (n1 n2) - 1")
+
+# 42. PlantGrowth: all Tukey pairs and the eta squared of the one-way ANOVA.
+pg_tk <- stats::TukeyHSD(stats::aov(weight ~ group, data = pg_all))$group
+for (pr in rownames(pg_tk)) {
+  key <- gsub("-", "_", pr)
+  add_ref("plant_growth_tukey", paste0("estimate_", key), pg_tk[pr, "diff"], "stats::TukeyHSD()")
+  add_ref("plant_growth_tukey", paste0("p_", key), pg_tk[pr, "p adj"], "stats::TukeyHSD()")
+}
+pg_aov <- stats::anova(stats::lm(weight ~ group, data = pg_all))
+add_ref("plant_growth_tukey", "eta_squared", pg_aov$`Sum Sq`[1] / sum(pg_aov$`Sum Sq`),
+        "SS_group / SS_total")
+
+# 43. sleep through two_group_compare --paired (group 1 minus group 2) and the
+# effect size of paired_compare (condition 2 minus condition 1).
+sl2 <- utils::read.csv(file.path(out_dir, "sleep.csv"), stringsAsFactors = FALSE)
+sl2_1 <- sl2$extra[sl2$group == 1]
+sl2_2 <- sl2$extra[sl2$group == 2]
+sl2_pt <- stats::t.test(sl2_1, sl2_2, paired = TRUE)
+add_ref("sleep_two_group_paired", "statistic", sl2_pt$statistic, "stats::t.test(paired = TRUE)")
+add_ref("sleep_two_group_paired", "df", sl2_pt$parameter, "stats::t.test(paired = TRUE)")
+add_ref("sleep_two_group_paired", "p_value", sl2_pt$p.value, "stats::t.test(paired = TRUE)")
+add_ref("sleep_two_group_paired", "cohens_dz", mean(sl2_1 - sl2_2) / stats::sd(sl2_1 - sl2_2),
+        "mean(d) / sd(d)")
+add_ref("sleep_two_group_paired_auto", "shapiro_p_diff", stats::shapiro.test(sl2_1 - sl2_2)$p.value,
+        "stats::shapiro.test() of the differences")
+sl2_wx <- suppressWarnings(stats::wilcox.test(sl2_1, sl2_2, paired = TRUE))
+add_ref("sleep_two_group_paired_auto", "statistic", sl2_wx$statistic, "stats::wilcox.test(paired = TRUE)")
+add_ref("sleep_two_group_paired_auto", "p_value", sl2_wx$p.value, "stats::wilcox.test(paired = TRUE)")
+add_ref("sleep_paired_effect", "cohens_dz", mean(sl2_2 - sl2_1) / stats::sd(sl2_2 - sl2_1),
+        "mean(d) / sd(d)")
+add_ref("sleep_paired_effect", "mean_diff", mean(sl2_2 - sl2_1), "mean(d)")
+
+# 44. boot::nitrofen: the brood size of Ceriodaphnia at five nitrofen doses. The
+# doses are numbers, so the groups must sort as numbers in both engines.
+nf <- get_pkg_data("nitrofen", "boot")
+nf_df <- write_data(data.frame(conc = nf$conc, total = nf$total), "nitrofen")
+nf_aov <- stats::anova(stats::lm(total ~ factor(conc), data = nf_df))
+add_ref("nitrofen_multi", "statistic", nf_aov$`F value`[1], "stats::anova(lm())")
+add_ref("nitrofen_multi", "p_value", nf_aov$`Pr(>F)`[1], "stats::anova(lm())")
+nf_tk <- stats::TukeyHSD(stats::aov(total ~ factor(conc), data = nf_df))[[1]]
+add_ref("nitrofen_multi", "estimate_160_80", nf_tk["160-80", "diff"], "stats::TukeyHSD(), 160 minus 80")
+add_ref("nitrofen_multi", "p_160_80", nf_tk["160-80", "p adj"], "stats::TukeyHSD()")
+add_ref("nitrofen_multi", "estimate_80_0", nf_tk["80-0", "diff"], "stats::TukeyHSD(), 80 minus 0")
+add_ref("nitrofen_multi", "p_80_0", nf_tk["80-0", "p adj"], "stats::TukeyHSD()")
+nf2 <- write_data(nf_df[nf_df$conc %in% c(80, 160), ], "nitrofen_80_160")
+nf2_a <- nf2$total[nf2$conc == 80]
+nf2_b <- nf2$total[nf2$conc == 160]
+nf2_wt <- stats::t.test(nf2_a, nf2_b, var.equal = FALSE)
+add_ref("nitrofen_two_group", "statistic", nf2_wt$statistic, "stats::t.test(var.equal = FALSE), 80 minus 160")
+add_ref("nitrofen_two_group", "p_value", nf2_wt$p.value, "stats::t.test(var.equal = FALSE)")
+
+# 45. chickwts with the Games-Howell post hoc test of the Welch path.
+cw_lv <- sort(unique(cw_df$feed), method = "radix")
+cw_pairs <- utils::combn(cw_lv, 2)
+for (k in seq_len(ncol(cw_pairs))) {
+  pr <- cw_pairs[, k]
+  gh <- games_howell_pair(cw_df$weight[cw_df$feed == pr[1]], cw_df$weight[cw_df$feed == pr[2]],
+                          length(cw_lv))
+  add_ref("chickwts_games_howell", sprintf("estimate_%s_%s", pr[2], pr[1]), gh[["estimate"]],
+          "mean(group2) - mean(group1)")
+  add_ref("chickwts_games_howell", sprintf("p_%s_%s", pr[2], pr[1]), gh[["p"]],
+          "Games-Howell from its definition, stats::ptukey()",
+          rel_tol = if (gh[["p"]] < 1e-4) 1e-5 else 1e-6)
+}
+
+# 46. InsectSprays with Dunn's test, the BH adjustment and eta squared (H).
+ins_df <- utils::read.csv(file.path(out_dir, "insect_sprays.csv"), stringsAsFactors = FALSE)
+ins_rk <- rank(ins_df$count)
+ins_ties <- table(ins_df$count)
+ins_tie_term <- sum(ins_ties^3 - ins_ties)
+ins_lv <- sort(unique(ins_df$spray), method = "radix")
+ins_pairs <- utils::combn(ins_lv, 2)
+ins_z <- numeric(ncol(ins_pairs))
+for (k in seq_len(ncol(ins_pairs))) {
+  ins_z[k] <- dunn_z(ins_pairs[1, k], ins_pairs[2, k], ins_rk, ins_df$spray, nrow(ins_df), ins_tie_term)
+}
+ins_q <- stats::p.adjust(2 * stats::pnorm(-abs(ins_z)), "BH")
+for (k in seq_len(ncol(ins_pairs))) {
+  add_ref("insect_sprays_dunn", sprintf("z_%s_%s", ins_pairs[1, k], ins_pairs[2, k]), ins_z[k],
+          "Dunn (1964) z with the tie correction, group 1 minus group 2 mean rank")
+  add_ref("insect_sprays_dunn", sprintf("p_adj_%s_%s", ins_pairs[1, k], ins_pairs[2, k]), ins_q[k],
+          "2 pnorm(-|z|), stats::p.adjust(method = 'BH')")
+}
+ins_kt <- stats::kruskal.test(count ~ spray, data = ins_df)
+add_ref("insect_sprays_dunn", "eta_squared_h",
+        (ins_kt$statistic - length(ins_lv) + 1) / (nrow(ins_df) - length(ins_lv)), "(H - k + 1) / (n - k)")
+
+# 47. MASS::quine: days absent in an unbalanced 2 x 2 x 2 design.
+qu <- write_data(data.frame(Eth = as.character(MASS::quine$Eth), Sex = as.character(MASS::quine$Sex),
+                            Lrn = as.character(MASS::quine$Lrn), Days = MASS::quine$Days,
+                            stringsAsFactors = FALSE), "quine")
+qu$Eth <- factor(qu$Eth)
+qu$Sex <- factor(qu$Sex)
+qu$Lrn <- factor(qu$Lrn)
+qu_aov <- car::Anova(stats::lm(Days ~ Eth * Sex * Lrn, data = qu), type = 2)
+qu_ss_res <- qu_aov["Residuals", "Sum Sq"]
+for (term in setdiff(rownames(qu_aov), "Residuals")) {
+  add_ref("quine_threeway_anova", paste0("F_", term), qu_aov[term, "F value"], "car::Anova(type = 2)")
+  add_ref("quine_threeway_anova", paste0("p_", term), qu_aov[term, "Pr(>F)"], "car::Anova(type = 2)")
+  add_ref("quine_threeway_anova", paste0("pes_", term),
+          qu_aov[term, "Sum Sq"] / (qu_aov[term, "Sum Sq"] + qu_ss_res), "SS / (SS + SS_residual)")
+}
+qu_art <- as.data.frame(stats::anova(ARTool::art(Days ~ Eth * Sex * Lrn, data = qu)))
+for (i in seq_len(nrow(qu_art))) {
+  term <- as.character(qu_art$Term[i])
+  add_ref("quine_threeway_art", paste0("F_", term), qu_art$F[i], "ARTool::art(), anova()")
+  add_ref("quine_threeway_art", paste0("p_", term), qu_art[["Pr(>F)"]][i], "ARTool::art(), anova()")
+}
+add_ref("quine_threeway_auto", "residual_shapiro_p",
+        stats::shapiro.test(stats::residuals(stats::aov(Days ~ Eth * Sex * Lrn, data = qu)))$p.value,
+        "stats::shapiro.test() of the ANOVA residuals")
+
+# 48. ARTool::Higgins1990Table1: a 3 x 3 design with 4 subjects in each cell.
+hg0 <- get_pkg_data("Higgins1990Table1", "ARTool")
+hg <- write_data(data.frame(Subject = as.character(hg0$Subject), Row = as.character(hg0$Row),
+                            Column = as.character(hg0$Column), Response = hg0$Response,
+                            stringsAsFactors = FALSE), "higgins1990_table1")
+hg$Row <- factor(hg$Row)
+hg$Column <- factor(hg$Column)
+hg_art <- as.data.frame(stats::anova(ARTool::art(Response ~ Row * Column, data = hg)))
+for (i in seq_len(nrow(hg_art))) {
+  term <- as.character(hg_art$Term[i])
+  add_ref("higgins_art", paste0("F_", term), hg_art$F[i], "ARTool::art(), anova()")
+  add_ref("higgins_art", paste0("p_", term), hg_art[["Pr(>F)"]][i], "ARTool::art(), anova()")
+}
+
+# 49. MASS::shoes: the wear of materials A and B on the two feet of ten boys.
+sh <- write_data(data.frame(boy = rep(sprintf("boy%02d", 1:10), 2), material = rep(c("A", "B"), each = 10),
+                            wear = c(MASS::shoes$A, MASS::shoes$B), stringsAsFactors = FALSE), "shoes")
+sh_a <- sh$wear[sh$material == "A"]
+sh_b <- sh$wear[sh$material == "B"]
+sh_pt <- stats::t.test(sh_b, sh_a, paired = TRUE)
+sh_dfj <- 2 * 10 - 2
+add_ref("shoes_paired_estimation", "mean_diff", mean(sh_b - sh_a), "mean(B - A)")
+add_ref("shoes_paired_estimation", "statistic", sh_pt$statistic, "stats::t.test(paired = TRUE), B minus A")
+add_ref("shoes_paired_estimation", "df", sh_pt$parameter, "stats::t.test(paired = TRUE)")
+add_ref("shoes_paired_estimation", "p_value", sh_pt$p.value, "stats::t.test(paired = TRUE)")
+add_ref("shoes_paired_estimation", "hedges_g",
+        (mean(sh_b) - mean(sh_a)) / sqrt((stats::var(sh_a) + stats::var(sh_b)) / 2) *
+          exp(lgamma(sh_dfj / 2) - lgamma((sh_dfj - 1) / 2)) / sqrt(sh_dfj / 2),
+        "DABEST paired Hedges' g: mean difference / average SD, times J(n1 + n2 - 2)")
+
+# 50. nlme::Oxboys: one-way repeated measures, 26 boys at 9 occasions, no group.
+ox0 <- as.data.frame(nlme::Oxboys)
+ox <- write_data(data.frame(Subject = as.character(ox0$Subject),
+                            Occasion = as.integer(as.character(ox0$Occasion)),
+                            height = ox0$height, stringsAsFactors = FALSE), "oxboys")
+ox$sub_f <- factor(ox$Subject)
+ox$occ_f <- factor(ox$Occasion)
+ox_aov <- summary(stats::aov(height ~ occ_f + Error(sub_f / occ_f), data = ox))
+ox_w <- ox_aov[["Error: sub_f:occ_f"]][[1]]
+ox_rn <- trimws(rownames(ox_w))
+add_ref("oxboys_rm", "F_time", ox_w[ox_rn == "occ_f", "F value"], "stats::aov(Error())")
+add_ref("oxboys_rm", "p_time_uncorrected", ox_w[ox_rn == "occ_f", "Pr(>F)"], "stats::aov(Error())")
+add_ref("oxboys_rm", "pes_time", ox_w[ox_rn == "occ_f", "Sum Sq"] / sum(ox_w[, "Sum Sq"]),
+        "SS_time / (SS_time + SS_error)")
+ox_wide <- stats::reshape(ox[, c("Subject", "Occasion", "height")], idvar = "Subject",
+                          timevar = "Occasion", direction = "wide")
+ox_mlm <- stats::lm(as.matrix(ox_wide[, paste0("height.", 1:9)]) ~ 1)
+ox_sv <- summary(car::Anova(ox_mlm, idata = data.frame(occ = factor(1:9)), idesign = ~occ, type = 3),
+                 multivariate = FALSE)
+add_ref("oxboys_rm", "gg_epsilon", ox_sv$pval.adjustments["occ", "GG eps"], "car::Anova(idesign, type = 3)")
+add_ref("oxboys_rm", "mauchly_p", ox_sv$sphericity.tests["occ", "p-value"], "car::Anova(idesign, type = 3)")
+add_ref("oxboys_rm", "p_time_gg", ox_sv$pval.adjustments["occ", "Pr(>F[GG])"], "car::Anova(idesign, type = 3)")
+
+# 51. veteran by treatment arm. S(t) of the test arm is exactly 0.5 on the flat
+# step from day 52 to day 53, so survfit takes the midpoint as the median.
+vet_df <- utils::read.csv(file.path(out_dir, "veteran.csv"), stringsAsFactors = FALSE)
+vet_tab <- summary(survival::survfit(Surv(time, status) ~ trt, data = vet_df))$table
+for (arm in c("standard", "test")) {
+  rn <- paste0("trt=", arm)
+  add_ref("veteran_trt_km", paste0("median_", arm), vet_tab[rn, "median"], "survival::survfit()")
+  add_ref("veteran_trt_km", paste0("median_ci_low_", arm), vet_tab[rn, "0.95LCL"], "survival::survfit()")
+  add_ref("veteran_trt_km", paste0("median_ci_high_", arm), vet_tab[rn, "0.95UCL"], "survival::survfit()")
+}
+vet_sd <- survival::survdiff(Surv(time, status) ~ trt, data = vet_df)
+add_ref("veteran_trt_km", "log_rank_chisq", vet_sd$chisq, "survival::survdiff()")
+add_ref("veteran_trt_km", "log_rank_p", stats::pchisq(vet_sd$chisq, 1, lower.tail = FALSE),
+        "survival::survdiff()")
+
+# 52. colon, death endpoint: a Cox model with the three-level treatment rx.
+co <- survival::colon[survival::colon$etype == 2, ]
+co_df <- write_data(data.frame(id = co$id, time = co$time, status = co$status, rx = as.character(co$rx),
+                               sex = co$sex, age = co$age, stringsAsFactors = FALSE), "colon_death")
+co_df$rx <- factor(co_df$rx, levels = sort(unique(co_df$rx), method = "radix"))
+co_fit <- survival::coxph(Surv(time, status) ~ rx + sex + age, data = co_df)
+co_s <- summary(co_fit)
+for (term in rownames(co_s$coefficients)) {
+  key <- gsub("[^A-Za-z0-9]", "", term)
+  add_ref("colon_cox", paste0("HR_", key), co_s$coefficients[term, "exp(coef)"], "survival::coxph()")
+  add_ref("colon_cox", paste0("ci_low_", key), co_s$conf.int[term, "lower .95"], "survival::coxph()")
+  add_ref("colon_cox", paste0("ci_high_", key), co_s$conf.int[term, "upper .95"], "survival::coxph()")
+  add_ref("colon_cox", paste0("p_", key), co_s$coefficients[term, "Pr(>|z|)"], "survival::coxph()")
+}
+add_ref("colon_cox", "ph_global_p", survival::cox.zph(co_fit)$table["GLOBAL", "p"], "survival::cox.zph()")
+
+# 53. MASS::birthwt: the weight of the mother as a marker of a low birth weight.
+# A low value marks the case, so the curve reads in the direction ">".
+bw <- write_data(data.frame(id = seq_len(nrow(MASS::birthwt)), low = MASS::birthwt$low,
+                            lwt = MASS::birthwt$lwt), "birthwt")
+bw_roc <- pROC::roc(bw$low, bw$lwt, levels = c(0, 1), direction = "auto", quiet = TRUE)
+bw_ci <- pROC::ci.auc(bw_roc, method = "delong")
+add_ref("birthwt_roc", "auc", as.numeric(pROC::auc(bw_roc)), "pROC::auc()")
+add_ref("birthwt_roc", "auc_ci_low", bw_ci[1], "pROC::ci.auc(method = 'delong')")
+add_ref("birthwt_roc", "auc_ci_high", bw_ci[3], "pROC::ci.auc(method = 'delong')")
+bw_best <- pROC::coords(bw_roc, x = "best", best.method = "youden",
+                        ret = c("threshold", "sensitivity", "specificity"), transpose = FALSE)
+add_ref("birthwt_roc", "youden_threshold", bw_best$threshold[1], "pROC::coords(best.method = 'youden')")
+add_ref("birthwt_roc", "youden_sensitivity", bw_best$sensitivity[1], "pROC::coords(best.method = 'youden')")
+add_ref("birthwt_roc", "youden_specificity", bw_best$specificity[1], "pROC::coords(best.method = 'youden')")
+
+# 54. carData::Davis: measured weight against reported weight. repwt holds 17
+# missing values, so the case also checks the drop of incomplete pairs.
+dv <- write_data(data.frame(subject = seq_len(nrow(carData::Davis)), sex = as.character(carData::Davis$sex),
+                            weight = carData::Davis$weight, repwt = carData::Davis$repwt,
+                            stringsAsFactors = FALSE), "davis")
+dv_ok <- is.finite(dv$weight) & is.finite(dv$repwt)
+dv_d <- dv$weight[dv_ok] - dv$repwt[dv_ok]
+dv_m <- (dv$weight[dv_ok] + dv$repwt[dv_ok]) / 2
+dv_n <- length(dv_d)
+dv_z <- stats::qnorm(0.975)
+dv_t <- stats::qt(0.975, dv_n - 1)
+dv_s <- stats::sd(dv_d)
+dv_se_loa <- dv_s * sqrt(1 / dv_n + dv_z^2 / (2 * (dv_n - 1)))
+add_ref("davis_bland_altman", "n", dv_n, "complete pairs")
+add_ref("davis_bland_altman", "bias", mean(dv_d), "mean(weight - repwt)")
+add_ref("davis_bland_altman", "bias_ci_low", mean(dv_d) - dv_t * dv_s / sqrt(dv_n), "t interval of the mean difference")
+add_ref("davis_bland_altman", "bias_ci_high", mean(dv_d) + dv_t * dv_s / sqrt(dv_n), "t interval of the mean difference")
+add_ref("davis_bland_altman", "sd_diff", dv_s, "stats::sd()")
+add_ref("davis_bland_altman", "loa_low", mean(dv_d) - dv_z * dv_s, "mean - 1.96 SD")
+add_ref("davis_bland_altman", "loa_high", mean(dv_d) + dv_z * dv_s, "mean + 1.96 SD")
+add_ref("davis_bland_altman", "loa_low_ci_low", mean(dv_d) - dv_z * dv_s - dv_t * dv_se_loa,
+        "Bland and Altman (1999) SE of the limit")
+add_ref("davis_bland_altman", "loa_high_ci_high", mean(dv_d) + dv_z * dv_s + dv_t * dv_se_loa,
+        "Bland and Altman (1999) SE of the limit")
+dv_pb <- summary(stats::lm(dv_d ~ dv_m))$coefficients
+add_ref("davis_bland_altman", "prop_bias_slope", dv_pb["dv_m", "Estimate"], "stats::lm(diff ~ mean)")
+add_ref("davis_bland_altman", "prop_bias_p", dv_pb["dv_m", "Pr(>|t|)"], "stats::lm(diff ~ mean)")
+
+# 55. nlme::Nitrendipene: the displacement of a radioligand in four tissues, with
+# falling curves and 15 rows at a dose of zero that the recipe drops.
+ni0 <- as.data.frame(nlme::Nitrendipene)
+ni <- write_data(data.frame(Tissue = paste0("tissue", as.character(ni0$Tissue)), NIF = ni0$NIF,
+                            activity = ni0$activity, stringsAsFactors = FALSE), "nitrendipene")
+ni_pos <- ni[ni$NIF > 0, ]
+add_ref("nitrendipene_ic50", "n_dropped_zero_dose", sum(ni$NIF <= 0), "rows with NIF = 0")
+ni_rss <- 0
+ni_starts <- NULL
+ni_tis <- sort(unique(ni_pos$Tissue), method = "radix")
+for (t in ni_tis) {
+  ft <- fpl_log10(ni_pos$NIF[ni_pos$Tissue == t], ni_pos$activity[ni_pos$Tissue == t])
+  ci_tol <- if (t == "tissue2") 1e-3 else 1e-4
+  add_ref("nitrendipene_ic50", paste0("bottom_", t), ft$bottom, "stats::nls(SSfpl) on log10 dose", rel_tol = 1e-4)
+  add_ref("nitrendipene_ic50", paste0("top_", t), ft$top, "stats::nls(SSfpl) on log10 dose", rel_tol = 1e-4)
+  add_ref("nitrendipene_ic50", paste0("ic50_", t), ft$ec50, "stats::nls(SSfpl) on log10 dose", rel_tol = 1e-4)
+  add_ref("nitrendipene_ic50", paste0("hill_", t), ft$hill, "stats::nls(SSfpl) on log10 dose", rel_tol = 1e-4)
+  add_ref("nitrendipene_ic50", paste0("ic50_ci_low_", t), ft$ci_low, "10^(xmid - t SE), stats::nls(SSfpl)",
+          rel_tol = ci_tol)
+  add_ref("nitrendipene_ic50", paste0("ic50_ci_high_", t), ft$ci_high, "10^(xmid + t SE), stats::nls(SSfpl)",
+          rel_tol = ci_tol)
+  add_ref("nitrendipene_ic50", paste0("rss_", t), ft$rss, "stats::nls(SSfpl) on log10 dose")
+  ni_rss <- ni_rss + ft$rss
+  ni_starts <- rbind(ni_starts, ft$coef)
+}
+ni_pos$ti <- match(ni_pos$Tissue, ni_tis)
+ni_pos$lx <- log10(ni_pos$NIF)
+ni_shared <- stats::nls(activity ~ A[ti] + (B[ti] - A[ti]) / (1 + exp((xmid - lx) / scal[ti])),
+                        data = ni_pos,
+                        start = list(A = ni_starts[, "A"], B = ni_starts[, "B"], scal = ni_starts[, "scal"],
+                                     xmid = mean(ni_starts[, "xmid"])),
+                        control = stats::nls.control(maxiter = 500, tol = 1e-8, minFactor = 1e-12))
+ni_df_sep <- nrow(ni_pos) - 4 * length(ni_tis)
+ni_f <- ((sum(stats::residuals(ni_shared)^2) - ni_rss) / (length(ni_tis) - 1)) / (ni_rss / ni_df_sep)
+add_ref("nitrendipene_ic50", "shared_F", ni_f, "stats::nls(SSfpl), extra sum of squares", rel_tol = 1e-4)
+add_ref("nitrendipene_ic50", "shared_p", stats::pf(ni_f, length(ni_tis) - 1, ni_df_sep, lower.tail = FALSE),
+        "stats::nls(SSfpl), extra sum of squares", rel_tol = 1e-4)
+
+# 56. DNase run 1: the 95% CI of the EC50. The dnase_4pl case checks the estimate.
+dn1_df <- utils::read.csv(file.path(out_dir, "dnase_run1.csv"), stringsAsFactors = FALSE)
+dn1_fit <- fpl_log10(dn1_df$conc, dn1_df$density)
+add_ref("dnase_ec50_ci", "se_log_ec50", dn1_fit$se_log_ec50, "stats::nls(SSfpl) on log10 dose", rel_tol = 1e-4)
+add_ref("dnase_ec50_ci", "ec50_ci_low", dn1_fit$ci_low, "10^(xmid - t SE), stats::nls(SSfpl)", rel_tol = 1e-4)
+add_ref("dnase_ec50_ci", "ec50_ci_high", dn1_fit$ci_high, "10^(xmid + t SE), stats::nls(SSfpl)", rel_tol = 1e-4)
+
+# 57. datasets::Formaldehyde as a linear standard curve. The six optical
+# densities come back as unknowns, so the lowest one checks the range rule.
+fo <- datasets::Formaldehyde
+fo_sc <- write_data(rbind(data.frame(sample = sprintf("std_%02d", 1:6), carb = fo$carb, optden = fo$optden),
+                          data.frame(sample = sprintf("unk_%02d", 1:6), carb = NA, optden = fo$optden)),
+                    "formaldehyde_standard_curve")
+fo_std <- fo_sc[!is.na(fo_sc$carb), ]
+fo_unk <- fo_sc[is.na(fo_sc$carb), ]
+fo_fit <- stats::lm(optden ~ carb, data = fo_std)
+fo_cf <- stats::coef(fo_fit)
+add_ref("formaldehyde_linear", "intercept", fo_cf[[1]], "stats::lm()")
+add_ref("formaldehyde_linear", "slope", fo_cf[[2]], "stats::lm()")
+add_ref("formaldehyde_linear", "r_squared", summary(fo_fit)$r.squared, "stats::lm()")
+fo_rng <- range(stats::predict(fo_fit, data.frame(carb = range(fo_std$carb))))
+fo_in <- fo_unk$optden >= fo_rng[1] & fo_unk$optden <= fo_rng[2]
+add_ref("formaldehyde_linear", "n_in_range", sum(fo_in), "inverse of stats::lm() within the fitted range")
+add_ref("formaldehyde_linear", "n_below", sum(fo_unk$optden < fo_rng[1]), "inverse of stats::lm()")
+for (i in which(fo_in)) {
+  add_ref("formaldehyde_linear", paste0("conc_", fo_unk$sample[i]), (fo_unk$optden[i] - fo_cf[[1]]) / fo_cf[[2]],
+          "(signal - intercept) / slope")
+}
+
+# 58. MASS::housing: the composition of satisfaction across the three influence
+# levels, with the Kruskal-Wallis test of each category.
+hs <- utils::read.csv(file.path(out_dir, "housing.csv"), stringsAsFactors = FALSE)
+hs_tot <- tapply(hs$Freq, hs$sample, sum)
+hs$prop <- hs$Freq / as.numeric(hs_tot[hs$sample])
+hs_p <- NULL
+for (s in c("Low", "Medium", "High")) {
+  hk <- stats::kruskal.test(prop ~ factor(Infl), data = hs[hs$Sat == s, ])
+  add_ref("housing_kruskal", paste0("H_", s), hk$statistic, "stats::kruskal.test()")
+  add_ref("housing_kruskal", paste0("p_", s), hk$p.value, "stats::kruskal.test()")
+  hs_p <- c(hs_p, hk$p.value)
+}
+hs_q <- stats::p.adjust(hs_p, "BH")
+for (k in 1:3) {
+  add_ref("housing_kruskal", paste0("p_adj_", c("Low", "Medium", "High")[k]), hs_q[k],
+          "stats::p.adjust(method = 'BH')")
+}
+
+# 59. The PERMANOVA of the airway PCA, exact over the 70 splits of 2 x 4
+# samples, and the pseudo-F of iris.
+ap_df <- utils::read.csv(file.path(out_dir, "airway_pca.csv"), check.names = FALSE, stringsAsFactors = FALSE)
+ap_d2 <- as.matrix(stats::dist(scale(as.matrix(ap_df[, -(1:3)]))))^2
+ap_f <- permanova_f(ap_d2, ap_df$dex)
+add_ref("airway_pca_permanova", "F", ap_f, "Anderson (2001) pseudo-F from the distance matrix")
+ap_splits <- utils::combn(nrow(ap_df), 4)
+ap_fs <- numeric(ncol(ap_splits))
+for (k in seq_len(ncol(ap_splits))) {
+  g <- rep("b", nrow(ap_df))
+  g[ap_splits[, k]] <- "a"
+  ap_fs[k] <- permanova_f(ap_d2, g)
+}
+add_ref("airway_pca_permanova", "p_exact", mean(ap_fs >= ap_f - 1e-9 * ap_f),
+        "complete enumeration of the 70 splits")
+ir_df <- utils::read.csv(file.path(out_dir, "iris.csv"), stringsAsFactors = FALSE)
+add_ref("iris_pca_permanova", "F",
+        permanova_f(as.matrix(stats::dist(scale(as.matrix(ir_df[, 1:4]))))^2, ir_df$Species),
+        "Anderson (2001) pseudo-F from the distance matrix")
+
+# 60. mtcars: the 95% CI of the Pearson r. Puromycin: the 95% CIs of Vmax and Km.
+mt_df <- utils::read.csv(file.path(out_dir, "mtcars.csv"), stringsAsFactors = FALSE)
+mt_ct <- stats::cor.test(mt_df$wt, mt_df$mpg, method = "pearson")
+add_ref("mtcars_pearson_ci", "conf_low", mt_ct$conf.int[1], "stats::cor.test(pearson), Fisher z")
+add_ref("mtcars_pearson_ci", "conf_high", mt_ct$conf.int[2], "stats::cor.test(pearson), Fisher z")
+pu_df <- utils::read.csv(file.path(out_dir, "puromycin.csv"), stringsAsFactors = FALSE)
+for (stt in c("treated", "untreated")) {
+  pu_fit <- stats::nls(rate ~ Vm * conc / (K + conc), data = pu_df[pu_df$state == stt, ],
+                       start = list(Vm = 200, K = 0.1),
+                       control = stats::nls.control(maxiter = 200, tol = 1e-8, minFactor = 1e-10))
+  pu_cs <- summary(pu_fit)$coefficients
+  pu_tq <- stats::qt(0.975, stats::df.residual(pu_fit))
+  add_ref("puromycin_ci", paste0("vmax_ci_low_", stt), pu_cs["Vm", 1] - pu_tq * pu_cs["Vm", 2], "estimate - t SE, stats::nls()")
+  add_ref("puromycin_ci", paste0("vmax_ci_high_", stt), pu_cs["Vm", 1] + pu_tq * pu_cs["Vm", 2], "estimate + t SE, stats::nls()")
+  add_ref("puromycin_ci", paste0("km_ci_low_", stt), pu_cs["K", 1] - pu_tq * pu_cs["K", 2], "estimate - t SE, stats::nls()")
+  add_ref("puromycin_ci", paste0("km_ci_high_", stt), pu_cs["K", 1] + pu_tq * pu_cs["K", 2], "estimate + t SE, stats::nls()")
+}
+
+# 61. MASS::Cars93: highway MPG by origin. "USA" sorts before "non-USA" in
+# code-point order, the level rule of both engines, so USA is group 1.
+c93 <- write_data(data.frame(Model = paste(MASS::Cars93$Manufacturer, MASS::Cars93$Model),
+                             Origin = as.character(MASS::Cars93$Origin),
+                             MPG.highway = MASS::Cars93$MPG.highway, stringsAsFactors = FALSE), "cars93")
+c93_a <- c93$MPG.highway[c93$Origin == "USA"]
+c93_b <- c93$MPG.highway[c93$Origin == "non-USA"]
+c93_mw <- suppressWarnings(stats::wilcox.test(c93_a, c93_b, exact = FALSE, correct = TRUE))
+add_ref("cars93_origin", "statistic", c93_mw$statistic, "stats::wilcox.test(correct = TRUE), U of USA")
+add_ref("cars93_origin", "p_value", c93_mw$p.value, "stats::wilcox.test(correct = TRUE)")
+add_ref("cars93_origin", "rank_biserial", 2 * c93_mw$statistic / (length(c93_a) * length(c93_b)) - 1,
+        "2 U / (n1 n2) - 1, USA minus non-USA")
+
+# 62. survival::cgd, the time to the first infection, with a Cox model of
+# treatment, inheritance and age. "X-linked" sorts before "autosomal" in
+# code-point order, so X-linked is the reference level of inherit.
+cg <- survival::cgd[survival::cgd$enum == 1, ]
+cg_df <- write_data(data.frame(id = cg$id, time = cg$tstop - cg$tstart, status = cg$status,
+                               treat = as.character(cg$treat), inherit = as.character(cg$inherit),
+                               age = cg$age, stringsAsFactors = FALSE), "cgd_first")
+cg_df$treat <- factor(cg_df$treat, levels = sort(unique(cg_df$treat), method = "radix"))
+cg_df$inherit <- factor(cg_df$inherit, levels = sort(unique(cg_df$inherit), method = "radix"))
+cg_fit <- survival::coxph(Surv(time, status) ~ treat + inherit + age, data = cg_df)
+cg_s <- summary(cg_fit)
+for (term in rownames(cg_s$coefficients)) {
+  key <- gsub("[^A-Za-z0-9]", "", term)
+  add_ref("cgd_cox", paste0("HR_", key), cg_s$coefficients[term, "exp(coef)"], "survival::coxph()")
+  add_ref("cgd_cox", paste0("p_", key), cg_s$coefficients[term, "Pr(>|z|)"], "survival::coxph()")
+}
+add_ref("cgd_cox", "ph_global_p", survival::cox.zph(cg_fit)$table["GLOBAL", "p"], "survival::cox.zph()")
+
 ref_df <- do.call(rbind, refs)
 utils::write.csv(ref_df, file.path("benchmarks", "reference_values.csv"), row.names = FALSE)
 cat(sprintf("Wrote %d datasets and %d reference values.\n",
