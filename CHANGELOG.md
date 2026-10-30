@@ -61,6 +61,11 @@ tag move together.
 - `distribution` and `correlation_heatmap` stop with a clear message when the
   variance of a column is not finite at double precision, as with values near
   1e300 or 1e-300, in place of a silent NA, a wrong curve or a crash (F83).
+- `correlation_heatmap` stops and names each pair of columns that shares fewer
+  than 3 complete rows or holds a constant in them. Such a pair had no
+  correlation, so the clustering stopped with an unclear error, and the two
+  engines tested it differently, which changed the Benjamini-Hochberg count
+  (F79, F87).
 
 ## [3.0.0] - 2026-10-29
 

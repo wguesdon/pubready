@@ -68,3 +68,15 @@ def test_correlation_heatmap_keeps_a_mostly_numeric_column():
     steps = " | ".join(res["clean_steps"])
     assert "Coerced column 'c' to numeric; 1 value(s) became NA, for example '<0.1'." in steps
     assert "Left out the text column(s) 'sample'." in steps
+
+
+def test_correlation_heatmap_stops_on_a_pair_with_too_few_shared_rows():
+    """A pair with fewer than 3 shared rows stops the run, as in R (F79, F87)."""
+    import pytest
+    df = ch_area_d()
+    nan = float("nan")
+    df["e"] = [nan] * 6 + [1.0, 2.5, 1.7] + [nan] * 3
+    df["f"] = [0.3, 0.9, 1.4, 2.2, 2.9, 3.1, nan, nan, 4.4, 5.0, 5.8, 6.1]
+    with pytest.raises(ValueError, match=r"1 pair\(s\) of columns have no correlation: 'e' and "
+                                         r"'f' \(1 shared complete row\(s\)\)"):
+        recipe_correlation_heatmap(df, ch_spec())

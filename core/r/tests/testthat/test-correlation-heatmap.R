@@ -47,3 +47,14 @@ test_that("correlation_heatmap keeps a mostly numeric column and logs the text c
                fixed = TRUE)
   expect_match(steps, "Left out the text column(s) 'sample'.", fixed = TRUE)
 })
+
+# A pair of variables with fewer than 3 shared complete rows has no
+# correlation; the run stops and names the pair (F79, F87).
+test_that("correlation_heatmap stops on a pair with too few shared rows", {
+  df <- ch_area_d()
+  df$e <- c(NA, NA, NA, NA, NA, NA, 1.0, 2.5, 1.7, NA, NA, NA)
+  df$f <- c(0.3, 0.9, 1.4, 2.2, 2.9, 3.1, NA, NA, 4.4, 5.0, 5.8, 6.1)
+  expect_error(recipe_correlation_heatmap(df, spec_from_opt(list(recipe = "correlation_heatmap",
+                                                                 data = "v.csv"))),
+               "1 pair\\(s\\) of columns have no correlation: 'e' and 'f' \\(1 shared complete row\\(s\\)\\)")
+})

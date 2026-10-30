@@ -12,13 +12,12 @@ import pandas as pd
 import seaborn as sns
 from scipy import stats as ss
 from scipy.cluster import hierarchy
-from statsmodels.stats.multitest import multipletests
 
 from ..bundle import slugify
 from ..clean import coerce_numeric_columns
 from ..theme import diverging_cmap
 from ..util import cap_first
-from .heatmap import ordered_linkage
+from .heatmap import bh_tested, ordered_linkage
 from .pca import name_list
 
 
@@ -63,6 +62,56 @@ def check_finite_variance(v, col, recipe):
                          "column, for example to other units or to log10")
 
 
+def pair_problem(a, b, name_a, name_b):
+    """Say why a pair of variables has no correlation, as .ch_pair_problem() in R.
+
+    Args:
+        a: The values of the first variable.
+        b: The values of the second variable.
+        name_a: The first column name.
+        name_b: The second column name.
+
+    Returns:
+        str or None: The pair as text for the message, or None when the pair
+        has 3 shared complete rows or more and both variables vary in them.
+    """
+    a = np.asarray(a, dtype=float)
+    b = np.asarray(b, dtype=float)
+    ok = np.isfinite(a) & np.isfinite(b)
+    n = int(ok.sum())
+    if n >= 3 and np.std(a[ok], ddof=1) > 0 and np.std(b[ok], ddof=1) > 0:
+        return None
+    why = f"{n} shared complete row(s)" if n < 3 else "a constant in the shared rows"
+    return f"'{name_a}' and '{name_b}' ({why})"
+
+
+def check_pairs(num):
+    """Stop when a pair of variables has no correlation, as .ch_check_pairs() in R.
+
+    A pair with fewer than 3 shared complete rows, or with a variable that is
+    constant in them, leaves NA in the matrix, so the clustering fails and the
+    engines test the pair differently (F79, F87).
+
+    Args:
+        num: The variables, one column each.
+
+    Raises:
+        ValueError: If a pair has no correlation; the message names the pairs.
+    """
+    cols = list(num.columns)
+    bad = []
+    for i in range(len(cols) - 1):
+        for j in range(i + 1, len(cols)):
+            msg = pair_problem(num[cols[i]], num[cols[j]], cols[i], cols[j])
+            if msg:
+                bad.append(msg)
+    if bad:
+        more = f"; and {len(bad) - 5} more" if len(bad) > 5 else ""
+        raise ValueError(f"correlation_heatmap: {len(bad)} pair(s) of columns have no correlation: "
+                         + "; ".join(bad[:5]) + more
+                         + "; remove one column of each pair or fill the missing values")
+
+
 def recipe_correlation_heatmap(df, spec):
     # coerce_numeric_columns() decides what is numeric: a column with one text
     # cell such as "<0.1" stays a variable, the cell becomes NaN, and the data
@@ -85,6 +134,7 @@ def recipe_correlation_heatmap(df, spec):
                            f"variance: {name_list(dropped)}.")
     if not clean_steps:
         clean_steps = ["No cleaning applied; numeric columns used as-is."]
+    check_pairs(num)
 
     method = (spec["test"].get("method") or "auto").lower()
     if method in ("auto", ""):
@@ -112,7 +162,8 @@ def recipe_correlation_heatmap(df, spec):
 
     iu = np.triu_indices(k, 1)
     p_ut = P[iu]
-    padj_ut = multipletests(p_ut, method="fdr_bh")[1]
+    # BH over the tested pairs only, as R p.adjust() leaves out a missing P.
+    padj_ut = bh_tested(p_ut)
     Padj = np.zeros((k, k))
     Padj[iu] = padj_ut
     Padj = Padj + Padj.T

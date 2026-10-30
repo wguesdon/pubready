@@ -22,6 +22,35 @@
   invisible(TRUE)
 }
 
+# One pair of variables, as text for the message, when it has no correlation:
+# fewer than 3 shared complete rows, or a variable that is constant in them.
+# NA when the pair is fine.
+.ch_pair_problem <- function(i, j, mat) {
+  ok <- is.finite(mat[, i]) & is.finite(mat[, j])
+  n <- sum(ok)
+  if (n >= 3 && stats::sd(mat[ok, i]) > 0 && stats::sd(mat[ok, j]) > 0) return(NA_character_)
+  why <- if (n < 3) sprintf("%d shared complete row(s)", n) else "a constant in the shared rows"
+  sprintf("'%s' and '%s' (%s)", colnames(mat)[i], colnames(mat)[j], why)
+}
+
+# Every pair must have a correlation, else the matrix holds NA, the clustering
+# fails and the two engines test the pair differently. Such a pair stops the run
+# and is named (F79, F87). The Python engine has the same rule and message.
+.ch_check_pairs <- function(mat) {
+  k <- ncol(mat)
+  bad <- character(0)
+  for (i in seq_len(k - 1)) {
+    for (j in seq(i + 1, k)) bad <- c(bad, .ch_pair_problem(i, j, mat))
+  }
+  bad <- bad[!is.na(bad)]
+  if (length(bad) > 0) {
+    stop(sprintf("correlation_heatmap: %d pair(s) of columns have no correlation: %s%s; remove one column of each pair or fill the missing values",
+                 length(bad), paste(utils::head(bad, 5), collapse = "; "),
+                 if (length(bad) > 5) sprintf("; and %d more", length(bad) - 5) else ""))
+  }
+  invisible(TRUE)
+}
+
 recipe_correlation_heatmap <- function(df, spec) {
   # coerce_numeric_columns() decides what is numeric: a column with one text
   # cell such as "<0.1" stays a variable, the cell becomes NA, and the data log
@@ -42,6 +71,7 @@ recipe_correlation_heatmap <- function(df, spec) {
     if (sum(!keepc) > 0) sprintf("Dropped %d column(s) with fewer than 3 values or no variance: %s.",
                                  sum(!keepc), .pca_name_list(co$numeric[!keepc])))
   if (length(clean_steps) == 0) clean_steps <- "No cleaning applied; numeric columns used as-is."
+  .ch_check_pairs(mat)
   df_used <- as.data.frame(mat)
 
   method <- tolower(spec$test$method %||% "auto")
